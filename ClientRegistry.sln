@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99488588-6EB6-4649-810F-BD85ED9BEFE6}"
+	ProjectSection(SolutionItems) = preProject
+		Solution Items\MARC.HI.EHRS.QM.Core.dll = Solution Items\MARC.HI.EHRS.QM.Core.dll
+		Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll
+		Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll = Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll
+		Solution Items\MARC.HI.EHRS.SVC.Auditing.dll = Solution Items\MARC.HI.EHRS.SVC.Auditing.dll
+		Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll = Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll
+		Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll = Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll
+		Solution Items\MARC.HI.EHRS.SVC.Core.dll = Solution Items\MARC.HI.EHRS.SVC.Core.dll
+		Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll = Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll
+		Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll = Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll
+		Solution Items\MARC.HI.EHRS.SVC.Localization.dll = Solution Items\MARC.HI.EHRS.SVC.Localization.dll
+		Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll
+		Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll
+		Solution Items\MARC.HI.EHRS.SVC.Terminology.dll = Solution Items\MARC.HI.EHRS.SVC.Terminology.dll
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal
