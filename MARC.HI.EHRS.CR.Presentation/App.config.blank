@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <section name="marc.hi.ehrs.svc.core" type="MARC.HI.EHRS.SVC.Core.HostConfigurationSectionHandler, MARC.HI.EHRS.SVC.Core, Version=1.0.0.0" />
+    <section name="marc.hi.ehrs.svc.messaging.everest" type="MARC.HI.EHRS.SVC.Messaging.Everest.Configuration.EverestConfigurationSectionHandler, MARC.HI.EHRS.SVC.Messaging.Everest, Version=1.0.0.0" />
+    <section name="marc.hi.ehrs.svc.terminology" type="MARC.HI.EHRS.SVC.Terminology.Configuration.ConfigurationSectionHandler, MARC.HI.EHRS.SVC.Terminology, Version=1.0.0.0" />
+    <section name="marc.hi.ehrs.shr.persistence.data" type="MARC.HI.EHRS.SHR.Persistence.Data.Configuration.ConfigurationSectionHandler, MARC.HI.EHRS.SHR.Persistence.Data, Version=1.0.0.0" />
+    <section name="marc.hi.ehrs.svc.messaging.persistence" type="MARC.HI.EHRS.SVC.Messaging.Persistence.Data.Configuration.ConfigurationSectionHandler, MARC.HI.EHRS.SVC.Messaging.Persistence.Data, Version=1.0.0.0" />
+  </configSections>
+  <connectionStrings>
+    <clear />
+    <add name="PSQL" connectionString="server=142.222.45.107; database=posthis_test; user id=postgres; password=postgres" providerName="Npgsql" />
+  </connectionStrings>
+  <system.data>
+    <DbProviderFactories>
+      <clear />
+      <add name="PostgreSQL Data Provider" invariant="Npgsql" description=".Net Framework Data Provider for PostgreSQL" type="Npgsql.NpgsqlFactory, Npgsql, Version=2.0.1.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7" />
+      <!-- other provider entries elided -->
+    </DbProviderFactories>
+  </system.data>
+  <system.serviceModel>
+    <diagnostics>
+      <messageLogging maxMessagesToLog="100" logEntireMessage="true" logMessagesAtServiceLevel="true" logMalformedMessages="true" logMessagesAtTransportLevel="true" />
+    </diagnostics>
+  </system.serviceModel>
+  <system.diagnostics>
+    <!--<sources>
+      <source name="System.ServiceModel"   switchValue="Information, ActivityTracing"    propagateActivity="true">
+        <listeners>
+          <add name="console" />
+        </listeners>
+      </source>
+    </sources>-->
+    <sharedListeners>
+      <add name="fileLog" type="System.Diagnostics.TextWriterTraceListener" initializeData="shr.log" />
+      <add name="console" type="System.Diagnostics.ConsoleTraceListener" />
+      <!--<add name="xmlLog" type="System.Diagnostics.XmlWriterTraceListener" initializeData="shr.log.svclog" >
+        <filter type="System.Diagnostics.EventTypeFilter" initializeData="Information, Warning, Error"/>
+      </add>-->
+    </sharedListeners>
+    <trace autoflush="true">
+      <listeners>
+        <add name="fileLog" />
+        <!--<add name="console" />-->
+      </listeners>
+    </trace>
+  </system.diagnostics>
+  <!-- Service Core Configuration -->
+  <marc.hi.ehrs.svc.core>
+    <system>
+      <device id="" name="" />
+    </system>
+    <!-- Custodial information for records -->
+    <custodianship>
+      <name></name>
+      <!-- Identifies the domain under which identifiers are reported from this registry -->
+      <id domain="" value="" />
+    </custodianship>
+    <!-- Realm that the persistence engine is running within -->
+    <jurisdiction>
+      <name></name>
+      <id domain="" value="" />
+      <!-- The next three lines identify the realm (roots) that should be
+      returned in messages when communicating with external entities-->
+      <clientExport domain="" />
+      <providerExport domain="" />
+      <sdlExport domain="" />
+      <defaultLanguageCode code="en-CA" />
+    </jurisdiction>
+    <registeredOids>
+      <add name="PE_PHN" oid="2.16.840.1.113883.4.13" desc="PEI PHN" />
+      <add name="MB_PHN" oid="2.16.840.1.113883.4.12" desc="Manitoba PHN" />
+      <add name="SNOMEDCT" oid="2.16.840.1.113883.6.96" desc="SNOMED Clinical Terms" />
+      <add name="LOINC" oid="2.16.840.1.113883.6.1" desc="Logical Observation Identifiers Names and Codes" />
+      <add name="ICD10CA" oid="2.16.840.1.113883.11.19436" desc="ICD10 Canadian Codes" />
+      <add name="ICD10" oid="2.16.840.1.113883.6.3" desc="International Classification of Diseases version 10" />
+      <add name="ICD9" oid="2.16.840.1.113883.6.2" desc="Internaional Classification of Diseases version 9" />
+      <add name="ISO639-1" oid="2.16.840.1.113883.6.99" desc="ISO Codes for Country portion of locale" />
+      <add name="ISO639-2" oid="2.16.840.1.113883.6.100" desc="ISO Codes for Language portion of locale" />
+      <add name="ISO639" oid="2.16.840.1.113883.6.99" desc="Used internally to identify a locale" />
+      <add name="UCUM" oid="2.16.840.1.113883.6.8" desc="Uniform Codes for Units of Measure" />
+      <!-- Shared Health Record OIDS -->
+      <add name="SHR_DOC_SCT_ID" oid="1.2.3.4.5.1" desc="Shared Health Record Document Section ID" />
+      <add name="SHR_HSR_ID" oid="1.2.3.4.5.2" desc="Shared Health Record Health Service Event ID" />
+      <add name="SHR_CID" oid="1.2.3.4.5.3" desc="Shared Health Record Internal Client Identifier SHRID" />
+      <add name="SHR_PID" oid="1.2.3.4.5.4" desc="Shared Health Record Internal Provider Identifier SHRID" />
+      <add name="SHR_LID" oid="1.2.3.4.5.5" desc="Shared Health Record Internal Location Identifier SHRID" />
+      <add name="SHR_HSR_VRSN_ID" oid="1.2.3.4.5.6" desc="Shared Health Record Health Services Event Version Identifier SHRID" />
+      <add name="SHR_NOTE_ID" oid="1.2.3.4.5.7" desc="Shared Health Record Annotation ID" />
+    </registeredOids>
+    <serviceAssemblies>
+      <!--<add assembly="Npgsql.dll"/>-->
+      <add assembly="MARC.HI.EHRS.SVC.Core.dll" />
+      <add assembly="MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll" />
+      <add assembly="MARC.HI.EHRS.SVC.Messaging.Everest.dll" />
+      <add assembly="MARC.HI.EHRS.SVC.Terminology.dll" />
+      <add assembly="MARC.HI.EHRS.SVC.Auditing.dll" />
+    </serviceAssemblies>
+    <serviceProviders>
+      <add type="MARC.HI.EHRS.SVC.Terminology.CTS12.CtsTerminologyResolver, MARC.HI.EHRS.SVC.Terminology, Version=1.0.0.0" />
+      <add type="MARC.HI.EHRS.SVC.Messaging.Everest.MessageHandler, MARC.HI.EHRS.SVC.Messaging.Everest, Version=1.0.0.0" />
+      <add type="MARC.HI.EHRS.SVC.Messaging.Persistence.Data.DatabaseMessagePersister, MARC.HI.EHRS.SVC.Messaging.Persistence.Data, Version=1.0.0.0" />
+      <add type="MARC.HI.EHRS.SVC.Auditing.DummyAuditService, MARC.HI.EHRS.SVC.Auditing, Version=1.0.0.0" />
+    </serviceProviders>
+  </marc.hi.ehrs.svc.core>
+  <!-- Messaging Persistence -->
+  <marc.hi.ehrs.svc.messaging.persistence>
+    <connectionManager connection="PSQL" />
+  </marc.hi.ehrs.svc.messaging.persistence>
+  <!-- Shared Health Record Persistence -->
+  <marc.hi.ehrs.shr.persistence.data>
+    <connectionManager connection="PSQL">
+      <!-- 
+      Be Very Careful when setting this, make sure to balance your database 
+      server with the amount of connections that can be created
+      -->
+      <poolControl initialSize="10" maxSize="100" poolCycle="5000" />
+    </connectionManager>
+  </marc.hi.ehrs.shr.persistence.data>
+  <marc.hi.ehrs.svc.terminology>
+    <cts messageRuntimeUrl="http://hdd.marc-hi.ca/ctsservice/messageruntime.asmx" />
+  </marc.hi.ehrs.svc.terminology>
+  <!-- Everest Messaging Component Configuration -->
+  <marc.hi.ehrs.svc.messaging.everest>
+
+  </marc.hi.ehrs.svc.messaging.everest>
+</configuration>

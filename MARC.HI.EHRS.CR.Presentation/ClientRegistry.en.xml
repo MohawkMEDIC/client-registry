@@ -1,0 +1,27 @@
+﻿<locale name="en" xmlns="urn:marc-hi:ca/localization"> 
+  
+  <!-- MESSAGE VALIDATION ERRORS AND WARNINGS -->
+
+  <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
+  <string name="DTPE000">General Data Translation / Persistence Error</string>
+  <string name="DTPE001">DTPE001 : Persistence of event failed</string>
+  
+  <!-- DATA ISSUES -->
+  <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
+  <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
+  
+  <!-- PRIVACY AND SECURITY ISSUES -->
+  <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
+  
+  <!-- DSS ISSUES -->
+  <string name="DSCF000">DSCF000 : General Decision Support Constraint Failure</string>
+
+  <!-- Subscription -->
+  <string name="SBSI001">Subscription</string>
+  <string name="SBSI002">New notifications</string>
+  <string name="SBSI003">All notifications</string>
+  <string name="SBSI004">In order to view this content you must execute the appropriate GET against the SHR</string>
+  <string name="SBSE001">SBSE001 : No subscription could be found that matches this criteria</string>
+  <string name="SBSE001.a">SBSE001.a : Please ensure appropriate criteria have been issued to this service</string>
+
+</locale>
