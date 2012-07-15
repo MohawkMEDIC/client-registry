@@ -65,6 +65,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MARC.Everest">
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Connectors.WCF">
+      <HintPath>..\Solution Items\MARC.Everest.Connectors.WCF.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.Datatypes.R1">
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.ITS1">
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.ITS1.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.CA.R020402">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.QM.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.QM.Core.dll</HintPath>
     </Reference>
@@ -93,6 +108,9 @@
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Messaging.Everest">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.Multi">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Multi.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Messaging.Persistence.Data">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll</HintPath>
@@ -147,7 +165,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config.blank" />
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="ClientRegistry.en.xml">

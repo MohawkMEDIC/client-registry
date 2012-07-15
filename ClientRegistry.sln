@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99488588-6EB6-4649-810F-BD85ED9BEFE6}"
 	ProjectSection(SolutionItems) = preProject
+		Solution Items\MARC.Everest.Connectors.WCF.dll = Solution Items\MARC.Everest.Connectors.WCF.dll
+		Solution Items\MARC.Everest.dll = Solution Items\MARC.Everest.dll
+		Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll = Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll
+		Solution Items\MARC.Everest.Formatters.XML.ITS1.dll = Solution Items\MARC.Everest.Formatters.XML.ITS1.dll
+		Solution Items\MARC.Everest.RMIM.CA.R020402.dll = Solution Items\MARC.Everest.RMIM.CA.R020402.dll
 		Solution Items\MARC.HI.EHRS.QM.Core.dll = Solution Items\MARC.HI.EHRS.QM.Core.dll
 		Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll
 		Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll = Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll
@@ -14,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll = Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll
 		Solution Items\MARC.HI.EHRS.SVC.Localization.dll = Solution Items\MARC.HI.EHRS.SVC.Localization.dll
 		Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll
+		Solution Items\MARC.HI.EHRS.SVC.Messaging.Multi.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Multi.dll
 		Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll
 		Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll = Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll
 		Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.pdb = Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.pdb
@@ -43,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{051B3D76-161
 		Solution Items\SQL\POSTGRECR-FX.sql = Solution Items\SQL\POSTGRECR-FX.sql
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.Everest", "MARC.HI.EHRS.CR.Messaging.Everest\MARC.HI.EHRS.CR.Messaging.Everest.csproj", "{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,12 +79,19 @@ Global
 		{58EB3E63-0EA1-4A92-8E4C-076744AF417E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58EB3E63-0EA1-4A92-8E4C-076744AF417E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{58EB3E63-0EA1-4A92-8E4C-076744AF417E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{051B3D76-1618-47EF-9F13-02D9FF6F15FA} = {99488588-6EB6-4649-810F-BD85ED9BEFE6}
+		{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E} = {3F8F83E2-E927-4FB2-9047-CBEEA5854E29}
 		{AA9D22EE-6CB8-440E-A817-08C2308C2758} = {03C55E73-5181-4D55-9FC9-A0844DFF431A}
 		{58EB3E63-0EA1-4A92-8E4C-076744AF417E} = {03C55E73-5181-4D55-9FC9-A0844DFF431A}
 		{6C5C870F-0C4F-403D-87E0-7EA798F772D6} = {8720C167-4F09-42AC-83E8-258ED6B90FBD}

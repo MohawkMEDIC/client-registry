@@ -1,7 +1,35 @@
 ﻿<locale name="en" xmlns="urn:marc-hi:ca/localization"> 
   
   <!-- MESSAGE VALIDATION ERRORS AND WARNINGS -->
-
+  <string name="MSGE000">MSGE000 : General Message validation &amp; translation Error</string>
+  <string name="MSGE001">MSGE001 : Unable to determine effective time of the event</string>
+  <string name="MSGE002">MSGE002 : Missing languageCode, assuming eng</string>
+  <string name="MSGE003">MSGE003 : Can't determine the primary subject of this action</string>
+  <string name="MSGE004">MSGE004 : Can't determine the author of this action</string>
+  <string name="MSGE005">MSGE005 : Missing authored time for the event</string>
+  <string name="MSGE006">MSGE006 : Author must be an Organization or Healthcare Worker</string>
+  <string name="MSGW001">MSGW001 : Data enterer must either be an Organization or Healthcare Worker, information will be ignored</string>
+  <string name="MSGW002">MSGW002 : Couldn't process data enterer, information will be ignored</string>
+  <string name="MSGE007">MSGE007 : Couldn't process responsible party entry due to validation errors</string>
+  <string name="MSGW003">MSGW003 : Couldn't process occurence location, information will be ingored</string>
+  <string name="MSGW004">MSGW004 : Couldn't process data entry location, information will be ignored</string>
+  <string name="MSGE008">MSGE008 : Cannot determine the effect time for the subject of this message, you can set one directly or use ContextConduction</string>
+  <string name="MSGE009">MSGE009 : Don't understand status code</string>
+  <string name="MSGE00A">MSGE00A : Cannot process invalid message</string>
+  <string name="MSGE00B">MSGE00B : Registry record must have a custodian</string>
+  <string name="MSGW005">MSGW005 : Uncertainty is not stored in this software product and will be ignored</string>
+  <string name="MSGE00C">MSGE00C : Unsupported trigger event code</string>
+  <string name="MSGE00D">MSGE00D : Cannot determine primary identifier of the custodial device</string>
+  <string name="MSGE00E">MSGE00E : Cannot determine jurisdiction name of the custodial device</string>
+  <string name="MSGE00F">MSGE00F : Cannot determine the assigned repository name of the custodial device</string>
+  <string name="MSGE010">MSGE010 : StatusCode for Role must come from RoleStatus</string>
+  <string name="MSGE011">MSGE011 : "Normal" state is a pseudo state for RoleStatus, please use Active or Pending instead</string>
+  <string name="MSGW005">MSGW005 : Effective time for role is missing, assuming time is effective immediately</string>
+  <string name="MSGE012">MSGE012 : Registration event missing identified entity</string>
+  <string name="MSGW006">MSGW006 : Deceased indicator is populated based on Deceased time in this registry and will be ignored. Please populate the deceased time property instead</string>
+  <string name="MSGW007">MSGW007 : Multiple birth indicator is populated based on Multiple birth order in this registry and will be ignored. Please populate the multiple birth order property instead</string>
+  <string name="MSGE04B">MSGE04B : Langauge code must come from either ISO 639-3 of ISO 639-1 code system</string>
+  <string name="MSGE04C">MSGE04C : Could not find a valid translation from the supplied language code system ISO 639-3 to ISO 639-1</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

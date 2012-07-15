@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MARC.HI.EHRS.CR.Messaging.Everest</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Messaging.Everest</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MARC.Everest">
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.CA.R020402">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Auditing">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.ClientIdentity">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.DecisionSupport">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.HealthWorkerIdentity">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Localization">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.Everest">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Terminology">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ComponentUtil\ComponentUtil.Datatypes.cs" />
+    <Compile Include="ComponentUtil\ComponentUtil.Messages.cs" />
+    <Compile Include="DataUtil.cs" />
+    <Compile Include="DeComponentUtil\DeComponentUtil.cs" />
+    <Compile Include="IQueryResponseFactory.cs" />
+    <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
+    <Compile Include="MessageReceiver\CA\ComponentUtil.cs" />
+    <Compile Include="MessageReceiver\CA\NotSupportedMessageReceiver.cs" />
+    <Compile Include="MessageUtil.cs" />
+    <Compile Include="PersistenceResultDetail.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResultDetailClasses.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
