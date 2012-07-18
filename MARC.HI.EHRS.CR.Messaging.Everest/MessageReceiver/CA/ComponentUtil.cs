@@ -31,6 +31,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101001CA.IdentifiedEntity>(controlActEvent, dtls);
             var subject = controlActEvent.Subject.RegistrationRequest;
 
+            retVal.EventClassifier = RegistrationEventType.Register;
+            retVal.EventType = new CodeValue("REG");
+            retVal.Status = StatusType.Completed;
+
             // Control act event code
             if (!controlActEvent.Code.Code.Equals(PRPA_IN101201CA.GetTriggerEvent().Code))
             {
@@ -80,10 +84,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Any alternate ids?
             if (regRole.Id != null && !regRole.Id.IsNull)
+            {
+                subjectOf.AlternateIdentifiers = new List<DomainIdentifier>();
                 foreach (var ii in regRole.Id)
-                    if(!ii.IsNull)
+                    if (!ii.IsNull)
                         subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
-            
+
+            }
+
             // Status code
             if (regRole.StatusCode != null && !regRole.StatusCode.IsNull)
                 subjectOf.Status = ConvertStatusCode(regRole.StatusCode, dtls);
@@ -199,7 +207,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 subjectOf.Language = new List<PersonLanguage>();
                 foreach (var lang in ident.LanguageCommunication)
                 {
-                    if (lang.NullFlavor != null) continue;
+                    if (lang == null || lang.NullFlavor != null) continue;
 
                     PersonLanguage pl = new PersonLanguage();
 
@@ -234,6 +242,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Personal relationship
             // TODO: 
+
+            retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
+                subjectOf.AlternateIdentifiers);
             // Error?
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 retVal = null;

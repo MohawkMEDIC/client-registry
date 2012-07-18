@@ -172,6 +172,7 @@
   <ItemGroup>
     <Content Include="ClientRegistry.en.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="SHR.ico" />
   </ItemGroup>

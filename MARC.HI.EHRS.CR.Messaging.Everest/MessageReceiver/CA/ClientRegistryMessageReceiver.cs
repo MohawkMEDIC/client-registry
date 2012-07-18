@@ -77,7 +77,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             {
 
                 if (!isValid)
-                    throw new MessageValidationException(locale.GetString("MSE00A"), receivedMessage.Structure);
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // set the URI
                 request.Receiver.Telecom = e.ReceiveEndpoint.ToString();
@@ -87,6 +87,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 DeComponentUtil deCompUtil = new DeComponentUtil();
                 compUtil.Context = deCompUtil.Context = this.Context;
                 RegistrationEvent components = compUtil.CreateComponents(request.controlActEvent, dtls);
+
+                // Componentization fail?
+                if(components == null)
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store the message into the data persistence 
                 DataUtil dataUtil = new DataUtil() { Context = this.Context };

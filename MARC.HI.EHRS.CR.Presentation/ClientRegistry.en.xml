@@ -17,7 +17,6 @@
   <string name="MSGE009">MSGE009 : Don't understand status code</string>
   <string name="MSGE00A">MSGE00A : Cannot process invalid message</string>
   <string name="MSGE00B">MSGE00B : Registry record must have a custodian</string>
-  <string name="MSGW005">MSGW005 : Uncertainty is not stored in this software product and will be ignored</string>
   <string name="MSGE00C">MSGE00C : Unsupported trigger event code</string>
   <string name="MSGE00D">MSGE00D : Cannot determine primary identifier of the custodial device</string>
   <string name="MSGE00E">MSGE00E : Cannot determine jurisdiction name of the custodial device</string>
