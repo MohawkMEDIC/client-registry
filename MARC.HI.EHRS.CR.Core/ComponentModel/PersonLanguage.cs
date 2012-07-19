@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
@@ -23,6 +24,12 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     [XmlType("PersonLanguage", Namespace = "urn:marc-hi:ca/cr")]
     public class PersonLanguage
     {
+
+        /// <summary>
+        /// Gets or sets the update mode type
+        /// </summary>
+        [XmlAttribute("updateMode")]
+        public UpdateModeType UpdateMode { get; set; }
 
         /// <summary>
         /// The type of language

@@ -97,7 +97,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 subjectOf.Status = ConvertStatusCode(regRole.StatusCode, dtls);
 
             // Effective time
-            if ((regRole.EffectiveTime == null || regRole.EffectiveTime.NullFlavor != null) && !(bool)controlActEvent.Subject.ContextConductionInd ||
+            if (subjectOf.Status == StatusType.Active || (regRole.EffectiveTime == null || regRole.EffectiveTime.NullFlavor != null) && !(bool)controlActEvent.Subject.ContextConductionInd ||
                 retVal.EffectiveTime == null && (bool)controlActEvent.Subject.ContextConductionInd)
             {
                 dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW005"), null));
@@ -147,21 +147,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     // Store usable period as an extension as it is not storable here
                     if (tel.UseablePeriod != null && !tel.UseablePeriod.IsNull)
                     {
-                        if (tel.UseablePeriod.Hull is IVL<TS>)
-                            subjectOf.TelecomAddresses.Last().UsablePeriod = CreateTimestamp(tel.UseablePeriod.Hull as IVL<TS>, dtls);
-                        else
-                            subjectOf.Add(new ExtendedAttribute()
-                            {
-                                PropertyPath = String.Format("TelecomAddresses[{0}]", subjectOf.TelecomAddresses.Count - 1),
-                                Value = tel.UseablePeriod.Hull,
-                                Name = "UsablePeriod"
-                            });
+                        subjectOf.Add(new ExtendedAttribute()
+                        {
+                            PropertyPath = String.Format("TelecomAddresses[{0}]", subjectOf.TelecomAddresses.Count - 1),
+                            Value = tel.UseablePeriod.Hull,
+                            Name = "UsablePeriod"
+                        });
                     }
                 }
             }
 
             // Gender
-            if (ident.AdministrativeGenderCode != null && ident.AdministrativeGenderCode.IsNull)
+            if (ident.AdministrativeGenderCode != null && !ident.AdministrativeGenderCode.IsNull)
                 subjectOf.GenderCode = Util.ToWireFormat(ident.AdministrativeGenderCode);
 
             // Birth

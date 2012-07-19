@@ -634,7 +634,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     audit.Actors.Add(new AuditActorData()
                     {
                         ActorRoleCode = new List<string>(new string[] { comp.Site.Name }),
-                        UserIdentifier = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("SHR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
+                        UserIdentifier = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
                         UserName = (comp as HealthcareParticipant).LegalName.ToString(),
                         UserIsRequestor = (comp.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.AuthorOf,
 
@@ -642,7 +642,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     audit.AuditableObjects.Add(new AuditableObject()
                     {
                         IDTypeCode = AuditableObjectIdType.UserIdentifier,
-                        ObjectId = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("SHR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
+                        ObjectId = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
                         Role = AuditableObjectRole.Provider,
                         Type = AuditableObjectType.Person,
                         LifecycleType = (comp.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.AuthorOf ? lifeCycle.Value : default(AuditableObjectLifecycle)

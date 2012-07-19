@@ -60,10 +60,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
     <Compile Include="Configuration\ValidationSection.cs" />
     <Compile Include="Connection\ConnectionManager.cs" />
+    <Compile Include="DatabaseHealthcareWorkerIdentityService.cs" />
+    <Compile Include="DatabasePersistenceService.cs" />
+    <Compile Include="DbUtil.cs" />
+    <Compile Include="Persisters\ChangeSummaryPersister.cs" />
+    <Compile Include="Persisters\HealthcareParticipantPersister.cs" />
+    <Compile Include="Persisters\HealthServiceRecordComponentRefPersister.cs" />
+    <Compile Include="Persisters\MaskingIndicatorPersister.cs" />
+    <Compile Include="Persisters\PersonalRelationshipPersister.cs" />
+    <Compile Include="Persisters\PersonPersister.cs" />
+    <Compile Include="Persisters\RegistrationEventRecordPersister.cs" />
+    <Compile Include="Persisters\IComponentPersister.cs" />
+    <Compile Include="Persisters\RepositoryDevicePersister.cs" />
+    <Compile Include="Persisters\ServiceDeliveryLocationPersister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryUtil.cs" />
+    <Compile Include="Registers\IComponentRegister.cs" />
+    <Compile Include="ClientRegistryOids.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

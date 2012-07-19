@@ -32,11 +32,12 @@
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
-  
+  <string name="DTPE002">DTPE002 : Cannot update an entity that does not have an identifier</string>
+  <string name="DTPE003">DTPE003 : Persistence of entity failed</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
-  
+  <string name="DBCF002">DBCF002 : Masking indicator must be a member of a Person container</string>
   <!-- PRIVACY AND SECURITY ISSUES -->
   <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
   

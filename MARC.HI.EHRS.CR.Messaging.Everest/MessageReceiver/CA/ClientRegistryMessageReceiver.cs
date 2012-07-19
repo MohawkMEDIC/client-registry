@@ -105,7 +105,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     var regReq = request.controlActEvent.Subject.RegistrationRequest.Subject.registeredRole;
                     if(regReq.Id == null)
                         regReq.Id = new SET<II>(II.Comparator);
-                    regReq.Id.Add(deCompUtil.CreateII(vdi, dtls));
+                    regReq.Id.Add(new II(configService.OidRegistrar.GetOid("CR_CID").Oid, (components.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person).Id.ToString()));
 
                     // Create the response
                     PRPA_IN101202CA response = new PRPA_IN101202CA

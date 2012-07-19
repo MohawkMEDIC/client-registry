@@ -1,0 +1,5 @@
+﻿The following extensions are used in this persister:
+
+Name			Applies To						Value
+UsablePeriod	TelecommunicationsAddress		ISetComponent
+
