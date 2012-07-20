@@ -38,6 +38,8 @@
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
   <string name="DBCF002">DBCF002 : Masking indicator must be a member of a Person container</string>
+  <string name="DBCF003">DBCF003 : Cannot link personal relationship with null container</string>
+  <string name="DBCF004">DBCF004 : Data consistency issue, cannot determine client target for update</string>
   <!-- PRIVACY AND SECURITY ISSUES -->
   <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
   

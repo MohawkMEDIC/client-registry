@@ -57,5 +57,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <param name="role">The role that the component is expected to take within the containerff</param>
         IComponent DePersist(IDbConnection conn, decimal identifier, IContainer container, HealthServiceRecordSiteRoleType? role, bool loadFast);
 
+
     }
 }

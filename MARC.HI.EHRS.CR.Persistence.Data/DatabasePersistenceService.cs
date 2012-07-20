@@ -38,7 +38,6 @@ using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
 using MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister;
-using MARC.HI.EHRS.CR.Persistence.Data.ComponentRegister;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -75,11 +74,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         private static Dictionary<Type, IComponentPersister> m_persisters;
 
         /// <summary>
-        /// A list of registers
-        /// </summary>
-        private static Dictionary<Type, IComponentRegister> m_registers;
-
-        /// <summary>
         /// Connection manager
         /// </summary>
         internal static ConnectionManager ConnectionManager { get { return m_configuration.ConnectionManager; } }
@@ -104,27 +98,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         }
 
         /// <summary>
-        /// Get the register
-        /// </summary>
-        internal static IComponentRegister GetRegister(Type forType)
-        {
-            IComponentRegister pRegister = null;
-            if (m_registers.TryGetValue(forType, out pRegister))
-                return pRegister;
-            #if DEBUG
-            Trace.TraceError("Can't find register for '{0}'", forType);
-            #endif
-            return null;
-        }
-
-        /// <summary>
         /// Static constructor for this persistence service
         /// </summary>
         static DatabasePersistenceService()
         {
             m_configuration = ConfigurationManager.GetSection("marc.hi.ehrs.cr.persistence.data") as ConfigurationSectionHandler;
             m_persisters = new Dictionary<Type, IComponentPersister>();
-            m_registers = new Dictionary<Type, IComponentRegister>();
 
             // Verify that the database can be used
             foreach (var cm in new ConnectionManager[] { m_configuration.ConnectionManager, m_configuration.ReadonlyConnectionManager })
@@ -146,8 +125,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
 
             // Scan this assembly for helpers
-            Type[] persistenceTypes = Array.FindAll<Type>(typeof(DatabasePersistenceService).Assembly.GetTypes(), o => o.GetInterface(typeof(IComponentPersister).FullName) != null),
-                registerTypes = Array.FindAll<Type>(typeof(DatabasePersistenceService).Assembly.GetTypes(), o => o.GetInterface(typeof(IComponentRegister).FullName) != null);
+            Type[] persistenceTypes = Array.FindAll<Type>(typeof(DatabasePersistenceService).Assembly.GetTypes(), o => o.GetInterface(typeof(IComponentPersister).FullName) != null);
+
 
             // Persistence helpers
             foreach (var t in persistenceTypes)
@@ -157,13 +136,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 m_persisters.Add(instance.HandlesComponent, instance);
             }
 
-            // Register helpers
-            foreach(var t in registerTypes)
-            {
-                ConstructorInfo ci = t.GetConstructor(Type.EmptyTypes);
-                IComponentRegister instance = ci.Invoke(null) as IComponentRegister;
-                m_registers.Add(instance.HandlesType, instance);
-            }
+            
         }
 
 
@@ -251,8 +224,29 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                     decimal tryDec = default(decimal);
 
-                    if (!Decimal.TryParse(hsrEvent.AlternateIdentifier.Identifier, out tryDec))
+                    // Is there no event identifier ?
+                    if(hsrEvent.AlternateIdentifier != null && !Decimal.TryParse(hsrEvent.AlternateIdentifier.Identifier, out tryDec))
                         throw new ArgumentException(String.Format("The identifier '{0}' is not a valid identifier for this repository", hsrEvent.AlternateIdentifier.Identifier));
+                    else if (hsrEvent.AlternateIdentifier == null) // The alternate identifier is null ... so we need to look up the registration event to version ... interesting....
+                    {
+                        // Create a query based on the person 
+                        Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                        subject = new Person() {
+                            AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers)
+                        };
+                        RegistrationEvent query = new RegistrationEvent();
+                        query.Status = StatusType.Active;
+                        query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                        var tRecordIds = QueryRecord(query);
+                        if (tRecordIds.Length != 1)
+                            throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF004"));
+                        else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.EVENT_OID).Oid)
+                            throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF005"));
+
+                        tryDec = Decimal.Parse(tRecordIds[0].Identifier);
+                        hsrEvent.AlternateIdentifier = tRecordIds[0];
+                    }
+
 
                     // Validate and duplicate the components that are to be loaded as part of the new version
                     var oldHsrEvent = GetContainer(hsrEvent.AlternateIdentifier, true) as RegistrationEvent; // Get the old container
@@ -412,16 +406,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (!(queryParameters is RegistrationEvent))
                 throw new ArgumentException("Must inherit from HealthServiceRecordEvent", "queryParameters");
 
-            // Build the filter expressions
+            // Build the filter expressions based on what is in the person object
 
-            string queryFilter = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, Context));
+
             // First we want to find the appropriate helper
             IDbConnection conn = m_configuration.ReadonlyConnectionManager.GetConnection();
             try
             {
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = queryFilter;
+                    //cmd.CommandText = queryFilter;
                     cmd.CommandType = CommandType.Text;
                     using (IDataReader rdr = cmd.ExecuteReader())
                     {

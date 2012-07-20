@@ -100,5 +100,6 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         [XmlElement("race")]
         public List<CodeValue> Race { get; set; }
 
+
     }
 }

@@ -670,5 +670,16 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         }
 
 
+
+
+        internal MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.Person CreatePerson(IComponent verifiedPerson, List<IResultDetail> dtls)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity CreateIdentifiedEntity(RegistrationEvent verified, List<IResultDetail> dtls)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

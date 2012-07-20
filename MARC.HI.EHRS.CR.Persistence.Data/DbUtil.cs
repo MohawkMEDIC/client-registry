@@ -750,55 +750,54 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             StringBuilder retVal = new StringBuilder();
 
             // Find the query persister for our current component
-            var register = DatabasePersistenceService.GetRegister(queryComponent.GetType());
-            if (register == null)
-                return "";
+            ////var register = DatabasePersistenceService.GetRegister(queryComponent.GetType());
+            //if (register == null)
+            //    return "";
 
+            //// Set the host context
+            //if (register is IUsesHostContext)
+            //    (register as IUsesHostContext).Context = context;
 
-            // Set the host context
-            if (register is IUsesHostContext)
-                (register as IUsesHostContext).Context = context;
+            //// Build the intersect statement
+            //retVal.Append(register.BuildFilterExpression(queryComponent));
+            //// Container needs components to be queried
+            //if(queryComponent is HealthServiceRecordContainer)
+            //{
+            //    var queryContainer = queryComponent as HealthServiceRecordContainer;
+            //    if (queryContainer.Components.Count > 0)
+            //    {
+            //        retVal.Append(" INTERSECT (");
+            //        int ccomp = 0;
+            //        queryContainer.SortComponentsByRole();
+            //        foreach (HealthServiceRecordComponent comp in queryContainer.Components)
+            //        {
+            //            string verb = "INTERSECT";
+            //            if (queryContainer.FindAllComponents((comp.Site as HealthServiceRecordSite).SiteRoleType).Count > 1)
+            //                verb = "UNION";
 
-            // Build the intersect statement
-            retVal.Append(register.BuildFilterExpression(queryComponent));
-            // Container needs components to be queried
-            if(queryComponent is HealthServiceRecordContainer)
-            {
-                var queryContainer = queryComponent as HealthServiceRecordContainer;
-                if (queryContainer.Components.Count > 0)
-                {
-                    retVal.Append(" INTERSECT (");
-                    int ccomp = 0;
-                    queryContainer.SortComponentsByRole();
-                    foreach (HealthServiceRecordComponent comp in queryContainer.Components)
-                    {
-                        string verb = "INTERSECT";
-                        if (queryContainer.FindAllComponents((comp.Site as HealthServiceRecordSite).SiteRoleType).Count > 1)
-                            verb = "UNION";
+            //            if (ccomp++ < queryContainer.Components.Count)
+            //            {
+            //                string subFilter = BuildQueryFilter(comp, context);
+            //                if (!String.IsNullOrEmpty(subFilter)) retVal.AppendFormat(" {0} {1} ", subFilter, verb);
+            //            }
+            //            else
+            //            {
+            //                string subFilter = BuildQueryFilter(comp, context);
+            //                if (!String.IsNullOrEmpty(subFilter)) retVal.Append(subFilter);
+            //            }
+            //        }
 
-                        if (ccomp++ < queryContainer.Components.Count)
-                        {
-                            string subFilter = BuildQueryFilter(comp, context);
-                            if (!String.IsNullOrEmpty(subFilter)) retVal.AppendFormat(" {0} {1} ", subFilter, verb);
-                        }
-                        else
-                        {
-                            string subFilter = BuildQueryFilter(comp, context);
-                            if (!String.IsNullOrEmpty(subFilter)) retVal.Append(subFilter);
-                        }
-                    }
+            //        // Clean up 
+            //        if (retVal.ToString().EndsWith(" INTERSECT "))
+            //            retVal.Remove(retVal.Length - 11, 11);
 
-                    // Clean up 
-                    if (retVal.ToString().EndsWith(" INTERSECT "))
-                        retVal.Remove(retVal.Length - 11, 11);
+            //        retVal.Append(")");
 
-                    retVal.Append(")");
-
-                    // Clean Up
-                    if (retVal.ToString().EndsWith("INTERSECT ()"))
-                        retVal.Remove(retVal.Length - 12, 12);
-                }
-            }
+            //        // Clean Up
+            //        if (retVal.ToString().EndsWith("INTERSECT ()"))
+            //            retVal.Remove(retVal.Length - 12, 12);
+            //    }
+            //}
             return retVal.ToString();
         }
         

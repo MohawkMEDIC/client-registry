@@ -81,7 +81,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "reg_vrsn_id_in", DbType.Decimal, regEvt.VersionIdentifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.String, psn.Status.ToString()));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
 
                 decimal? religionCode = null;
@@ -161,6 +161,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonLanguage(IDbConnection conn, IDbTransaction tx, Person psn, PersonLanguage lang)
         {
+            if (lang == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (lang.UpdateMode == UpdateModeType.Remove || lang.UpdateMode == UpdateModeType.Update || lang.UpdateMode == UpdateModeType.AddOrUpdate)
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -196,6 +198,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonRace(IDbConnection conn, IDbTransaction tx, Person psn, CodeValue race)
         {
+            if (race == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (race.UpdateMode == UpdateModeType.Remove || race.UpdateMode == UpdateModeType.Update || race.UpdateMode == UpdateModeType.AddOrUpdate)
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -232,6 +236,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonOtherIdentifiers(IDbConnection conn, IDbTransaction tx, Person psn, KeyValuePair<CodeValue, DomainIdentifier> othId)
         {
+            if (othId.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>))) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (othId.Value.UpdateMode == UpdateModeType.Remove || othId.Value.UpdateMode == UpdateModeType.Update || othId.Value.UpdateMode == UpdateModeType.AddOrUpdate)
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -271,6 +277,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonAlternateIdentifier(IDbConnection conn, IDbTransaction tx, Person psn, DomainIdentifier altId)
         {
+            if (altId == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (altId.UpdateMode == UpdateModeType.Remove || altId.UpdateMode == UpdateModeType.Update || altId.UpdateMode == UpdateModeType.AddOrUpdate)
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -306,6 +314,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonTelecom(IDbConnection conn, IDbTransaction tx, Person psn, TelecommunicationsAddress tel)
         {
+            if (tel == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (tel.UpdateMode == UpdateModeType.Remove || tel.UpdateMode == UpdateModeType.Update || tel.UpdateMode == UpdateModeType.AddOrUpdate)
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -340,6 +350,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonNames(IDbConnection conn, IDbTransaction tx, Person psn, NameSet name)
         {
+            if (name == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (name.UpdateMode == UpdateModeType.Remove || name.UpdateMode == UpdateModeType.Update || name.UpdateMode == UpdateModeType.AddOrUpdate && name.Key != default(decimal))
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -372,6 +384,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonAddress(IDbConnection conn, IDbTransaction tx, Person psn, AddressSet addr)
         {
+            if (addr == null) return; // skip
+
             // Update or add or update? we first have to obsolete the existing
             if (addr.UpdateMode == UpdateModeType.Remove || addr.UpdateMode == UpdateModeType.Update || addr.UpdateMode == UpdateModeType.AddOrUpdate && addr.Key != default(decimal))
                 using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
@@ -404,6 +418,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void CreatePersonVersion(IDbConnection conn, IDbTransaction tx, Person psn)
         {
+            
             // Create the person
             var regEvt = DbUtil.GetRegistrationEvent(psn);
 
