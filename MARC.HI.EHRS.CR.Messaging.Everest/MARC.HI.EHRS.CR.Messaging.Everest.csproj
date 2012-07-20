@@ -38,6 +38,9 @@
     <Reference Include="MARC.Everest.RMIM.CA.R020402">
       <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.Everest.RMIM.UV.NE2008">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.UV.NE2008.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Auditing">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.dll</HintPath>
     </Reference>
@@ -72,7 +75,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -85,6 +87,9 @@
     <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
     <Compile Include="MessageReceiver\CA\ComponentUtil.cs" />
     <Compile Include="MessageReceiver\CA\NotSupportedMessageReceiver.cs" />
+    <Compile Include="MessageReceiver\UV\PdqSupplier.cs" />
+    <Compile Include="MessageReceiver\UV\PixManager.cs" />
+    <Compile Include="MessageReceiver\UV\QueryManager.cs" />
     <Compile Include="MessageUtil.cs" />
     <Compile Include="PersistenceResultDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
