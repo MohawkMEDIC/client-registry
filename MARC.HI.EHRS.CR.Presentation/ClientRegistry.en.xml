@@ -29,6 +29,7 @@
   <string name="MSGW007">MSGW007 : Multiple birth indicator is populated based on Multiple birth order in this registry and will be ignored. Please populate the multiple birth order property instead</string>
   <string name="MSGE04B">MSGE04B : Langauge code must come from either ISO 639-3 of ISO 639-1 code system</string>
   <string name="MSGE04C">MSGE04C : Could not find a valid translation from the supplied language code system ISO 639-3 to ISO 639-1</string>
+  <string name="MSGE04D">MSGE04D : Address use '{0}' is not supported by this registry</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

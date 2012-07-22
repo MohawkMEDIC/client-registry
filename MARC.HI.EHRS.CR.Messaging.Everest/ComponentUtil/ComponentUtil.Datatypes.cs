@@ -383,8 +383,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         public AddressSet CreateAddressSet(AD address, List<IResultDetail> dtls)
         {
             AddressSet retVal = new AddressSet();
-            
-            AddressSet.AddressSetUse internalNameUse = AddressSet.AddressSetUse.Direct;
+
+            AddressSet.AddressSetUse internalNameUse = ConvertAddressUse(address.Use, dtls);
             if (address == null || address.IsNull || address.Use != null && !address.Use.IsEmpty && !m_addressUseMap.TryGetValue(address.Use[0], out internalNameUse))
                 return null;
 
@@ -397,6 +397,52 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     PartType = (AddressPart.AddressPartType)Enum.Parse(typeof(AddressPart.AddressPartType), namePart.Type.ToString())
                 });
 
+            return retVal;
+        }
+
+        /// <summary>
+        /// Convert address uses
+        /// </summary>
+        private AddressSet.AddressSetUse ConvertAddressUse(SET<CS<PostalAddressUse>> uses, List<IResultDetail> dtls)
+        {
+            AddressSet.AddressSetUse retVal = 0;
+            foreach(var use in uses)
+                switch ((PostalAddressUse)use)
+                {
+                    case PostalAddressUse.Direct:
+                        retVal |= AddressSet.AddressSetUse.Direct;
+                        break;
+                    case PostalAddressUse.BadAddress:
+                        retVal |= AddressSet.AddressSetUse.BadAddress;
+                        break;
+                    case PostalAddressUse.HomeAddress:
+                        retVal |= AddressSet.AddressSetUse.HomeAddress;
+                        break;
+                    case PostalAddressUse.PhysicalVisit:
+                        retVal |= AddressSet.AddressSetUse.PhysicalVisit;
+                        break;
+                    case PostalAddressUse.PostalAddress:
+                        retVal |= AddressSet.AddressSetUse.PostalAddress;
+                        break;
+                    case PostalAddressUse.PrimaryHome:
+                        retVal |= AddressSet.AddressSetUse.PrimaryHome;
+                        break;
+                    case PostalAddressUse.Public:
+                        retVal |= AddressSet.AddressSetUse.Public;
+                        break;
+                    case PostalAddressUse.TemporaryAddress:
+                        retVal |= AddressSet.AddressSetUse.TemporaryAddress;
+                            break;
+                    case PostalAddressUse.VacationHome:
+                        retVal |= AddressSet.AddressSetUse.VacationHome;
+                        break;
+                    case PostalAddressUse.WorkPlace:
+                        retVal |= AddressSet.AddressSetUse.WorkPlace;
+                        break;
+                    default:
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(m_localeService.GetString("MSGE04D"), use), null, null));
+                        break;
+                }
             return retVal;
         }
 

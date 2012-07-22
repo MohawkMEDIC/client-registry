@@ -1,0 +1,137 @@
+<PRPA_IN101201CA ITSVersion="XML_1.0" xmlns="urn:hl7-org:v3">
+  <id specializationType="II.TOKEN" root="c4fcd74f-5f87-46f9-9A01-7BD54A914488"/>
+  <creationTime specializationType="TS.FULLDATETIME" value="20110805145710.063-0400"/>
+  <responseModeCode code="I"/>
+  <versionCode code="V3-2008N"/>
+  <interactionId specializationType="II.PUBLIC" root="2.16.840.1.113883.1.18" extension="PRPA_IN101201CA" displayable="true" use="BUS"/>
+  <profileId root="2.16.840.1.113883.2.20.2" extension="R02.04.02"/>
+  <processingCode code="P"/>
+  <processingModeCode code="T"/>
+  <acceptAckCode code="AL"/>
+  <receiver typeCode="RCV">
+    <device classCode="DEV" determinerCode="INSTANCE">
+      <id specializationType="II.BUS" root="1.2.3.4.5.6" extension="OR1" use="BUS"/>
+    </device>
+  </receiver>
+  <sender typeCode="SND">
+    <telecom specializationType="TEL.URI" value="http://anonymous"/>
+    <device classCode="DEV" determinerCode="INSTANCE">
+      <id specializationType="II.BUS" root="1.3.6.1.4.1.33349.3.1.1.20.4" extension="MARC-W1-1" use="BUS"/>
+      <name representation="TXT" mediaType="text/plain" language="en-US">EHRs Facade</name>
+    </device>
+  </sender>
+  <controlActEvent classCode="CACT" moodCode="EVN">
+    <id specializationType="II.BUS" root="2.3.1" extension="4aad2cbf-f9e5-45f6-93d0-b0267878c367" use="BUS"/>
+    <code code="PRPA_TE101201CA" codeSystem="2.16.840.1.113883.1.18"/>
+    <statusCode code="completed"/>
+    <effectiveTime>
+      <low value="20120712"/>
+      <high nullFlavor="NA"/>
+    </effectiveTime>
+    <author typeCode="AUT" contextControlCode="AP">
+      <time specializationType="TS.FULLDATETIME" value="20110805145710.063-0400"/>
+      <assignedEntity1 classCode="ASSIGNED">
+        <id root="1.3.6.1.4.1.33349.3.1.2.1.1" extension="10"/>
+        <assignedPerson classCode="PSN" determinerCode="INSTANCE">
+          <name specializationType="PN.BASIC" use="C">
+            <family partType="FAM">ATTENDING</family>
+            <given partType="GIV">ALLISON</given>
+          </name>
+        </assignedPerson>
+      </assignedEntity1>
+    </author>
+    <location typeCode="LOC" contextControlCode="AP">
+      <serviceDeliveryLocation classCode="SDLOC">
+        <id specializationType="II.PUBLIC" root="2.3.4" extension="1" displayable="true" use="BUS"/>
+        <location classCode="PLC" determinerCode="INSTANCE">
+          <name representation="TXT" mediaType="text/plain" language="en-US">GOOD HEALTH CLINIC</name>
+        </location>
+      </serviceDeliveryLocation>
+    </location>
+    <subject typeCode="SUBJ" contextControlCode="ON" contextConductionInd="true">
+      <registrationRequest classCode="REG" moodCode="RQO">
+        <statusCode code="active"/>
+        <subject typeCode="SBJ" contextControlCode="AN">
+          <identifiedEntity classCode="IDENT">
+            <id root="1.3.6.1.4.1.33349.3.1.2.1.1" extension="14"/>
+            <id root="2.16.840.1.113883.4.59" extension="1029-3049-3405-DX"/>
+            <statusCode code="active"/>
+            <confidentialityCode code="N"/>
+            <identifiedPerson classCode="PSN" determinerCode="INSTANCE">
+              <name use="L">
+                <given>Justin</given>
+                <given>Thomas</given>
+                <family>Fyfe</family>
+              </name>
+              <name use="C">
+                <prefix>Dr.</prefix>
+                <given>Justin</given>
+                <family>Fyfe</family>
+              </name>
+              <telecom use="WP" value="tel:+19055551212"/>
+              <telecom use="WP" value="mailto:justin.fyfe1@mohawkcollege.ca"/>
+              <administrativeGenderCode code="M"/>
+              <birthTime value="19840522"/>
+              <multipleBirthInd value="true"/>
+              <multipleBirthOrderNumber value="1"/>
+              <addr use="WP">
+                <unitID>A108</unitID>
+                <unitType>Office</unitType>
+                <streetAddressLine>135 Fennell Ave W</streetAddressLine>
+                <city>Hamilton</city>
+                <state>Ontario</state>
+                <postalCode>L8K2T2</postalCode>
+              </addr>
+              <addr use="H">
+                <unitID>203</unitID>
+                <unitType>Apt</unitType>
+                <streetAddressLine>123 Main Street West</streetAddressLine>
+                <city>Hamilton</city>
+                <state>Ontario</state>
+                <postalCode>L2N3M4</postalCode>
+              </addr>
+              <asOtherIDs>
+                <id root="2.16.840.1.113883.4.88" extension="30495843-33"/>
+                <code code="DL" codeSystem="2.16.840.1.113883.2.20.3.85"/>
+                <assigningIdOrganization>
+                  <id root="1.3.6.1.4.1.33349.3.1.2.1.1.0" extension="1"/>
+                  <name>Elbonia Drivers Licensing Authority</name>
+                </assigningIdOrganization>
+              </asOtherIDs>
+              <personalRelationship classCode="PRS">
+                <code code="MTH"/>
+                <relationshipHolder classCode="PSN" determinerCode="INSTANCE">
+                  <id root="1.3.6.1.4.1.33349.3.1.2.1.1" extension="2"/>
+                  <name use="L">
+                    <given>Edna</given>
+                    <family>Fyfe</family>
+                  </name>
+                </relationshipHolder>
+              </personalRelationship>
+              <languageCommunication>
+                <languageCode code="eng" codeSystem="2.16.840.1.113883.6.121"  displayName="English"/>
+              </languageCommunication>
+              <languageCommunication>
+                <languageCode code="fra" codeSystem="2.16.840.1.113883.6.121"  displayName="English"/>
+              </languageCommunication>
+              
+            </identifiedPerson>
+            
+          </identifiedEntity>
+          
+        </subject>
+        <custodian typeCode="CST" contextControlCode="AP">
+          <assignedDevice classCode="ASSIGNED">
+            <id specializationType="II.BUS" root="1.3.6.1.4.1.33349.3.1.2.2.3" extension="FAC1" use="BUS"/>
+            <assignedRepository classCode="DEV" determinerCode="INSTANCE">
+              <name representation="TXT" mediaType="text/plain" language="en-US">EHRs Facade</name>
+            </assignedRepository>
+            <representedRepositoryJurisdiction classCode="STATE" determinerCode="INSTANCE">
+              <name representation="TXT" mediaType="text/plain" language="en-US">MARC-HI</name>
+            </representedRepositoryJurisdiction>
+          </assignedDevice>
+        </custodian>
+      </registrationRequest>
+    </subject>
+  </controlActEvent>
+</PRPA_IN101201CA>

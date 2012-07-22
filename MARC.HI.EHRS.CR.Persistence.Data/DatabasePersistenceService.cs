@@ -38,6 +38,7 @@ using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
 using MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister;
+using System.Text;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -240,7 +241,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         var tRecordIds = QueryRecord(query);
                         if (tRecordIds.Length != 1)
                             throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF004"));
-                        else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.EVENT_OID).Oid)
+                        else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
                             throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF005"));
 
                         tryDec = Decimal.Parse(tRecordIds[0].Identifier);
@@ -283,6 +284,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Merge the old and new. Sets the update mode appropriately
                     cp.MergePersons(newRecordTarget, oldRecordTarget);
 
+                    // Next we copy this as a replacement of
+                    hsrEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
+                    hsrEvent.Add(newRecordTarget, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                     // Begin and update
                     tx = conn.BeginTransaction();
 
@@ -406,26 +410,44 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (!(queryParameters is RegistrationEvent))
                 throw new ArgumentException("Must inherit from HealthServiceRecordEvent", "queryParameters");
 
-            // Build the filter expressions based on what is in the person object
+            // Get the subject of the query
+            var subjectOfQuery = (queryParameters as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            if (subjectOfQuery == null)
+                throw new InvalidOperationException();
 
+            // Matching?
+            StringBuilder sb = new StringBuilder("SELECT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_ID IN (");
+            // Identifiers
+            if (subjectOfQuery.AlternateIdentifiers != null)
+                sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
+            if(subjectOfQuery.Names != null)
+                sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names));
 
-            // First we want to find the appropriate helper
+            // TRIM INTERSECT
+            if (sb.ToString().EndsWith("INTERSECT "))
+                sb.Remove(sb.Length - 10, 10);
+            sb.Append(")");
+
+            // Connect to the database
             IDbConnection conn = m_configuration.ReadonlyConnectionManager.GetConnection();
             try
             {
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
-                    //cmd.CommandText = queryFilter;
+
+
+                    cmd.CommandText = sb.ToString();
                     cmd.CommandType = CommandType.Text;
                     using (IDataReader rdr = cmd.ExecuteReader())
                     {
                         // Read all results
                         while (rdr.Read())
                         {
-                            retVal.Add(new VersionedDomainIdentifier()
+                            retVal.Add(new VersionedResultIdentifier()
                             {
                                 Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid,
                                 Identifier = Convert.ToString(rdr["hsr_id"])
+
                             });
                         }
                     }
@@ -436,8 +458,51 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 m_configuration.ConnectionManager.ReleaseConnection(conn);
             }
 
+
             retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
+        }
+
+        /// <summary>
+        /// Build filter for names
+        /// </summary>
+        private string BuildFilterNames(List<NameSet> names)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var nm in names)
+            {
+                // Build the filter
+                StringBuilder filterString = new StringBuilder(),
+                    cmpTypeString = new StringBuilder();
+                foreach (var cmp in nm.Parts)
+                {
+                    filterString.AppendFormat("{0}{1}", cmp.Value, cmp == nm.Parts.Last() ? "" : ",");
+                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
+                }
+                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {2}, 4)",
+                    filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use);
+
+                if (nm != names.Last())
+                    retVal.AppendFormat(" UNION ");
+            }
+            return retVal.ToString();
+        }
+
+
+
+        /// <summary>
+        /// Build filter on identifiers
+        /// </summary>
+        private string BuildFilterIdentifiers(List<DomainIdentifier> identifiers)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var id in identifiers)
+            {
+                retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                if (id != identifiers.Last())
+                    retVal.AppendFormat(" UNION ");
+            }
+            return retVal.ToString();
         }
 
         #endregion

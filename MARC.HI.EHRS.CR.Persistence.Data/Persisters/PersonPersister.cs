@@ -7,6 +7,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.Data;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Diagnostics;
+using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -369,7 +370,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.CommandText = "crt_psn_name_set";
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "name_set_use_in", DbType.String, name.Use));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "name_set_use_in", DbType.Decimal, name.Use));
 
                     // Execute
                     name.Key = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -403,7 +404,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.CommandText = "crt_psn_addr_set";
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "addr_set_use_in", DbType.String, addr.Use));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "addr_set_use_in", DbType.Decimal, (int)addr.Use));
 
                     // Execute
                     addr.Key = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -455,11 +456,290 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         }
 
         /// <summary>
-        /// Get a person from the database
+        /// Get a person's most recent version
         /// </summary>
         internal Person GetPerson(IDbConnection conn, IDbTransaction tx, DomainIdentifier domainIdentifier)
         {
-            return null;
+            return GetPerson(conn, tx, new VersionedDomainIdentifier()
+            {
+                Domain = domainIdentifier.Domain,
+                Identifier = domainIdentifier.Identifier
+            });
+        }
+
+        /// <summary>
+        /// Get a person from the database
+        /// </summary>
+        internal Person GetPerson(IDbConnection conn, IDbTransaction tx, VersionedDomainIdentifier domainIdentifier)
+        {
+
+
+            // Create the command
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                if (domainIdentifier.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
+                {
+                    cmd.CommandText = "get_psn_extern";
+                    // Create parameters
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, domainIdentifier.Domain));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, domainIdentifier.Identifier));
+                }
+                else if (String.IsNullOrEmpty(domainIdentifier.Version))
+                {
+                    cmd.CommandText = "get_psn_crnt_vrsn";
+                    // Create parameters
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, Decimal.Parse(domainIdentifier.Identifier)));
+                }
+                else
+                {
+                    cmd.CommandText = "get_psn_vrsn";
+                    // Create parameters
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, Decimal.Parse(domainIdentifier.Identifier)));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, Decimal.Parse(domainIdentifier.Version)));
+                }
+
+                // Execute the command
+                using (IDataReader rdr = cmd.ExecuteReader())
+                {
+                    if (rdr.Read())
+                    {
+                        Person retVal = new Person();
+                        retVal.Id = Convert.ToDecimal(rdr["psn_id"]);
+                        retVal.VersionId = Convert.ToDecimal(rdr["psn_vrsn_id"]);
+                        retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), rdr["status"].ToString());
+                        retVal.GenderCode = Convert.ToString(rdr["gndr_cs"]);
+                        retVal.BirthOrder = (int)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
+
+                        // Other fetched data
+                        decimal? birthTs = null,
+                            deceasedTs = null,
+                            religionCode = null;
+                        
+                        if (rdr["brth_ts"] != DBNull.Value)
+                            birthTs = Convert.ToDecimal(rdr["brth_ts"]);
+                        if (rdr["dcsd_ts"] != DBNull.Value)
+                            deceasedTs = Convert.ToDecimal(rdr["dcsd_ts"]);
+                        if (rdr["rlgn_cd_id"] != DBNull.Value)
+                            religionCode = Convert.ToDecimal(rdr["rlgn_cd_id"]);
+
+                        // Close the reader and read dependent values
+                        rdr.Close();
+
+                        // Load immediate values
+                        if (birthTs.HasValue)
+                            retVal.BirthTime = DbUtil.GetEffectiveTimestampSet(conn, tx, birthTs.Value).Parts[0];
+                        if (deceasedTs.HasValue)
+                            retVal.DeceasedTime = DbUtil.GetEffectiveTimestampSet(conn, tx, deceasedTs.Value).Parts[0];
+                        if (religionCode.HasValue)
+                            retVal.ReligionCode = DbUtil.GetCodedValue(conn, tx, religionCode);
+
+                        // Load other properties
+                        GetPersonNames(conn, tx, retVal);
+                        GetPersonAddresses(conn, tx, retVal);
+                        GetPersonLanguages(conn, tx, retVal);
+                        GetPersonRaces(conn, tx, retVal);
+                        GetPersonAlternateIdentifiers(conn, tx, retVal);
+                        GetPersonTelecomAddresses(conn, tx, retVal);
+
+                        return retVal;
+                    }
+                    else
+                        return null;
+                }
+
+            }
+
+        }
+
+        /// <summary>
+        /// Get person's telecom addresses
+        /// </summary>
+        private void GetPersonTelecomAddresses(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_tels";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Telecoms
+                person.TelecomAddresses = new List<TelecommunicationsAddress>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                        person.TelecomAddresses.Add(new TelecommunicationsAddress()
+                        {
+                            Use = Convert.ToString(rdr["tel_use"]),
+                            Value = Convert.ToString(rdr["tel_value"])
+                        });
+
+            }
+        }
+
+        /// <summary>
+        /// Get person's alternate identifier
+        /// </summary>
+        private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_alt_id";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                person.AlternateIdentifiers = new List<DomainIdentifier>();
+                person.OtherIdentifiers = new List<KeyValuePair<CodeValue,DomainIdentifier>>();
+
+                // Read
+                using (IDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        if (Convert.ToBoolean(rdr["is_hcn"]))
+                            person.AlternateIdentifiers.Add(new DomainIdentifier()
+                            {
+                                Domain = Convert.ToString(rdr["id_domain"]),
+                                Identifier = Convert.ToString(rdr["id_value"])
+                            });
+                        else
+                            person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
+                                new CodeValue() { Key = Convert.ToDecimal(rdr["id_purp_cd_id"]) },
+                                new DomainIdentifier()
+                                {
+                                    Domain = Convert.ToString(rdr["id_domain"]),
+                                    Identifier = Convert.ToString(rdr["id_value"])
+                                })
+                            );
+                    }
+
+                    // Close the reader
+                    rdr.Close();
+
+                    // Fill in other identifiers
+                    foreach (var kv in person.OtherIdentifiers)
+                    {
+                        var cd = DbUtil.GetCodedValue(conn, tx, kv.Key.Key);
+                        kv.Key.Code = cd.Code;
+                        kv.Key.CodeSystem = cd.CodeSystem;
+                        kv.Key.CodeSystemName = cd.CodeSystemName;
+                        kv.Key.CodeSystemVersion = cd.CodeSystemVersion;
+                        kv.Key.OriginalText = cd.OriginalText;
+                        kv.Key.Qualifies = cd.Qualifies;
+                    }
+
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Get a person's race codes
+        /// </summary>
+        private void GetPersonRaces(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_races";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Races
+                person.Race = new List<CodeValue>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                        person.Race.Add(new CodeValue() { Key = Convert.ToDecimal(rdr["race_cd_id"]) });
+
+                // Fill out races
+                for (int i = 0; i < person.Race.Count; i++)
+                    person.Race[i] = DbUtil.GetCodedValue(conn, tx, person.Race[i].Key);
+            }
+        }
+
+        /// <summary>
+        /// Get person's languages
+        /// </summary>
+        private void GetPersonLanguages(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_langs";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Languages
+                person.Language = new List<PersonLanguage>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                        person.Language.Add(new PersonLanguage()
+                        {
+                            Language = Convert.ToString(rdr["lang_cs"]),
+                            Type = (LanguageType)Convert.ToInt32(rdr["mode_cs"])
+                        });
+            }
+        }
+
+        /// <summary>
+        /// Get a person's addresses
+        /// </summary>
+        private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_addr_sets";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Addresses
+                person.Addresses = new List<AddressSet>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                    {
+                        person.Addresses.Add(new AddressSet()
+                        {
+                            Key = Convert.ToDecimal(rdr["addr_set_id"]),
+                            Use = (AddressSet.AddressSetUse)Convert.ToInt32(rdr["addr_set_use"])
+                        });
+                    }
+
+                // Detail load each address
+                foreach (var addr in person.Addresses)
+                {
+                    var dtl = DbUtil.GetAddress(conn, tx, addr.Key);
+                    addr.Parts = dtl.Parts;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get person names
+        /// </summary>
+        private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_name_sets";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Names
+                person.Names = new List<NameSet>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                    {
+                        person.Names.Add(new NameSet()
+                        {
+                            Key = Convert.ToDecimal(rdr["name_set_id"]),
+                            Use = (NameSet.NameSetUse)Convert.ToInt32(rdr["name_set_use"])
+                        });
+                    }
+
+                // Detail load each address
+                foreach (var name in person.Names)
+                {
+                    var dtl = DbUtil.GetName(conn, tx, name.Key);
+                    name.Parts = dtl.Parts;
+                }
+            }
         }
 
         /// <summary>
@@ -469,7 +749,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         public System.ComponentModel.IComponent DePersist(System.Data.IDbConnection conn, decimal identifier, System.ComponentModel.IContainer container, SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType? role, bool loadFast)
         {
-            throw new NotImplementedException();
+            // De-persist a person
+            var person = GetPerson(conn, null, new VersionedDomainIdentifier()
+            {
+                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
+                Identifier = identifier.ToString()
+            });
+
+            // TODO: Prior versions of this person
+
+            return person;
         }
 
         #endregion
@@ -482,6 +771,99 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         internal void MergePersons(Person newPerson, Person oldPerson)
         {
 
+            // Start the merging process for addresses
+            // For each of the addresses in the new person record, determine if
+            // they are additions (new addresses), modifications (old addresses 
+            // with the same use) or removals (not in the new but in old)
+            foreach (var addr in newPerson.Addresses)
+            {
+                UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
+                var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
+                if (candidateOtherAddress.Count == 1)
+                {
+                    if (QueryUtil.MatchAddress(candidateOtherAddress[0], addr) == 1)
+                        addr.Key = -2;
+                    else
+                    {
+                        addr.UpdateMode = UpdateModeType.Update;
+                        addr.Key = candidateOtherAddress[0].Key;
+                        candidateOtherAddress[0].Key = -1;
+                    }
+                }
+                else if (candidateOtherAddress.Count != 0)
+                {
+                    // Find this address in a collection of same use addresses
+                    var secondLevelFoundAddress = candidateOtherAddress.Find(o => QueryUtil.MatchAddress(o, addr) > 0.9);
+                    if (secondLevelFoundAddress != null)
+                    {
+                        if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
+                            addr.Key = -2;
+                        else
+                            addr.UpdateMode = UpdateModeType.Update;
+                    }
+                    else
+                        addr.UpdateMode = UpdateModeType.Add;
+                    addr.Key = secondLevelFoundAddress.Key;
+                    secondLevelFoundAddress.Key = -1;
+                }
+                else // Couldn't find an address in the old in the new so it is an add
+                    addr.UpdateMode = UpdateModeType.Add;
+            }
+
+            // Add all addresses in the old person that cannot be found in the new person to the list
+            // of addresses to remove
+            foreach (var addr in oldPerson.Addresses)
+                if (addr.Key > 0)
+                    addr.UpdateMode = UpdateModeType.Remove;
+            newPerson.Addresses.AddRange(oldPerson.Addresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+            newPerson.Addresses.RemoveAll(o => o.Key < 0);
+
+            // Next we want to do the same for names
+            foreach (var name in newPerson.Names)
+            {
+                UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
+                var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
+                if (candidateOtherName.Count == 1)
+                {
+                    if (QueryUtil.MatchName(candidateOtherName[0], name) == 1)
+                        name.Key = -2;
+                    else
+                    {
+                        name.UpdateMode = UpdateModeType.Update;
+                        name.Key = candidateOtherName[0].Key;
+                        candidateOtherName[0].Key = -1;
+                    }
+                }
+                else if (candidateOtherName.Count != 0)
+                {
+                    // Find this name in a collection of same use names
+                    var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) > DatabasePersistenceService.ValidationSettings.PersonNameMatch);
+
+                    if (secondLevelFoundName != null)
+                    {
+                        if (QueryUtil.MatchName(secondLevelFoundName, name) == 1)
+                            name.Key = -2;
+                        else
+                            name.UpdateMode = UpdateModeType.Update;
+                    }
+                    else
+                        name.UpdateMode = UpdateModeType.Add;
+                    name.Key = secondLevelFoundName.Key;
+                    secondLevelFoundName.Key = -1;
+                }
+                else // Couldn't find an name in the old in the new so it is an add
+                    name.UpdateMode = UpdateModeType.Add;
+            }
+
+            // Add all name in the old person that cannot be found in the new person to the list
+            // of name to remove
+            foreach (var name in oldPerson.Names)
+                if (name.Key > 0)
+                    name.UpdateMode = UpdateModeType.Remove;
+            newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+            newPerson.Names.RemoveAll(o => o.Key < 0);
+
+            // Race codes 
         }
     }
 }

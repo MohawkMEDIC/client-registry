@@ -46,7 +46,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{051B3D76-1618-47EF-9F13-02D9FF6F15FA}"
 	ProjectSection(SolutionItems) = preProject
 		Solution Items\SQL\POSTGRECR-DDL.sql = Solution Items\SQL\POSTGRECR-DDL.sql
-		Solution Items\SQL\POSTGRECR-FX.sql = Solution Items\SQL\POSTGRECR-FX.sql
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.Everest", "MARC.HI.EHRS.CR.Messaging.Everest\MARC.HI.EHRS.CR.Messaging.Everest.csproj", "{F78F69D5-2724-4F65-8FE7-D9D9D3E05C8E}"

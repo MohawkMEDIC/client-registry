@@ -54,6 +54,7 @@
     <Compile Include="ComponentModel\Person.cs" />
     <Compile Include="ComponentModel\PersonLanguage.cs" />
     <Compile Include="ComponentModel\RepositoryDevice.cs" />
+    <Compile Include="ComponentModel\VersionedResultIdentifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CrHealthServiceRecordContainer.cs" />
   </ItemGroup>

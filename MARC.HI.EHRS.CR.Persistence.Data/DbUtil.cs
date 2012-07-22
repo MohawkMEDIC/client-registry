@@ -749,6 +749,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             
             StringBuilder retVal = new StringBuilder();
 
+
             // Find the query persister for our current component
             ////var register = DatabasePersistenceService.GetRegister(queryComponent.GetType());
             //if (register == null)
