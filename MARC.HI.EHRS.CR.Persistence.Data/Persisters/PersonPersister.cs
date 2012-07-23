@@ -542,6 +542,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         GetPersonAlternateIdentifiers(conn, tx, retVal);
                         GetPersonTelecomAddresses(conn, tx, retVal);
 
+                        retVal.AlternateIdentifiers.Add(domainIdentifier);
+
                         return retVal;
                     }
                     else

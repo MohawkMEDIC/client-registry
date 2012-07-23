@@ -150,7 +150,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         {
 
             // TODO: do a sanity check, have we already persisted this record?
-            
+            var storedRecords = QueryRecord(storageData as IComponent);
+            if (storedRecords.Length != 0)
+                throw new ConstraintException(ApplicationContext.LocaleService.GetString("DTPE004"));
+
             // Get the persister
             IComponentPersister persister = GetPersister(storageData.GetType());
             if (persister != null)
@@ -487,7 +490,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     filterString.AppendFormat("{0}{1}", cmp.Value, cmp == nm.Parts.Last() ? "" : ",");
                     cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
                 }
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {2}, 4)",
+                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', 4, {2})",
                     filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use);
 
                 if (nm != names.Last())

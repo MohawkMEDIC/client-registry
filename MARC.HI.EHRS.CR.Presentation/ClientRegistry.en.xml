@@ -36,7 +36,7 @@
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
   <string name="DTPE002">DTPE002 : Cannot update an entity that does not have an identifier</string>
   <string name="DTPE003">DTPE003 : Persistence of entity failed</string>
-  
+  <string name="DTPE004">DTPE004 : Registration has already been persisted</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
