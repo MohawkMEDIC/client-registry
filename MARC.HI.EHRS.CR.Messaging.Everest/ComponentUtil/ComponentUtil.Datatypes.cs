@@ -385,7 +385,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             AddressSet retVal = new AddressSet();
 
             AddressSet.AddressSetUse internalNameUse = ConvertAddressUse(address.Use, dtls);
-            if (address == null || address.IsNull || address.Use != null && !address.Use.IsEmpty && !m_addressUseMap.TryGetValue(address.Use[0], out internalNameUse))
+            if (address == null || address.IsNull || internalNameUse == 0)
                 return null;
 
             retVal.Use = internalNameUse;

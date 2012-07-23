@@ -149,7 +149,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     {
                         subjectOf.Add(new ExtendedAttribute()
                         {
-                            PropertyPath = String.Format("TelecomAddresses[{0}]", subjectOf.TelecomAddresses.Count - 1),
+                            PropertyPath = String.Format("TelecomAddresses[{0}]", tel.Value),
                             Value = tel.UseablePeriod.Hull,
                             Name = "UsablePeriod"
                         });
@@ -191,11 +191,33 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             {
                 subjectOf.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
                 foreach (var id in ident.AsOtherIDs)
-                    if (id.NullFlavor != null)
+                    if (id.NullFlavor == null)
+                    {
                         subjectOf.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             CreateCodeValue(id.Code, dtls),
                             CreateDomainIdentifier(id.Id)
                          ));
+                        if (id.AssigningIdOrganization != null && id.AssigningIdOrganization.NullFlavor == null)
+                        {
+                            // Other identifier assigning organization ext
+                            if (id.AssigningIdOrganization.Id != null && !id.AssigningIdOrganization.Id.IsNull)
+                                subjectOf.Add(new ExtendedAttribute()
+                                {
+                                    PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension ),
+                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id),
+                                    Name = "AssigningIdOrganizationId"
+                                });
+                            // Other identifier assigning organization name
+                            if (id.AssigningIdOrganization.Name != null && !id.AssigningIdOrganization.Name.IsNull)
+                                subjectOf.Add(new ExtendedAttribute()
+                                {
+                                    PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension),
+                                    Value = id.AssigningIdOrganization.Name.ToString(),
+                                    Name = "AssigningIdOrganizationName"
+                                });
+
+                        }
+                    }
             }
 
             // Languages
@@ -387,7 +409,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     {
                         subjectOf.Add(new ExtendedAttribute()
                         {
-                            PropertyPath = String.Format("TelecomAddresses[{0}]", subjectOf.TelecomAddresses.Count - 1),
+                            PropertyPath = String.Format("TelecomAddresses[{0}]", tel.Value),
                             Value = tel.UseablePeriod.Hull,
                             Name = "UsablePeriod"
                         });
@@ -429,11 +451,33 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             {
                 subjectOf.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
                 foreach (var id in ident.AsOtherIDs)
-                    if (id.NullFlavor != null)
+                    if (id.NullFlavor == null)
+                    {
                         subjectOf.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             CreateCodeValue(id.Code, dtls),
                             CreateDomainIdentifier(id.Id)
                          ));
+                        if(id.AssigningIdOrganization != null && id.AssigningIdOrganization.NullFlavor == null)
+                        {
+                            // Other identifier assigning organization ext
+                            if (id.AssigningIdOrganization.Id != null && !id.AssigningIdOrganization.Id.IsNull)
+                                subjectOf.Add(new ExtendedAttribute()
+                                {
+                                    PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension),
+                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id),
+                                    Name = "AssigningIdOrganizationId"
+                                });
+                            // Other identifier assigning organization name
+                            if (id.AssigningIdOrganization.Name != null && !id.AssigningIdOrganization.Name.IsNull)
+                                subjectOf.Add(new ExtendedAttribute()
+                                {
+                                    PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension),
+                                    Value = id.AssigningIdOrganization.Name.ToString(),
+                                    Name = "AssigningIdOrganizationName"
+                                });
+
+                        }
+                    }
             }
 
             // Languages

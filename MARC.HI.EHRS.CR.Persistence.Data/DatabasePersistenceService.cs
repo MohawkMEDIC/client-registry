@@ -259,9 +259,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Validate the old record target
                     Person oldRecordTarget = oldHsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person,
                         newRecordTarget = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-                    newRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[0]);
-                    if (newRecordTarget == null || oldRecordTarget.Id != newRecordTarget.Id)
+                    Person verifyRecordTarget = null;
+                    int idCheck = 0;
+                    while(verifyRecordTarget == null || idCheck > newRecordTarget.AlternateIdentifiers.Count)
+                        verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++]);
+                    
+                    if (verifyRecordTarget == null || oldRecordTarget.Id != verifyRecordTarget.Id)
                         throw new ConstraintException("The update request specifies a different recordTarget than the request currently stored");
+
+                    newRecordTarget.VersionId = verifyRecordTarget.VersionId;
+                    newRecordTarget.Id = verifyRecordTarget.Id;
 
                     // VAlidate classific
                     if (oldHsrEvent.EventClassifier != hsrEvent.EventClassifier &&
@@ -280,6 +287,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                                 hsrEvent.Remove(hsrEvent.XmlComponents[i]);
                     }
 
+                    
                     // Copy over any components that aren't already specified or updated in the new record
                     // Merge the old and new. Sets the update mode appropriately
                     cp.MergePersons(newRecordTarget, oldRecordTarget);
@@ -416,7 +424,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 throw new InvalidOperationException();
 
             // Matching?
-            StringBuilder sb = new StringBuilder("SELECT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_ID IN (");
+            StringBuilder sb = new StringBuilder("SELECT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
             // Identifiers
             if (subjectOfQuery.AlternateIdentifiers != null)
                 sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));

@@ -345,8 +345,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     throw new Exception("Cannot de-persist records");
                 }
 
-                // Record target
-                var recordTarget = qd.MatchTargetOfDomainIdentifier;
 
                 // Read the record from the DB
                 var result = this.m_persistenceService.GetContainer(recordId, qd.IsSummary) as RegistrationEvent;

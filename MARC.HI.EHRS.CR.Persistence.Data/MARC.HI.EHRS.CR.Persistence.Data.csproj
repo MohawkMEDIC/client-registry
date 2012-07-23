@@ -68,6 +68,7 @@
     <Compile Include="DatabasePersistenceService.cs" />
     <Compile Include="DbUtil.cs" />
     <Compile Include="Persisters\ChangeSummaryPersister.cs" />
+    <Compile Include="Persisters\ExtendedAttributePersister.cs" />
     <Compile Include="Persisters\HealthcareParticipantPersister.cs" />
     <Compile Include="Persisters\HealthServiceRecordComponentRefPersister.cs" />
     <Compile Include="Persisters\MaskingIndicatorPersister.cs" />

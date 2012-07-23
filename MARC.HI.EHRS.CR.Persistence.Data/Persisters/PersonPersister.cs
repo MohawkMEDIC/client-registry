@@ -8,6 +8,7 @@ using System.Data;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -263,7 +264,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, false));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.String, codeId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
 
@@ -508,7 +509,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.VersionId = Convert.ToDecimal(rdr["psn_vrsn_id"]);
                         retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), rdr["status"].ToString());
                         retVal.GenderCode = Convert.ToString(rdr["gndr_cs"]);
-                        retVal.BirthOrder = (int)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
+                        retVal.BirthOrder = (int?)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
 
                         // Other fetched data
                         decimal? birthTs = null,
@@ -758,6 +759,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // TODO: Prior versions of this person
 
+            // De-persist components
+            DbUtil.DePersistComponents(conn, person, this, loadFast);
+
             return person;
         }
 
@@ -775,95 +779,291 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // For each of the addresses in the new person record, determine if
             // they are additions (new addresses), modifications (old addresses 
             // with the same use) or removals (not in the new but in old)
-            foreach (var addr in newPerson.Addresses)
+            if (newPerson.Addresses != null)
             {
-                UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
-                var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
-                if (candidateOtherAddress.Count == 1)
+                foreach (var addr in newPerson.Addresses)
                 {
-                    if (QueryUtil.MatchAddress(candidateOtherAddress[0], addr) == 1)
-                        addr.Key = -2;
-                    else
+                    UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
+                    var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
+                    if (candidateOtherAddress.Count == 1)
                     {
-                        addr.UpdateMode = UpdateModeType.Update;
-                        addr.Key = candidateOtherAddress[0].Key;
-                        candidateOtherAddress[0].Key = -1;
-                    }
-                }
-                else if (candidateOtherAddress.Count != 0)
-                {
-                    // Find this address in a collection of same use addresses
-                    var secondLevelFoundAddress = candidateOtherAddress.Find(o => QueryUtil.MatchAddress(o, addr) > 0.9);
-                    if (secondLevelFoundAddress != null)
-                    {
-                        if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
+                        if (QueryUtil.MatchAddress(candidateOtherAddress[0], addr) == 1) // Remove .. no change
+                        {
+                            //candidateOtherAddress[0].Key = -1;
                             addr.Key = -2;
+                        }
                         else
+                        {
                             addr.UpdateMode = UpdateModeType.Update;
+                            addr.Key = candidateOtherAddress[0].Key;
+                            //candidateOtherAddress[0].Key = -1;
+                        }
                     }
-                    else
-                        addr.UpdateMode = UpdateModeType.Add;
-                    addr.Key = secondLevelFoundAddress.Key;
-                    secondLevelFoundAddress.Key = -1;
+                    else if (candidateOtherAddress.Count != 0)
+                    {
+                        // Find this address in a collection of same use addresses
+                        var secondLevelFoundAddress = candidateOtherAddress.Find(o => QueryUtil.MatchAddress(o, addr) > 0.9);
+                        if (secondLevelFoundAddress != null)
+                        {
+                            if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
+                                addr.Key = -2;
+                            else
+                                addr.UpdateMode = UpdateModeType.Update;
+                        }
+                        else
+                            addr.UpdateMode = UpdateModeType.Add;
+                        addr.Key = secondLevelFoundAddress.Key;
+                        //secondLevelFoundAddress.Key = -1;
+                    }
+                    else // Couldn't find an address in the old in the new so it is an add
+                    {
+                        // Are we just changing the use?
+                        var secondLevelFoundAddress = oldPerson.Addresses.Find(o => QueryUtil.MatchAddress(addr, o) == 1);
+                        if (secondLevelFoundAddress == null)
+                            addr.UpdateMode = UpdateModeType.Add;
+                        else
+                        {
+                            addr.Key = secondLevelFoundAddress.Key;
+                            //secondLevelFoundAddress.Key = -1;
+                            addr.UpdateMode = UpdateModeType.Update;
+                        }
+                    }
                 }
-                else // Couldn't find an address in the old in the new so it is an add
-                    addr.UpdateMode = UpdateModeType.Add;
-            }
 
-            // Add all addresses in the old person that cannot be found in the new person to the list
-            // of addresses to remove
-            foreach (var addr in oldPerson.Addresses)
-                if (addr.Key > 0)
-                    addr.UpdateMode = UpdateModeType.Remove;
-            newPerson.Addresses.AddRange(oldPerson.Addresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-            newPerson.Addresses.RemoveAll(o => o.Key < 0);
+                //// Add all addresses in the old person that cannot be found in the new person to the list
+                //// of addresses to remove
+                //foreach (var addr in oldPerson.Addresses)
+                //    if (addr.Key > 0)
+                //        addr.UpdateMode = UpdateModeType.Remove;
+                newPerson.Addresses.AddRange(oldPerson.Addresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.Addresses.RemoveAll(o => o.Key < 0);
+            }
 
             // Next we want to do the same for names
-            foreach (var name in newPerson.Names)
+            if (newPerson.Names != null)
             {
-                UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
-                var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
-                if (candidateOtherName.Count == 1)
+                foreach (var name in newPerson.Names)
                 {
-                    if (QueryUtil.MatchName(candidateOtherName[0], name) == 1)
-                        name.Key = -2;
-                    else
+                    UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
+                    var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
+                    if (candidateOtherName.Count == 1)
                     {
-                        name.UpdateMode = UpdateModeType.Update;
-                        name.Key = candidateOtherName[0].Key;
-                        candidateOtherName[0].Key = -1;
-                    }
-                }
-                else if (candidateOtherName.Count != 0)
-                {
-                    // Find this name in a collection of same use names
-                    var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) > DatabasePersistenceService.ValidationSettings.PersonNameMatch);
-
-                    if (secondLevelFoundName != null)
-                    {
-                        if (QueryUtil.MatchName(secondLevelFoundName, name) == 1)
+                        if (QueryUtil.MatchName(candidateOtherName[0], name) == 1)
+                        {
+                            //candidateOtherName[0].Key = -1;
                             name.Key = -2;
+                        }
                         else
+                        {
                             name.UpdateMode = UpdateModeType.Update;
+                            name.Key = candidateOtherName[0].Key;
+                            //candidateOtherName[0].Key = -1;
+                        }
                     }
-                    else
-                        name.UpdateMode = UpdateModeType.Add;
-                    name.Key = secondLevelFoundName.Key;
-                    secondLevelFoundName.Key = -1;
+                    else if (candidateOtherName.Count != 0)
+                    {
+                        // Find this name in a collection of same use names
+                        var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) > DatabasePersistenceService.ValidationSettings.PersonNameMatch);
+
+                        if (secondLevelFoundName != null)
+                        {
+                            if (QueryUtil.MatchName(secondLevelFoundName, name) == 1)
+                                name.Key = -2;
+                            else
+                                name.UpdateMode = UpdateModeType.Update;
+                        }
+                        else
+                            name.UpdateMode = UpdateModeType.Add;
+                        name.Key = secondLevelFoundName.Key;
+                        //secondLevelFoundName.Key = -1;
+                    }
+                    else // Couldn't find an name in the old in the new so it is an add
+                    {
+                        // Are we just changing the use?
+                        var secondLevelFoundName = oldPerson.Names.Find(o => QueryUtil.MatchName(name, o) == 1);
+                        if (secondLevelFoundName == null)
+                            name.UpdateMode = UpdateModeType.Add;
+                        else
+                        {
+                            name.Key = secondLevelFoundName.Key;
+                            //secondLevelFoundName.Key = -1;
+                            name.UpdateMode = UpdateModeType.Update;
+                        }
+                    }
                 }
-                else // Couldn't find an name in the old in the new so it is an add
-                    name.UpdateMode = UpdateModeType.Add;
+
+                // Add all name in the old person that cannot be found in the new person to the list
+                // of name to remove
+                //foreach (var name in oldPerson.Names)
+                //    if (name.Key > 0)
+                //        name.UpdateMode = UpdateModeType.Remove;
+                //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.Names.RemoveAll(o => o.Key < 0);
             }
 
-            // Add all name in the old person that cannot be found in the new person to the list
-            // of name to remove
-            foreach (var name in oldPerson.Names)
-                if (name.Key > 0)
-                    name.UpdateMode = UpdateModeType.Remove;
-            newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-            newPerson.Names.RemoveAll(o => o.Key < 0);
+            // Birth time
+            if (newPerson.BirthTime != null && oldPerson.BirthTime != null &&
+                newPerson.BirthTime.Value == oldPerson.BirthTime.Value)
+                newPerson.BirthTime = null;
+
+            // MB order
+            if (newPerson.BirthOrder == oldPerson.BirthOrder)
+                newPerson.BirthOrder = null;
+
+            // Religion code
+            if (newPerson.ReligionCode != null && oldPerson.ReligionCode != null &&
+                newPerson.ReligionCode.Code == oldPerson.ReligionCode.Code &&
+                newPerson.ReligionCode.CodeSystem == oldPerson.ReligionCode.CodeSystem)
+                newPerson.ReligionCode = null;
+
+            // Deceased
+            if (newPerson.DeceasedTime != null && oldPerson.DeceasedTime != null &&
+                newPerson.DeceasedTime.Value == oldPerson.DeceasedTime.Value)
+                newPerson.DeceasedTime = null;
 
             // Race codes 
+            if (newPerson.Race != null)
+            {
+                foreach (var rce in newPerson.Race)
+                {
+                    var candidateRace = oldPerson.Race.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
+                    if (candidateRace != null) // New exists in the old
+                    {
+                        rce.Key = -2;
+                        //candidateRace.Key = -1;
+                    }
+                    else
+                        rce.UpdateMode = UpdateModeType.Add;
+                }
+                newPerson.Race.RemoveAll(o => o.Key < 0);
+            }
+
+            // Language codes
+            if (newPerson.Language != null)
+            {
+                List<PersonLanguage> garbagePail = new List<PersonLanguage>();
+                foreach (var lang in newPerson.Language)
+                {
+                    var candidateLanguage = oldPerson.Language.Find(o => o.Language == lang.Language);
+                    if (candidateLanguage != null) // New exists in the old
+                    {
+                        if (candidateLanguage.Type != lang.Type)
+                            lang.UpdateMode = UpdateModeType.Update;
+                        else
+                            garbagePail.Add(lang); // Remove
+                    }
+                    else
+                        lang.UpdateMode = UpdateModeType.Add;
+                }
+
+                // Find all race codes in the old that aren't in the new (remove)
+                //foreach (var lang in oldPerson.Language)
+                //    if (!newPerson.Language.Exists(o => o.Language == lang.Language))
+                //        lang.UpdateMode = UpdateModeType.Remove;
+                //newPerson.Language.AddRange(oldPerson.Language.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.Language.RemoveAll(o => garbagePail.Contains(o));
+            }
+
+            if (newPerson.TelecomAddresses != null)
+            {
+                // Telecom addresses
+                foreach (var tel in newPerson.TelecomAddresses)
+                {
+                    var candidateTel = oldPerson.TelecomAddresses.Find(o => o.Use == tel.Use && tel.Value == o.Value);
+                    if (candidateTel != null) // New exists in the old
+                    {
+                        tel.Key = -2;
+                        //candidateTel.Key = -1;
+                    }
+                    else
+                    {
+                        candidateTel = oldPerson.TelecomAddresses.Find(o => o.Value == tel.Value);
+                        if (candidateTel == null)
+                            tel.UpdateMode = UpdateModeType.Add;
+                        else
+                        {
+                            tel.UpdateMode = UpdateModeType.Update;
+                            tel.Key = candidateTel.Key;
+                        }
+                    }
+                }
+
+                // Find all race codes in the old that aren't in the new (remove)
+                //foreach (var alt in oldPerson.TelecomAddresses)
+                //    if (alt.Key > 0)
+                //        alt.UpdateMode = UpdateModeType.Remove;
+                //newPerson.TelecomAddresses.AddRange(oldPerson.TelecomAddresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.TelecomAddresses.RemoveAll(o => o.Key < 0);
+            }
+
+            if (newPerson.AlternateIdentifiers != null)
+            {
+                // Alternate identifiers
+                foreach (var alt in newPerson.AlternateIdentifiers)
+                {
+                    var candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain && o.Identifier == alt.Identifier);
+                    if (candidateAlt != null) // New exists in the old
+                    {
+                        alt.Key = -2;
+                        //candidateAlt.Key = -1;
+                    }
+                    else
+                        alt.UpdateMode = UpdateModeType.Add;
+                }
+
+                // Find all race codes in the old that aren't in the new (remove)
+                //foreach (var alt in oldPerson.AlternateIdentifiers)
+                //    if (alt.Key > 0)
+                //        alt.UpdateMode = UpdateModeType.Remove;
+                //newPerson.AlternateIdentifiers.AddRange(oldPerson.AlternateIdentifiers.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.AlternateIdentifiers.RemoveAll(o => o.Key < 0);
+            }
+
+            if (newPerson.OtherIdentifiers != null)
+            {
+                // Other identifiers
+                foreach (var alt in newPerson.OtherIdentifiers)
+                {
+                    var candidateAlt = oldPerson.OtherIdentifiers.Find(o => o.Key != null && alt.Key != null && o.Key.Code == alt.Key.Code && o.Key.CodeSystem == alt.Key.CodeSystem);
+                    if (!candidateAlt.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>))) // New exists in the old
+                    {
+                        // Found based on the code, so this is an update
+                        if (alt.Value.Identifier == candidateAlt.Value.Identifier &&
+                            alt.Value.Domain == candidateAlt.Value.Identifier)
+                            alt.Value.Key = -2;
+                        else
+                            alt.Value.UpdateMode = UpdateModeType.Update;
+                        //candidateAlt.Value.Key = -1;
+                    }
+                    else
+                    {
+                        candidateAlt = oldPerson.OtherIdentifiers.Find(o => o.Value.Identifier == alt.Value.Identifier && o.Value.Domain == alt.Value.Domain);
+                        if (!candidateAlt.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>))) // New exists in the old
+                        {
+                            // Found other based on identifier so may be an update
+                            if (alt.Key != candidateAlt.Key)
+                                alt.Value.UpdateMode = UpdateModeType.Update;
+                            else
+                                alt.Value.Key = -2;
+                            //candidateAlt.Value.Key = -1;
+                        }
+                        else
+                            alt.Value.UpdateMode = UpdateModeType.Add;
+                    }
+                }
+                // Find all race codes in the old that aren't in the new (remove)
+                //foreach (var alt in oldPerson.OtherIdentifiers)
+                //    if (alt.Value.Key > 0)
+                //        alt.Value.UpdateMode = UpdateModeType.Remove;
+                //newPerson.OtherIdentifiers.AddRange(oldPerson.OtherIdentifiers.FindAll(o => o.Value.UpdateMode == UpdateModeType.Remove));
+                newPerson.OtherIdentifiers.RemoveAll(o => o.Value.Key < 0);
+            }
+
+            // Copy over extended attributes not mentioned in the new person
+            foreach (HealthServiceRecordComponent cmp in oldPerson.Components)
+                if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath != (cmp as ExtendedAttribute).PropertyPath && o.Name != (cmp as ExtendedAttribute).Name) == null) // copy
+                    newPerson.Add(cmp);
+
         }
     }
 }

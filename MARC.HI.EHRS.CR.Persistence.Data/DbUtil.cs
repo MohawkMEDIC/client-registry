@@ -709,7 +709,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 decimal? versionId = null;
                 if (cont is RegistrationEvent)
                     versionId = (cont as RegistrationEvent).VersionIdentifier;
-
+                else if (cont is Person)
+                    versionId = (cont as Person).VersionId;
 
                 cmd.CommandText = "get_comps";
                 cmd.Parameters.Add(CreateParameterIn(cmd, "cntr_typ_in", DbType.String, cont.GetType().FullName));

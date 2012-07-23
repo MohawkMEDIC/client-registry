@@ -159,7 +159,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             retVal.IsMasked = clientDataRetVal.IsMasked;
             if(clientDataRetVal.Names != null)
                 retVal.LegalName = clientDataRetVal.Names.Find(o=>o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
-            if (clientDataRetVal.Names != null)
+            if (clientDataRetVal.Addresses != null && clientDataRetVal.Addresses.Count > 0)
                 retVal.PerminantAddress = clientDataRetVal.Addresses.Find(o => o.Use == AddressSet.AddressSetUse.HomeAddress) ?? clientDataRetVal.Addresses[0];
             retVal.TelecomAddresses.AddRange(clientDataRetVal.TelecomAddresses);
             retVal.Timestamp = clientDataRetVal.Timestamp;
@@ -181,8 +181,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     if (rdr.Read())
                     {
                         retVal.Id = identifier;
-                        retVal.RelationshipKind = Convert.ToString(rdr["kind_id"]);
-                        rltdId = Convert.ToDecimal(rdr["rtld_clnt_id"]);
+                        retVal.RelationshipKind = Convert.ToString(rdr["kind_cs"]);
+                        rltdId = Convert.ToDecimal(rdr["trg_psn_id"]);
                     }
                 }
 

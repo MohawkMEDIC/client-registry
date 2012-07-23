@@ -1,5 +1,7 @@
 ﻿The following extensions are used in this persister:
 
-Name			Applies To						Value
-UsablePeriod	TelecommunicationsAddress		ISetComponent
-
+Name						Applies To						Value
+UsablePeriod				TelecommunicationsAddress		ISetComponent
+AssigningIdOrganizationId	KV<CodeValue, DomainIdentifier>	DomainIdentifier
+AssigningIdOrganizationName	KV<CodeValue, DomainIdentifier>	String
+	
