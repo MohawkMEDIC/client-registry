@@ -150,9 +150,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         {
 
             // TODO: do a sanity check, have we already persisted this record?
-            var storedRecords = QueryRecord(storageData as IComponent);
-            if (storedRecords.Length != 0)
-                throw new ConstraintException(ApplicationContext.LocaleService.GetString("DTPE004"));
+            if (!ValidationSettings.AllowDuplicateRecords)
+            {
+                var duplicateQuery = (storageData as ICloneable).Clone() as HealthServiceRecordContainer;
+                duplicateQuery.Add(new QueryParameters()
+                {
+                    MatchStrength = Core.ComponentModel.MatchStrength.Exact,
+                    MatchingAlgorithm = MatchAlgorithm.Exact
+                });
+                var storedRecords = QueryRecord(duplicateQuery as IComponent);
+                if (storedRecords.Length != 0)
+                    throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DTPE004"));
+            }
 
             // Get the persister
             IComponentPersister persister = GetPersister(storageData.GetType());
@@ -241,11 +250,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         RegistrationEvent query = new RegistrationEvent();
                         query.Status = StatusType.Active;
                         query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                        query.Add(new QueryParameters()
+                        {
+                            MatchingAlgorithm = MatchAlgorithm.Exact,
+                            MatchStrength = MatchStrength.Exact
+                        }, "FLTR", HealthServiceRecordSiteRoleType.FilterOf, null);
                         var tRecordIds = QueryRecord(query);
                         if (tRecordIds.Length != 1)
-                            throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF004"));
+                            throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF004"));
                         else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
-                            throw new InvalidOperationException(ApplicationContext.LocaleService.GetString("DBCF005"));
+                            throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF005"));
 
                         tryDec = Decimal.Parse(tRecordIds[0].Identifier);
                         hsrEvent.AlternateIdentifier = tRecordIds[0];
@@ -255,7 +269,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Validate and duplicate the components that are to be loaded as part of the new version
                     var oldHsrEvent = GetContainer(hsrEvent.AlternateIdentifier, true) as RegistrationEvent; // Get the old container
                     if(oldHsrEvent == null)
-                        throw new ConstraintException(String.Format("Record {0}@{1} does not exist", hsrEvent.AlternateIdentifier.Domain, hsrEvent.AlternateIdentifier.Identifier));
+                        throw new MissingPrimaryKeyException(String.Format("Record {0}@{1} does not exist", hsrEvent.AlternateIdentifier.Domain, hsrEvent.AlternateIdentifier.Identifier));
 
                     PersonPersister cp = new PersonPersister();
                     
@@ -423,8 +437,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             // Get the subject of the query
             var subjectOfQuery = (queryParameters as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var queryFilter = (queryParameters as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
             if (subjectOfQuery == null)
                 throw new InvalidOperationException();
+
+            if (queryFilter == null)
+                queryFilter = new QueryParameters()
+                {
+                    MatchStrength = DatabasePersistenceService.ValidationSettings.DefaultMatchStrength,
+                    MatchingAlgorithm = DatabasePersistenceService.ValidationSettings.DefaultMatchAlgorithms
+                };
 
             // Matching?
             StringBuilder sb = new StringBuilder("SELECT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
@@ -432,7 +454,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (subjectOfQuery.AlternateIdentifiers != null)
                 sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
             if(subjectOfQuery.Names != null)
-                sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names));
+                sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, queryFilter));
 
             // TRIM INTERSECT
             if (sb.ToString().EndsWith("INTERSECT "))
@@ -477,7 +499,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Build filter for names
         /// </summary>
-        private string BuildFilterNames(List<NameSet> names)
+        private string BuildFilterNames(List<NameSet> names, QueryParameters parameters)
         {
             StringBuilder retVal = new StringBuilder();
             foreach (var nm in names)
@@ -490,8 +512,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     filterString.AppendFormat("{0}{1}", cmp.Value, cmp == nm.Parts.Last() ? "" : ",");
                     cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
                 }
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', 4, {2})",
-                    filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use);
+
+                // Match strength & algorithms
+                int desiredMatchLevel = 5;
+                bool useVariant = false;
+                if (nm.Use != NameSet.NameSetUse.Search)
+                {
+                    useVariant = (parameters.MatchingAlgorithm & MatchAlgorithm.Variant) != 0;
+                    if ((parameters.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0) // no soundex is allowed so exact only
+                        desiredMatchLevel = 4;
+                }
+
+                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {3}, {4}, {2})",
+                    filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use, desiredMatchLevel, useVariant);
 
                 if (nm != names.Last())
                     retVal.AppendFormat(" UNION ");

@@ -37,6 +37,7 @@
   <string name="DTPE002">DTPE002 : Cannot update an entity that does not have an identifier</string>
   <string name="DTPE003">DTPE003 : Persistence of entity failed</string>
   <string name="DTPE004">DTPE004 : Registration has already been persisted</string>
+  <string name="DTPE005">DTPE005 : Formal constraint violation detected</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
@@ -46,7 +47,7 @@
   <string name="DBCF005">DBCF005 :</string>
   <string name="DBCF006">DBCF006 :</string>
   <string name="DBCF007">DBCF007 : Cannot determine the primary subject of the registration event</string>
-
+  <string name="DBCF008">DBCF008 : Identifier is already registered to another person</string>
   <!-- PRIVACY AND SECURITY ISSUES -->
   <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
   

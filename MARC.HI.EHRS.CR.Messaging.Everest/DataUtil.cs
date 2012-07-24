@@ -51,6 +51,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         private IDecisionSupportService m_decisionService;
         // Data persistence service
         private IDataPersistenceService m_persistenceService;
+        // localization service
+        private ILocalizationService m_localeService;
 
         /// <summary>
         /// Sync lock
@@ -215,6 +217,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 this.m_docRegService = value.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
                 this.m_policyService = value.GetService(typeof(IPolicyEnforcementService)) as IPolicyEnforcementService;
                 this.m_queryService = value.GetService(typeof(IQueryPersistenceService)) as IQueryPersistenceService;
+                this.m_localeService = value.GetService(typeof(ILocalizationService)) as ILocalizationService;
             }
         }
 
@@ -276,6 +279,63 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
 
                 return retVal;
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.AlreadyPerformed,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.DetectedIssue,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
+            }
+            catch (ConstraintException ex)
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.DetectedIssue,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
             }
             catch (DbException ex)
             {
@@ -802,6 +862,63 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
 
                 return retVal;
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.AlreadyPerformed,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.DetectedIssue,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
+            }
+            catch (ConstraintException ex)
+            {
+                // Audit exception
+                if (this.m_auditorService != null)
+                {
+                    AuditData audit = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.EpicFail, EventIdentifierType.ProvisioningEvent, null);
+                    UpdateAuditData(healthServiceRecord, audit, 0);
+                    this.m_auditorService.SendAudit(audit);
+                }
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                issues.Add(new DetectedIssue()
+                {
+                    Severity = IssueSeverityType.High,
+                    Type = IssueType.DetectedIssue,
+                    Text = ex.Message,
+                    Priority = IssuePriorityType.Error
+                });
+                return null;
             }
             catch (DbException ex)
             {

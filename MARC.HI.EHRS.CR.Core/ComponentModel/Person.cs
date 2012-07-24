@@ -15,7 +15,6 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     [XmlType("Person", Namespace = "urn:marc-hi:ca/cr")]
     public class Person : CrHealthServiceRecordContainer
     {
-
         /// <summary>
         /// Represents the alternate identifier that this record is known as
         /// </summary>

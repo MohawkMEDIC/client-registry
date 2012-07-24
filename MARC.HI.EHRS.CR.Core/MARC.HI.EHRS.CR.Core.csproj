@@ -47,7 +47,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\MatchAlgorithm.cs" />
     <Compile Include="ComponentModel\ExtendedAttribute.cs" />
+    <Compile Include="ComponentModel\MatchStrength.cs" />
+    <Compile Include="ComponentModel\QueryParameters.cs" />
     <Compile Include="ComponentModel\Reason.cs" />
     <Compile Include="ComponentModel\RegistrationEvent.cs" />
     <Compile Include="ComponentModel\RegistrationRecordType.cs" />

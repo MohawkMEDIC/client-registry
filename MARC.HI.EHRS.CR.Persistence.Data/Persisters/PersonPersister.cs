@@ -254,23 +254,30 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Add telecom
             if (othId.Value.UpdateMode != UpdateModeType.Remove)
-                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                try
                 {
+                    using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                    {
 
-                    decimal codeId = DbUtil.CreateCodedValue(conn, tx, othId.Key);
+                        decimal codeId = DbUtil.CreateCodedValue(conn, tx, othId.Key);
 
-                    cmd.CommandText = "crt_psn_alt_id";
+                        cmd.CommandText = "crt_psn_alt_id";
 
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, false));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, false));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
 
-                    // Execute
-                    cmd.ExecuteNonQuery();
+                        // Execute
+                        cmd.ExecuteNonQuery();
 
+                    }
+                }
+                catch 
+                { 
+                    throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DBCF008"));
                 }
         }
 
@@ -295,19 +302,26 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Add telecom
             if (altId.UpdateMode != UpdateModeType.Remove)
-                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                try
                 {
-                    cmd.CommandText = "crt_psn_alt_id";
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, true));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, DBNull.Value));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, altId.Domain));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, altId.Identifier));
+                    using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                    {
+                        cmd.CommandText = "crt_psn_alt_id";
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, true));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, DBNull.Value));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, altId.Domain));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, altId.Identifier));
 
-                    // Execute
-                    cmd.ExecuteNonQuery();
+                        // Execute
+                        cmd.ExecuteNonQuery();
 
+                    }
+                }
+                catch
+                {
+                    throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DBCF008"));
                 }
         }
 

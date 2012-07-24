@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
 {
@@ -31,32 +32,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
     {
 
         /// <summary>
-        /// Gets the percent match that a client's name must be in order to insert the record
-        /// </summary>
-        public float PersonNameMatch { get; internal set; }
-
-        /// <summary>
         /// If true, allow duplicate records
         /// </summary>
         public bool AllowDuplicateRecords { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the client MUST exist to continue the persistence of a record
+        /// Default matching strength
         /// </summary>
-        public bool PersonsMustExist { get; set; }
+        public MatchStrength DefaultMatchStrength { get; set; }
 
         /// <summary>
-        /// Gets or sets whether healthcare participants must be validated
-        /// with the provider registry prior to having a new canonical SHR 
-        /// record persisted.
+        /// Default matching algorithm. Query parmaeters override this
         /// </summary>
-        public bool ValidateHealthcareParticipants { get; set; }
+        public MatchAlgorithm DefaultMatchAlgorithms { get; set; }
 
         /// <summary>
-        /// Gets or sets whether clients must be validated with the client 
-        /// registry prior to having a new canonical SHR record persisted
+        /// When true, instructs the CR to first try to make an exact match prior to 
+        /// making other matches. As always, query parameters from messages always 
+        /// override this
         /// </summary>
-        public bool ValidateClients { get; set; }
-
+        public bool ExactMatchFirst { get; set; }
     }
 }

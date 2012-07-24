@@ -27,6 +27,7 @@ using System.Xml;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
 {
@@ -62,14 +63,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
         public object Create(object parent, object configContext, System.Xml.XmlNode section)
         {
 
-            XmlNode connectionManagerConfig = section.SelectSingleNode("./*[local-name() = 'connectionManager']"), 
-                validationConfig = section.SelectSingleNode("./*[local-name() = 'validation']");
+            XmlNode connectionManagerConfig = section.SelectSingleNode("./*[local-name() = 'connectionManager']"),
+                validationConfig = section.SelectSingleNode("./*[local-name() = 'validation']"),
+                matchConfig = section.SelectSingleNode("./*[local-name() = 'nameMatching']");
+
             if (connectionManagerConfig == null)
                 throw new ConfigurationErrorsException("connectionManager must be specified", section);
 
             // Setup default validation section
             this.Validation = new ValidationSection() {
-                PersonNameMatch = 1.0f
+                AllowDuplicateRecords = false,
+                DefaultMatchAlgorithms = 0,
+                DefaultMatchStrength = Core.ComponentModel.MatchStrength.Exact
             };
 
             // Connection manager settings
@@ -80,18 +85,26 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
             if (validationConfig != null)
             {
                 // Validation Configuration
-                if (validationConfig.Attributes["minPersonNameMatch"] != null)
-                    this.Validation.PersonNameMatch = (float)Double.Parse(validationConfig.Attributes["minPersonNameMatch"].Value);
-                if (validationConfig.Attributes["personMustExist"] != null)
-                    this.Validation.PersonsMustExist = Boolean.Parse(validationConfig.Attributes["personMustExist"].Value);
                 if (validationConfig.Attributes["allowDuplicates"] != null)
                     this.Validation.AllowDuplicateRecords = Boolean.Parse(validationConfig.Attributes["allowDuplicates"].Value);
-                if (validationConfig.Attributes["validateClientsAgainstCR"] != null)
-                    this.Validation.ValidateClients = Boolean.Parse(validationConfig.Attributes["validateClientsAgainstCR"].Value);
-                if (validationConfig.Attributes["validateProvidersAgainstPR"] != null)
-                    this.Validation.ValidateHealthcareParticipants = Boolean.Parse(validationConfig.Attributes["validateProvidersAgainstPR"].Value);
+
             }
 
+            // Match config
+            if (matchConfig != null)
+            {
+                if (matchConfig.Attributes["defaultMatchStr"] != null)
+                    this.Validation.DefaultMatchStrength = (MatchStrength)Enum.Parse(typeof(MatchStrength), validationConfig.Attributes["defaultMatchStr"].Value);
+                if(matchConfig.Attributes["seekExactMatchFirst"] != null)
+                    this.Validation.ExactMatchFirst = bool.Parse(matchConfig.Attributes["seekExactMatchFirst"].Value);
+
+                foreach (var nd in matchConfig.ChildNodes)
+                    if (nd is XmlElement && (nd as XmlElement).Name == "algorithm" && (nd as XmlElement).Attributes["name"] != null)
+                        Validation.DefaultMatchAlgorithms |= (MatchAlgorithm)Enum.Parse(typeof(MatchAlgorithm), (nd as XmlElement).Attributes["name"].Value);
+
+                if (Validation.DefaultMatchAlgorithms == 0)
+                    Validation.DefaultMatchAlgorithms = MatchAlgorithm.Default;
+            }
             // Connection manager configuration
             if (connectionManagerConfig.Attributes["connection"] != null)
             {
