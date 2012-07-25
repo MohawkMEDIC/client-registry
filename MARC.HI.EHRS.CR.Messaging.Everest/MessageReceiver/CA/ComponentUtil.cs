@@ -606,5 +606,206 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             return retVal;
         }
+
+
+
+        /// <summary>
+        /// Create a query match for find candidates
+        /// </summary>
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<VersionedDomainIdentifier> recordIds)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+            // Details about the query
+            if (!controlActEvent.Code.Code.Equals(PRPA_IN101103CA.GetTriggerEvent().Code))
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
+                return null;
+            }
+
+            // REturn value
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList>(controlActEvent, dtls);
+            
+            // Filter
+            RegistrationEvent filter = new RegistrationEvent();
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+
+            // Parameter list validation
+            var parameterList = controlActEvent.QueryByParameter.parameterList;
+            if(parameterList == null || parameterList.NullFlavor != null)
+            {
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error,this.m_localeService.GetString("MSGE04E"), null));
+                parameterList = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList();
+            }
+
+            // Discrete record identifiers
+            recordIds = new List<VersionedDomainIdentifier>(100);
+            foreach (var recId in parameterList.ClientId)
+                if(recId != null &&
+                    recId.NullFlavor == null && recId.Value != null &&
+                    !recId.Value.IsNull)
+                    recordIds.Add(new VersionedDomainIdentifier()
+                    {
+                        Domain = recId.Value.Root,
+                        Identifier = recId.Value.Extension
+                    });
+
+            // Create the actual query
+            Person filterPerson = new Person();
+
+            // Admin gender
+            if (parameterList.AdministrativeGender != null &&
+                parameterList.AdministrativeGender.NullFlavor == null &&
+                !parameterList.AdministrativeGender.Value.IsNull)
+                filterPerson.GenderCode = Util.ToWireFormat(parameterList.AdministrativeGender.Value);
+            
+            // Deceased flags
+            if (parameterList.DeceasedTime != null &&
+                parameterList.DeceasedTime.NullFlavor == null &&
+                parameterList.DeceasedTime.Value != null &&
+                !parameterList.DeceasedTime.Value.IsNull)
+                filterPerson.DeceasedTime = CreateTimestamp(parameterList.DeceasedTime.Value, dtls);
+            else if (parameterList.DeceasedIndicator != null &&
+                parameterList.DeceasedIndicator.NullFlavor == null &&
+                parameterList.DeceasedIndicator.Value != null &&
+                !parameterList.DeceasedIndicator.Value.IsNull)
+                filterPerson.DeceasedTime = new TimestampPart();
+
+            // Fathers name, becomes a personal relationship with a name
+            if (parameterList.FathersName != null &&
+                parameterList.FathersName.NullFlavor == null &&
+                parameterList.FathersName.Value != null &&
+                !parameterList.FathersName.Value.IsNull)
+            {
+                filterPerson.Add(new PersonalRelationship()
+                {
+                    RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Father),
+                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls)
+                }, "FTH", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+            }
+            
+            // Mother's name
+            if (parameterList.MothersMaidenName != null &&
+                parameterList.MothersMaidenName.NullFlavor == null &&
+                parameterList.MothersMaidenName.Value != null &&
+                !parameterList.MothersMaidenName.Value.IsNull)
+            {
+                var rltn = new PersonalRelationship()
+                {
+                    RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Mother),
+                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls)
+                };
+              
+                rltn.LegalName.Use = NameSet.NameSetUse.MaidenName;
+                filterPerson.Add(rltn, "MTH", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+            }
+
+            // Language code
+            if (parameterList.LanguageCode != null &&
+                parameterList.LanguageCode.NullFlavor == null &&
+                parameterList.LanguageCode.Value != null &&
+                !parameterList.LanguageCode.Value.IsNull)
+            {
+                filterPerson.Language = new List<PersonLanguage>();
+                var lang = parameterList.LanguageCode.Value;
+                
+                PersonLanguage pl = new PersonLanguage();
+
+                CodeValue languageCode = CreateCodeValue(lang, dtls);
+                // Default ISO 639-3
+                languageCode.CodeSystem = languageCode.CodeSystem ?? "2.16.840.1.113883.6.121";
+
+                // Validate the language code
+                if (languageCode.CodeSystem != "2.16.840.1.113883.6.121" &&
+                    languageCode.CodeSystem != "2.16.840.1.113883.6.99")
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04B"), null));
+
+                // Translate the language code
+                if (languageCode.CodeSystem == "2.16.840.1.113883.6.121") // we need to translate
+                    languageCode = termSvc.Translate(languageCode, "2.16.840.1.113883.6.99");
+
+                if (languageCode == null)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04C"), null, null));
+                else
+                    pl.Language = languageCode.Code;
+
+                // Preferred? 
+                pl.Type = LanguageType.WrittenAndSpoken;
+
+                // Add
+                filterPerson.Language.Add(pl);
+            }
+
+            // Mutliple birth
+            if (parameterList.MultipleBirthOrderNumber != null &&
+                parameterList.MultipleBirthOrderNumber.NullFlavor == null &&
+                parameterList.MultipleBirthOrderNumber.Value != null &&
+                !parameterList.MultipleBirthOrderNumber.Value.IsNull)
+                filterPerson.BirthOrder = parameterList.MultipleBirthOrderNumber.Value;
+            else if (parameterList.MultipleBirthIndicator != null &&
+                parameterList.MultipleBirthIndicator.NullFlavor == null &&
+                parameterList.MultipleBirthIndicator.Value != null &&
+                !parameterList.MultipleBirthIndicator.Value.IsNull)
+                filterPerson.BirthOrder = -1;
+
+            // Addresses
+            foreach (var addr in parameterList.PersonAddress)
+                if (addr != null && addr.NullFlavor == null &&
+                    addr.Value != null && !addr.Value.IsNull)
+                {
+                    if (filterPerson.Addresses == null)
+                        filterPerson.Addresses = new List<AddressSet>();
+                    filterPerson.Addresses.Add(CreateAddressSet(addr.Value, dtls));
+                }
+
+            // Personal relationship code (reverse)
+            if (parameterList.PersonalRelationshipCode != null &&
+                parameterList.PersonalRelationshipCode.NullFlavor == null &&
+                parameterList.PersonalRelationshipCode.Value != null &&
+                !parameterList.PersonalRelationshipCode.Value.IsNull)
+                filterPerson.Add(new PersonalRelationship()
+                {
+                    RelationshipKind = Util.ToWireFormat(parameterList.PersonalRelationshipCode.Value)
+                }, "RLTN", HealthServiceRecordSiteRoleType.RepresentitiveOf | HealthServiceRecordSiteRoleType.Inverse, null);
+
+            // Birth time
+            if (parameterList.PersonBirthtime != null &&
+                parameterList.PersonBirthtime.NullFlavor == null &&
+                parameterList.PersonBirthtime.Value != null &&
+                !parameterList.PersonBirthtime.Value.IsNull)
+                filterPerson.BirthTime = CreateTimestamp(parameterList.PersonBirthtime.Value, dtls);
+
+            // Person name
+            foreach (var name in parameterList.PersonName)
+                if (name != null && name.NullFlavor == null &&
+                    name.Value != null && !name.Value.IsNull)
+                {
+                    if (filterPerson.Names == null)
+                        filterPerson.Names = new List<NameSet>();
+                    filterPerson.Names.Add(CreateNameSet(name.Value, dtls));
+                }
+
+            // Telecoms
+            foreach(var tel in parameterList.PersonTelecom)
+                if (tel != null && tel.NullFlavor == null &&
+                    tel.Value != null && !tel.Value.IsNull)
+                {
+                    if (filterPerson.TelecomAddresses == null)
+                        filterPerson.TelecomAddresses = new List<TelecommunicationsAddress>();
+                    filterPerson.TelecomAddresses.Add(new TelecommunicationsAddress()
+                    {
+                        Use = Util.ToWireFormat(tel.Value.Use),
+                        Value = tel.Value.Value
+                    });
+                }
+
+            // Filter
+            filter.Add(filterPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            // Determine if errors exist that prevent the processing of this message
+            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                return null;
+
+            return retVal;
+        }
     }
 }

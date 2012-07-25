@@ -138,35 +138,22 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             /// </summary>
             [XmlIgnore]
             public RegistrationEvent QueryRequest { get; set; }
-
+            /// <summary>
+            /// The minimum degree of match
+            /// </summary>
+            [XmlAttribute("minDegreeMatch")]
+            public float MinimumDegreeMatch { get; set; }
+            /// <summary>
+            /// Matching algorithms
+            /// </summary>
+            [XmlAttribute("matchAlgorithm")]
+            public MatchAlgorithm MatchingAlgorithm { get; set; }
             /// <summary>
             /// Original Request
             /// </summary>
             [XmlAttribute("originalConvo")]
             public string OriginalMessageQueryId { get; set; }
-            /// <summary>
-            /// Represents a copy of the client identifiers which are appropriate for results in the set
-            /// </summary>
-            [XmlElement("TargetOfFilter")]
-            public List<DomainIdentifier> MatchTargetOfDomainIdentifier
-            {
-                get
-                {
-                    if (m_targetIds == null && QueryRequest != null)
-                    {
-                        m_targetIds = new List<DomainIdentifier>();
-                        var tRec = QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.TargetOf) as Client;
-                        m_targetIds.AddRange(tRec.AlternateIdentifiers);
-                        if((tRec.Site as HealthServiceRecordSite).OriginalIdentifier != null)
-                            m_targetIds.AddRange((tRec.Site as HealthServiceRecordSite).OriginalIdentifier);
-                    }
-                    return m_targetIds;
-                }
-                set
-                {
-                    m_targetIds = value;
-                }
-            }
+            
             /// <summary>
             /// Record Ids to be fetched
             /// </summary>

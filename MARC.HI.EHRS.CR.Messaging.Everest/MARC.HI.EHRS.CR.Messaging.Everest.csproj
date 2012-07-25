@@ -86,6 +86,8 @@
     <Compile Include="IQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
     <Compile Include="MessageReceiver\CA\ComponentUtil.cs" />
+    <Compile Include="MessageReceiver\CA\CaDeComponentUtil.cs" />
+    <Compile Include="MessageReceiver\CA\FindCandidatesQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\NotSupportedMessageReceiver.cs" />
     <Compile Include="MessageReceiver\UV\PdqSupplier.cs" />
     <Compile Include="MessageReceiver\UV\PixManager.cs" />

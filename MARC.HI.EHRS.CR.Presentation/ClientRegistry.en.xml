@@ -30,6 +30,7 @@
   <string name="MSGE04B">MSGE04B : Langauge code must come from either ISO 639-3 of ISO 639-1 code system</string>
   <string name="MSGE04C">MSGE04C : Could not find a valid translation from the supplied language code system ISO 639-3 to ISO 639-1</string>
   <string name="MSGE04D">MSGE04D : Address use '{0}' is not supported by this registry</string>
+  <string name="MSGE04E">MSGE04E : Query is missing parameter list</string>
   
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>

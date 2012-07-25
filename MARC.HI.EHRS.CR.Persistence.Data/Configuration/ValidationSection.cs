@@ -52,5 +52,20 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
         /// override this
         /// </summary>
         public bool ExactMatchFirst { get; set; }
+
+        /// <summary>
+        /// When true, persons (such a providers) must exist before being recorded
+        /// </summary>
+        public bool PersonsMustExist { get; set; }
+
+        /// <summary>
+        /// When true, healthcare participants must be validated
+        /// </summary>
+        public bool ValidateHealthcareParticipants { get; set; }
+
+        /// <summary>
+        /// Minimum degree of name matches when VALIDATING persons
+        /// </summary>
+        public float PersonNameMatch { get; set; }
     }
 }

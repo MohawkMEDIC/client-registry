@@ -441,7 +441,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (subjectOfQuery == null)
                 throw new InvalidOperationException();
 
-            if (queryFilter == null)
+            if (queryFilter == null || queryFilter.MatchingAlgorithm == MatchAlgorithm.Unspecified)
                 queryFilter = new QueryParameters()
                 {
                     MatchStrength = DatabasePersistenceService.ValidationSettings.DefaultMatchStrength,

@@ -11,6 +11,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     public enum MatchAlgorithm
     {
         /// <summary>
+        /// Not specified
+        /// </summary>
+        Unspecified = 0,
+        /// <summary>
         /// Names must exactly match one another
         /// </summary>
         Exact = 0x1,

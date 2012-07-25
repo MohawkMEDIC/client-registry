@@ -102,7 +102,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 { EntityNameUse.OfficialRecord, NameSet.NameSetUse.OfficialRecord },
                 { EntityNameUse.Phonetic, NameSet.NameSetUse.Phonetic },
                 { EntityNameUse.Pseudonym, NameSet.NameSetUse.Pseudonym },
-                { EntityNameUse.Religious, NameSet.NameSetUse.Religious }
+                { EntityNameUse.Religious, NameSet.NameSetUse.Religious },
+                { EntityNameUse.MaidenName, NameSet.NameSetUse.MaidenName }
             };
 
             // Create name part type map
@@ -1039,7 +1040,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         }
 
         #endregion
-
 
 
     }

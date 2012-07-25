@@ -87,6 +87,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
                 // Validation Configuration
                 if (validationConfig.Attributes["allowDuplicates"] != null)
                     this.Validation.AllowDuplicateRecords = Boolean.Parse(validationConfig.Attributes["allowDuplicates"].Value);
+                if (validationConfig.Attributes["personMustExist"] != null)
+                    this.Validation.PersonsMustExist = Boolean.Parse(validationConfig.Attributes["personMustExist"].Value);
+                if (validationConfig.Attributes["validateProvidersAgainstPR"] != null)
+                    this.Validation.ValidateHealthcareParticipants = Boolean.Parse(validationConfig.Attributes["validateProvidersAgainstPR"].Value);
+                if (validationConfig.Attributes["minPersonNameMatch"] != null)
+                    this.Validation.PersonNameMatch = (float)Double.Parse(validationConfig.Attributes["minPersonNameMatch"].Value);
 
             }
 
@@ -94,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
             if (matchConfig != null)
             {
                 if (matchConfig.Attributes["defaultMatchStr"] != null)
-                    this.Validation.DefaultMatchStrength = (MatchStrength)Enum.Parse(typeof(MatchStrength), validationConfig.Attributes["defaultMatchStr"].Value);
+                    this.Validation.DefaultMatchStrength = (MatchStrength)Enum.Parse(typeof(MatchStrength), matchConfig.Attributes["defaultMatchStr"].Value);
                 if(matchConfig.Attributes["seekExactMatchFirst"] != null)
                     this.Validation.ExactMatchFirst = bool.Parse(matchConfig.Attributes["seekExactMatchFirst"].Value);
 

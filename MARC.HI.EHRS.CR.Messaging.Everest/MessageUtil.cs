@@ -247,14 +247,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create query data structure 
         /// </summary>
-        public static DataUtil.QueryData CreateQueryData(QueryByParameter<MARC.Everest.RMIM.CA.R020402.REPC_MT500006CA.ParameterList> queryByParameter, string originator)
+        public static DataUtil.QueryData CreateQueryData(QueryByParameter<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> queryByParameter, string originator)
         {
             
             return  new DataUtil.QueryData()
             {
                 QueryId = new Guid(queryByParameter.QueryId.Root),
-                IncludeHistory = (bool)queryByParameter.parameterList.IncludeHistoryIndicator.Value,
-                IncludeNotes = (bool)queryByParameter.parameterList.IncludeNotesIndicator.Value,
+                IncludeHistory = false,
+                IncludeNotes = false,
                 Quantity = (int)(queryByParameter.InitialQuantity ?? new INT(100)),
                 Originator = originator
             };
@@ -381,7 +381,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Get the terminology service 
             var termSvc = context.GetService(typeof(ITerminologyService)) as ITerminologyService;
-            if (termSvc != null)
+            if (termSvc == null)
                 return new CE<string>() { NullFlavor = NullFlavor.NoInformation };
             
             // Convert

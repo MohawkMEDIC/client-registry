@@ -186,13 +186,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     }
                 }
 
-                // Load the client that "related"
-                if (!loadFast && !(container is Client))
-                {
-                    var persister = DatabasePersistenceService.GetPersister(typeof(Client));
-                    persister.DePersist(conn, rltdId, retVal, HealthServiceRecordSiteRoleType.RepresentitiveOf, true);
-                }
-
+        
                 // Append to the container
                 if (container is Person)
                     (container as Person).Add(retVal, Guid.NewGuid().ToString(), MARC.HI.EHRS.SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
