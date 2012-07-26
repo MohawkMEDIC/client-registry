@@ -30,5 +30,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Desired match strength
         /// </summary>
         public MatchStrength MatchStrength { get; set; }
+
+        /// <summary>
+        /// When used in a return, indicates the confidence of the match
+        /// </summary>
+        public float Confidence { get; set; }
     }
 }

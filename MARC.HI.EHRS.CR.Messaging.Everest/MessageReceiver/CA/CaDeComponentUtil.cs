@@ -153,7 +153,179 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// </summary>
         internal MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity> CreateRegistrationEvent(RegistrationEvent res, List<IResultDetail> details)
         {
-            return new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>();
+            var retVal = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>();
+
+            var person = res.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var custodialDevice = res.FindComponent(HealthServiceRecordSiteRoleType.PlaceOfRecord) as RepositoryDevice;
+            var replacement = res.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
+
+            // person
+            if (person == null)
+                retVal.Subject = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject4<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>() { NullFlavor = NullFlavor.NoInformation };
+            else
+                retVal.Subject = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject4<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>(CreateRegisteredRole(person, details));
+
+            // custodial device
+            if (custodialDevice == null)
+                retVal.Custodian = new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian() { NullFlavor = NullFlavor.NoInformation };
+            else
+                retVal.Custodian = CreateCustodialDevice(custodialDevice, details);
+
+            // Replacement
+            foreach (RegistrationEvent replc in replacement)
+                retVal.ReplacementOf.Add(new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.ReplacementOf(
+                    new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.PriorRegistration(
+                        new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.Subject5(
+                            new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.PriorRegisteredRole()
+                            {
+                                Id = CreateII(replc.AlternateIdentifier, details)
+                            }
+                        )
+                    )
+                ));
+
+            return retVal;
+
+        }
+
+        /// <summary>
+        /// Create registered role
+        /// </summary>
+        private MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity CreateRegisteredRole(Person person, List<IResultDetail> details)
+        {
+
+            ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            ITerminologyService termService = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+            var retVal = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity();
+
+            var relations = person.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
+            var maskingIndicators = person.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as MaskingIndicator;
+            var queryParameter = person.FindComponent(HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
+
+            // Masking indicators
+            if (maskingIndicators != null)
+                retVal.ConfidentialityCode = CreateCV<x_VeryBasicConfidentialityKind>(maskingIndicators.MaskingCode, details);
+            else
+                retVal.ConfidentialityCode = new CV<x_VeryBasicConfidentialityKind>(x_VeryBasicConfidentialityKind.Normal);
+
+            retVal.Id = CreateIISet(person.AlternateIdentifiers, details);
+            retVal.StatusCode = ConvertStatus(person.Status, details);
+            
+            // Query parameter (i.e. the match strength)
+            if(queryParameter != null)
+                retVal.SubjectOf = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.Subject(
+                    new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.ObservationEvent(
+                        (queryParameter.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0 ? ObservationQueryMatchType.PhoneticMatch : ObservationQueryMatchType.PatternMatch,
+                        queryParameter.Confidence
+                    )
+                );
+
+            // Set the identified person
+            retVal.IdentifiedPerson = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.Person(
+                null,
+                null,
+                Util.Convert<AdministrativeGender>(person.GenderCode),
+                CreateTS(person.BirthTime, details),
+                person.DeceasedTime != null,
+                CreateTS(person.DeceasedTime, details),
+                person.BirthOrder.HasValue,
+                person.BirthOrder,
+                null,
+                null,
+                null,
+                null);
+
+            // Create names
+            retVal.IdentifiedPerson.Name = new LIST<PN>();
+            if (person.Names != null)
+                foreach (var name in person.Names)
+                    retVal.IdentifiedPerson.Name.Add(CreatePN(name, details));
+            else
+                retVal.IdentifiedPerson.Name.NullFlavor = NullFlavor.NoInformation;
+
+            // Create telecoms
+            retVal.IdentifiedPerson.Telecom = new LIST<TEL>();
+            if (person.TelecomAddresses != null)
+                foreach (var tel in person.TelecomAddresses)
+                    retVal.IdentifiedPerson.Telecom.Add(CreateTEL(tel, details));
+            else
+                retVal.IdentifiedPerson.Telecom.NullFlavor = NullFlavor.NoInformation;
+
+            // Create addresses
+            retVal.IdentifiedPerson.Addr = new LIST<AD>();
+            if (person.Addresses != null)
+                foreach (var addr in person.Addresses)
+                    retVal.IdentifiedPerson.Addr.Add(CreateAD(addr, details));
+            else
+                retVal.IdentifiedPerson.Addr.NullFlavor = NullFlavor.NoInformation;
+
+            // Create AsOtherIds
+            retVal.IdentifiedPerson.AsOtherIDs = new List<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.OtherIDs>();
+            if (person.OtherIdentifiers != null)
+                foreach (var othId in person.OtherIdentifiers)
+                {
+                    var otherIdentifier = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.OtherIDs(
+                        CreateII(othId.Value, details),
+                        CreateCV<String>(othId.Key, details),
+                        null);
+                    // Any extensions that apply to this?
+                    var extId = person.FindExtension(o => o.Name == "AssigningIdOrganizationId" && o.PropertyPath == String.Format("OtherIdentifiers[{0}{1}]", otherIdentifier.Id.Root, otherIdentifier.Id.Extension));
+                    var extName = person.FindExtension(o => o.Name == "AssigningIdOrganizationName" && o.PropertyPath == String.Format("OtherIdentifiers[{0}{1}]", otherIdentifier.Id.Root, otherIdentifier.Id.Extension));
+                    if (extId != null || extName != null)
+                        otherIdentifier.AssigningIdOrganization = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdOrganization(
+                            extId != null ? CreateII(extId.Value as DomainIdentifier, details) : null,
+                            extName != null ? extName.Value as String : null
+                        );
+                    retVal.IdentifiedPerson.AsOtherIDs.Add(otherIdentifier);
+                }
+
+            // Languages
+            if(person.Language != null)
+                foreach (var lang in person.Language)
+                {
+                    // Translate the code
+                    var langCode = new CodeValue(lang.Language, configService.OidRegistrar.GetOid("ISO639-1").Oid);
+
+                    if(termService != null)
+                        langCode = termService.Translate(langCode, configService.OidRegistrar.GetOid("ISO639-3").Oid);
+
+                    retVal.IdentifiedPerson.LanguageCommunication.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.LanguageCommunication(
+                        CreateCV<String>(langCode, details),
+                        lang.Type == LanguageType.Fluency
+                        ));
+                }
+
+            // Personal Relationships
+            if(relations != null)
+                foreach (PersonalRelationship relation in relations)
+                    retVal.IdentifiedPerson.PersonalRelationship.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.PersonalRelationship(
+                        Util.Convert<PersonalRelationshipRoleType>(relation.RelationshipKind),
+                        new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.ParentPerson(
+                            CreateII(relation.AlternateIdentifiers[0], details),
+                            CreatePN(relation.LegalName, details)
+                        )
+                    ));
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create custodian device
+        /// </summary>
+        private MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian CreateCustodialDevice(RepositoryDevice custodialDevice, List<IResultDetail> details)
+        {
+            return new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian(
+                new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.AssignedDevice(
+                    CreateII(custodialDevice.AlternateIdentifier, details),
+                    new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.Repository(
+                        custodialDevice.Name
+                    ),
+                    new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.RepositoryJurisdiction(
+                        custodialDevice.Jurisdiction
+                    )
+                )
+            );
         }
     }
 }
