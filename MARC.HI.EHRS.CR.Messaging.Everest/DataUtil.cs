@@ -410,6 +410,21 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         (n as Annotation).IsMasked = true;
                 }
 
+                // Calculate the matching algorithm
+                var subject = result.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+
+                if (subject is Person)
+                {
+                    var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf);
+                    if (filter != null)
+                        filter = (filter as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                    var confidence = (subject as Person).Confidence(filter as Person);
+
+                    if (confidence.Confidence < qd.MinimumDegreeMatch)
+                        return null;
+
+                    (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
+                }
                 // Mask
                 if (this.m_policyService != null)
                     result = this.m_policyService.ApplyPolicies(qd.QueryRequest, result, issues) as RegistrationEvent;

@@ -201,7 +201,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
             var relations = person.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
             var maskingIndicators = person.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as MaskingIndicator;
-            var queryParameter = person.FindComponent(HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
+            var queryParameter = person.FindComponent(HealthServiceRecordSiteRoleType.CommentOn | HealthServiceRecordSiteRoleType.ComponentOf) as QueryParameters;
 
             // Masking indicators
             if (maskingIndicators != null)
@@ -217,15 +217,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 retVal.SubjectOf = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.Subject(
                     new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.ObservationEvent(
                         (queryParameter.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0 ? ObservationQueryMatchType.PhoneticMatch : ObservationQueryMatchType.PatternMatch,
-                        queryParameter.Confidence
+                        new REAL(queryParameter.Confidence) { Precision = 2 }
                     )
                 );
+
+            object gend = new CV<AdministrativeGender>() { NullFlavor = NullFlavor.NoInformation }; 
+            Util.TryFromWireFormat(person.GenderCode, typeof(CV<AdministrativeGender>), out gend);
 
             // Set the identified person
             retVal.IdentifiedPerson = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.Person(
                 null,
                 null,
-                Util.Convert<AdministrativeGender>(person.GenderCode),
+                gend as CV<AdministrativeGender>, 
                 CreateTS(person.BirthTime, details),
                 person.DeceasedTime != null,
                 CreateTS(person.DeceasedTime, details),
@@ -299,13 +302,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             // Personal Relationships
             if(relations != null)
                 foreach (PersonalRelationship relation in relations)
-                    retVal.IdentifiedPerson.PersonalRelationship.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.PersonalRelationship(
-                        Util.Convert<PersonalRelationshipRoleType>(relation.RelationshipKind),
-                        new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.ParentPerson(
-                            CreateII(relation.AlternateIdentifiers[0], details),
-                            CreatePN(relation.LegalName, details)
-                        )
-                    ));
+                    if(!String.IsNullOrEmpty(relation.RelationshipKind))
+                        retVal.IdentifiedPerson.PersonalRelationship.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.PersonalRelationship(
+                            Util.Convert<PersonalRelationshipRoleType>(relation.RelationshipKind),
+                            new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.ParentPerson(
+                                CreateII(relation.AlternateIdentifiers[0], details),
+                                CreatePN(relation.LegalName, details)
+                            )
+                        ));
 
             return retVal;
         }

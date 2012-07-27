@@ -75,12 +75,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             else if (pr.AlternateIdentifiers != null)
             {
                 int i = 0;
-                while (relationshipPerson != null && i < pr.AlternateIdentifiers.Count)
+                while (relationshipPerson == null && i < pr.AlternateIdentifiers.Count)
                     relationshipPerson = persister.GetPerson(conn, tx, pr.AlternateIdentifiers[i++]);
             }
 
             // Did we get one?
+            // If not, then we need to register a patient in the database 
             if (relationshipPerson == null)
+            {
                 relationshipPerson = new Person()
                 {
                     AlternateIdentifiers = pr.AlternateIdentifiers,
@@ -92,21 +94,30 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     Status = StatusType.Active
                 };
 
-            var registrationEvent = DbUtil.GetRegistrationEvent(pr).Clone() as HealthServiceRecordContainer;
-            registrationEvent.Add(relationshipPerson);
+                var registrationEvent = DbUtil.GetRegistrationEvent(pr).Clone() as RegistrationEvent;
+                registrationEvent.Id = default(decimal);
+                registrationEvent.EventClassifier = RegistrationEventType.ComponentEvent;
+                registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
+                registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
-            var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
-
+                // Persist
+                new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
+                //var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
+            }
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
             if (clientContainer != null) // We need to do some linking
-                LinkClients(conn, tx, Convert.ToDecimal(clientIdentifier.Identifier), clientContainer.Id, pr.RelationshipKind);
+                LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind);
             else if (clientContainer == null) // We need to do some digging to find out "who" this person is related to (the record target)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF003"));
                             
             // todo: Container is a HSR
 
-            return clientIdentifier;
+            return new VersionedDomainIdentifier() 
+                {
+                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
+                    Identifier = relationshipPerson.Id.ToString()
+                };
         }
 
         /// <summary>

@@ -441,6 +441,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (subjectOfQuery == null)
                 throw new InvalidOperationException();
 
+            // Query Filter
             if (queryFilter == null || queryFilter.MatchingAlgorithm == MatchAlgorithm.Unspecified)
                 queryFilter = new QueryParameters()
                 {
@@ -448,18 +449,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     MatchingAlgorithm = DatabasePersistenceService.ValidationSettings.DefaultMatchAlgorithms
                 };
 
-            // Matching?
-            StringBuilder sb = new StringBuilder("SELECT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
-            // Identifiers
-            if (subjectOfQuery.AlternateIdentifiers != null)
-                sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
-            if(subjectOfQuery.Names != null)
-                sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, queryFilter));
-
-            // TRIM INTERSECT
-            if (sb.ToString().EndsWith("INTERSECT "))
-                sb.Remove(sb.Length - 10, 10);
-            sb.Append(")");
 
             // Connect to the database
             IDbConnection conn = m_configuration.ReadonlyConnectionManager.GetConnection();
@@ -468,20 +457,43 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
 
-
-                    cmd.CommandText = sb.ToString();
-                    cmd.CommandType = CommandType.Text;
-                    using (IDataReader rdr = cmd.ExecuteReader())
+                    for (int i = 0; i < 2; i++)
                     {
-                        // Read all results
-                        while (rdr.Read())
-                        {
-                            retVal.Add(new VersionedResultIdentifier()
-                            {
-                                Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid,
-                                Identifier = Convert.ToString(rdr["hsr_id"])
 
-                            });
+
+                        // Matching?
+                        StringBuilder sb = new StringBuilder("SELECT DISTINCT ON (HSR_ID) HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
+                        // Identifiers
+                        if (subjectOfQuery.AlternateIdentifiers != null)
+                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
+                        if (subjectOfQuery.Names != null)
+                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, i == 1 ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
+
+                        // TRIM INTERSECT
+                        if (sb.ToString().EndsWith("INTERSECT "))
+                            sb.Remove(sb.Length - 10, 10);
+                        sb.Append(")");
+
+                        cmd.CommandText = sb.ToString();
+                        cmd.CommandType = CommandType.Text;
+                        using (IDataReader rdr = cmd.ExecuteReader())
+                        {
+                            // Read all results
+                            while (rdr.Read())
+                            {
+                                
+                                // Id
+                                var id = new VersionedResultIdentifier()
+                                {
+                                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid,
+                                    Identifier = Convert.ToString(rdr["hsr_id"])
+
+                                };
+                                // Add the ID
+                                if (!retVal.Exists(o => o.Identifier == id.Identifier))
+                                    retVal.Add(id);
+
+                            }
                         }
                     }
                 }
@@ -492,7 +504,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
 
 
-            retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
         }
 

@@ -87,6 +87,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 retHl7v3.Add(retRec);
             }
 
+            // HACK: Sort by confidence score (if present)
+            retHl7v3.Sort((a, b) => b.RegistrationEvent.Subject.registeredRole.SubjectOf.ObservationEvent.Value.CompareTo(a.RegistrationEvent.Subject.registeredRole.SubjectOf.ObservationEvent.Value));
+
             // Create the response
             PRPA_IN101104CA response = new PRPA_IN101104CA
             (

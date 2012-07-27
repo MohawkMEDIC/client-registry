@@ -167,6 +167,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Mesage
                 ackDetail.Location = dtl.Location == null ? null : new SET<ST>((ST)dtl.Location, (a,b) => ST.Comparator(a, b));
                 ackDetail.Text = dtl.Message;
+                if (dtl.Exception != null)
+                    ackDetail.Text += String.Format("({0})", dtl.Exception.Message);
 
                 retVal.Add(ackDetail);
             }

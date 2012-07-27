@@ -5,6 +5,7 @@ using System.Text;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Xml.Serialization;
+using MARC.HI.EHRS.CR.Core.Util;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
@@ -15,6 +16,59 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     [XmlType("Person", Namespace = "urn:marc-hi:ca/cr")]
     public class Person : CrHealthServiceRecordContainer
     {
+
+        /// <summary>
+        /// Calculates the similarity to another person
+        /// </summary>
+        public QueryParameters Confidence(Person other)
+        {
+
+            if (other == null)
+                return new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Unspecified, Confidence = 0.0f, MatchStrength = ComponentModel.MatchStrength.Weak };
+            
+            // Exact match
+            var exactMatch = new QueryParameters()
+                {
+                    Confidence = 1.0f,
+                    MatchStrength = MatchStrength.Exact,
+                    MatchingAlgorithm = MatchAlgorithm.Exact
+                };
+            
+            // First, how many of the alternate identifiers in this patient match the other
+            if (other.AlternateIdentifiers != null && other.AlternateIdentifiers.Exists(o => this.AlternateIdentifiers.Exists(p => p.Domain == o.Domain && p.Identifier == o.Identifier)))
+                return exactMatch; // 100% confidence in match because the identifiers match
+                
+            // Second, how many names match
+            if (other.Names != null)
+            {
+                exactMatch.Confidence = GetMaxNameConfidence(other.Names);
+                if (exactMatch.Confidence < 1.0f)
+                    exactMatch.MatchingAlgorithm = MatchAlgorithm.Soundex | MatchAlgorithm.Variant;
+                exactMatch.MatchStrength = exactMatch.Confidence < 0.50 ? MatchStrength.Weak : exactMatch.Confidence < 0.75 ? MatchStrength.Moderate : exactMatch.Confidence < 1.0 ? MatchStrength.Strong : MatchStrength.Exact;
+            }
+
+            return exactMatch;
+
+        }
+
+        /// <summary>
+        /// Get the maximum name confidence
+        /// </summary>
+        private float GetMaxNameConfidence(List<NameSet> otherNames)
+        {
+            float maxConfidence = 0.0f;
+
+            foreach (var name in otherNames)
+            {
+                float maxNameMatch = this.Names.Max(p => p.ConfidenceEquals(name));
+                if (maxNameMatch > maxConfidence)
+                    maxConfidence = maxNameMatch;
+            }
+
+            return maxConfidence;
+        }
+
+
         /// <summary>
         /// Represents the alternate identifier that this record is known as
         /// </summary>
