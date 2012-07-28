@@ -87,8 +87,11 @@
     <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
     <Compile Include="MessageReceiver\CA\ComponentUtil.cs" />
     <Compile Include="MessageReceiver\CA\CaDeComponentUtil.cs" />
+    <Compile Include="MessageReceiver\CA\ContinueQueryMessageReceiver.cs" />
+    <Compile Include="MessageReceiver\CA\GetCandidatesQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\FindCandidatesQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\NotSupportedMessageReceiver.cs" />
+    <Compile Include="MessageReceiver\QueryResponseFactoryUtil.cs" />
     <Compile Include="MessageReceiver\UV\PdqSupplier.cs" />
     <Compile Include="MessageReceiver\UV\PixManager.cs" />
     <Compile Include="MessageReceiver\UV\QueryManager.cs" />

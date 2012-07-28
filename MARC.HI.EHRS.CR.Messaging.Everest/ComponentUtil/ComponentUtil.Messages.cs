@@ -215,10 +215,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             
-            // Determine if errors exist that prevent the processing of this message
-            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
-                return null;
-
             return retVal;
         }
 
@@ -358,11 +354,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW004"), null, null));
             }
-
-
-            // Determine if errors exist that prevent the processing of this message
-            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
-                return null;
 
             return retVal;
         }

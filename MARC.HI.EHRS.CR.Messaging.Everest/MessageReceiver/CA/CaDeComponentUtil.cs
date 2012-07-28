@@ -331,5 +331,65 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 )
             );
         }
+
+        /// <summary>
+        /// Create the response registration event
+        /// </summary>
+        internal MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity> CreateRegistrationEventDetail(RegistrationEvent res, List<IResultDetail> details)
+        {
+            var retVal = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>();
+
+            var person = res.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var custodialDevice = res.FindComponent(HealthServiceRecordSiteRoleType.PlaceOfRecord | HealthServiceRecordSiteRoleType.ResponsibleFor) as RepositoryDevice;
+            var replacement = res.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
+
+            // person
+            if (person == null)
+                retVal.Subject = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject4<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>() { NullFlavor = NullFlavor.NoInformation };
+            else
+            {
+                var regRole = CreateRegisteredRole(person, details);
+                retVal.Subject = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject4<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>(
+                    new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity(
+                        regRole.Id,
+                        regRole.StatusCode,
+                        regRole.EffectiveTime,
+                        regRole.ConfidentialityCode,
+                        new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.Person(),
+                        regRole.SubjectOf
+                    ));
+                if (regRole.IdentifiedPerson != null && regRole.IdentifiedPerson.NullFlavor == null)
+                    foreach (var othId in regRole.IdentifiedPerson.AsOtherIDs)
+                        retVal.Subject.registeredRole.IdentifiedPerson.AsOtherIDs.Add(
+                            new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.OtherIDs(
+                                othId.Id,
+                                othId.Code,
+                                new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdOrganization(
+                                    othId.AssigningIdOrganization.Id,
+                                    othId.AssigningIdOrganization.Name)
+                            ));
+            }
+
+            // custodial device
+            if (custodialDevice == null)
+                retVal.Custodian = new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian() { NullFlavor = NullFlavor.NoInformation };
+            else
+                retVal.Custodian = CreateCustodialDevice(custodialDevice, details);
+            
+            // Replacement
+            foreach (RegistrationEvent replc in replacement)
+                retVal.ReplacementOf.Add(new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.ReplacementOf(
+                    new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.PriorRegistration(
+                        new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.Subject5(
+                            new MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.PriorRegisteredRole()
+                            {
+                                Id = CreateII(replc.AlternateIdentifier, details)
+                            }
+                        )
+                    )
+                ));
+
+            return retVal;
+        }
     }
 }

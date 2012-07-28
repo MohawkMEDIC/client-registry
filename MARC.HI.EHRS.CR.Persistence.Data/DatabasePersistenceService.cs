@@ -460,15 +460,17 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     for (int i = 0; i < 2; i++)
                     {
 
-
                         // Matching?
-                        StringBuilder sb = new StringBuilder("SELECT DISTINCT ON (HSR_ID) HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
+                        StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
                         // Identifiers
-                        if (subjectOfQuery.AlternateIdentifiers != null)
+                        if (subjectOfQuery.AlternateIdentifiers != null && subjectOfQuery.AlternateIdentifiers.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
-                        if (subjectOfQuery.Names != null)
+                        if (subjectOfQuery.Names != null && subjectOfQuery.Names.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, i == 1 ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
-
+                        else
+                            i = 2;
+                        if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
+                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.OtherIdentifiers));
                         // TRIM INTERSECT
                         if (sb.ToString().EndsWith("INTERSECT "))
                             sb.Remove(sb.Length - 10, 10);
@@ -481,7 +483,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             // Read all results
                             while (rdr.Read())
                             {
-                                
+
                                 // Id
                                 var id = new VersionedResultIdentifier()
                                 {
@@ -508,6 +510,21 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         }
 
         /// <summary>
+        /// Build filter identifiers
+        /// </summary>
+        private object BuildFilterIdentifiers(List<KeyValuePair<CodeValue, DomainIdentifier>> identifiers)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var id in identifiers)
+            {
+                retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Value.Domain.Replace("'", "''"), id.Value.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                if (!id.Equals(identifiers.Last()))
+                    retVal.AppendFormat(" UNION ");
+            }
+            return retVal.ToString();
+        }
+
+        /// <summary>
         /// Build filter for names
         /// </summary>
         private string BuildFilterNames(List<NameSet> names, QueryParameters parameters)
@@ -515,6 +532,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             StringBuilder retVal = new StringBuilder();
             foreach (var nm in names)
             {
+                if (nm == null)
+                    continue;
                 // Build the filter
                 StringBuilder filterString = new StringBuilder(),
                     cmpTypeString = new StringBuilder();
@@ -527,7 +546,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 // Match strength & algorithms
                 int desiredMatchLevel = 5;
                 bool useVariant = false;
-                if (nm.Use != NameSet.NameSetUse.Search)
+                if (nm.Use == NameSet.NameSetUse.Search)
                 {
                     useVariant = (parameters.MatchingAlgorithm & MatchAlgorithm.Variant) != 0;
                     if ((parameters.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0) // no soundex is allowed so exact only

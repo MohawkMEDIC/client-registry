@@ -101,7 +101,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 ProcessingID.Production,
                 AcknowledgementCondition.Never,
                 MessageUtil.CreateReceiver(rqst.Sender),
-                MessageUtil.CreateSender(new Uri(rqst.Receiver.Telecom.Value), configService),
+                MessageUtil.CreateSender(rqst.Receiver.Telecom == null ? null : new Uri(rqst.Receiver.Telecom.Value), configService),
                 new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.Acknowledgement(
                     details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
                     new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.TargetMessage(request.Id)

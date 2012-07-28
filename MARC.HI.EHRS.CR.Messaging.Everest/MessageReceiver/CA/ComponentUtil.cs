@@ -638,20 +638,23 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 parameterList = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList();
             }
 
+           
+            // Create the actual query
+            Person filterPerson = new Person();
+
             // Discrete record identifiers
             recordIds = new List<VersionedDomainIdentifier>(100);
+            filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
             foreach (var recId in parameterList.ClientId)
-                if(recId != null &&
+                if (recId != null &&
                     recId.NullFlavor == null && recId.Value != null &&
                     !recId.Value.IsNull)
-                    recordIds.Add(new VersionedDomainIdentifier()
+                    filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
                     {
                         Domain = recId.Value.Root,
                         Identifier = recId.Value.Extension
                     });
 
-            // Create the actual query
-            Person filterPerson = new Person();
 
             // Admin gender
             if (parameterList.AdministrativeGender != null &&
@@ -807,5 +810,73 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             return retVal;
         }
+
+
+        /// <summary>
+        /// Create a query match parameter for the get message
+        /// </summary>
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<VersionedDomainIdentifier> recordIds)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+            // Details about the query
+            if (!controlActEvent.Code.Code.Equals(PRPA_IN101105CA.GetTriggerEvent().Code))
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
+                return null;
+            }
+
+            // REturn value
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList>(controlActEvent, dtls);
+
+            // Filter
+            RegistrationEvent filter = new RegistrationEvent();
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+
+            // Parameter list validation
+            var parameterList = controlActEvent.QueryByParameter.parameterList;
+            if (parameterList == null || parameterList.NullFlavor != null)
+            {
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04E"), null));
+                parameterList = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList();
+            }
+
+            // Discrete record identifiers
+            recordIds = new List<VersionedDomainIdentifier>(100);
+
+            // Create the actual query
+            Person filterPerson = new Person();
+
+            // Alternate identifiers
+            filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
+            if (parameterList.ClientIDBus != null &&
+                    parameterList.ClientIDBus.NullFlavor == null && parameterList.ClientIDBus.Value != null &&
+                    !parameterList.ClientIDBus.Value.IsNull)
+                filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
+                {
+                    Domain = parameterList.ClientIDBus.Value.Root,
+                    Identifier = parameterList.ClientIDBus.Value.Extension
+                });
+
+            // Other identifiers
+            filterPerson.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
+            if (parameterList.ClientIDPub != null &&
+                    parameterList.ClientIDPub.NullFlavor == null && parameterList.ClientIDPub.Value != null &&
+                    !parameterList.ClientIDPub.Value.IsNull)
+                filterPerson.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(new CodeValue(), new DomainIdentifier()
+                {
+                    Domain = parameterList.ClientIDPub.Value.Root,
+                    Identifier = parameterList.ClientIDPub.Value.Extension
+                }));
+
+            // Filter
+            filter.Add(filterPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            // Determine if errors exist that prevent the processing of this message
+            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                return null;
+
+            return retVal;
+        }
+
     }
 }

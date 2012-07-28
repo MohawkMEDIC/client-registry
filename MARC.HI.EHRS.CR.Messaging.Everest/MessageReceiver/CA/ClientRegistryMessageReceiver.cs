@@ -433,7 +433,85 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// </summary>
         private IGraphable HandleGetAlternateIdentifiers(MARC.Everest.Connectors.UnsolicitedDataEventArgs e, MARC.Everest.Connectors.IReceiveResult receivedMessage)
         {
-            throw new NotImplementedException();
+            // Get the core services
+            ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
+            List<DetectedIssue> issues = new List<DetectedIssue>(10);
+
+            // Localization service
+            ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+
+            // Do a basic check and add common validation errors
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+
+            // Create the request message
+            PRPA_IN101105CA request = receivedMessage.Structure as PRPA_IN101105CA;
+
+            if (request == null)
+                return null;
+
+            bool isValid = MessageUtil.IsValid(receivedMessage);
+
+            try
+            {
+                if (!isValid)
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
+
+                // set the URI
+                request.Receiver.Telecom = e.ReceiveEndpoint.ToString();
+
+                // Create the prototype query structure
+                DataUtil dataUtil = new DataUtil() { Context = this.Context };
+
+                // Use the data utility to query for our discharge
+                GetCandidatesQueryResponseFactory fact = new GetCandidatesQueryResponseFactory() { Context = this.Context };
+                var filter = fact.CreateFilterData(request, dtls);
+
+                if (filter.QueryRequest == null)
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
+
+                var results = dataUtil.Query(filter, dtls, issues);
+                return fact.Create(request, results, dtls, issues);
+
+
+            }
+            catch (Exception ex)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex.StackTrace, ex));
+            }
+
+            PRPA_IN101106CA nackResponse = new PRPA_IN101106CA(
+                Guid.NewGuid(),
+                DateTime.Now,
+                ResponseMode.Immediate,
+                PRPA_IN101106CA.GetInteractionId(),
+                PRPA_IN101106CA.GetProfileId(),
+                ProcessingID.Production,
+                AcknowledgementCondition.Never,
+                MessageUtil.CreateReceiver(request.Sender),
+                MessageUtil.CreateSender(e.ReceiveEndpoint, configService),
+                new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.Acknowledgement(
+                    AcknowledgementType.ApplicationAcknowledgementError,
+                    new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.TargetMessage(
+                        request.Id)
+                )
+            );
+            nackResponse.Acknowledgement.AcknowledgementDetail = MessageUtil.CreateAckDetails(dtls.ToArray());
+            nackResponse.controlActEvent = PRPA_IN101106CA.CreateControlActEvent(
+                new II(configService.Custodianship.Id.Domain, Guid.NewGuid().ToString()),
+                PRPA_IN101104CA.GetTriggerEvent(),
+                new QueryAck(
+                    request.controlActEvent.QueryByParameter.QueryId,
+                    QueryResponse.ApplicationError,
+                    0, 0, 0),
+                request.controlActEvent.QueryByParameter
+            );
+            nackResponse.controlActEvent.LanguageCode = MessageUtil.GetDefaultLanguageCode(this.Context);
+            if (issues.Count > 0)
+                nackResponse.controlActEvent.SubjectOf.AddRange(MessageUtil.CreateDetectedIssueEventsQuery(issues));
+            return nackResponse;
+
         }
 
         /// <summary>

@@ -108,7 +108,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         {
             return new Sender()
                 {
-                    Telecom = receiveEndpoint.ToString(),
+                    Telecom = receiveEndpoint == null ? new TEL() { NullFlavor = NullFlavor.NoInformation } : (TEL)receiveEndpoint.ToString(),
                     Device = new Device1()
                     {
                         Id = new II(configService.DeviceIdentifier, Environment.MachineName),
@@ -249,9 +249,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create query data structure 
         /// </summary>
-        public static DataUtil.QueryData CreateQueryData(QueryByParameter<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> queryByParameter, string originator)
+        public static DataUtil.QueryData CreateQueryData<T>(QueryByParameter<T> queryByParameter, string originator)
         {
-            
             return  new DataUtil.QueryData()
             {
                 QueryId = new Guid(queryByParameter.QueryId.Root),

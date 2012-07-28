@@ -103,7 +103,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 { EntityNameUse.Phonetic, NameSet.NameSetUse.Phonetic },
                 { EntityNameUse.Pseudonym, NameSet.NameSetUse.Pseudonym },
                 { EntityNameUse.Religious, NameSet.NameSetUse.Religious },
-                { EntityNameUse.MaidenName, NameSet.NameSetUse.MaidenName }
+                { EntityNameUse.MaidenName, NameSet.NameSetUse.MaidenName },
+                { EntityNameUse.Search, NameSet.NameSetUse.Search }
             };
 
             // Create name part type map

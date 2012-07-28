@@ -766,7 +766,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 }
 
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
-                return QueryResultData.Empty;
+                throw;
             }
             catch (DbException ex)
             {
@@ -779,7 +779,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 }
 
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
-                return QueryResultData.Empty;
+                throw;
             }
             catch (DataException ex)
             {
@@ -792,7 +792,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 }
 
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
-                return QueryResultData.Empty;
+                throw;
             }
             catch (Exception ex)
             {
@@ -805,7 +805,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 }
 
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
-                return QueryResultData.Empty;
+                throw;
             }
         }
 
