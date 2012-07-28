@@ -1077,8 +1077,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Copy over extended attributes not mentioned in the new person
             foreach (HealthServiceRecordComponent cmp in oldPerson.Components)
-                if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath != (cmp as ExtendedAttribute).PropertyPath && o.Name != (cmp as ExtendedAttribute).Name) == null) // copy
-                    newPerson.Add(cmp);
+                if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath != (cmp as ExtendedAttribute).PropertyPath && o.Name != (cmp as ExtendedAttribute).Name) == null)
+                    newPerson.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, null);
 
         }
     }

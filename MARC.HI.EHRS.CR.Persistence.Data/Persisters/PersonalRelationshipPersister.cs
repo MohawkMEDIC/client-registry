@@ -104,6 +104,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
                 //var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
             }
+
+            // Validate
+            if (!relationshipPerson.Names.Exists(o=>QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+                throw new DataException(ApplicationContext.LocaleService.GetString("DBCF00A"));
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
             if (clientContainer != null) // We need to do some linking
@@ -136,6 +140,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Insert
                 cmd.ExecuteNonQuery();
             }
+            catch { }
             finally
             {
                 cmd.Dispose();
@@ -174,14 +179,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 retVal.PerminantAddress = clientDataRetVal.Addresses.Find(o => o.Use == AddressSet.AddressSetUse.HomeAddress) ?? clientDataRetVal.Addresses[0];
             retVal.TelecomAddresses.AddRange(clientDataRetVal.TelecomAddresses);
             retVal.Timestamp = clientDataRetVal.Timestamp;
-
-
+            
             // Load the personal relationship
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, null))
             {
                 cmd.CommandText = "get_psn_rltnshp";
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_id_in", DbType.Decimal, clientDataRetVal.Id));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_vrsn_id_in", DbType.Decimal, clientDataRetVal.VersionId));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_vrsn_id_in", DbType.Decimal, (container as Person).VersionId));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "trg_psn_id_in", DbType.Decimal, (container as Person).Id));
 
                 decimal rltdId = 0;

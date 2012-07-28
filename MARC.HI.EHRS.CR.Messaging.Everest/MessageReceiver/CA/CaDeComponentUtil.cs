@@ -156,7 +156,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             var retVal = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>();
 
             var person = res.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-            var custodialDevice = res.FindComponent(HealthServiceRecordSiteRoleType.PlaceOfRecord) as RepositoryDevice;
+            var custodialDevice = res.FindComponent(HealthServiceRecordSiteRoleType.PlaceOfRecord | HealthServiceRecordSiteRoleType.ResponsibleFor) as RepositoryDevice;
             var replacement = res.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
 
             // person
@@ -232,7 +232,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 CreateTS(person.BirthTime, details),
                 person.DeceasedTime != null,
                 CreateTS(person.DeceasedTime, details),
-                person.BirthOrder.HasValue,
+                person.BirthOrder.HasValue ? (BL)true : null,
                 person.BirthOrder,
                 null,
                 null,

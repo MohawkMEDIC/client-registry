@@ -30,6 +30,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
     internal static class ClientRegistryOids
     {
         /// <summary>
+        /// Device OID
+        /// </summary>
+        internal const string DEVICE_CRID = "DEV_CRID";
+        /// <summary>
         /// OID for a registration event
         /// </summary>
         internal const string REGISTRATION_EVENT = "REG_EVT";
