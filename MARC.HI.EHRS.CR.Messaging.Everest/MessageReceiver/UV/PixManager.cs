@@ -12,7 +12,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
         public MARC.Everest.Interfaces.IGraphable HandleMessageReceived(object sender, MARC.Everest.Connectors.UnsolicitedDataEventArgs e, MARC.Everest.Connectors.IReceiveResult receivedMessage)
         {
-            throw new NotImplementedException();
+           
+            
+            var msgr = new NotSupportedMessageReceiver();
+            msgr.Context = this.Context;
+            return msgr.HandleMessageReceived(sender, e, receivedMessage);
         }
 
         #endregion

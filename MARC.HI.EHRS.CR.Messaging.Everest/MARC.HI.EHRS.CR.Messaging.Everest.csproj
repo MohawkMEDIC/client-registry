@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="ComponentUtil\ComponentUtil.Datatypes.cs" />
     <Compile Include="ComponentUtil\ComponentUtil.Messages.cs" />
+    <Compile Include="MessageUtil.Ca.cs" />
     <Compile Include="DataUtil.cs" />
     <Compile Include="DeComponentUtil\DeComponentUtil.cs" />
     <Compile Include="IQueryResponseFactory.cs" />
@@ -92,10 +93,11 @@
     <Compile Include="MessageReceiver\CA\FindCandidatesQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\NotSupportedMessageReceiver.cs" />
     <Compile Include="MessageReceiver\QueryResponseFactoryUtil.cs" />
+    <Compile Include="MessageReceiver\UV\NotSupportedMessageReceiver.cs" />
     <Compile Include="MessageReceiver\UV\PdqSupplier.cs" />
     <Compile Include="MessageReceiver\UV\PixManager.cs" />
     <Compile Include="MessageReceiver\UV\QueryManager.cs" />
-    <Compile Include="MessageUtil.cs" />
+    <Compile Include="MessageUtil.Uv.cs" />
     <Compile Include="PersistenceResultDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultDetailClasses.cs" />
