@@ -75,18 +75,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             throw new InvalidOperationException("Unable to validate participant as no participant lookup service exists that can fulfill this request");
                         resPtcpt = ptcptLookup.FindParticipant(ptcpt.AlternateIdentifiers[0]);
                         if (resPtcpt == null || QueryUtil.MatchName(resPtcpt.LegalName, resPtcpt.LegalName) < DatabasePersistenceService.ValidationSettings.PersonNameMatch)
-                            throw new DataException(String.Format("Could not validate participant {0}@{1} against the participant validation service", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
+                            throw new DataException(String.Format("Could not validate participant {1}^^^&{0}&ISO against the participant validation service", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
                     }
                     CreatePtcpt(conn, tx, ptcpt);
                 }
                 else if (resPtcpt == null)
-                    throw new DataException(String.Format("Particiapant {0}@{1} cannot be found in this system", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
+                    throw new DataException(String.Format("Particiapant {1}^^^&{0}&ISO cannot be found in this system", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
                 else
                 {
                     // Validate the name given matches the legal name. Has to be more than
                     // 80% match
                     if (QueryUtil.MatchName(ptcpt.LegalName, resPtcpt.LegalName) < DatabasePersistenceService.ValidationSettings.PersonNameMatch)
-                        throw new DataException(String.Format("The provided legal name does not match the legal name of participant {0}@{1}, please ensure participant name is correct", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
+                        throw new DataException(String.Format("The provided legal name does not match the legal name of participant {1}^^^&{0}&ISO, please ensure participant name is correct", ptcpt.AlternateIdentifiers[0].Domain, ptcpt.AlternateIdentifiers[0].Identifier));
 
                     ptcpt.Id = resPtcpt.Id;
                     ptcpt.LegalName = resPtcpt.LegalName ?? ptcpt.LegalName;

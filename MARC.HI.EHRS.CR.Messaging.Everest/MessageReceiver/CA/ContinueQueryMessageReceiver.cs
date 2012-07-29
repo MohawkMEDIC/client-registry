@@ -117,7 +117,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
                 // Rules for Query Continuation
                 // 1. The Query Continuation must come from the originating system
-                if (!String.Format("{0}@{1}",
+                if (!String.Format("{1}^^^&{0}&ISO",
                     request.Sender.Device.Id.Root,
                     request.Sender.Device.Id.Extension).Equals(qd.Originator))
                 {

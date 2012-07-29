@@ -46,7 +46,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             if (ids == null || queryData == null)
                 throw new MessageValidationException(locale.GetString("MSG00A"), request);
 
-            var filter = MessageUtil.CreateQueryData(rqst.controlActEvent.QueryByParameter, String.Format("{0}@{1}",
+            var filter = MessageUtil.CreateQueryData(rqst.controlActEvent.QueryByParameter, String.Format("{1}^^^&{0}&ISO",
                     rqst.Sender.Device.Id.Root,
                     rqst.Sender.Device.Id.Extension)
                 );

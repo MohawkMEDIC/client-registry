@@ -597,7 +597,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                                     mIssue.Add(new DetectedIssue()
                                     {
                                         Type = IssueType.BusinessConstraintViolation,
-                                        Text = String.Format("Record '{0}@{1}' will not be retrieved", id.Domain, (parm as VersionedDomainIdentifier).Identifier),
+                                        Text = String.Format("Record '{1}^^^&{0}&ISO' will not be retrieved", id.Domain, (parm as VersionedDomainIdentifier).Identifier),
                                         MitigatedBy = ManagementType.OtherActionTaken,
                                         Priority = IssuePriorityType.Warning
                                     });
@@ -650,7 +650,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 {
                     LifecycleType = lifeCycle,
                     IDTypeCode = AuditableObjectIdType.ReportNumber,
-                    ObjectId = String.Format("{0}@{1}", id.Domain, id.Identifier),
+                    ObjectId = String.Format("{1}^^^&{0}&ISO", id.Domain, id.Identifier),
                     Role = AuditableObjectRole.Report,
                     Type = AuditableObjectType.SystemObject
                 });
@@ -682,7 +682,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     LifecycleType = AuditableObjectLifecycle.Verification,
                     Role = AuditableObjectRole.SecurityResource,
                     Type = AuditableObjectType.SystemObject,
-                    ObjectId = String.Format("{0}@{1}", policyOverride.FormId.Domain, policyOverride.FormId.Identifier)
+                    ObjectId = String.Format("{1}^^^&{0}&ISO", policyOverride.FormId.Domain, policyOverride.FormId.Identifier)
                 });
 
             // Add a network node
@@ -694,7 +694,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     audit.Actors.Add(new AuditActorData()
                     {
                         ActorRoleCode = new List<string>(new string[] { comp.Site.Name }),
-                        UserIdentifier = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
+                        UserIdentifier = String.Format("{1}^^^&{0}&ISO", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
                         UserName = (comp as HealthcareParticipant).LegalName.ToString(),
                         UserIsRequestor = (comp.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.AuthorOf,
 
@@ -702,7 +702,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     audit.AuditableObjects.Add(new AuditableObject()
                     {
                         IDTypeCode = AuditableObjectIdType.UserIdentifier,
-                        ObjectId = String.Format("{0}@{1}", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
+                        ObjectId = String.Format("{1}^^^&{0}&ISO", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
                         Role = AuditableObjectRole.Provider,
                         Type = AuditableObjectType.Person,
                         LifecycleType = (comp.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.AuthorOf ? lifeCycle.Value : default(AuditableObjectLifecycle)

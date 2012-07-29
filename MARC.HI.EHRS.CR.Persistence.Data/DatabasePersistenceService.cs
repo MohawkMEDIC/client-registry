@@ -269,7 +269,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Validate and duplicate the components that are to be loaded as part of the new version
                     var oldHsrEvent = GetContainer(hsrEvent.AlternateIdentifier, true) as RegistrationEvent; // Get the old container
                     if(oldHsrEvent == null)
-                        throw new MissingPrimaryKeyException(String.Format("Record {0}@{1} does not exist", hsrEvent.AlternateIdentifier.Domain, hsrEvent.AlternateIdentifier.Identifier));
+                        throw new MissingPrimaryKeyException(String.Format("Record {1}^^^&{0}&ISO does not exist", hsrEvent.AlternateIdentifier.Domain, hsrEvent.AlternateIdentifier.Identifier));
 
                     PersonPersister cp = new PersonPersister();
                     
