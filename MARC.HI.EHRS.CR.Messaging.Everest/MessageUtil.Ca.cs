@@ -73,9 +73,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         public static bool IsValid(IReceiveResult receivedMessage)
         {
-            return receivedMessage.Code == ResultCode.Accepted ||
+            
+            var result = receivedMessage.Code == ResultCode.Accepted ||
                 receivedMessage.Code == ResultCode.AcceptedNonConformant &&
                 receivedMessage.Details.Count(o=>o.Type == ResultDetailType.Error) == 0;
+
+            
+
+            return result;
         }
         
         /// <summary>
@@ -207,7 +212,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Validates common transport wrapper flags
         /// </summary>
-        public static void ValidateTransportWrapper(IInteraction interaction, List<IResultDetail> dtls)
+        public static void ValidateTransportWrapper(IInteraction interaction, ISystemConfigurationService config, List<IResultDetail> dtls)
         {
             // Check the response mode code
             string rspMode = Util.ToWireFormat((interaction as IImplementsResponseModeCode<ResponseMode>).ResponseModeCode);
@@ -227,6 +232,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Version '{0}' is not supported by this endpoint", interaction.VersionCode)));
             else if (profile == null || profile.ProfileId.Count(o => II.Comparator(o, MCCI_IN000002CA.GetProfileId()[0]) == 0) == 0)
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Supplied profile identifier does not match any profile identifier this endpoint can reliably process")));
+
+
+            Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
+            if (sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Sender information is missing from message", null));
+            else if (config.IsRegisteredDevice(new DomainIdentifier() { Domain = sndr.Device.Id.Root, Identifier = sndr.Device.Id.Extension }))
+                dtls.Add(new UnrecognizedSenderResultDetail(sndr));
 
         }
 

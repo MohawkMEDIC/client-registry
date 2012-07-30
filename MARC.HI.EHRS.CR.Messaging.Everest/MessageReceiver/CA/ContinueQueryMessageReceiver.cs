@@ -72,7 +72,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             List<DetectedIssue> issues = new List<DetectedIssue>(10);
 
             // Validate transport wrapper
-            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, configService, dtls);
 
             // Check that the request can be processed
             QUQI_IN000003CA request = receivedMessage.Structure as QUQI_IN000003CA;

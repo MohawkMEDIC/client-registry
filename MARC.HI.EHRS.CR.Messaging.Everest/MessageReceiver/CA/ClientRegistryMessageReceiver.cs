@@ -64,7 +64,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 
             // Do basic check and add common validation errors
-            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, configService, dtls);
 
             // Check the request is valid
             PRPA_IN101201CA request = receivedMessage.Structure as PRPA_IN101201CA;
@@ -262,7 +262,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 
             // Do basic check and add common validation errors
-            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, configService, dtls);
 
             // Check the request is valid
             PRPA_IN101204CA request = receivedMessage.Structure as PRPA_IN101204CA;
@@ -443,7 +443,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
 
             // Do a basic check and add common validation errors
-            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, configService, dtls);
 
             // Create the request message
             PRPA_IN101105CA request = receivedMessage.Structure as PRPA_IN101105CA;
@@ -529,7 +529,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
 
             // Do a basic check and add common validation errors
-            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, dtls);
+            MessageUtil.ValidateTransportWrapper(receivedMessage.Structure as IInteraction, configService, dtls);
 
             // Create the request message
             PRPA_IN101103CA request = receivedMessage.Structure as PRPA_IN101103CA;

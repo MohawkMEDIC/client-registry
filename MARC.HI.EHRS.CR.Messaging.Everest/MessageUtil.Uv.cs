@@ -79,7 +79,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     Telecom = receiveEndpoint == null ? new TEL() { NullFlavor = NullFlavor.NoInformation } : (TEL)receiveEndpoint.ToString(),
                     Device = new Device()
                     {
-                        Id = new SET<II>(new II(configService.DeviceIdentifier, Environment.MachineName)),
+                        Id = new SET<II>(new II(configService.DeviceIdentifier)),
                         SoftwareName = SoftwareName.Product,
                         Desc = SoftwareDescription.Description,
                         ManufacturerModelName = SoftwareVersion.ToString()
@@ -177,26 +177,31 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Validates common transport wrapper flags
         /// </summary>
-        public static void ValidateTransportWrapperUv(IInteraction interaction, List<IResultDetail> dtls)
+        public static void ValidateTransportWrapperUv(IInteraction interaction, ISystemConfigurationService config, List<IResultDetail> dtls)
         {
             // Check the response mode code
-            string rspMode = Util.ToWireFormat((interaction as IImplementsResponseModeCode<ResponseMode>).ResponseModeCode);
             string procMode = Util.ToWireFormat((interaction as IImplementsProcessingCode<ProcessingID>).ProcessingCode);
 
             var profile = interaction as IImplementsProfileId;
 
-            // Check response mode
-            if (rspMode != "I")
-                dtls.Add(new UnsupportedResponseModeResultDetail(rspMode));
             // Check processing id
             if (procMode != "P" && procMode != "D")
                 dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
 
             // Check version identifier
-            if (!interaction.VersionCode.CodeValue.Equals("V3-2008N"))
+            if (interaction.VersionCode != null && !interaction.VersionCode.CodeValue.Equals("V3PR1"))
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Version '{0}' is not supported by this endpoint", interaction.VersionCode)));
+            
+            if(profile == null)
+                dtls.Add(new FixedValueMisMatchedResultDetail(String.Empty, String.Format("{1}^^^&{0}&ISO", MCCI_IN000002UV01.GetProfileId()[0].Root, MCCI_IN000002UV01.GetProfileId()[0].Extension), false, "//urn:hl7-org:v3#profileId"));
             else if (profile == null || profile.ProfileId.Count(o => II.Comparator(o, MCCI_IN000002UV01.GetProfileId()[0]) == 0) == 0)
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Supplied profile identifier does not match any profile identifier this endpoint can reliably process")));
+
+            Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
+            if(sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Sender information is missing from message", null));
+            else if(sndr.Device.Id.Find(o=>config.IsRegisteredDevice(new DomainIdentifier() { Domain = o.Root, Identifier = o.Extension })) == null)
+                dtls.Add(new UnrecognizedSenderResultDetail(sndr));
 
         }
 

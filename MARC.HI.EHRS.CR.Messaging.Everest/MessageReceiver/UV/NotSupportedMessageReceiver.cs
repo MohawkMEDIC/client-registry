@@ -80,7 +80,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 new II(configService.OidRegistrar.GetOid("CR_MSGID").Oid, Guid.NewGuid().ToString()),
                 DateTime.Now,
                 null,
-                HL7StandardVersionCode._2008NormativeEdition,
+                HL7StandardVersionCode.Version3_Prerelease1,
                 MCCI_IN000002UV01.GetInteractionId(),
                 new SET<II>(MCCI_IN000002UV01.GetProfileId()),
                 ProcessingID.Production,
@@ -91,7 +91,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 MessageUtil.CreateSenderUv(e.ReceiveEndpoint, configService),
                 null,
                 new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Acknowledgement(
-                    AcknowledgementType.ApplicationAcknowledgementReject,
+                    AcknowledgementType.AcceptAcknowledgementCommitReject,
                     new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(
                         (receivedMessage.Structure as IIdentifiable).Id
                     )

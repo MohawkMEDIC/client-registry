@@ -60,9 +60,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
     /// </summary>
     public class UnrecognizedSenderResultDetail : ResultDetail
     {
+
         public UnrecognizedSenderResultDetail(Sender sender) :
-            base(ResultDetailType.Error, String.Format("'{0}' was not the expected sender", sender.Device.Id.Root + "@" + sender.Device.Id.Extension), (Exception)null)
+            base(ResultDetailType.Error, String.Format("'{1}^^^&{0}&ISO' was not the expected sender", sender.Device.Id.Root ,sender.Device.Id.Extension), (Exception)null)
         { }
+
+        public UnrecognizedSenderResultDetail(MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Sender sender) :
+            base(ResultDetailType.Error, String.Format("'{1}^^^&{0}&ISO' is not a valid solicitor", sender.Device.Id[0].Root , sender.Device.Id[0].Extension), (Exception)null)
+        {
+        }
     }
 
     /// <summary>
