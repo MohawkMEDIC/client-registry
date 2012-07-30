@@ -237,7 +237,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
             if (sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Sender information is missing from message", null));
-            else if (config.IsRegisteredDevice(new DomainIdentifier() { Domain = sndr.Device.Id.Root, Identifier = sndr.Device.Id.Extension }))
+            else if (!config.IsRegisteredDevice(new DomainIdentifier() { Domain = sndr.Device.Id.Root, Identifier = sndr.Device.Id.Extension }))
                 dtls.Add(new UnrecognizedSenderResultDetail(sndr));
 
         }
