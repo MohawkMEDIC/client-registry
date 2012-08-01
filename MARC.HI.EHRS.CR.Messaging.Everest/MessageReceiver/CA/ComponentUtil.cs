@@ -176,7 +176,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 dtls.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "DeceasedInd", this.m_localeService.GetString("MSGW007"), null));
             if (ident.MultipleBirthOrderNumber != null && !ident.MultipleBirthOrderNumber.IsNull)
                 subjectOf.BirthOrder = ident.MultipleBirthOrderNumber;
-
+            
             // Address(es)
             if (ident.Addr != null)
             {
@@ -268,7 +268,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         {
                             AlternateIdentifiers = new List<DomainIdentifier>() {  CreateDomainIdentifier(psn.RelationshipHolder.Id) },
                             LegalName = CreateNameSet(psn.RelationshipHolder.Name, dtls),
-                            RelationshipKind = Util.ToWireFormat(psn.Code)
+                            RelationshipKind = Util.ToWireFormat(psn.Code),
+                            Status = StatusType.Active
                         }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
 
             retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
@@ -529,6 +530,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                             AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(psn.RelationshipHolder.Id) },
                             LegalName = CreateNameSet(psn.RelationshipHolder.Name, dtls),
                             RelationshipKind = Util.ToWireFormat(psn.Code)
+                            
                         }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
 
             retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
@@ -683,7 +685,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 filterPerson.Add(new PersonalRelationship()
                 {
                     RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Father),
-                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls)
+                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls),
+                    Status = StatusType.Active
                 }, "FTH", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
             }
             
@@ -696,7 +699,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 var rltn = new PersonalRelationship()
                 {
                     RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Mother),
-                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls)
+                    LegalName = CreateNameSet(parameterList.FathersName.Value, dtls),
+                    Status = StatusType.Active
                 };
               
                 rltn.LegalName.Use = NameSet.NameSetUse.MaidenName;
@@ -768,7 +772,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 !parameterList.PersonalRelationshipCode.Value.IsNull)
                 filterPerson.Add(new PersonalRelationship()
                 {
-                    RelationshipKind = Util.ToWireFormat(parameterList.PersonalRelationshipCode.Value)
+                    RelationshipKind = Util.ToWireFormat(parameterList.PersonalRelationshipCode.Value),
+                    Status = StatusType.Active
                 }, "RLTN", HealthServiceRecordSiteRoleType.RepresentitiveOf | HealthServiceRecordSiteRoleType.Inverse, null);
 
             // Birth time

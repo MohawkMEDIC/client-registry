@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\Citizenship.cs" />
     <Compile Include="ComponentModel\MatchAlgorithm.cs" />
     <Compile Include="ComponentModel\ExtendedAttribute.cs" />
     <Compile Include="ComponentModel\MatchStrength.cs" />

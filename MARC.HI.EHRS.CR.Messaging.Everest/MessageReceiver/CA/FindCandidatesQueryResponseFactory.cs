@@ -53,6 +53,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             filter.OriginalMessageQueryId = request.Id.Root;
             filter.QueryRequest = queryData;
             filter.RecordIds = ids;
+            filter.IsSummary = true;
 
             return filter;
         }

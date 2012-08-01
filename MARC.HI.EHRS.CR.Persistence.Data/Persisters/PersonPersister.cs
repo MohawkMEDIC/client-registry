@@ -86,11 +86,31 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
 
-                decimal? religionCode = null;
+                decimal? religionCode = null,
+                    vipCode = null,
+                    maritalStatusCode = null,
+                    birthLocation = null;
                 if (psn.ReligionCode != null)
                     religionCode = DbUtil.CreateCodedValue(conn, tx, psn.ReligionCode);
-
+                if (psn.VipCode != null)
+                    vipCode = DbUtil.CreateCodedValue(conn, tx, psn.VipCode);
+                if (psn.MaritalStatus != null)
+                    maritalStatusCode = DbUtil.CreateCodedValue(conn, tx, psn.MaritalStatus);
+                if (psn.BirthPlace != null)
+                {
+                    // More tricky, but here is how it works
+                    // 1. Get the persister for the SDL
+                    var sdlPersister = new ServiceDeliveryLocationPersister();
+                    var sdlId = sdlPersister.Persist(conn, tx, psn.BirthPlace, false);
+                    // Delete the sdl from the container (so it doesn't get persisted)
+                    psn.Remove(psn.BirthPlace);
+                    birthLocation = Decimal.Parse(sdlId.Identifier);
+                }
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rlgn_cd_id_in", DbType.Decimal, religionCode.HasValue ? (object)religionCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+                
 
                 // Execute
                 using (IDataReader rdr = cmd.ExecuteReader())
@@ -452,12 +472,32 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime != null ? (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null) : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dcsd_ts_in", DbType.Decimal, psn.DeceasedTime != null ? (object)DbUtil.CreateTimestamp(conn, tx, psn.DeceasedTime, null) : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
-                
-                decimal? religionCode = null;
+
+                decimal? religionCode = null,
+                    vipCode = null,
+                    maritalStatusCode = null,
+                    birthLocation = null;
                 if (psn.ReligionCode != null)
                     religionCode = DbUtil.CreateCodedValue(conn, tx, psn.ReligionCode);
-
+                if (psn.VipCode != null)
+                    vipCode = DbUtil.CreateCodedValue(conn, tx, psn.VipCode);
+                if (psn.MaritalStatus != null)
+                    maritalStatusCode = DbUtil.CreateCodedValue(conn, tx, psn.MaritalStatus);
+                if (psn.BirthPlace != null)
+                {
+                    // More tricky, but here is how it works
+                    // 1. Get the persister for the SDL
+                    var sdlPersister = new ServiceDeliveryLocationPersister();
+                    var sdlId = sdlPersister.Persist(conn, tx, psn.BirthPlace, false);
+                    // Delete the sdl from the container (so it doesn't get persisted)
+                    psn.Remove(psn.BirthPlace);
+                    birthLocation = Decimal.Parse(sdlId.Identifier);
+                }
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rlgn_cd_id_in", DbType.Decimal, religionCode.HasValue ? (object)religionCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+
 
                 // Execute
                 
@@ -473,19 +513,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get a person's most recent version
         /// </summary>
-        internal Person GetPerson(IDbConnection conn, IDbTransaction tx, DomainIdentifier domainIdentifier)
+        internal Person GetPerson(IDbConnection conn, IDbTransaction tx, DomainIdentifier domainIdentifier, bool loadFast)
         {
             return GetPerson(conn, tx, new VersionedDomainIdentifier()
             {
                 Domain = domainIdentifier.Domain,
                 Identifier = domainIdentifier.Identifier
-            });
+            }, loadFast);
         }
 
         /// <summary>
         /// Get a person from the database
         /// </summary>
-        internal Person GetPerson(IDbConnection conn, IDbTransaction tx, VersionedDomainIdentifier domainIdentifier)
+        internal Person GetPerson(IDbConnection conn, IDbTransaction tx, VersionedDomainIdentifier domainIdentifier, bool loadFast)
         {
 
 
@@ -512,7 +552,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, Decimal.Parse(domainIdentifier.Identifier)));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, Decimal.Parse(domainIdentifier.Version)));
                 }
-
+    
+#if PERFMON
+                Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), cmd.CommandText);
+#endif
                 // Execute the command
                 using (IDataReader rdr = cmd.ExecuteReader())
                 {
@@ -540,6 +583,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         // Close the reader and read dependent values
                         rdr.Close();
 
+#if PERFMON
+                        Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), cmd.CommandText);
+#endif
+
                         // Load immediate values
                         if (birthTs.HasValue)
                             retVal.BirthTime = DbUtil.GetEffectiveTimestampSet(conn, tx, birthTs.Value).Parts[0];
@@ -550,11 +597,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                         // Load other properties
                         GetPersonNames(conn, tx, retVal);
-                        GetPersonAddresses(conn, tx, retVal);
-                        GetPersonLanguages(conn, tx, retVal);
-                        GetPersonRaces(conn, tx, retVal);
                         GetPersonAlternateIdentifiers(conn, tx, retVal);
-                        GetPersonTelecomAddresses(conn, tx, retVal);
+
+                        if (!loadFast)
+                        {
+                            GetPersonAddresses(conn, tx, retVal);
+                            GetPersonLanguages(conn, tx, retVal);
+                            GetPersonRaces(conn, tx, retVal);
+                            GetPersonTelecomAddresses(conn, tx, retVal);
+                        }
 
                         retVal.AlternateIdentifiers.Add(domainIdentifier);
 
@@ -573,6 +624,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void GetPersonTelecomAddresses(IDbConnection conn, IDbTransaction tx, Person person)
         {
+
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_tels");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_tels";
@@ -590,6 +645,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         });
 
             }
+
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_tels");
+#endif
         }
 
         /// <summary>
@@ -598,6 +657,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person)
         {
 
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_alt_id");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_alt_id";
@@ -647,6 +709,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
             }
 
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_alt_id");
+#endif
         }
 
         /// <summary>
@@ -654,6 +719,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void GetPersonRaces(IDbConnection conn, IDbTransaction tx, Person person)
         {
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_races");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_races";
@@ -670,6 +738,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 for (int i = 0; i < person.Race.Count; i++)
                     person.Race[i] = DbUtil.GetCodedValue(conn, tx, person.Race[i].Key);
             }
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_races");
+#endif
         }
 
         /// <summary>
@@ -677,6 +748,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void GetPersonLanguages(IDbConnection conn, IDbTransaction tx, Person person)
         {
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_langs");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_langs";
@@ -693,6 +767,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             Type = (LanguageType)Convert.ToInt32(rdr["mode_cs"])
                         });
             }
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_langs");
+#endif
         }
 
         /// <summary>
@@ -700,6 +777,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person)
         {
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_addr_sets");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_addr_sets";
@@ -725,6 +805,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     addr.Parts = dtl.Parts;
                 }
             }
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_addr_sets");
+#endif
         }
 
         /// <summary>
@@ -732,6 +815,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person)
         {
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_name_sets");
+#endif
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_name_sets";
@@ -757,6 +843,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     name.Parts = dtl.Parts;
                 }
             }
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_name_sets");
+#endif
         }
 
         /// <summary>
@@ -771,7 +860,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = identifier.ToString()
-            });
+            }, false);
 
             // TODO: Prior versions of this person
 
@@ -1076,10 +1165,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Copy over extended attributes not mentioned in the new person
+            var newPsnRltnshps = newPerson.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf).FindAll(o=>o is PersonalRelationship);
+
             foreach (HealthServiceRecordComponent cmp in oldPerson.Components)
                 if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath != (cmp as ExtendedAttribute).PropertyPath && o.Name != (cmp as ExtendedAttribute).Name) == null)
+                {
                     newPerson.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, null);
-
+                }
+                else if (cmp is PersonalRelationship)
+                {
+                    var oldPsnRltnshp = cmp as PersonalRelationship;
+                    if (!newPsnRltnshps.Exists(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && (o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)))) // Need to copy?
+                        newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                }
         }
     }
 }

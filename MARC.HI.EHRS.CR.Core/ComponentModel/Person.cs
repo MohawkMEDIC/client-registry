@@ -153,6 +153,34 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         [XmlElement("race")]
         public List<CodeValue> Race { get; set; }
 
+        /// <summary>
+        /// Gets or sets the VIP code
+        /// </summary>
+        [XmlElement("vip")]
+        public CodeValue VipCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the marital status
+        /// </summary>
+        [XmlElement("marital")]
+        public CodeValue MaritalStatus { get; set; }
+
+        /// <summary>
+        /// Gets the birthplace of the person (shortcut to searching for a SDL with role BRTH)
+        /// </summary>
+        [XmlIgnore]
+        public ServiceDeliveryLocation BirthPlace
+        {
+            get
+            {
+                return this.XmlComponents.Find(o => o.Site.Name == "BRTH") as ServiceDeliveryLocation;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the citizenships of the person
+        /// </summary>
+        [XmlElement("citizenship")]
+        public List<Citizenship> Citizenship { get; set; }
     }
 }

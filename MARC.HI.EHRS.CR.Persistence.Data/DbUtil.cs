@@ -29,6 +29,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.Services;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -670,6 +671,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             // Reconstruct components
             foreach (var cmp in tComponents)
             {
+#if PERFMON
+                Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), cmp.m_roleType.ToString());
+#endif
                 IComponentPersister cmpp = DatabasePersistenceService.GetPersister(cmp.m_componentType);
                 if (cmpp != null)
                 {
@@ -693,6 +697,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 }
                 else
                     throw new InvalidOperationException(String.Format("Cannot find persister for '{0}'", cmp.m_componentType.FullName));
+#if PERFMON
+                Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), cmp.m_roleType.ToString());
+#endif
             }
 
        

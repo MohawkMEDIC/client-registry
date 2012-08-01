@@ -71,12 +71,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                     Identifier = pr.Id.ToString()
-                });
+                }, true);
             else if (pr.AlternateIdentifiers != null)
             {
                 int i = 0;
                 while (relationshipPerson == null && i < pr.AlternateIdentifiers.Count)
-                    relationshipPerson = persister.GetPerson(conn, tx, pr.AlternateIdentifiers[i++]);
+                    relationshipPerson = persister.GetPerson(conn, tx, pr.AlternateIdentifiers[i++], true);
             }
 
             // Did we get one?
@@ -163,23 +163,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = identifier.ToString()
-            });
+            }, true);
             
             // Add the client components
             retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers);
-            retVal.BirthTime = clientDataRetVal.BirthTime;
-            foreach (IComponent cmp in clientDataRetVal.Components)
-                retVal.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, (cmp.Site as HealthServiceRecordSite).OriginalIdentifier);
-            retVal.GenderCode = clientDataRetVal.GenderCode;
-            retVal.Id = clientDataRetVal.Id;
-            retVal.IsMasked = clientDataRetVal.IsMasked;
-            if(clientDataRetVal.Names != null)
-                retVal.LegalName = clientDataRetVal.Names.Find(o=>o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
-            if (clientDataRetVal.Addresses != null && clientDataRetVal.Addresses.Count > 0)
-                retVal.PerminantAddress = clientDataRetVal.Addresses.Find(o => o.Use == AddressSet.AddressSetUse.HomeAddress) ?? clientDataRetVal.Addresses[0];
-            retVal.TelecomAddresses.AddRange(clientDataRetVal.TelecomAddresses);
-            retVal.Timestamp = clientDataRetVal.Timestamp;
-            
+            if (clientDataRetVal.Names != null)
+                retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
+            //if (!loadFast)
+            //{
+            //    retVal.BirthTime = clientDataRetVal.BirthTime;
+            //    foreach (IComponent cmp in clientDataRetVal.Components)
+            //        retVal.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, (cmp.Site as HealthServiceRecordSite).OriginalIdentifier);
+            //    retVal.GenderCode = clientDataRetVal.GenderCode;
+            //    retVal.Id = clientDataRetVal.Id;
+            //    retVal.IsMasked = clientDataRetVal.IsMasked;
+            //    if (clientDataRetVal.Addresses != null && clientDataRetVal.Addresses.Count > 0)
+            //        retVal.PerminantAddress = clientDataRetVal.Addresses.Find(o => o.Use == AddressSet.AddressSetUse.HomeAddress) ?? clientDataRetVal.Addresses[0];
+            //    retVal.TelecomAddresses.AddRange(clientDataRetVal.TelecomAddresses);
+            //    retVal.Timestamp = clientDataRetVal.Timestamp;
+            //}
             // Load the personal relationship
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, null))
             {
@@ -209,7 +211,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Load the sub-components
-            DbUtil.DePersistComponents(conn, retVal, this, loadFast);
+            //DbUtil.DePersistComponents(conn, retVal, this, loadFast);
 
             return retVal;
 

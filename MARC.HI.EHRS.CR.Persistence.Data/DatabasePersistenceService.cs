@@ -279,10 +279,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     Person verifyRecordTarget = null;
                     int idCheck = 0;
                     while(verifyRecordTarget == null || idCheck > newRecordTarget.AlternateIdentifiers.Count)
-                        verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++]);
+                        verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++], true);
                     
                     if (verifyRecordTarget == null || oldRecordTarget.Id != verifyRecordTarget.Id)
-                        throw new ConstraintException("The update request specifies a different recordTarget than the request currently stored");
+                        throw new ConstraintException("The update request specifies a different subject than the request currently stored");
 
                     newRecordTarget.VersionId = verifyRecordTarget.VersionId;
                     newRecordTarget.Id = verifyRecordTarget.Id;
