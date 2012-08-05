@@ -529,8 +529,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         {
                             AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(psn.RelationshipHolder.Id) },
                             LegalName = CreateNameSet(psn.RelationshipHolder.Name, dtls),
-                            RelationshipKind = Util.ToWireFormat(psn.Code)
-                            
+                            RelationshipKind = Util.ToWireFormat(psn.Code),
+                            Status = StatusType.Active
                         }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
 
             retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,

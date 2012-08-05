@@ -174,8 +174,57 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var lang in psn.Language)
                     this.PersistPersonLanguage(conn, tx, psn, lang);
 
+            // Persist person citizenships
+            if (psn.Citizenship != null)
+                foreach (var cit in psn.Citizenship)
+                    this.PersistPersonCitizenship(conn, tx, psn, cit);
             // TODO: Components
             DbUtil.PersistComponents(conn, tx, false, this, psn);
+        }
+
+        /// <summary>
+        /// Persists a person's citizenship(s)
+        /// </summary>
+        private void PersistPersonCitizenship(IDbConnection conn, IDbTransaction tx, Person psn, Citizenship cit)
+        {
+            if (cit == null) return; // skip
+
+            // Update or add or update? we first have to obsolete the existing
+            if (cit.UpdateMode == UpdateModeType.Remove || cit.UpdateMode == UpdateModeType.Update || cit.UpdateMode == UpdateModeType.AddOrUpdate)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+                    cmd.CommandText = "obslt_psn_ctznshp";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_cs_in", DbType.String, cit.CountryCode));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.Status.ToString()));
+                    cmd.ExecuteNonQuery(); // obsolete
+                }
+
+            // Add citizenship
+            if (cit.UpdateMode != UpdateModeType.Remove)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+
+                    cmd.CommandText = "crt_psn_ctznshp";
+
+                    // Create the timestamp first
+                    decimal? efftTsId = null;
+                    if (cit.EffectiveTime != null)
+                        efftTsId = DbUtil.CreateTimeset(conn, tx, cit.EffectiveTime);
+
+                    // Add parameters
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_cs_in", DbType.String, cit.CountryCode));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_name_in", DbType.String, cit.CountryName));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTsId.HasValue ? (object)efftTsId.Value : DBNull.Value));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.Status.ToString()));
+
+                    // Execute
+                    cmd.ExecuteNonQuery();
+
+                }
         }
 
         /// <summary>
@@ -944,12 +993,38 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 newPerson.Addresses.RemoveAll(o => o.Key < 0);
             }
 
+            // Next merge the citizenship information
+            if (newPerson.Citizenship != null)
+            {
+                foreach (var cit in newPerson.Citizenship)
+                {
+                    var candidateOtherCit = oldPerson.Citizenship.Find(o => o.CountryCode == cit.CountryCode);
+                    if (candidateOtherCit != null) // Matched on the name of the country, therefore it is an update
+                    {
+                        if(candidateOtherCit.Status == cit.Status) // no change
+                            cit.Id = -2;
+                        else
+                        {
+                            cit.UpdateMode = UpdateModeType.Update;
+                            cit.Id = candidateOtherCit.Id;
+                        }
+                    }
+                }
+
+                // Add all name in the old person that cannot be found in the new person to the list
+                // of name to remove
+                //foreach (var name in oldPerson.Names)
+                //    if (name.Key > 0)
+                //        name.UpdateMode = UpdateModeType.Remove;
+                //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.Citizenship.RemoveAll(o => o.Id < 0);
+            }
+
             // Next we want to do the same for names
             if (newPerson.Names != null)
             {
                 foreach (var name in newPerson.Names)
                 {
-                    UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
                     var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
                     if (candidateOtherName.Count == 1)
                     {

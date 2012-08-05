@@ -111,7 +111,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
             if (clientContainer != null) // We need to do some linking
-                LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind);
+                LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind, pr.Status.ToString());
             else if (clientContainer == null) // We need to do some digging to find out "who" this person is related to (the record target)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF003"));
                             
@@ -127,7 +127,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Link two clients together
         /// </summary>
-        private void LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind)
+        private void LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind, string status)
         {
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
@@ -135,6 +135,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.CommandText = "crt_psn_rltnshp";
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_id_in", DbType.Decimal, source));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "trg_psn_id_in", DbType.Decimal, target));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.StringFixedLength, status));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "kind_in", DbType.StringFixedLength, kind));
 
                 // Insert

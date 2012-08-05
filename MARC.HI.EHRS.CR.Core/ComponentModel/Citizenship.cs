@@ -46,5 +46,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         [XmlAttribute("name")]
         public String CountryName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the update mode
+        /// </summary>
+        [XmlAttribute("updateMode")]
+        public UpdateModeType UpdateMode { get; set; }
     }
 }
