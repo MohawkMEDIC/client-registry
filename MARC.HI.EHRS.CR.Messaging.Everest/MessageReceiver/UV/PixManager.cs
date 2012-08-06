@@ -109,6 +109,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (!isValid)
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
               
+                // Construct the canonical data structure
+                UvComponentUtil cu = new UvComponentUtil() { Context = this.Context };
+                var data = cu.CreateComponents(request.controlActProcess, dtls);
+
                 // Add ack
                 response.Acknowledgement.Add(new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Acknowledgement(
                     AcknowledgementType.AcceptAcknowledgementCommitAccept,

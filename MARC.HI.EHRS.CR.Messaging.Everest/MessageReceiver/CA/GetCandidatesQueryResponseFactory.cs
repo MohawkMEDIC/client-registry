@@ -36,7 +36,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
             
             // Componentize the message into the data model
-            ComponentUtil compUtil = new ComponentUtil();
+            CaComponentUtil compUtil = new CaComponentUtil();
             compUtil.Context = this.Context;
             PRPA_IN101105CA rqst = request as PRPA_IN101105CA;
 

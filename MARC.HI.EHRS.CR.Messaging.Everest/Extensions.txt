@@ -4,4 +4,7 @@ Name						Applies To						Value
 UsablePeriod				TelecommunicationsAddress		ISetComponent
 AssigningIdOrganizationId	KV<CodeValue, DomainIdentifier>	DomainIdentifier
 AssigningIdOrganizationName	KV<CodeValue, DomainIdentifier>	String
-	
+AssigningIdOrganizationCode	KV<CodeValue, DomainIdentifier>	CodeValue
+EthnicGroupCode				Person							CodeValue
+CitizenshipIds				Citizenship						List<DomainIdentifier>
+					

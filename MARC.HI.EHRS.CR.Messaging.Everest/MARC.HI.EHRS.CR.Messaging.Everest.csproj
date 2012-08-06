@@ -80,13 +80,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentUtil\ComponentUtil.Datatypes.cs" />
-    <Compile Include="ComponentUtil\ComponentUtil.Messages.cs" />
+    <Compile Include="MessageReceiver\CA\CaComponentUtil.Messages.cs" />
+    <Compile Include="MessageReceiver\UV\UvComponentUtil.cs" />
     <Compile Include="MessageUtil.Ca.cs" />
     <Compile Include="DataUtil.cs" />
     <Compile Include="DeComponentUtil\DeComponentUtil.cs" />
     <Compile Include="IQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
-    <Compile Include="MessageReceiver\CA\ComponentUtil.cs" />
+    <Compile Include="MessageReceiver\CA\CaComponentUtil.cs" />
     <Compile Include="MessageReceiver\CA\CaDeComponentUtil.cs" />
     <Compile Include="MessageReceiver\CA\ContinueQueryMessageReceiver.cs" />
     <Compile Include="MessageReceiver\CA\GetCandidatesQueryResponseFactory.cs" />

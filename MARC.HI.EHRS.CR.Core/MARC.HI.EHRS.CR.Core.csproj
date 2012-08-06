@@ -48,9 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentModel\Citizenship.cs" />
+    <Compile Include="ComponentModel\Employment.cs" />
     <Compile Include="ComponentModel\MatchAlgorithm.cs" />
     <Compile Include="ComponentModel\ExtendedAttribute.cs" />
     <Compile Include="ComponentModel\MatchStrength.cs" />
+    <Compile Include="ComponentModel\PersonRegistrationRef.cs" />
     <Compile Include="ComponentModel\QueryParameters.cs" />
     <Compile Include="ComponentModel\Reason.cs" />
     <Compile Include="ComponentModel\RegistrationEvent.cs" />

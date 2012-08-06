@@ -37,7 +37,6 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     public class ExtendedAttribute : CrHealthServiceRecordContainer
     {
 
-
         /// <summary>
         /// The path within the parent container to which this extension applies
         /// </summary>

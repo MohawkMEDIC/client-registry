@@ -84,7 +84,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 request.Receiver.Telecom = e.ReceiveEndpoint.ToString();
 
                 // Componentize the message into the data model
-                ComponentUtil compUtil = new ComponentUtil();
+                CaComponentUtil compUtil = new CaComponentUtil();
                 DeComponentUtil deCompUtil = new DeComponentUtil();
                 compUtil.Context = deCompUtil.Context = this.Context;
                 RegistrationEvent components = compUtil.CreateComponents(request.controlActEvent, dtls);
@@ -282,7 +282,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 request.Receiver.Telecom = e.ReceiveEndpoint.ToString();
 
                 // Componentize the message into the data model
-                ComponentUtil compUtil = new ComponentUtil();
+                CaComponentUtil compUtil = new CaComponentUtil();
                 CaDeComponentUtil deCompUtil = new CaDeComponentUtil();
                 compUtil.Context = deCompUtil.Context = this.Context;
                 RegistrationEvent components = compUtil.CreateComponents(request.controlActEvent, dtls);

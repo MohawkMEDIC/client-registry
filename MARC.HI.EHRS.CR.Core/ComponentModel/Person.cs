@@ -182,5 +182,11 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// </summary>
         [XmlElement("citizenship")]
         public List<Citizenship> Citizenship { get; set; }
+
+        /// <summary>
+        /// Gets a list of employment
+        /// </summary>
+        [XmlElement("employment")]
+        public List<Employment> Employment { get; set; }
     }
 }

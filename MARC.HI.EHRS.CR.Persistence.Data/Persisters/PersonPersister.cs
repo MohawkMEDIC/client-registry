@@ -178,6 +178,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (psn.Citizenship != null)
                 foreach (var cit in psn.Citizenship)
                     this.PersistPersonCitizenship(conn, tx, psn, cit);
+
+            // Persist person employments
+            if (psn.Employment != null)
+                foreach (var emp in psn.Employment)
+                    this.PersistPersonEmployment(conn, tx, psn, emp);
+
             // TODO: Components
             DbUtil.PersistComponents(conn, tx, false, this, psn);
         }
@@ -197,7 +203,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_cs_in", DbType.String, cit.CountryCode));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.Status.ToString()));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.UpdateMode != UpdateModeType.Remove ? StatusType.Obsolete.ToString() : cit.Status.ToString()));
                     cmd.ExecuteNonQuery(); // obsolete
                 }
 
@@ -220,6 +226,52 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_name_in", DbType.String, cit.CountryName));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTsId.HasValue ? (object)efftTsId.Value : DBNull.Value));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.Status.ToString()));
+
+                    // Execute
+                    cmd.ExecuteNonQuery();
+
+                }
+        }
+
+        /// <summary>
+        /// Persists a person's citizenship(s)
+        /// </summary>
+        private void PersistPersonEmployment(IDbConnection conn, IDbTransaction tx, Person psn, Employment emp)
+        {
+            if (emp == null) return; // skip
+
+            // Update or add or update? we first have to obsolete the existing
+            if (emp.UpdateMode == UpdateModeType.Remove || emp.UpdateMode == UpdateModeType.Update || emp.UpdateMode == UpdateModeType.AddOrUpdate)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+                    cmd.CommandText = "obslt_psn_empl";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "emp_id_in", DbType.String, emp.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, emp.UpdateMode != UpdateModeType.Remove ? StatusType.Obsolete.ToString() : emp.Status.ToString()));
+                    cmd.ExecuteNonQuery(); // obsolete
+                }
+
+            // Add citizenship
+            if (emp.UpdateMode != UpdateModeType.Remove)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+
+                    cmd.CommandText = "crt_psn_empl";
+
+                    // Create the timestamp first
+                    decimal? efftTsId = null, occupationId = null;
+                    if (emp.EffectiveTime != null)
+                        efftTsId = DbUtil.CreateTimeset(conn, tx, emp.EffectiveTime);
+                    if (emp.Occupation != null)
+                        occupationId = DbUtil.CreateCodedValue(conn, tx, emp.Occupation);
+
+                    // Add parameters
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "emp_cd_id", DbType.Decimal, occupationId.HasValue ? (object)occupationId.Value : DBNull.Value));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTsId.HasValue ? (object)efftTsId.Value : DBNull.Value));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, emp.Status.ToString()));
 
                     // Execute
                     cmd.ExecuteNonQuery();
@@ -977,9 +1029,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             addr.UpdateMode = UpdateModeType.Add;
                         else
                         {
+                             // maybe an update (of the use) or a remove (if marked bad)
+
                             addr.Key = secondLevelFoundAddress.Key;
                             //secondLevelFoundAddress.Key = -1;
-                            addr.UpdateMode = UpdateModeType.Update;
+                            addr.UpdateMode = (addr.Use & AddressSet.AddressSetUse.BadAddress) == AddressSet.AddressSetUse.BadAddress ? UpdateModeType.Remove : UpdateModeType.Update;
                         }
                     }
                 }
@@ -1005,19 +1059,64 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             cit.Id = -2;
                         else
                         {
-                            cit.UpdateMode = UpdateModeType.Update;
+                            switch (cit.Status)
+                            {
+                                case StatusType.Active:
+                                case StatusType.New:
+                                case StatusType.Completed:
+                                case StatusType.Unknown:
+                                    cit.UpdateMode = UpdateModeType.Update;
+                                    break;
+                                case StatusType.Aborted:
+                                case StatusType.Obsolete:
+                                case StatusType.Cancelled:
+                                case StatusType.Nullified:
+                                    cit.UpdateMode = UpdateModeType.Remove;
+                                    break;
+                            }
                             cit.Id = candidateOtherCit.Id;
+
                         }
                     }
                 }
 
-                // Add all name in the old person that cannot be found in the new person to the list
-                // of name to remove
-                //foreach (var name in oldPerson.Names)
-                //    if (name.Key > 0)
-                //        name.UpdateMode = UpdateModeType.Remove;
-                //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
                 newPerson.Citizenship.RemoveAll(o => o.Id < 0);
+            }
+
+            // Next merge the employment information
+            if (newPerson.Employment != null)
+            {
+                foreach (var emp in newPerson.Employment)
+                {
+                    var candidateOtherEmp = oldPerson.Employment.Find(o => o.Occupation == null && emp.Occupation == null || o.Occupation != null && emp.Occupation != null && o.Occupation.Code == emp.Occupation.Code && o.Occupation.CodeSystem == emp.Occupation.CodeSystem);
+                    if (candidateOtherEmp != null) // Matched on the name of the country, therefore it is an update
+                    {
+                        if (candidateOtherEmp.Status == emp.Status) // no change
+                            emp.Id = -2;
+                        else
+                        {
+                            switch (emp.Status)
+                            {
+                                case StatusType.Active:
+                                case StatusType.New:
+                                case StatusType.Completed:
+                                case StatusType.Unknown:
+                                    emp.UpdateMode = UpdateModeType.Update;
+                                    break;
+                                case StatusType.Aborted:
+                                case StatusType.Obsolete:
+                                case StatusType.Cancelled:
+                                case StatusType.Nullified:
+                                
+                                    emp.UpdateMode = UpdateModeType.Remove;
+                                    break;
+                            }
+                            emp.Id = candidateOtherEmp.Id;
+                        }
+                    }
+                }
+
+                newPerson.Employment.RemoveAll(o => o.Id < 0);
             }
 
             // Next we want to do the same for names
@@ -1028,43 +1127,43 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
                     if (candidateOtherName.Count == 1)
                     {
-                        if (QueryUtil.MatchName(candidateOtherName[0], name) == 1)
+                        if (QueryUtil.MatchName(candidateOtherName[0], name) == 1) // No difference so no db operation
                         {
                             //candidateOtherName[0].Key = -1;
                             name.Key = -2;
                         }
-                        else
+                        else // Need to update the contents of the name 
                         {
                             name.UpdateMode = UpdateModeType.Update;
                             name.Key = candidateOtherName[0].Key;
                             //candidateOtherName[0].Key = -1;
                         }
                     }
-                    else if (candidateOtherName.Count != 0)
+                    else if (candidateOtherName.Count != 0) // There are more than one name(s) which have the use, try to find a name that matches in content
                     {
                         // Find this name in a collection of same use names
                         var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) > DatabasePersistenceService.ValidationSettings.PersonNameMatch);
 
                         if (secondLevelFoundName != null)
                         {
-                            if (QueryUtil.MatchName(secondLevelFoundName, name) == 1)
+                            if (QueryUtil.MatchName(secondLevelFoundName, name) == 1) // No change
                                 name.Key = -2;
-                            else
+                            else 
                                 name.UpdateMode = UpdateModeType.Update;
                         }
-                        else
+                        else // Could not find a name that sufficiently matched
                             name.UpdateMode = UpdateModeType.Add;
                         name.Key = secondLevelFoundName.Key;
                         //secondLevelFoundName.Key = -1;
                     }
-                    else // Couldn't find an name in the old in the new so it is an add
+                    else // Couldn't find an name in the old in the new so it is an add or maybe remove?
                     {
                         // Are we just changing the use?
                         var secondLevelFoundName = oldPerson.Names.Find(o => QueryUtil.MatchName(name, o) == 1);
-                        if (secondLevelFoundName == null)
+                        if (secondLevelFoundName == null) // Couldn't find a name that exactly matches (with different use) so it is an add
                             name.UpdateMode = UpdateModeType.Add;
                         else
-                        {
+                        { // Found another name that exactly matches, this means it is an update or remove
                             name.Key = secondLevelFoundName.Key;
                             //secondLevelFoundName.Key = -1;
                             name.UpdateMode = UpdateModeType.Update;
@@ -1243,7 +1342,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             var newPsnRltnshps = newPerson.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf).FindAll(o=>o is PersonalRelationship);
 
             foreach (HealthServiceRecordComponent cmp in oldPerson.Components)
-                if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath != (cmp as ExtendedAttribute).PropertyPath && o.Name != (cmp as ExtendedAttribute).Name) == null)
+                if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath == (cmp as ExtendedAttribute).PropertyPath && o.Name == (cmp as ExtendedAttribute).Name) == null)
                 {
                     newPerson.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, null);
                 }
