@@ -138,7 +138,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 ackDetail.Location = dtl.Location == null ? null : new SET<ST>((ST)dtl.Location, (a,b) => ST.Comparator(a, b));
                 ackDetail.Text = dtl.Message;
                 if (dtl.Exception != null)
-                    ackDetail.Text += String.Format("({0})", dtl.Exception.Message);
+                    ackDetail.Location = new SET<ST>((ST)String.Format("({0})", dtl.Exception.StackTrace));
 
                 retVal.Add(ackDetail);
             }
@@ -236,6 +236,33 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             };
         }
 
+        /// <summary>
+        /// Create ack details
+        /// </summary>
+        internal static IEnumerable<MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.AcknowledgementDetail> CreateAckDetailsUv(DetectedIssue[] detectedIssue)
+        {
+            List<AcknowledgementDetail> retVal = new List<AcknowledgementDetail>(10);
+            foreach (DetectedIssue dtl in detectedIssue ?? new DetectedIssue[0])
+            {
+
+                // Acknowledgement detail
+                var ackDetail = new AcknowledgementDetail()
+                {
+                    TypeCode =
+                    dtl.Priority == IssuePriorityType.Error ? AcknowledgementDetailType.Error :
+                    dtl.Priority == IssuePriorityType.Warning ? AcknowledgementDetailType.Warning : AcknowledgementDetailType.Information
+                };
+
+                // Determine the type of acknowledgement
+                var typ = TranslateDetectedIssueCode(dtl.Type);
+                ackDetail.Code = new CE<string>(Util.ToWireFormat(typ.Code), typ.CodeSystem);
+                ackDetail.Text = dtl.Text;
+                // Mesage
+                retVal.Add(ackDetail);
+            }
+
+            return retVal;
+        }
 
     }
 }

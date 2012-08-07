@@ -38,21 +38,21 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         private HostContext m_context;
 
         // The system configuration service
-        private ISystemConfigurationService m_configService;
+        protected ISystemConfigurationService m_configService;
         // The policy enforcement service
-        private IPolicyEnforcementService m_policyService;
+        protected IPolicyEnforcementService m_policyService;
         // The auditor service
-        private IAuditorService m_auditorService;
+        protected IAuditorService m_auditorService;
         // The document registration service
-        private IDataRegistrationService m_docRegService;
+        protected IDataRegistrationService m_docRegService;
         // The query service
-        private IQueryPersistenceService m_queryService;
+        protected IQueryPersistenceService m_queryService;
         // The decision service
-        private IDecisionSupportService m_decisionService;
+        protected IDecisionSupportService m_decisionService;
         // Data persistence service
-        private IDataPersistenceService m_persistenceService;
+        protected IDataPersistenceService m_persistenceService;
         // localization service
-        private ILocalizationService m_localeService;
+        protected ILocalizationService m_localeService;
 
         /// <summary>
         /// Sync lock
@@ -213,7 +213,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Register health service record with the data persistence engine
         /// </summary>
-        internal VersionedDomainIdentifier Register(RegistrationEvent healthServiceRecord, List<MARC.Everest.Connectors.IResultDetail> dtls, List<DetectedIssue> issues, DataPersistenceMode mode)
+        internal virtual VersionedDomainIdentifier Register(RegistrationEvent healthServiceRecord, List<MARC.Everest.Connectors.IResultDetail> dtls, List<DetectedIssue> issues, DataPersistenceMode mode)
         {
 
             // persistence services
@@ -447,7 +447,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         ///     <item></item>
         /// </list>
         /// </remarks>
-        internal QueryResultData Get(VersionedDomainIdentifier[] recordIds, List<IResultDetail> dtls, List<DetectedIssue> issues, QueryData qd)
+        internal virtual QueryResultData Get(VersionedDomainIdentifier[] recordIds, List<IResultDetail> dtls, List<DetectedIssue> issues, QueryData qd)
         {
 
             try
@@ -642,7 +642,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Update audit data for disclosure purposes
         /// </summary>
-        internal void UpdateAuditData(AuditableObjectLifecycle lifeCycle, List<VersionedDomainIdentifier> retRecordId, AuditData audit)
+        private void UpdateAuditData(AuditableObjectLifecycle lifeCycle, List<VersionedDomainIdentifier> retRecordId, AuditData audit)
         {
             foreach (var id in retRecordId)
             {
@@ -667,7 +667,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // Add an actor for the current server
             audit.Actors.Add(new AuditActorData()
             {
-                ActorRoleCode = new List<string>() { "RCV" },
+                ActorRoleCode = new List<CodeValue>() { new CodeValue("RCV", "HL7 Type Code") },
                 NetworkAccessPointId = Environment.MachineName,
                 UserIsRequestor = false,
                 NetworkAccessPointType = NetworkAccessPointType.MachineName
@@ -693,7 +693,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 {
                     audit.Actors.Add(new AuditActorData()
                     {
-                        ActorRoleCode = new List<string>(new string[] { comp.Site.Name }),
+                        ActorRoleCode = new List<CodeValue>() { new CodeValue(comp.Site.Name, "HL7 Type Code") },
                         UserIdentifier = String.Format("{1}^^^&{0}&ISO", this.m_configService.OidRegistrar.GetOid("CR_PID").Oid, (comp as HealthcareParticipant).Id.ToString()),
                         UserName = (comp as HealthcareParticipant).LegalName.ToString(),
                         UserIsRequestor = (comp.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.AuthorOf,
@@ -715,7 +715,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Query (list) the data from the persistence layer
         /// </summary>
-        internal QueryResultData Query(QueryData filter, List<IResultDetail> dtls, List<DetectedIssue> issues)
+        internal virtual QueryResultData Query(QueryData filter, List<IResultDetail> dtls, List<DetectedIssue> issues)
         {
 
             try
@@ -812,7 +812,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Update a health service record component
         /// </summary>
-        internal VersionedDomainIdentifier Update(RegistrationEvent healthServiceRecord, List<IResultDetail> dtls, List<DetectedIssue> issues, DataPersistenceMode mode)
+        internal virtual VersionedDomainIdentifier Update(RegistrationEvent healthServiceRecord, List<IResultDetail> dtls, List<DetectedIssue> issues, DataPersistenceMode mode)
         {
             // persistence services
 

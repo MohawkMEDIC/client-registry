@@ -35,6 +35,10 @@
     <Reference Include="MARC.Everest">
       <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.Connectors.WCF.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.Everest.RMIM.CA.R020402">
       <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
     </Reference>
@@ -73,6 +77,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -81,6 +86,7 @@
   <ItemGroup>
     <Compile Include="ComponentUtil\ComponentUtil.Datatypes.cs" />
     <Compile Include="MessageReceiver\CA\CaComponentUtil.Messages.cs" />
+    <Compile Include="MessageReceiver\UV\IheDataUtil.cs" />
     <Compile Include="MessageReceiver\UV\UvComponentUtil.cs" />
     <Compile Include="MessageUtil.Ca.cs" />
     <Compile Include="DataUtil.cs" />

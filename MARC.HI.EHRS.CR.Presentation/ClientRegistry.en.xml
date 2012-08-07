@@ -76,6 +76,8 @@
   <string name="MSGE056">MSGE056 : AsCitizen relation must contain a PoliticalNation relation</string>
   <string name="MSGE057">MSGE057 : Country code must come from either ISO 3166-1 or ISO 3166-2 code system</string>
   <string name="MSGE058">MSGE058 : Could not find a valid translation from the supplied country code system ISO 3166-2 to ISO 3166-1</string>
+  <string name="MSGE059">MSGE059 : IHE restriction: RelationshipHolder must be a Person</string>
+  <string name="MSGE05A">MSGE05A : IHE restriction: Scoping provider must have an id and must only contain a root</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
@@ -83,6 +85,7 @@
   <string name="DTPE003">DTPE003 : Persistence of entity failed</string>
   <string name="DTPE004">DTPE004 : Registration has already been persisted</string>
   <string name="DTPE005">DTPE005 : Formal constraint violation detected</string>
+  <string name="DTPW001">DTPW001 : Cross referencing resulted in multiple candidate matches, operation will be considered an Add. Manual reconciation must be performed</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>

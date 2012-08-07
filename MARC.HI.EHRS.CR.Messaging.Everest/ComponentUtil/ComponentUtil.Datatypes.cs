@@ -127,7 +127,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 retVal.Add(new DomainIdentifier()
                 {
                     Domain = ii.Root,
-                    Identifier = ii.Extension
+                    Identifier = ii.Extension,
+                    AssigningAuthority = ii.AssigningAuthorityName
                 });
             return retVal;
         }
@@ -285,7 +286,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             AddressSet retVal = new AddressSet();
 
             AddressSet.AddressSetUse internalNameUse = ConvertAddressUse(address.Use, dtls);
-            if (address == null || address.IsNull || internalNameUse == 0)
+            if (address == null || address.IsNull)
                 return null;
 
             retVal.Use = internalNameUse;
@@ -305,7 +306,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         private AddressSet.AddressSetUse ConvertAddressUse(SET<CS<PostalAddressUse>> uses, List<IResultDetail> dtls)
         {
+            
             AddressSet.AddressSetUse retVal = 0;
+            if (uses == null) return 0;
+
             foreach(var use in uses)
                 switch ((PostalAddressUse)use)
                 {
@@ -352,8 +356,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         public NameSet CreateNameSet(EN legalName, List<IResultDetail> dtls)
         {
             NameSet retVal = new NameSet();
-            NameSet.NameSetUse internalNameUse = NameSet.NameSetUse.Legal;
-            var lnu = legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Legal : (EntityNameUse)legalName.Use[0];
+            NameSet.NameSetUse internalNameUse = 0;
+            var lnu = legalName.Use == null || legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Legal : (EntityNameUse)legalName.Use[0];
             if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
                 return null;
 
@@ -380,7 +384,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             return new DomainIdentifier()
             {
                 Domain = iI.Root,
-                Identifier = iI.Extension
+                Identifier = iI.Extension,
+                AssigningAuthority = iI.AssigningAuthorityName
             };
         }
 

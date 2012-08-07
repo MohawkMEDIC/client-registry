@@ -236,6 +236,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             hsrEvent.AlternateIdentifier.Domain, configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid));
 
                     decimal tryDec = default(decimal);
+                    bool isDirectUpdate = false;
 
                     // Is there no event identifier ?
                     if(hsrEvent.AlternateIdentifier != null && !Decimal.TryParse(hsrEvent.AlternateIdentifier.Identifier, out tryDec))
@@ -244,7 +245,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     {
                         // Create a query based on the person 
                         Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-                        subject = new Person() {
+                        subject = new Person()
+                        {
                             AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers)
                         };
                         RegistrationEvent query = new RegistrationEvent();
@@ -264,7 +266,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         tryDec = Decimal.Parse(tRecordIds[0].Identifier);
                         hsrEvent.AlternateIdentifier = tRecordIds[0];
                     }
-
+                    else
+                    {
+                        // Get the person name
+                        isDirectUpdate = true; // Explicit update
+                    }
 
                     // Validate and duplicate the components that are to be loaded as part of the new version
                     var oldHsrEvent = GetContainer(hsrEvent.AlternateIdentifier, true) as RegistrationEvent; // Get the old container
@@ -276,15 +282,20 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Validate the old record target
                     Person oldRecordTarget = oldHsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person,
                         newRecordTarget = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-                    Person verifyRecordTarget = null;
-                    int idCheck = 0;
-                    while(verifyRecordTarget == null || idCheck > newRecordTarget.AlternateIdentifiers.Count)
-                        verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++], true);
-                    
-                    if (verifyRecordTarget == null || oldRecordTarget.Id != verifyRecordTarget.Id)
-                        throw new ConstraintException("The update request specifies a different subject than the request currently stored");
 
-                    newRecordTarget.VersionId = verifyRecordTarget.VersionId;
+                    Person verifyRecordTarget = null;
+                    if (!isDirectUpdate)
+                    {
+                        int idCheck = 0;
+                        while (verifyRecordTarget == null || idCheck > newRecordTarget.AlternateIdentifiers.Count)
+                            verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++], true);
+
+                        if (verifyRecordTarget == null || oldRecordTarget.Id != verifyRecordTarget.Id)
+                            throw new ConstraintException("The update request specifies a different subject than the request currently stored");
+                    }
+                    else
+                        verifyRecordTarget = oldRecordTarget;
+                    //newRecordTarget.VersionId = verifyRecordTarget.VersionId;
                     newRecordTarget.Id = verifyRecordTarget.Id;
 
                     // VAlidate classific
@@ -462,19 +473,32 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                         // Matching?
                         StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
+
                         // Identifiers
                         if (subjectOfQuery.AlternateIdentifiers != null && subjectOfQuery.AlternateIdentifiers.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
+
+                        #region Match Parameters
+                        // Match names
                         if (subjectOfQuery.Names != null && subjectOfQuery.Names.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, i == 1 ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
                         else
                             i = 2;
+
+                        // Match birth time
+                        if (subjectOfQuery.BirthTime != null)
+                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
+
+
                         if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.OtherIdentifiers));
+
                         // TRIM INTERSECT
                         if (sb.ToString().EndsWith("INTERSECT "))
                             sb.Remove(sb.Length - 10, 10);
                         sb.Append(")");
+
+                        #endregion
 
                         cmd.CommandText = sb.ToString();
                         cmd.CommandType = CommandType.Text;
@@ -497,6 +521,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                             }
                         }
+
+                        // Is there a point to doing a second?
+                        if (queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact)
+                            break;
                     }
                 }
             }

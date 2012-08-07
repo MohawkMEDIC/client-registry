@@ -31,14 +31,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 if (device.AlternateIdentifier == null ||
-                    String.IsNullOrEmpty(device.AlternateIdentifier.Domain) ||
-                    String.IsNullOrEmpty(device.AlternateIdentifier.Identifier))
+                    String.IsNullOrEmpty(device.AlternateIdentifier.Domain))
                     throw new ConstraintException(ApplicationContext.LocaleService.GetString("DTPE009"));
                 
                 // create parmaeters
                 cmd.CommandText = "crt_dev";
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dev_root_in", DbType.String, device.AlternateIdentifier.Domain));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dev_ext_in", DbType.String, device.AlternateIdentifier.Identifier));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dev_ext_in", DbType.String, String.IsNullOrEmpty(device.AlternateIdentifier.Identifier) ? DBNull.Value : (object)device.AlternateIdentifier.Identifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dev_name_in", DbType.String, device.Name));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dev_jur_in", DbType.String, device.Jurisdiction));
 

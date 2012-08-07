@@ -72,7 +72,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     // Validate the name given matches the legal name. Has to be more than
                     // 80% match
-                    if (!loc.Name.ToLower().Equals(resLoc.Name.ToLower()))
+                    if ((loc.Name == null) ^ (resLoc.Name == null) || loc.Name != null && resLoc.Name != null && !loc.Name.ToLower().Equals(resLoc.Name.ToLower()))
                         throw new DataException("The provided name does not match the name of location in data store");
 
                     loc.Id = resLoc.Id;
@@ -166,7 +166,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, identifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_domain_in", DbType.StringFixedLength, altId.Domain));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_in", DbType.StringFixedLength, altId.Identifier));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_in", DbType.StringFixedLength, (object)altId.Identifier ?? DBNull.Value));
 
                 // Execute
                 cmd.ExecuteNonQuery();
@@ -192,7 +192,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     addrSetId = loc.Address != null ? (decimal?)DbUtil.CreateAddressSet(conn, tx, loc.Address) : null;
 
                 // parameters
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_name_in", DbType.StringFixedLength, loc.Name));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_name_in", DbType.StringFixedLength, (object)loc.Name ?? DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_addr_set_id_in", DbType.Decimal, (object)addrSetId ?? DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_typ_cd_id_in", DbType.Decimal, (object)codeId ?? DBNull.Value));
 
@@ -237,7 +237,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     cmd.CommandText = "get_sdl_extern";
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_domain_in", DbType.StringFixedLength, domainIdentifier.Domain));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.StringFixedLength, domainIdentifier.Identifier));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.StringFixedLength, (object)domainIdentifier.Identifier ?? DBNull.Value));
                 }
 
                 // Execute the reader
@@ -305,7 +305,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     while (reader.Read()) 
                         retVal.Add(new DomainIdentifier() {
                             Domain = Convert.ToString(reader["alt_id_domain"]),
-                            Identifier = Convert.ToString(reader["alt_id"])
+                            Identifier = reader["alt_id"] == DBNull.Value ? null : Convert.ToString(reader["alt_id"])
                         });
                 }
                 finally

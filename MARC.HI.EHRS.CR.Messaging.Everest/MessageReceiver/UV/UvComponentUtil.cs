@@ -70,9 +70,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             changeSummary.Timestamp = DateTime.Now;
             changeSummary.LanguageCode = retVal.LanguageCode;
 
-            if (controlActEvent.EffectiveTime == null || controlActEvent.EffectiveTime.IsNull)
-                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE001"), "//urn:hl7-org:v3#controlActEvent"));
-            else
+            if (controlActEvent.EffectiveTime != null && !controlActEvent.EffectiveTime.IsNull)
                 changeSummary.EffectiveTime = CreateTimestamp(controlActEvent.EffectiveTime, dtls);
 
             if (controlActEvent.ReasonCode != null)
@@ -127,7 +125,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// </summary>
         private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity assignedPerson, List<IResultDetail> dtls)
         {
-            HealthcareParticipant retval = new HealthcareParticipant() { Classifier = HealthcareParticipant.HealthcareParticipantType.Person }
+            HealthcareParticipant retval = new HealthcareParticipant() { Classifier = HealthcareParticipant.HealthcareParticipantType.Person };
 
             // Identifiers
             if (assignedPerson.Id == null || assignedPerson.Id.IsNull || assignedPerson.Id.IsEmpty)
@@ -215,7 +213,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE003"), null));
 
             // Subject ID
-            if(subject.Id != null && subject.Id.Count > 0)
+            if(subject.Id != null && subject.Id.Count > 0 && subject.Id.FindAll(o=>!o.IsNull).Count > 0)
                 retVal.Add(new ExtendedAttribute() {
                     PropertyPath = "Id", 
                     Value = CreateDomainIdentifierList(subject.Id), 
@@ -268,6 +266,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Process additional data
             var regRole = subject.Subject1.registeredRole;
 
+            
             // Any alternate ids?
             if (regRole.Id != null && !regRole.Id.IsNull)
             {
@@ -281,6 +280,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Status code
             if (regRole.StatusCode != null && !regRole.StatusCode.IsNull)
                 subjectOf.Status = ConvertStatusCode(regRole.StatusCode, dtls);
+            else
+                subjectOf.Status = StatusType.Active;
 
             // Effective time
             if (subjectOf.Status == StatusType.Active || regRole.EffectiveTime == null || regRole.EffectiveTime.IsNull)
@@ -306,6 +307,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE012"), null));
                 return null;
             }
+
+            //if (ident.Id != null && !ident.Id.IsNull)
+            //{
+            //    if (subjectOf.AlternateIdentifiers == null)
+            //        subjectOf.AlternateIdentifiers = new List<DomainIdentifier>();
+            //    subjectOf.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(ident.Id));
+            //}
 
             // Names
             if (ident.Name != null)
@@ -489,7 +497,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Birthplace
             if (ident.BirthPlace != null && ident.BirthPlace.NullFlavor == null &&
                 ident.BirthPlace.Birthplace != null && ident.BirthPlace.Birthplace.NullFlavor == null)
-                subjectOf.BirthPlace = CreateBirthplace(ident.BirthPlace.Birthplace, dtls);
+                subjectOf.Add(CreateBirthplace(ident.BirthPlace.Birthplace, dtls),
+                    "BRTH");
 
             // Race Codes
             if (ident.RaceCode != null && !ident.RaceCode.IsNull)
@@ -594,9 +603,20 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     // status
                     if (emp.StatusCode != null && !emp.StatusCode.IsNull)
                         employment.Status = ConvertStatusCode(Util.Convert<RoleStatus1>(Util.ToWireFormat(emp.StatusCode)), dtls);
+                    else
+                        employment.Status = StatusType.Active;
 
                     subjectOf.Employment.Add(employment);
                 }
+            }
+
+            // Scoping org?
+            if (regRole.ProviderOrganization != null &&
+                regRole.ProviderOrganization.NullFlavor == null)
+            {
+                var scoper = CreateProviderOrganization(regRole.ProviderOrganization, dtls);
+                
+                subjectOf.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry, null);
             }
 
             retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
@@ -605,6 +625,39 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Error?
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 retVal = null;
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create a provider organization
+        /// </summary>
+        private IComponent CreateProviderOrganization(MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization organization, List<IResultDetail> dtls)
+        {
+            ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
+
+            // Ensure that the scoping org id is correct
+            if (organization.Id == null || organization.Id.IsNull)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE05A"), null));
+            else
+            {
+                retVal.AlternateIdentifiers = new List<DomainIdentifier>();
+                foreach (var ii in organization.Id)
+                {
+                    if (II.IsValidOidFlavor(ii))
+                        retVal.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
+                    else
+                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE05A"), null, null));
+                }
+            }
+
+            // Name
+            if (organization.Name != null && !organization.Name.IsNull)
+                retVal.Name = (organization.Name.Find(o => o.Use.Contains(EntityNameUse.Legal)) ?? organization.Name[0]).ToString();
+
+            // Type
+            if (organization.Code != null && !organization.Code.IsNull)
+                retVal.LocationType = CreateCodeValue(organization.Code, dtls);
 
             return retVal;
         }
@@ -728,6 +781,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 return ptcpt;
             }
+            else if (assignedEntity.AssignedPrincipalChoiceList == null)
+            {
+                return new RepositoryDevice()
+                {
+                    AlternateIdentifier = CreateDomainIdentifier(assignedEntity.Id[0])
+                };
+            }
             else
             {
                 dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE055"), null, null));
@@ -740,7 +800,68 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// </summary>
         private PersonalRelationship CreatePersonalRelationship(MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.PersonalRelationship psn, List<IResultDetail> dtls)
         {
+            var retVal = new PersonalRelationship();
+
+            // Person identifier
+            if (psn.Id != null && !psn.Id.IsNull)
+                retVal.AlternateIdentifiers = CreateDomainIdentifierList(psn.Id);
+
+            // type of relation
+            if (psn.Code == null || psn.Code.IsNull)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE02E"), null));
+            else
+                retVal.RelationshipKind = Util.ToWireFormat(psn.Code);
             
+            // status code
+            if (psn.StatusCode != null && !psn.StatusCode.IsNull)
+                retVal.Status = ConvertStatusCode(Util.Convert<RoleStatus1>(Util.ToWireFormat(psn.StatusCode)), dtls);
+            else
+                retVal.Status = StatusType.Active;
+
+
+            // effective time
+            if (psn.EffectiveTime != null && !psn.EffectiveTime.IsNull)
+                retVal.Add(new ExtendedAttribute()
+                {
+                    Value = CreateTimestamp(psn.EffectiveTime, dtls),
+                    Name = "EffectiveTime",
+                    PropertyPath = ""
+                });
+
+            // Relationship holder
+            if (psn.RelationshipHolder1 is MARC.Everest.RMIM.UV.NE2008.COCT_MT030007UV.Person)
+            {
+                var rh = psn.RelationshipHolder1 as MARC.Everest.RMIM.UV.NE2008.COCT_MT030007UV.Person;
+
+                if (rh.AdministrativeGenderCode != null && !rh.AdministrativeGenderCode.IsNull)
+                    retVal.GenderCode = Util.ToWireFormat(rh.AdministrativeGenderCode);
+                if (rh.BirthTime != null && !rh.BirthTime.IsNull)
+                    retVal.BirthTime = CreateTimestamp(rh.BirthTime, dtls);
+                if (rh.Id != null && rh.Id.IsNull)
+                {
+                    if (retVal.AlternateIdentifiers == null)
+                        retVal.AlternateIdentifiers = new List<DomainIdentifier>();
+                    retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(rh.Id));
+                }
+                if (rh.Name != null && !rh.Name.IsNull)
+                    retVal.LegalName = CreateNameSet(rh.Name.Find(o => o.Use.Contains(EntityNameUse.Legal)) ?? rh.Name[0], dtls);
+            }
+            else
+                dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE0059"), null));
+            
+            // Person address
+            if (psn.Addr != null && !psn.Addr.IsNull)
+                retVal.PerminantAddress = CreateAddressSet(psn.Addr.Find(o => o.Use.Contains(PostalAddressUse.HomeAddress)) ?? psn.Addr[0], dtls);
+            // Telecom
+            if (psn.Telecom != null && !psn.Telecom.IsNull)
+                foreach (var tel in psn.Telecom)
+                    retVal.TelecomAddresses.Add(new TelecommunicationsAddress()
+                    {
+                        Use = Util.ToWireFormat(tel.Use),
+                        Value = tel.Value
+                    });
+
+            return retVal;
         }
 
         /// <summary>
@@ -766,9 +887,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 case RoleStatus1.Pending:
                     return StatusType.New;
                 case RoleStatus1.Suspended:
-                    return StatusType.Aborted;
+                    return StatusType.Cancelled | StatusType.Active;
                 case RoleStatus1.Terminated:
-                    return StatusType.Obsolete;
+                    return StatusType.Cancelled | StatusType.Obsolete;
                 case RoleStatus1.Normal:
                     dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE011"), null, null));
                     return StatusType.Unknown;

@@ -163,8 +163,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     retVal.LanguageCode = reader["lang_cs"].ToString();
                     retVal.Timestamp = DateTime.Parse(Convert.ToString(reader["aut_utc"]));
                     retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), Convert.ToString(reader["status_cs"]));
-                    tsId = Convert.ToDecimal(reader["efft_ts_set_id"]);
-                    cdId = Convert.ToDecimal(reader["evt_typ_cd_id"]);
+                    tsId = reader["efft_ts_set_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["efft_ts_set_id"]);
+                    cdId =  Convert.ToDecimal(reader["evt_typ_cd_id"]);
                     rplcVersionId = reader["rplc_vrsn_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["rplc_vrsn_id"]);
                 }
                 finally
@@ -174,7 +174,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Read codes and times
                 retVal.ChangeType = DbUtil.GetCodedValue(conn, null, cdId);
-                retVal.EffectiveTime = DbUtil.GetEffectiveTimestampSet(conn, null, tsId);
+                if(tsId != default(decimal))
+                    retVal.EffectiveTime = DbUtil.GetEffectiveTimestampSet(conn, null, tsId);
 
                 if (container != null)
                     container.Add(retVal);

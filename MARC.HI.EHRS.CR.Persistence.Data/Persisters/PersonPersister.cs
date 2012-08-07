@@ -203,7 +203,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_cs_in", DbType.String, cit.CountryCode));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.UpdateMode != UpdateModeType.Remove ? StatusType.Obsolete.ToString() : cit.Status.ToString()));
                     cmd.ExecuteNonQuery(); // obsolete
                 }
 
@@ -248,7 +247,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "emp_id_in", DbType.String, emp.Id));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, emp.UpdateMode != UpdateModeType.Remove ? StatusType.Obsolete.ToString() : emp.Status.ToString()));
                     cmd.ExecuteNonQuery(); // obsolete
                 }
 
@@ -390,7 +388,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
-
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_auth_in", DbType.String, (object)othId.Value.AssigningAuthority ?? DBNull.Value));
                         // Execute
                         cmd.ExecuteNonQuery();
 
@@ -434,6 +432,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, DBNull.Value));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, altId.Domain));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, altId.Identifier));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_auth_in", DbType.String, (object)altId.AssigningAuthority ?? DBNull.Value));
 
                         // Execute
                         cmd.ExecuteNonQuery();
@@ -779,7 +778,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             person.AlternateIdentifiers.Add(new DomainIdentifier()
                             {
                                 Domain = Convert.ToString(rdr["id_domain"]),
-                                Identifier = Convert.ToString(rdr["id_value"])
+                                Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
+                                AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"])
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
@@ -787,7 +787,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 new DomainIdentifier()
                                 {
                                     Domain = Convert.ToString(rdr["id_domain"]),
-                                    Identifier = Convert.ToString(rdr["id_value"])
+                                    Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
+                                    AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"])
                                 })
                             );
                     }
@@ -1059,21 +1060,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             cit.Id = -2;
                         else
                         {
-                            switch (cit.Status)
-                            {
-                                case StatusType.Active:
-                                case StatusType.New:
-                                case StatusType.Completed:
-                                case StatusType.Unknown:
-                                    cit.UpdateMode = UpdateModeType.Update;
-                                    break;
-                                case StatusType.Aborted:
-                                case StatusType.Obsolete:
-                                case StatusType.Cancelled:
-                                case StatusType.Nullified:
-                                    cit.UpdateMode = UpdateModeType.Remove;
-                                    break;
-                            }
+                            
+                            cit.UpdateMode = UpdateModeType.Update;
                             cit.Id = candidateOtherCit.Id;
 
                         }
@@ -1095,22 +1083,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             emp.Id = -2;
                         else
                         {
-                            switch (emp.Status)
-                            {
-                                case StatusType.Active:
-                                case StatusType.New:
-                                case StatusType.Completed:
-                                case StatusType.Unknown:
-                                    emp.UpdateMode = UpdateModeType.Update;
-                                    break;
-                                case StatusType.Aborted:
-                                case StatusType.Obsolete:
-                                case StatusType.Cancelled:
-                                case StatusType.Nullified:
-                                
-                                    emp.UpdateMode = UpdateModeType.Remove;
-                                    break;
-                            }
+                            emp.UpdateMode = UpdateModeType.Update;
                             emp.Id = candidateOtherEmp.Id;
                         }
                     }
