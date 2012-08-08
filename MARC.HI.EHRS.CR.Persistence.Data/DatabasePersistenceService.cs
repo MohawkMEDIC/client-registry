@@ -490,6 +490,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
 
 
+
                         if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.OtherIdentifiers));
 

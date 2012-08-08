@@ -366,7 +366,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             foreach(ENXP namePart in legalName.Part)
                 retVal.Parts.Add(new NamePart() {
                     Value = namePart.Value, 
-                    Type = m_namePartTypeMap[namePart.Type]
+                    Type = namePart.Type.HasValue ? m_namePartTypeMap[namePart.Type] : NamePart.NamePartType.None
                 });
 
             return retVal;

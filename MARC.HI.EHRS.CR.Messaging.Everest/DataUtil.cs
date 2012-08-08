@@ -22,6 +22,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.DecisionSupport;
 using MARC.HI.EHRS.SVC.Core.Issues;
+using MARC.HI.EHRS.CR.Core.Services;
 
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
@@ -37,6 +38,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         private HostContext m_context;
 
+        // Notification service
+        protected IClientNotificationService m_notificationService;
         // The system configuration service
         protected ISystemConfigurationService m_configService;
         // The policy enforcement service
@@ -53,6 +56,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         protected IDataPersistenceService m_persistenceService;
         // localization service
         protected ILocalizationService m_localeService;
+        
 
         /// <summary>
         /// Sync lock
@@ -205,6 +209,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 this.m_policyService = value.GetService(typeof(IPolicyEnforcementService)) as IPolicyEnforcementService;
                 this.m_queryService = value.GetService(typeof(IQueryPersistenceService)) as IQueryPersistenceService;
                 this.m_localeService = value.GetService(typeof(ILocalizationService)) as ILocalizationService;
+                this.m_notificationService = value.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
             }
         }
 

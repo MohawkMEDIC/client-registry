@@ -37,19 +37,33 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             try
             {
-                // Start by persisting the person component
-                if (isUpdate)
-                {
-                    // validate
-                    if (psn.Id == default(decimal))
-                        throw new DataException(ApplicationContext.LocaleService.GetString("DTPE002"));
 
-                    // TODO: Diff the person here
-                    // Create a person version
-                    this.CreatePersonVersion(conn, tx, psn);
+                // Older version of, don't persist just return a record
+                if ((psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
+                {
+                    return new VersionedDomainIdentifier()
+                    {
+                        Identifier = psn.Id.ToString(),
+                        Version = psn.VersionId.ToString(),
+                        Domain = ClientRegistryOids.CLIENT_CRID
+                    };
                 }
                 else
-                    this.CreatePerson(conn, tx, psn);
+                {
+                    // Start by persisting the person component
+                    if (isUpdate)
+                    {
+                        // validate
+                        if (psn.Id == default(decimal))
+                            throw new DataException(ApplicationContext.LocaleService.GetString("DTPE002"));
+
+                        // TODO: Diff the person here
+                        // Create a person version
+                        this.CreatePersonVersion(conn, tx, psn);
+                    }
+                    else
+                        this.CreatePerson(conn, tx, psn);
+                }
 
                 return new VersionedDomainIdentifier()
                 {
@@ -378,14 +392,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
                     {
 
-                        decimal codeId = DbUtil.CreateCodedValue(conn, tx, othId.Key);
+                        decimal? codeId = null;
+                        if(othId.Key != null)
+                            codeId = DbUtil.CreateCodedValue(conn, tx, othId.Key);
 
                         cmd.CommandText = "crt_psn_alt_id";
 
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, false));
-                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId.HasValue ? (object)codeId.Value : DBNull.Value));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_auth_in", DbType.String, (object)othId.Value.AssigningAuthority ?? DBNull.Value));
@@ -783,7 +799,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
-                                new CodeValue() { Key = Convert.ToDecimal(rdr["id_purp_cd_id"]) },
+                                rdr["id_purp_cd_id"] == DBNull.Value ? null : new CodeValue() { Key = Convert.ToDecimal(rdr["id_purp_cd_id"]) },
                                 new DomainIdentifier()
                                 {
                                     Domain = Convert.ToString(rdr["id_domain"]),
@@ -799,6 +815,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     // Fill in other identifiers
                     foreach (var kv in person.OtherIdentifiers)
                     {
+                        if (kv.Key == null)
+                            continue;
+
                         var cd = DbUtil.GetCodedValue(conn, tx, kv.Key.Key);
                         kv.Key.Code = cd.Code;
                         kv.Key.CodeSystem = cd.CodeSystem;
@@ -957,6 +976,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         public System.ComponentModel.IComponent DePersist(System.Data.IDbConnection conn, decimal identifier, System.ComponentModel.IContainer container, SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType? role, bool loadFast)
         {
+
+            // Prior versions need not apply!
+            if (role.HasValue && role.Value == HealthServiceRecordSiteRoleType.OlderVersionOf && loadFast)
+                return null;
+
             // De-persist a person
             var person = GetPerson(conn, null, new VersionedDomainIdentifier()
             {
@@ -1123,10 +1147,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 name.Key = -2;
                             else 
                                 name.UpdateMode = UpdateModeType.Update;
+                            name.Key = secondLevelFoundName.Key;
                         }
                         else // Could not find a name that sufficiently matched
                             name.UpdateMode = UpdateModeType.Add;
-                        name.Key = secondLevelFoundName.Key;
+                        
                         //secondLevelFoundName.Key = -1;
                     }
                     else // Couldn't find an name in the old in the new so it is an add or maybe remove?
@@ -1325,6 +1350,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     if (!newPsnRltnshps.Exists(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && (o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)))) // Need to copy?
                         newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
                 }
+
+            // Add a relationship of person reference
+            //newPerson.Add(oldPerson, "OBSLT", HealthServiceRecordSiteRoleType.OlderVersionOf, null);
         }
     }
 }

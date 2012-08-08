@@ -139,24 +139,49 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                
                 // First, IHE is a little different first we have to see if we can match any of the records for cross referencing
                 // therefore we do a query, first with identifiers and then without identifiers, 100% match
+                var subject = healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 QueryParameters qp = new QueryParameters()
                 {
                     Confidence = 1.0f,
                     MatchingAlgorithm = MatchAlgorithm.Exact,
                     MatchStrength = MatchStrength.Exact
                 };
-                var patientQuery = healthServiceRecord.Clone() as RegistrationEvent;
+                var patientQuery = new RegistrationEvent();
                 patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                patientQuery.Add(new Person() { AlternateIdentifiers = subject.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 // Perform the query
                 var pid = this.m_docRegService.QueryRecord(patientQuery);
                 if (pid.Length == 0)
                 {
-                    // Get rid of identifiers
-                    var subject = (healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person).Clone() as Person;
+                    // No match based on ID, get rid of the identifiers and then match
+                    // based on Name, DOB, Gender, Address and Other Identifiers
+                    // Basically:
+                    //  - One of the supplied names in the register message must match and
+                    //  - One of the other identifiers in the register message must match or address 
+                    //  - DOB must match
+                    //  - Gender must match
+                    //var subject = (healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person).Clone() as Person;
                     patientQuery.RemoveAllFromRole(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf);
-                    subject.AlternateIdentifiers = new List<DomainIdentifier>();
-                    patientQuery.Add(subject, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, subject.AlternateIdentifiers);
-                    pid = this.m_docRegService.QueryRecord(patientQuery); // Try to cross reference again
+                    var ssubject = new Person()
+                    {
+                        GenderCode = subject.GenderCode,
+                        Names = subject.Names,
+                        BirthTime = subject.BirthTime
+                    };
+
+                    if (subject.OtherIdentifiers != null) ssubject.OtherIdentifiers = subject.OtherIdentifiers;
+                    else if (subject.Addresses != null) ssubject.Addresses = subject.Addresses;
+                    patientQuery.Add(ssubject, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, subject.AlternateIdentifiers);
+
+                    int nQualifier = Convert.ToInt16(ssubject.GenderCode != null) +
+                        Convert.ToInt16(ssubject.Names != null) +
+                        Convert.ToInt16(ssubject.BirthTime != null) +
+                        Convert.ToInt16(ssubject.OtherIdentifiers != null) +
+                        Convert.ToInt16(ssubject.Addresses != null);
+
+                    if(nQualifier > 3) // At least four items
+                        pid = this.m_docRegService.QueryRecord(patientQuery); // Try to cross reference again   
+                    
                 }
                     
                 // Did we cross reference a patient?
@@ -165,6 +190,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     // Add the pid to the list of registration event identifiers
                     healthServiceRecord.AlternateIdentifier = pid[0];
                     // Update
+                    issues.Add(new DetectedIssue()
+                    {
+                        Priority = IssuePriorityType.Warning,
+                        Severity = IssueSeverityType.Low,
+                        Text = String.Format(m_localeService.GetString("DTPW002"), pid[0].Domain, pid[0].Identifier),
+                        Type = IssueType.DetectedIssue
+                    });
                     var vid = this.Update(healthServiceRecord, dtls, issues, mode);
                     return vid;
                 }
@@ -188,6 +220,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Persist
                 var retVal = this.m_persistenceService.StoreContainer(healthServiceRecord, mode);
                 retVal.UpdateMode = UpdateModeType.Add;
+
+                // Call notifier
+                if (this.m_notificationService != null)
+                    this.m_notificationService.NotifyRegister(healthServiceRecord);
 
                 // Call the dss
                 if (this.m_decisionService != null)
@@ -283,6 +319,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Persist
                 var retVal = this.m_persistenceService.UpdateContainer(healthServiceRecord, mode);
                 retVal.UpdateMode = UpdateModeType.Update;
+
+                // Call notifier
+                if (this.m_notificationService != null)
+                    this.m_notificationService.NotifyUpdate(healthServiceRecord);
 
                 // Call the dss
                 if (this.m_decisionService != null)

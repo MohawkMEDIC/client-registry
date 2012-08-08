@@ -86,6 +86,7 @@
   <string name="DTPE004">DTPE004 : Registration has already been persisted</string>
   <string name="DTPE005">DTPE005 : Formal constraint violation detected</string>
   <string name="DTPW001">DTPW001 : Cross referencing resulted in multiple candidate matches, operation will be considered an Add. Manual reconciation must be performed</string>
+  <string name="DTPW002">DTPW002 : Patient data merged with registration event {1}^^^&amp;{0}&amp;ISO</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>

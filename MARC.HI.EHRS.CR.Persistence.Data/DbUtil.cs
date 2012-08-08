@@ -686,7 +686,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     else
                     {
                         dcComp = cmpp.DePersist(conn, cmp.m_componentId, cont, cmp.m_roleType, loadFast) as HealthServiceRecordComponent;
-                        m_alreadyDepersisted.Add(dcComp);
+                        if(dcComp != null) m_alreadyDepersisted.Add(dcComp);
                     }
 
                     // Add to the graph

@@ -173,7 +173,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_id_in", DbType.Decimal, paticipantComponent.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_cls_in", DbType.Decimal, (decimal)healthServiceRecordSite.SiteRoleType));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "orig_id_domain_in", DbType.StringFixedLength, id.Domain));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "orig_id_in", DbType.StringFixedLength, id.Identifier));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "orig_id_in", DbType.StringFixedLength, (object)id.Identifier ?? DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "license_ind_in", DbType.Boolean, id.IsLicenseAuthority));
 
                 // Insert
@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_id_in", DbType.Decimal, identifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_domain_in", DbType.StringFixedLength, altId.Domain));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_in", DbType.StringFixedLength, altId.Identifier));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_in", DbType.StringFixedLength, (object)altId.Identifier ?? DBNull.Value));
 
                 // Execute
                 cmd.ExecuteNonQuery();
@@ -323,7 +323,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     cmd.CommandText = "get_hc_ptcpt_extern";
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_id_domain_in", DbType.StringFixedLength, domainIdentifier.Domain));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_id_in", DbType.StringFixedLength, domainIdentifier.Identifier));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ptcpt_id_in", DbType.StringFixedLength, (object)domainIdentifier.Identifier ?? DBNull.Value));
                 }
 
                 // Execute the reader

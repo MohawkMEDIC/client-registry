@@ -197,16 +197,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             retVal.Status =subject.StatusCode == null || subject.StatusCode.IsNull ? StatusType.Active : ConvertStatusCode(subject.StatusCode, dtls);
 
             // Control act event code
-            if (!controlActProcess.Code.Code.Equals(PRPA_IN201301UV02.GetTriggerEvent().Code))
+            if (controlActProcess.Code != null && !controlActProcess.Code.IsNull && !controlActProcess.Code.Code.Equals(PRPA_IN201301UV02.GetTriggerEvent().Code))
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
                 return null;
             }
 
             if (retVal == null) return null;
-
-            // Create the subject
-            Person subjectOf = new Person();
 
             // Validate
             if (subject.NullFlavor != null)
@@ -244,6 +241,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         );
             }
 
+            // Create the subject
+            Person subjectOf = CreatePersonSubject(subject.Subject1.registeredRole, dtls);
+
             // Replacement of?
             foreach (var rplc in subject.ReplacementOf)
                 if (rplc.NullFlavor == null &&
@@ -262,46 +262,67 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
                             
                 }
-        
-            // Process additional data
-            var regRole = subject.Subject1.registeredRole;
 
-            
-            // Any alternate ids?
-            if (regRole.Id != null && !regRole.Id.IsNull)
-            {
-                subjectOf.AlternateIdentifiers = new List<DomainIdentifier>();
-                foreach (var ii in regRole.Id)
-                    if (!ii.IsNull)
-                        subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
-
-            }
-
-            // Status code
-            if (regRole.StatusCode != null && !regRole.StatusCode.IsNull)
-                subjectOf.Status = ConvertStatusCode(regRole.StatusCode, dtls);
-            else
-                subjectOf.Status = StatusType.Active;
 
             // Effective time
-            if (subjectOf.Status == StatusType.Active || regRole.EffectiveTime == null || regRole.EffectiveTime.IsNull)
+            if (subjectOf.Status == StatusType.Active || subject.Subject1.registeredRole.EffectiveTime == null || subject.Subject1.registeredRole.EffectiveTime.IsNull)
             {
                 dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW005"), null));
                 retVal.EffectiveTime = CreateTimestamp(new IVL<TS>(DateTime.Now, new TS() { NullFlavor = NullFlavor.NotApplicable }), dtls);
             }
             else
-                retVal.EffectiveTime = CreateTimestamp(regRole.EffectiveTime, dtls);
+                retVal.EffectiveTime = CreateTimestamp(subject.Subject1.registeredRole.EffectiveTime, dtls);
+
+            // Add constructed subject
+            retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
+                subjectOf.AlternateIdentifiers);
+
+            // Error?
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                retVal = null;
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create a person subject
+        /// </summary>
+        /// <param name="patient"></param>
+        /// <param name="dtls"></param>
+        /// <returns></returns>
+        private Person CreatePersonSubject(MARC.Everest.RMIM.UV.NE2008.PRPA_MT201301UV02.Patient patient, List<IResultDetail> dtls)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            var retVal = new Person();
+
+            // Any alternate ids?
+            if (patient.Id != null && !patient.Id.IsNull)
+            {
+                retVal.AlternateIdentifiers = new List<DomainIdentifier>();
+                foreach (var ii in patient.Id)
+                    if (!ii.IsNull)
+                        retVal.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
+
+            }
+
+            // Status code
+            if (patient.StatusCode != null && !patient.StatusCode.IsNull)
+                retVal.Status = ConvertStatusCode(patient.StatusCode, dtls);
+            else
+                retVal.Status = StatusType.Active;
 
             // Masking indicator
-            if (regRole.ConfidentialityCode != null && !regRole.ConfidentialityCode.IsNull)
-                foreach(var msk in regRole.ConfidentialityCode)
-                    subjectOf.Add(new MaskingIndicator()
+            if (patient.ConfidentialityCode != null && !patient.ConfidentialityCode.IsNull)
+                foreach (var msk in patient.ConfidentialityCode)
+                    retVal.Add(new MaskingIndicator()
                     {
                         MaskingCode = CreateCodeValue(msk, dtls)
                     }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.FilterOf, null);
 
             // Identified entity check
-            var ident = regRole.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person;
+            var ident = patient.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person;
             if (ident == null || ident.NullFlavor != null)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE012"), null));
@@ -318,21 +339,21 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Names
             if (ident.Name != null)
             {
-                subjectOf.Names = new List<SVC.Core.DataTypes.NameSet>(ident.Name.Count);
+                retVal.Names = new List<SVC.Core.DataTypes.NameSet>(ident.Name.Count);
                 foreach (var nam in ident.Name)
                     if (!nam.IsNull)
-                        subjectOf.Names.Add(CreateNameSet(nam, dtls));
+                        retVal.Names.Add(CreateNameSet(nam, dtls));
             }
 
             // Telecoms
             if (ident.Telecom != null)
             {
-                subjectOf.TelecomAddresses = new List<SVC.Core.DataTypes.TelecommunicationsAddress>(ident.Telecom.Count);
+                retVal.TelecomAddresses = new List<SVC.Core.DataTypes.TelecommunicationsAddress>(ident.Telecom.Count);
                 foreach (var tel in ident.Telecom)
                 {
                     if (tel.IsNull) continue;
 
-                    subjectOf.TelecomAddresses.Add(new SVC.Core.DataTypes.TelecommunicationsAddress()
+                    retVal.TelecomAddresses.Add(new SVC.Core.DataTypes.TelecommunicationsAddress()
                     {
                         Use = Util.ToWireFormat(tel.Use),
                         Value = tel.Value
@@ -341,7 +362,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     // Store usable period as an extension as it is not storable here
                     if (tel.UseablePeriod != null && !tel.UseablePeriod.IsNull)
                     {
-                        subjectOf.Add(new ExtendedAttribute()
+                        retVal.Add(new ExtendedAttribute()
                         {
                             PropertyPath = String.Format("TelecomAddresses[{0}]", tel.Value),
                             Value = tel.UseablePeriod.Hull,
@@ -353,37 +374,37 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Gender
             if (ident.AdministrativeGenderCode != null && !ident.AdministrativeGenderCode.IsNull)
-                subjectOf.GenderCode = Util.ToWireFormat(ident.AdministrativeGenderCode);
+                retVal.GenderCode = Util.ToWireFormat(ident.AdministrativeGenderCode);
 
             // Birth
             if (ident.BirthTime != null && !ident.BirthTime.IsNull)
-                subjectOf.BirthTime = CreateTimestamp(ident.BirthTime, dtls);
+                retVal.BirthTime = CreateTimestamp(ident.BirthTime, dtls);
 
             // Deceased
             if (ident.DeceasedInd != null && !ident.DeceasedInd.IsNull)
                 dtls.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "DeceasedInd", this.m_localeService.GetString("MSGW006"), null));
             if (ident.DeceasedTime != null && !ident.DeceasedTime.IsNull)
-                subjectOf.DeceasedTime = CreateTimestamp(ident.DeceasedTime, dtls);
+                retVal.DeceasedTime = CreateTimestamp(ident.DeceasedTime, dtls);
 
             // Multiple Birth
             if (ident.MultipleBirthInd != null && !ident.MultipleBirthInd.IsNull)
                 dtls.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "DeceasedInd", this.m_localeService.GetString("MSGW007"), null));
             if (ident.MultipleBirthOrderNumber != null && !ident.MultipleBirthOrderNumber.IsNull)
-                subjectOf.BirthOrder = ident.MultipleBirthOrderNumber;
+                retVal.BirthOrder = ident.MultipleBirthOrderNumber;
 
             // Address(es)
             if (ident.Addr != null)
             {
-                subjectOf.Addresses = new List<SVC.Core.DataTypes.AddressSet>(ident.Addr.Count);
+                retVal.Addresses = new List<SVC.Core.DataTypes.AddressSet>(ident.Addr.Count);
                 foreach (var addr in ident.Addr)
                     if (!addr.IsNull)
-                        subjectOf.Addresses.Add(CreateAddressSet(addr, dtls));
+                        retVal.Addresses.Add(CreateAddressSet(addr, dtls));
             }
 
             // As other identifiers
             if (ident.AsOtherIDs != null)
             {
-                subjectOf.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>(ident.AsOtherIDs.Count);
+                retVal.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>(ident.AsOtherIDs.Count);
                 foreach (var id in ident.AsOtherIDs)
                     if (id.NullFlavor == null)
                     {
@@ -394,14 +415,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         // Other identifiers 
                         var priId = id.Id[0];
-                        subjectOf.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
+                        retVal.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             null,
                             CreateDomainIdentifier(priId)
                          ));
 
                         // Extra "other" identifiers are extensions
                         for (int i = 1; i < id.Id.Count; i++)
-                            subjectOf.Add(new ExtendedAttribute()
+                            retVal.Add(new ExtendedAttribute()
                             {
                                 PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
                                 Value = id.Id[i],
@@ -411,12 +432,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         // Extra scoping org data
                         if (id.ScopingOrganization != null && id.ScopingOrganization.NullFlavor == null)
                         {
-                            
+
                             // Other identifier assigning organization ext
                             if (id.ScopingOrganization.Id != null && !id.ScopingOrganization.Id.IsNull)
                                 foreach (var othScopeId in id.ScopingOrganization.Id)
                                 {
-                                    subjectOf.Add(new ExtendedAttribute()
+                                    retVal.Add(new ExtendedAttribute()
                                     {
                                         PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
                                         Value = CreateDomainIdentifier(othScopeId),
@@ -425,15 +446,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                                 }
                             // Other identifier assigning organization name
                             if (id.ScopingOrganization.Name != null && !id.ScopingOrganization.Name.IsNull)
-                                foreach(var othScopeName in id.ScopingOrganization.Name)
-                                    subjectOf.Add(new ExtendedAttribute()
+                                foreach (var othScopeName in id.ScopingOrganization.Name)
+                                    retVal.Add(new ExtendedAttribute()
                                     {
                                         PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
                                         Value = othScopeName.ToString(),
                                         Name = "AssigningIdOrganizationName"
                                     });
-                            if(id.ScopingOrganization.Code != null && !id.ScopingOrganization.Code.IsNull)
-                                subjectOf.Add(new ExtendedAttribute()
+                            if (id.ScopingOrganization.Code != null && !id.ScopingOrganization.Code.IsNull)
+                                retVal.Add(new ExtendedAttribute()
                                 {
                                     PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
                                     Value = CreateCodeValue(id.ScopingOrganization.Code, dtls),
@@ -447,7 +468,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Languages
             if (ident.LanguageCommunication != null)
             {
-                subjectOf.Language = new List<PersonLanguage>(ident.LanguageCommunication.Count);
+                retVal.Language = new List<PersonLanguage>(ident.LanguageCommunication.Count);
                 foreach (var lang in ident.LanguageCommunication)
                 {
                     if (lang == null || lang.NullFlavor != null) continue;
@@ -479,7 +500,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         pl.Type = LanguageType.WrittenAndSpoken;
 
                     // Add
-                    subjectOf.Language.Add(pl);
+                    retVal.Language.Add(pl);
                 }
             }
 
@@ -488,50 +509,50 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 foreach (var psn in ident.PersonalRelationship)
                     if (psn.NullFlavor == null && psn.RelationshipHolder1 != null &&
                         psn.RelationshipHolder1.NullFlavor == null)
-                        subjectOf.Add(CreatePersonalRelationship(psn, dtls), Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                        retVal.Add(CreatePersonalRelationship(psn, dtls), Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
 
             // VIP Code
-            if (regRole.VeryImportantPersonCode != null && !regRole.VeryImportantPersonCode.IsNull)
-                subjectOf.VipCode = CreateCodeValue(regRole.VeryImportantPersonCode, dtls);
+            if (patient.VeryImportantPersonCode != null && !patient.VeryImportantPersonCode.IsNull)
+                retVal.VipCode = CreateCodeValue(patient.VeryImportantPersonCode, dtls);
 
             // Birthplace
             if (ident.BirthPlace != null && ident.BirthPlace.NullFlavor == null &&
                 ident.BirthPlace.Birthplace != null && ident.BirthPlace.Birthplace.NullFlavor == null)
-                subjectOf.Add(CreateBirthplace(ident.BirthPlace.Birthplace, dtls),
+                retVal.Add(CreateBirthplace(ident.BirthPlace.Birthplace, dtls),
                     "BRTH");
 
             // Race Codes
             if (ident.RaceCode != null && !ident.RaceCode.IsNull)
             {
-                subjectOf.Race = new List<CodeValue>(ident.RaceCode.Count);
+                retVal.Race = new List<CodeValue>(ident.RaceCode.Count);
                 foreach (var rc in ident.RaceCode)
-                    subjectOf.Race.Add(CreateCodeValue(rc, dtls));
+                    retVal.Race.Add(CreateCodeValue(rc, dtls));
             }
 
             // Ethnicity Codes
             // Didn't actually have a place for this so this will be an extension
             if (ident.EthnicGroupCode != null && !ident.EthnicGroupCode.IsNull)
                 foreach (var eth in ident.EthnicGroupCode)
-                    subjectOf.Add(new ExtendedAttribute()
+                    retVal.Add(new ExtendedAttribute()
                     {
                         Name = "EthnicGroupCode",
                         PropertyPath = "",
                         Value = CreateCodeValue(eth, dtls)
                     });
 
-            
+
             // Marital Status Code
             if (ident.MaritalStatusCode != null && !ident.MaritalStatusCode.IsNull)
-                subjectOf.MaritalStatus = CreateCodeValue(ident.MaritalStatusCode, dtls);
+                retVal.MaritalStatus = CreateCodeValue(ident.MaritalStatusCode, dtls);
 
             // Religion code
             if (ident.ReligiousAffiliationCode != null && !ident.ReligiousAffiliationCode.IsNull)
-                subjectOf.ReligionCode = CreateCodeValue(ident.ReligiousAffiliationCode, dtls);
-            
+                retVal.ReligionCode = CreateCodeValue(ident.ReligiousAffiliationCode, dtls);
+
             // Citizenship Code
             if (ident.AsCitizen.Count > 0)
             {
-                subjectOf.Citizenship = new List<Citizenship>(ident.AsCitizen.Count);
+                retVal.Citizenship = new List<Citizenship>(ident.AsCitizen.Count);
                 foreach (var cit in ident.AsCitizen)
                 {
                     if (cit.NullFlavor != null) continue;
@@ -557,7 +578,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             citizenship.CountryCode = iso3166code.Code;
 
                         // Name of the country
-                        if(cit.PoliticalNation.Name != null && !cit.PoliticalNation.Name.IsNull && cit.PoliticalNation.Name.Part.Count > 0)
+                        if (cit.PoliticalNation.Name != null && !cit.PoliticalNation.Name.IsNull && cit.PoliticalNation.Name.Part.Count > 0)
                             citizenship.CountryName = cit.PoliticalNation.Name.Part[0].Value;
 
                     }
@@ -571,21 +592,21 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                     // Identifiers of the citizen in the role
                     if (cit.Id != null && !cit.Id.IsNull)
-                        subjectOf.Add(new ExtendedAttribute()
+                        retVal.Add(new ExtendedAttribute()
                         {
                             Name = "CitizenshipIds",
                             PropertyPath = String.Format("Citizenship[{0}]", citizenship.CountryCode),
                             Value = CreateDomainIdentifierList(cit.Id)
                         });
 
-                    subjectOf.Citizenship.Add(citizenship);
+                    retVal.Citizenship.Add(citizenship);
                 }
             }
 
             // Employment Code
             if (ident.AsEmployee.Count > 0)
             {
-                subjectOf.Employment = new List<Employment>(ident.AsEmployee.Count);
+                retVal.Employment = new List<Employment>(ident.AsEmployee.Count);
                 foreach (var emp in ident.AsEmployee)
                 {
                     if (emp.NullFlavor != null) continue;
@@ -595,7 +616,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     // Occupation code
                     if (emp.OccupationCode != null && !emp.OccupationCode.IsNull)
                         employment.Occupation = CreateCodeValue(emp.OccupationCode, dtls);
-                    
+
                     // efft time
                     if (emp.EffectiveTime != null && !emp.EffectiveTime.IsNull)
                         employment.EffectiveTime = CreateTimestamp(emp.EffectiveTime, dtls);
@@ -606,25 +627,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     else
                         employment.Status = StatusType.Active;
 
-                    subjectOf.Employment.Add(employment);
+                    retVal.Employment.Add(employment);
                 }
             }
 
             // Scoping org?
-            if (regRole.ProviderOrganization != null &&
-                regRole.ProviderOrganization.NullFlavor == null)
+            if (patient.ProviderOrganization != null &&
+                patient.ProviderOrganization.NullFlavor == null)
             {
-                var scoper = CreateProviderOrganization(regRole.ProviderOrganization, dtls);
-                
-                subjectOf.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry, null);
+                var scoper = CreateProviderOrganization(patient.ProviderOrganization, dtls);
+
+                retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry, null);
             }
-
-            retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
-                subjectOf.AlternateIdentifiers);
-
-            // Error?
-            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                retVal = null;
 
             return retVal;
         }
@@ -653,7 +667,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Name
             if (organization.Name != null && !organization.Name.IsNull)
-                retVal.Name = (organization.Name.Find(o => o.Use.Contains(EntityNameUse.Legal)) ?? organization.Name[0]).ToString();
+                retVal.Name = (organization.Name.Find(o => o.Use != null && o.Use.Contains(EntityNameUse.Legal)) ?? organization.Name[0]).ToString();
 
             // Type
             if (organization.Code != null && !organization.Code.IsNull)
@@ -765,7 +779,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 HealthcareParticipant ptcpt = new HealthcareParticipant() { Classifier = HealthcareParticipant.HealthcareParticipantType.Organization };
                 ptcpt.AlternateIdentifiers = CreateDomainIdentifierList(assignedEntity.Id);
-                ptcpt.LegalName = org.Name != null && !org.Name.IsNull ? CreateNameSet(org.Name.Find(o => o.Use.Contains(EntityNameUse.Legal)) ?? org.Name[0], dtls) : null;
+                ptcpt.LegalName = org.Name != null && !org.Name.IsNull ? CreateNameSet(org.Name.Find(o => o.Use != null && o.Use.Contains(EntityNameUse.Legal)) ?? org.Name[0], dtls) : null;
                 ptcpt.PrimaryAddress = assignedEntity.Addr != null && !assignedEntity.Addr.IsNull ? CreateAddressSet(assignedEntity.Addr.Find(o => o.Use.Contains(PostalAddressUse.Direct)) ?? assignedEntity.Addr[0], dtls) : null;
 
                 // Telecom addresses
@@ -844,7 +858,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(rh.Id));
                 }
                 if (rh.Name != null && !rh.Name.IsNull)
-                    retVal.LegalName = CreateNameSet(rh.Name.Find(o => o.Use.Contains(EntityNameUse.Legal)) ?? rh.Name[0], dtls);
+                    retVal.LegalName = CreateNameSet(rh.Name.Find(o => o.Use != null && o.Use.Contains(EntityNameUse.Legal)) ?? rh.Name[0], dtls);
             }
             else
                 dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE0059"), null));
@@ -897,6 +911,135 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE010"), null, null));
                     return StatusType.Unknown;
             }
+        }
+
+        /// <summary>
+        /// Create components for the update message
+        /// </summary>
+        internal RegistrationEvent CreateComponents(MARC.Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.ControlActProcess<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201302UV02.Patient, object> controlActProcess, List<IResultDetail> dtls)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            // Create return value
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201302UV02.Patient, object>(controlActProcess, dtls);
+
+            // Very important, if there is more than one subject then we have a problem
+            if (controlActProcess.Subject.Count != 1)
+            {
+                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
+                return null;
+            }
+
+            var subject = controlActProcess.Subject[0].RegistrationEvent;
+
+            retVal.EventClassifier = RegistrationEventType.Register;
+            retVal.EventType = new CodeValue("REG");
+            retVal.Status = subject.StatusCode == null || subject.StatusCode.IsNull ? StatusType.Active : ConvertStatusCode(subject.StatusCode, dtls);
+
+            // Control act event code
+            if (controlActProcess.Code != null && !controlActProcess.Code.IsNull && !controlActProcess.Code.Code.Equals(PRPA_IN201302UV02.GetTriggerEvent().Code))
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
+                return null;
+            }
+
+            if (retVal == null) return null;
+
+            // Validate
+            if (subject.NullFlavor != null)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE003"), null));
+
+            // Subject ID
+            if (subject.Id != null && subject.Id.Count > 0 && subject.Id.FindAll(o => !o.IsNull).Count > 0)
+                retVal.Add(new ExtendedAttribute()
+                {
+                    PropertyPath = "Id",
+                    Value = CreateDomainIdentifierList(subject.Id),
+                    Name = "RegistrationEventAltId"
+                });
+
+            // Effective time of the registration event = authored time
+            if (subject.EffectiveTime != null && !subject.EffectiveTime.IsNull)
+            {
+                var ivl = subject.EffectiveTime.ToBoundIVL();
+                retVal.Timestamp = (DateTime)(ivl.Value ?? ivl.Low);
+                if (subject.Author == null || subject.Author.Time == null || subject.Author.Time.IsNull || subject.Author.Time.ToBoundIVL().SemanticEquals(ivl) == false)
+                    dtls.Add(new ValidationResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE051"), null, null));
+
+            }
+
+            // Custodian of the record
+            if (subject.Custodian == null || subject.Custodian.NullFlavor != null ||
+                subject.Custodian.AssignedEntity == null || subject.Custodian.AssignedEntity.NullFlavor != null)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00B"), null));
+            else
+            {
+                var cstdn = CreateRepositoryDevice(subject.Custodian.AssignedEntity, dtls);
+                if (cstdn != null)
+                    retVal.Add(CreateRepositoryDevice(subject.Custodian.AssignedEntity, dtls), "CST",
+                        HealthServiceRecordSiteRoleType.PlaceOfRecord | HealthServiceRecordSiteRoleType.ResponsibleFor,
+                            CreateDomainIdentifierList(subject.Custodian.AssignedEntity.Id)
+                        );
+            }
+
+            // Create the subject
+            var regRole = subject.Subject1.registeredRole;
+            Person subjectOf = CreatePersonSubject(new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201301UV02.Patient(
+                    regRole.Id,
+                    regRole.Addr,
+                    regRole.Telecom,
+                    regRole.EffectiveTime,
+                    regRole.ConfidentialityCode,
+                    regRole.VeryImportantPersonCode,
+                    regRole.PatientEntityChoiceSubject,
+                    regRole.ProviderOrganization,
+                    null,
+                    null
+                )
+                {
+                    StatusCode = Util.Convert<RoleStatus1>(Util.ToWireFormat(regRole.StatusCode)),
+                    SubjectOf = regRole.SubjectOf,
+                    CoveredPartyOf = regRole.CoveredPartyOf
+                }, dtls);
+            
+            // Replacement of?
+            foreach (var rplc in subject.ReplacementOf)
+                if (rplc.NullFlavor == null &&
+                    rplc.PriorRegistration != null && rplc.PriorRegistration.NullFlavor == null)
+                {
+
+                    if (rplc.PriorRegistration.Subject1 == null || rplc.PriorRegistration.Subject1.NullFlavor != null ||
+                        rplc.PriorRegistration.Subject1.PriorRegisteredRole == null || rplc.PriorRegistration.Subject1.PriorRegisteredRole.NullFlavor != null ||
+                        rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id == null || rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsEmpty ||
+                        rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsNull)
+                        dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE050"), "//urn:hl7-org:v3#priorRegisteredRole"));
+                    else
+                        subjectOf.Add(new PersonRegistrationRef()
+                        {
+                            AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id)
+                        }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+
+                }
+
+            // Effective time
+            if (subjectOf.Status == StatusType.Active || subject.Subject1.registeredRole.EffectiveTime == null || subject.Subject1.registeredRole.EffectiveTime.IsNull)
+            {
+                dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW005"), null));
+                retVal.EffectiveTime = CreateTimestamp(new IVL<TS>(DateTime.Now, new TS() { NullFlavor = NullFlavor.NotApplicable }), dtls);
+            }
+            else
+                retVal.EffectiveTime = CreateTimestamp(subject.Subject1.registeredRole.EffectiveTime, dtls);
+
+            // Add constructed subject
+            retVal.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf,
+                subjectOf.AlternateIdentifiers);
+
+            // Error?
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                retVal = null;
+
+            return retVal;
         }
     }
 }
