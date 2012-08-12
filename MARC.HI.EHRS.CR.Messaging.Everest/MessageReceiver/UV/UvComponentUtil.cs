@@ -415,9 +415,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         // Other identifiers 
                         var priId = id.Id[0];
+                        var myId = CreateDomainIdentifier(priId);
                         retVal.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             null,
-                            CreateDomainIdentifier(priId)
+                            myId
                          ));
 
                         // Extra "other" identifiers are extensions
@@ -433,10 +434,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         if (id.ScopingOrganization != null && id.ScopingOrganization.NullFlavor == null)
                         {
 
-                            // Other identifier assigning organization ext
+                            // Other identifier assigning organization ext We do this extension like this so the patient record
+                            // is compatible with the Canadian handler
                             if (id.ScopingOrganization.Id != null && !id.ScopingOrganization.Id.IsNull)
                                 foreach (var othScopeId in id.ScopingOrganization.Id)
                                 {
+                                    // Validate the identifiers match
+                                    if(!II.IsValidOidFlavor(othScopeId))
+                                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE05A"), null, null));
+                                    if (priId.Root != othScopeId.Root)
+                                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW015"), null, null));
+                                    
                                     retVal.Add(new ExtendedAttribute()
                                     {
                                         PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
@@ -444,8 +452,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                                         Name = "AssigningIdOrganizationId"
                                     });
                                 }
+                            else
+                                dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE05A"), null, null));
+
                             // Other identifier assigning organization name
                             if (id.ScopingOrganization.Name != null && !id.ScopingOrganization.Name.IsNull)
+                            {
                                 foreach (var othScopeName in id.ScopingOrganization.Name)
                                     retVal.Add(new ExtendedAttribute()
                                     {
@@ -453,6 +465,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                                         Value = othScopeName.ToString(),
                                         Name = "AssigningIdOrganizationName"
                                     });
+
+                                if (String.IsNullOrEmpty(myId.AssigningAuthority))
+                                    myId.AssigningAuthority = id.ScopingOrganization.Name[0].ToString();
+                                
+                            }
                             if (id.ScopingOrganization.Code != null && !id.ScopingOrganization.Code.IsNull)
                                 retVal.Add(new ExtendedAttribute()
                                 {
@@ -636,8 +653,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 patient.ProviderOrganization.NullFlavor == null)
             {
                 var scoper = CreateProviderOrganization(patient.ProviderOrganization, dtls);
+                retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry | HealthServiceRecordSiteRoleType.InformantTo, null);
 
-                retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry, null);
             }
 
             return retVal;

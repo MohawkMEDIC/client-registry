@@ -1139,7 +1139,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     else if (candidateOtherName.Count != 0) // There are more than one name(s) which have the use, try to find a name that matches in content
                     {
                         // Find this name in a collection of same use names
-                        var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) > DatabasePersistenceService.ValidationSettings.PersonNameMatch);
+                        var secondLevelFoundName = candidateOtherName.Find(o => QueryUtil.MatchName(o, name) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch);
 
                         if (secondLevelFoundName != null)
                         {

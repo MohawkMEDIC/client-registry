@@ -120,7 +120,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a domain identifier list from the list 
         /// </summary>
-        public List<DomainIdentifier> CreateDomainIdentifierList(IEnumerable<II> iiList)
+        public virtual List<DomainIdentifier> CreateDomainIdentifierList(IEnumerable<II> iiList)
         {
             List<DomainIdentifier> retVal = new List<DomainIdentifier>(10);
             foreach (var ii in iiList)
@@ -357,7 +357,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         {
             NameSet retVal = new NameSet();
             NameSet.NameSetUse internalNameUse = 0;
-            var lnu = legalName.Use == null || legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Legal : (EntityNameUse)legalName.Use[0];
+            var lnu = legalName.Use == null || legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Search : (EntityNameUse)legalName.Use[0];
             if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
                 return null;
 
@@ -379,7 +379,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         /// <param name="iI"></param>
         /// <returns></returns>
-        protected DomainIdentifier CreateDomainIdentifier(MARC.Everest.DataTypes.II iI)
+        protected virtual DomainIdentifier CreateDomainIdentifier(MARC.Everest.DataTypes.II iI)
         {
             return new DomainIdentifier()
             {

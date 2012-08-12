@@ -382,5 +382,25 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
         }
 
+        /// <summary>
+        /// Validate identifiers
+        /// </summary>
+        internal bool ValidateIdentifiers(RegistrationEvent data, List<IResultDetail> dtls)
+        {
+            Person subject = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            ServiceDeliveryLocation scoper = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.PlaceOfEntry | SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.InformantTo) as ServiceDeliveryLocation;
+            bool isValid = true;
+            // Validate the root
+            foreach(var id in subject.AlternateIdentifiers)
+                if (!scoper.AlternateIdentifiers.Exists(o => o.Domain == id.Domain))
+                {
+                    isValid = false;
+                    dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGW015"), null, null));
+                    if(String.IsNullOrEmpty(id.AssigningAuthority))
+                        id.AssigningAuthority = scoper.Name;
+                }
+
+            return isValid;
+        }
     }
 }

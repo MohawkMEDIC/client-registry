@@ -77,7 +77,9 @@
   <string name="MSGE057">MSGE057 : Country code must come from either ISO 3166-1 or ISO 3166-2 code system</string>
   <string name="MSGE058">MSGE058 : Could not find a valid translation from the supplied country code system ISO 3166-2 to ISO 3166-1</string>
   <string name="MSGE059">MSGE059 : IHE restriction: RelationshipHolder must be a Person</string>
-  <string name="MSGE05A">MSGE05A : IHE restriction: Scoping provider must have an id and must only contain a root</string>
+  <string name="MSGE05A">MSGE05A : IHE restriction: Scoping organization must have an id and must only contain a root</string>
+  <string name="MSGW015">MSGW015 : IHE restriction: Identifiers must carry the same root as their scoping organizations</string>
+
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

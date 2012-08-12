@@ -143,6 +143,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             foreach (var kv in ComponentUtil.m_addressUseMap)
                 if ((kv.Value & addressSet.Use) != 0)
                     retVal.Use.Add(kv.Key);
+            if (retVal.Use.IsEmpty)
+                retVal.Use = null;
 
             foreach(var pt in addressSet.Parts)
                 retVal.Part.Add(new ADXP(pt.AddressValue, (AddressPartType)Enum.Parse(typeof(AddressPart.AddressPartType), pt.PartType.ToString())));
@@ -206,7 +208,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             PN retVal = new PN();
-            retVal.Use = new SET<CS<EntityNameUse>>(enUse);
+            if(enUse != EntityNameUse.Search)
+                retVal.Use = new SET<CS<EntityNameUse>>(enUse);
             
             // Parts
             foreach(var part in nameSet.Parts)
