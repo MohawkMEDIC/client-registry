@@ -38,6 +38,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         public void Start(IPEndPoint bind)
         {
 
+            
             this.m_listener = new TcpListener(bind);
             this.m_listener.Start();
             Trace.TraceInformation("LLP Transport bound to {0}", bind);
@@ -64,7 +65,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
-                parser.ValidationContext = new DefaultValidation();
 
                 // Read LLP head byte
                 int llpByte = stream.ReadByte();

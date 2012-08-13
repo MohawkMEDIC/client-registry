@@ -6,6 +6,9 @@ using NHapi.Base.Util;
 using MARC.HI.EHRS.SVC.Core.Services;
 using NHapi.Base.Model;
 using MARC.Everest.Connectors;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
+using NHapi.Base.validation.impl;
+using NHapi.Base.Parser;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -119,9 +122,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 errCode = "203";
             else if (dtl.Exception is NotImplementedException)
                 errCode = "200";
+            else
+                errCode = "207";
 
             err.HL7ErrorCode.Identifier.Value = errCode;
-            err.HL7ErrorCode.Text.Value = locale.GetString(String.Format("HL7{0}"));
+            err.HL7ErrorCode.Text.Value = locale.GetString(String.Format("HL7{0}", errCode));
 
             // Mesage
             err.UserMessage.Value = dtl.Message;
@@ -130,5 +135,51 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
         }
 
+
+        /// <summary>
+        /// Validate the message
+        /// </summary>
+        internal static void Validate(IMessage message, ISystemConfigurationService config, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.HostContext context)
+        {
+            
+            // Structure validation
+            PipeParser pp = new PipeParser() { ValidationContext = new DefaultValidation() };
+            try
+            {
+                pp.Encode(message);
+            }
+            catch (Exception e)
+            {
+                dtls.Add(new ValidationResultDetail(ResultDetailType.Error, e.Message, e));
+            }
+
+            // Validation of sending application
+            Terser msgTerser = new Terser(message);
+            object obj = msgTerser.getSegment("MSH") as NHapi.Model.V25.Segment.MSH;
+            if (obj != null)
+            {
+                var msh = obj as NHapi.Model.V25.Segment.MSH;
+                var domainId = new ComponentUtility() { Context = context }.CreateDomainIdentifier(msh.SendingApplication, dtls);
+                if (!config.IsRegisteredDevice(domainId))
+                    dtls.Add(new UnrecognizedSenderResultDetail(domainId));
+
+            }
+            else
+            {
+                obj = msgTerser.getSegment("MSH") as NHapi.Model.V231.Segment.MSH;
+                if (obj != null)
+                {
+                    var msh = obj as NHapi.Model.V231.Segment.MSH;
+                    var domainId = new ComponentUtility() { Context = context }.CreateDomainIdentifier(msh.SendingApplication, dtls);
+                    if (!config.IsRegisteredDevice(domainId))
+                        dtls.Add(new UnrecognizedSenderResultDetail(domainId));
+
+                }
+                else
+                    dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Missing MSH", "MSH"));
+            }
+
+
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 switch (msh.MessageType.TriggerEvent.Value)
                 {
                     case "Q23":
-                        HandlePixQuery(e.Message as QBP_Q21);
+                        response = HandlePixQuery(e.Message as QBP_Q21);
                         break;
                     default:
                         response = MessageUtil.CreateNack(e.Message, "AR", "201", locale.GetString("HL7201"), config);
@@ -55,9 +55,22 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Handle a PIX query
         /// </summary>
-        private IMessage HandlePixQuery(QBP_Q21 qBP_Q21)
+        private IMessage HandlePixQuery(QBP_Q21 request)
         {
-            return null;
+            // Get config
+            var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            // Create a details array
+            List<IResultDetail> dtls = new List<IResultDetail>();
+
+            // Validate the inbound message
+            MessageUtil.Validate((IMessage)request, config, dtls, this.Context);
+
+            // Control 
+            if (request == null)
+                return null;
+
+            return MessageUtil.CreateNack(request, dtls, this.Context);
+
         }
 
         #endregion

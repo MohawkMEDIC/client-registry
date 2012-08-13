@@ -79,7 +79,9 @@
   <string name="MSGE059">MSGE059 : IHE restriction: RelationshipHolder must be a Person</string>
   <string name="MSGE05A">MSGE05A : IHE restriction: Scoping organization must have an id and must only contain a root</string>
   <string name="MSGW015">MSGW015 : IHE restriction: Identifiers must carry the same root as their scoping organizations</string>
-
+  <string name="MSGW016">MSGW016 : ISO is the only supported UniversalIDType (HD.3)</string>
+  <string name="MSGE05B">MSGE05B : Identifier UniversalID must be an ISO OID (HD.2)</string>
+  <string name="MSGE05C">MSGE05C : Cannot locate MSH segment (MSH)</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentUtility.cs" />
     <Compile Include="MessageUtil.cs" />
     <Compile Include="NotSupportedHandler.cs" />
     <Compile Include="PdqHandler.cs" />

@@ -65,7 +65,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
-                parser.ValidationContext = new DefaultValidation();
 
                 StringBuilder messageData = new StringBuilder();
                 byte[] buffer = new byte[1024];
