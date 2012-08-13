@@ -104,7 +104,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 var data = cu.CreateComponents(request.controlActProcess, dtls);
 
                 // Componentization fail?
-                if (data == null)
+                if (data == null || !dataUtil.ValidateIdentifiers(data, dtls))
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store 
@@ -222,7 +222,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 var data = cu.CreateComponents(request.controlActProcess, dtls);
                 
                 // Componentization fail?
-                if (data == null || dataUtil.ValidateIdentifiers(data, dtls))
+                if (data == null || !dataUtil.ValidateIdentifiers(data, dtls))
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
 

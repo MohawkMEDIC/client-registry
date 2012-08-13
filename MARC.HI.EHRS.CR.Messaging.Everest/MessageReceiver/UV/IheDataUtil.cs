@@ -116,7 +116,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// </summary>
         internal override SVC.Core.DataTypes.VersionedDomainIdentifier Register(Core.ComponentModel.RegistrationEvent healthServiceRecord, List<MARC.Everest.Connectors.IResultDetail> dtls, List<SVC.Core.Issues.DetectedIssue> issues, SVC.Core.Services.DataPersistenceMode mode)
         {
-            
+            bool needsReconciliation = false; // true when the record registered needs to be reconciled
+
             try
             {
 
@@ -136,7 +137,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist invalid message", null));
                     return null;
                 }
-               
+
                 // First, IHE is a little different first we have to see if we can match any of the records for cross referencing
                 // therefore we do a query, first with identifiers and then without identifiers, 100% match
                 var subject = healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
@@ -179,11 +180,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         Convert.ToInt16(ssubject.OtherIdentifiers != null) +
                         Convert.ToInt16(ssubject.Addresses != null);
 
-                    if(nQualifier > 3) // At least four items
+                    if (nQualifier > 3) // At least four items
                         pid = this.m_docRegService.QueryRecord(patientQuery); // Try to cross reference again   
-                    
                 }
-                    
+
                 // Did we cross reference a patient?
                 if (pid.Length == 1)
                 {
@@ -201,14 +201,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     return vid;
                 }
                 else if (pid.Length > 1) // Add a warning
+                {
                     issues.Add(new DetectedIssue()
                     {
                         Priority = IssuePriorityType.Warning,
                         Severity = IssueSeverityType.Moderate,
-                        Text = m_localeService.GetString("DTPW001"), 
+                        Text = m_localeService.GetString("DTPW001"),
                         Type = IssueType.DetectedIssue
                     });
+                    // Notify someone that this needs to occur
+                    needsReconciliation = true;
 
+                }
                 // Call the dss
                 if (this.m_decisionService != null)
                     issues.AddRange(this.m_decisionService.RecordPersisting(healthServiceRecord));
@@ -224,6 +228,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Call notifier
                 if (this.m_notificationService != null)
                     this.m_notificationService.NotifyRegister(healthServiceRecord);
+
+                // Notify that reconciliation is required
+                if (this.m_notificationService != null && needsReconciliation)
+                {
+                    var list = new List<VersionedDomainIdentifier>(pid) { retVal };
+                    this.m_notificationService.NotifyReconciliationRequired(list);
+                }
 
                 // Call the dss
                 if (this.m_decisionService != null)
@@ -388,7 +399,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         internal bool ValidateIdentifiers(RegistrationEvent data, List<IResultDetail> dtls)
         {
             Person subject = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-            ServiceDeliveryLocation scoper = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.PlaceOfEntry | SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.InformantTo) as ServiceDeliveryLocation;
+            ServiceDeliveryLocation scoper = subject.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.PlaceOfEntry | SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.InformantTo) as ServiceDeliveryLocation;
             bool isValid = true;
             // Validate the root
             foreach(var id in subject.AlternateIdentifiers)

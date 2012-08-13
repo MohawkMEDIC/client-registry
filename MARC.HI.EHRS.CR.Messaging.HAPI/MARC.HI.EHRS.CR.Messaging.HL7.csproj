@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6C5C870F-0C4F-403D-87E0-7EA798F772D6}</ProjectGuid>
+    <ProjectGuid>{257710CF-713E-4534-B562-DB25CDBADD79}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MARC.HI.EHRS.CR.Persistence.Data</RootNamespace>
-    <AssemblyName>MARC.HI.EHRS.CR.Persistence.Data</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>MARC.HI.EHRS.CR.Messaging.HL7</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Messaging.HL7</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PERFMON</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -32,56 +32,44 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MARC.HI.EHRS.SVC.Auditing">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.ClientIdentity">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    <Reference Include="NHapi.Base">
+      <HintPath>..\Solution Items\NHapi.Base.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.HealthWorkerIdentity">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll</HintPath>
+    <Reference Include="NHapi.Model.V231">
+      <HintPath>..\Solution Items\NHapi.Model.V231.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.Localization">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Localization.dll</HintPath>
-    </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.Terminology">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
+    <Reference Include="NHapi.Model.V25">
+      <HintPath>..\Solution Items\NHapi.Model.V25.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
-    <Compile Include="Configuration\ValidationSection.cs" />
-    <Compile Include="Connection\ConnectionManager.cs" />
-    <Compile Include="DatabaseHealthcareWorkerIdentityService.cs" />
-    <Compile Include="DatabasePersistenceService.cs" />
-    <Compile Include="DbUtil.cs" />
-    <Compile Include="Persisters\ChangeSummaryPersister.cs" />
-    <Compile Include="Persisters\ExtendedAttributePersister.cs" />
-    <Compile Include="Persisters\HealthcareParticipantPersister.cs" />
-    <Compile Include="Persisters\HealthServiceRecordComponentRefPersister.cs" />
-    <Compile Include="Persisters\MaskingIndicatorPersister.cs" />
-    <Compile Include="Persisters\PersonalRelationshipPersister.cs" />
-    <Compile Include="Persisters\PersonPersister.cs" />
-    <Compile Include="Persisters\PersonRegistrationRefPersister.cs" />
-    <Compile Include="Persisters\RegistrationEventRecordPersister.cs" />
-    <Compile Include="Persisters\IComponentPersister.cs" />
-    <Compile Include="Persisters\RepositoryDevicePersister.cs" />
-    <Compile Include="Persisters\ServiceDeliveryLocationPersister.cs" />
+    <Compile Include="Configuration\HL7ConfigurationSection.cs" />
+    <Compile Include="HL7MessageHandler.cs" />
+    <Compile Include="IHL7MessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryUtil.cs" />
-    <Compile Include="ClientRegistryOids.cs" />
+    <Compile Include="ServiceHandler.cs" />
+    <Compile Include="TransportProtocol\ITransportProtocol.cs" />
+    <Compile Include="TransportProtocol\LlpTransport.cs" />
+    <Compile Include="TransportProtocol\TcpTransport.cs" />
+    <Compile Include="TransportProtocol\TransportUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">

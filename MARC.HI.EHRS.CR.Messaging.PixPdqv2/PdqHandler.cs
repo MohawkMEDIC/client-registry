@@ -2,40 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MARC.HI.EHRS.CR.Messaging.HL7;
 using MARC.HI.EHRS.SVC.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
     /// <summary>
-    /// Message handler service
+    /// PDQ Handler
     /// </summary>
-    public class PixPdqMessageHandler : IMessageHandlerService
+    public class PdqHandler : IHL7MessageHandler
     {
-        #region IMessageHandlerService Members
+        #region IHL7MessageHandler Members
 
         /// <summary>
-        /// Start the v2 message handler
+        /// Handle HL7 message
         /// </summary>
-        public bool Start()
-        {
-            
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Stop the v2 message handler
-        /// </summary>
-        public bool Stop()
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public NHapi.Base.Model.IMessage HandleMessage(HL7.TransportProtocol.Hl7MessageReceivedEventArgs e)
         {
             throw new NotImplementedException();
         }
 
         #endregion
 
+
+
         #region IUsesHostContext Members
 
         /// <summary>
-        /// Gets or sets the host context
+        /// Get or sets the context
         /// </summary>
         public SVC.Core.HostContext Context
         {

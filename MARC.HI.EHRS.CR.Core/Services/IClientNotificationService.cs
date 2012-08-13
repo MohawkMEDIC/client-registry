@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Core.Services
 {
@@ -28,6 +29,11 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Notify that a reconcilation is required
         /// </summary>
-        void NotifyReconciliationRequired(RegistrationEvent[] candidates);
+        void NotifyReconciliationRequired(IEnumerable<VersionedDomainIdentifier> candidates);
+
+        /// <summary>
+        /// Notification that duplicates have been resolved
+        /// </summary>
+        void NotifyDuplicatesResolved(Person newPerson, SVC.Core.DataTypes.DomainIdentifier candidateAlt);
     }
 }

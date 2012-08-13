@@ -9,6 +9,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -39,7 +40,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
 
                 // Older version of, don't persist just return a record
-                if ((psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
+                if (psn.Site != null && (psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
                 {
                     return new VersionedDomainIdentifier()
                     {
@@ -723,7 +724,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             GetPersonTelecomAddresses(conn, tx, retVal);
                         }
 
-                        retVal.AlternateIdentifiers.Add(domainIdentifier);
+                        if(!retVal.AlternateIdentifiers.Exists(o=>o.Domain == domainIdentifier.Domain && o.Identifier == domainIdentifier.Identifier))
+                            retVal.AlternateIdentifiers.Add(domainIdentifier);
 
                         return retVal;
                     }
@@ -1285,14 +1287,29 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         //candidateAlt.Key = -1;
                     }
                     else
-                        alt.UpdateMode = UpdateModeType.Add;
+                    {
+                        // Subsumption?
+                        candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain);
+                        if (candidateAlt != null)
+                        {
+                            // Remove the old alt id
+                            candidateAlt.UpdateMode = UpdateModeType.Remove;
+                            // Add the new
+                            // Send an duplicates resolved message
+                            IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                            if (notificationService != null)
+                                notificationService.NotifyDuplicatesResolved(newPerson, candidateAlt);
+                        }
+                        else
+                            alt.UpdateMode = UpdateModeType.Add;
+                    }
                 }
 
                 // Find all race codes in the old that aren't in the new (remove)
                 //foreach (var alt in oldPerson.AlternateIdentifiers)
                 //    if (alt.Key > 0)
                 //        alt.UpdateMode = UpdateModeType.Remove;
-                //newPerson.AlternateIdentifiers.AddRange(oldPerson.AlternateIdentifiers.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
+                newPerson.AlternateIdentifiers.AddRange(oldPerson.AlternateIdentifiers.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
                 newPerson.AlternateIdentifiers.RemoveAll(o => o.Key < 0);
             }
 

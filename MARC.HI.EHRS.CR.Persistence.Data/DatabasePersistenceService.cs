@@ -472,7 +472,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     {
 
                         // Matching?
-                        StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_ID IN (");
+                        StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND STATUS NOT IN ('Obsolete','Nullified') AND PSN_ID IN (");
 
                         // Identifiers
                         if (subjectOfQuery.AlternateIdentifiers != null && subjectOfQuery.AlternateIdentifiers.Count > 0)

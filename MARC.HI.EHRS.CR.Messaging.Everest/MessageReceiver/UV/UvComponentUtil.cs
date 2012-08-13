@@ -256,11 +256,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsNull)
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE050"), "//urn:hl7-org:v3#priorRegisteredRole"));
                     else
-                        subjectOf.Add(new PersonRegistrationRef()
+                    {
+                        var re = new PersonRegistrationRef()
                         {
                             AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id)
-                        }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
-                            
+                        };
+                        subjectOf.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                    }                            
                 }
 
 
@@ -1032,10 +1034,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsNull)
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE050"), "//urn:hl7-org:v3#priorRegisteredRole"));
                     else
-                        subjectOf.Add(new PersonRegistrationRef()
-                        {
-                            AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id)
-                        }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                    {
+                        var re = new PersonRegistrationRef()
+                           {
+                               AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id)
+                           };
+                        subjectOf.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                    }
 
                 }
 

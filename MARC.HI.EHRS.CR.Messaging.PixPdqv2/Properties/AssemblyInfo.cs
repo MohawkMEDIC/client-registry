@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MARC.HI.EHRS.CR.Messaging.HL7")]
+[assembly: AssemblyTitle("MARC.HI.EHRS.CR.Messaging.PixPdqv2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MARC.HI.EHRS.CR.Messaging.HL7")]
+[assembly: AssemblyProduct("MARC.HI.EHRS.CR.Messaging.PixPdqv2")]
 [assembly: AssemblyCopyright("Copyright ©  2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4d0d6f8f-6452-4883-adf4-aee29d4adddc")]
+[assembly: Guid("bec015e3-9ea9-4d60-a1d2-65f7d47c50e5")]
 
 // Version information for an assembly consists of the following four values:
 //
