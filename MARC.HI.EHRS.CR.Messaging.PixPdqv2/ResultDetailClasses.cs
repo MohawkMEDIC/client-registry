@@ -23,9 +23,47 @@ using System.Linq;
 using System.Text;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.SVC.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
+
+    /// <summary>
+    /// Occurs when a function wishes to raise an IResultDetail
+    /// </summary>
+    public class ResultDetailException : Exception
+    {
+        public IResultDetail Detail { get; set; }
+        public ResultDetailException(IResultDetail detail)
+        {
+            this.Detail = detail;
+        }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class PatientNotFoundResultDetail : ResultDetail
+    {
+        public PatientNotFoundResultDetail(ILocalizationService locale) : base(ResultDetailType.Error, locale.GetString("DTPE006"), "QPD^1^3^1^1") { }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class UnrecognizedPatientDomainResultDetail : ResultDetail
+    {
+        public UnrecognizedPatientDomainResultDetail(ILocalizationService locale) : base(ResultDetailType.Error, locale.GetString("DBCF00C"), "QPD^1^3^1^4") { }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class UnrecognizedTargetDomainResultDetail : ResultDetail
+    {
+        public UnrecognizedTargetDomainResultDetail(ILocalizationService locale) : base(ResultDetailType.Error, locale.GetString("DBCF00C"), "QPD^1^4^") { }
+    }
+
     /// <summary>
     /// Unsupported response mode has been detected
     /// </summary>
@@ -60,7 +98,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     {
 
         public UnrecognizedSenderResultDetail(DomainIdentifier sender) :
-            base(ResultDetailType.Error, String.Format("'{1}^^^&{0}&ISO' is not a known solicitor", sender.Identifier,sender.Domain), (Exception)null)
+            base(ResultDetailType.Error, String.Format("'{1}^^^&{0}&ISO' is not a known solicitor", sender.Domain,sender.Identifier), (Exception)null)
         { }
 
     }

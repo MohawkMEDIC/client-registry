@@ -122,11 +122,32 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 errCode = "203";
             else if (dtl.Exception is NotImplementedException)
                 errCode = "200";
+            else if (dtl is UnrecognizedTargetDomainResultDetail ||
+                dtl is UnrecognizedPatientDomainResultDetail ||
+                dtl is PatientNotFoundResultDetail)
+                errCode = "204";
             else
                 errCode = "207";
 
             err.HL7ErrorCode.Identifier.Value = errCode;
             err.HL7ErrorCode.Text.Value = locale.GetString(String.Format("HL7{0}", errCode));
+
+            if (dtl.Location != null && dtl.Location.Contains("^"))
+            {
+                var cmp = dtl.Location.Split('^');
+                for (int i = 0; i < cmp.Length; i++)
+                {
+                    var st = err.GetErrorLocation(0).Components[i] as NHapi.Model.V25.Datatype.ST;
+                    if (st != null)
+                        st.Value = cmp[i];
+                    else
+                    {
+                        var nm = err.GetErrorLocation(0).Components[i] as NHapi.Model.V25.Datatype.NM;
+                        if (nm != null)
+                            nm.Value = cmp[i];
+                    }
+                }
+            }
 
             // Mesage
             err.UserMessage.Value = dtl.Message;

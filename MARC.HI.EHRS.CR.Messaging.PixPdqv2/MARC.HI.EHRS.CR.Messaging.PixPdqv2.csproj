@@ -35,11 +35,27 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.QM.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.QM.Core.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.DecisionSupport, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Localization">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Terminology">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
@@ -66,12 +82,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentUtility.cs" />
+    <Compile Include="DataUtil.cs" />
+    <Compile Include="DeComponentUtility.cs" />
     <Compile Include="MessageUtil.cs" />
     <Compile Include="NotSupportedHandler.cs" />
     <Compile Include="PdqHandler.cs" />
     <Compile Include="PersistenceResultDetail.cs" />
     <Compile Include="PixHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryData.cs" />
+    <Compile Include="QueryResultData.cs" />
     <Compile Include="ResultDetailClasses.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@ using NHapi.Model.V25.Segment;
 using NHapi.Model.V25.Message;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.Everest.Connectors;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -59,17 +60,53 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
 
             // Validate the inbound message
             MessageUtil.Validate((IMessage)request, config, dtls, this.Context);
 
+            IMessage response = null;
+
             // Control 
             if (request == null)
                 return null;
 
-            return MessageUtil.CreateNack(request, dtls, this.Context);
+            // Data controller
+            try
+            {
+
+                // Create Query Data
+                ComponentUtility cu = new ComponentUtility() { Context = this.Context };
+                DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
+                var data = cu.CreateQueryComponents(request, dtls);
+                if (data.Equals(QueryData.Empty))
+                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+
+                DataUtil dataUtil = new DataUtil() { Context = this.Context };
+                QueryResultData result = dataUtil.Query(data, dtls);
+
+                // Now process the result
+                response = dcu.CreateRSP_K23(result, dtls);
+                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+            }
+            catch (ResultDetailException e)
+            {
+                response = new RSP_K23();
+                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+                (response as RSP_K23).MSA.AcknowledgmentCode.Value = "AE";
+                MessageUtil.UpdateERR((response as RSP_K23).ERR, e.Detail, this.Context);
+            }
+            catch (Exception e)
+            {
+                if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                response = MessageUtil.CreateNack(request, dtls, this.Context);
+            }
+
+            return response;
 
         }
 

@@ -82,6 +82,9 @@
   <string name="MSGW016">MSGW016 : ISO is the only supported UniversalIDType (HD.3)</string>
   <string name="MSGE05B">MSGE05B : Identifier UniversalID must be an ISO OID (HD.2)</string>
   <string name="MSGE05C">MSGE05C : Cannot locate MSH segment (MSH)</string>
+  <string name="MSGE05D">MSGE05D : Cannot locate QPD segment (QPD)</string>
+  <string name="MSGE05E">MSGE05E : Cannot locate RCP segment (RCP)</string>
+  <string name="MSGE05F">MSGE05F : IHE restriction : QPD-3 must be populated and must be of type CX</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
@@ -91,6 +94,7 @@
   <string name="DTPE005">DTPE005 : Formal constraint violation detected</string>
   <string name="DTPW001">DTPW001 : Cross referencing resulted in multiple candidate matches, operation will be considered an Add. Manual reconciation must be performed</string>
   <string name="DTPW002">DTPW002 : Patient data merged with registration event {1}^^^&amp;{0}&amp;ISO</string>
+  <string name="DTPE006">DTPE006 : Could not locate specified patient identifier</string>
   <!-- DATA ISSUES -->
   <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
   <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
@@ -104,6 +108,8 @@
   <string name="DBCF009">DBCF009 : Repository device must have an identifier</string>
   <string name="DBCF00A">DBCF00A : Data consistency issue, the supplied name does not seem to match the name registered with the client. Linking of records aborted</string>
   <string name="DBCF00B">DBCF00B : Data consistency issue, cannot create a link with a non-existant record</string>
+  <string name="DBCF00C">DBCF00C : Unrecognized patient domain</string>
+
   <!-- PRIVACY AND SECURITY ISSUES -->
   <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
   
@@ -123,4 +129,5 @@
   <string name="HL7201">Unsupported event code</string>
   <string name="HL7202">Unsupported processing id</string>
   <string name="HL7203">Unsupported version id</string>
+  <string name="HL7207">Application internal error</string>
 </locale>

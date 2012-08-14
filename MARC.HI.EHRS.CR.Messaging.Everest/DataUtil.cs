@@ -460,7 +460,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
                 // Query continuation
-                if (this.m_queryService != null && this.m_queryService.IsRegistered(qd.QueryId))
+                if (this.m_queryService != null && this.m_queryService.IsRegistered(qd.QueryId.ToString("B")))
                 {
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", qd.QueryId));
                 }
@@ -474,7 +474,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                     // Persist the query
                     if (this.m_queryService != null)
-                        this.m_queryService.RegisterQuerySet(qd.QueryId, recordIds, qd);
+                        this.m_queryService.RegisterQuerySet(qd.QueryId.ToString("B"), recordIds, qd);
 
                     // Return query data
                     return new QueryResultData()
@@ -577,10 +577,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                                 var result = GetRecord(parm as VersionedDomainIdentifier, mDtls, mIssue, qd);
 
-                                // DSS Service
-                                if (this.m_decisionService != null)
-                                    mIssue.AddRange(this.m_decisionService.RetrievedRecord(result));
-
+                              
                                 // Process result
                                 if (result != null)
                                 {
@@ -730,7 +727,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Query continuation
                 if (this.m_docRegService == null)
                     throw new InvalidOperationException("No record registration service is registered. Querying for records cannot be done unless this service is present");
-                else if (this.m_queryService != null && this.m_queryService.IsRegistered(filter.QueryId))
+                else if (this.m_queryService != null && this.m_queryService.IsRegistered(filter.QueryId.ToString("B")))
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", filter.QueryId));
                 else
                 {
@@ -747,7 +744,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                     // Persist the query
                     if (this.m_queryService != null)
-                        this.m_queryService.RegisterQuerySet(filter.QueryId, recordIds, filter);
+                        this.m_queryService.RegisterQuerySet(filter.QueryId.ToString("B"), recordIds, filter);
 
                     // Return query data
                     return new QueryResultData()

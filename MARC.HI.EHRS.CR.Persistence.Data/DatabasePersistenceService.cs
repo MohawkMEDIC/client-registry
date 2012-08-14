@@ -600,7 +600,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             StringBuilder retVal = new StringBuilder();
             foreach (var id in identifiers)
             {
-                retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                if (id.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
+                    retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                else
+                    retVal.AppendFormat("SELECT {0}", id.Identifier);
                 if (id != identifiers.Last())
                     retVal.AppendFormat(" UNION ");
             }

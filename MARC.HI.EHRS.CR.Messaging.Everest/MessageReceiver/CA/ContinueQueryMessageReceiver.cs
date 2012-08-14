@@ -100,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 Guid queryId = new Guid(request.controlActEvent.QueryContinuation.QueryId.Root);
 
                 // Determine if we can process the message
-                if (!queryService.IsRegistered(queryId))
+                if (!queryService.IsRegistered(queryId.ToString("B")))
                 {
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Error,
                         String.Format("The query '{0}' has not been registered with the query service", queryId),
@@ -109,11 +109,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 }
 
                 // Continue the Query 
-                var recordIds = queryService.GetQueryResults(queryId, 
+                var recordIds = queryService.GetQueryResults(queryId.ToString("B"), 
                     (int)request.controlActEvent.QueryContinuation.StartResultNumber,
                     (int)request.controlActEvent.QueryContinuation.ContinuationQuantity
                 );
-                var qd = DataUtil.QueryData.ParseXml(queryService.GetQueryTag(queryId));
+                var qd = DataUtil.QueryData.ParseXml(queryService.GetQueryTag(queryId.ToString("B")));
 
                 // Rules for Query Continuation
                 // 1. The Query Continuation must come from the originating system
@@ -150,7 +150,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     new DataUtil.QueryResultData()
                     {
                         Results = records.ToArray(),
-                        TotalResults = (int)queryService.QueryResultTotalQuantity(queryId),
+                        TotalResults = (int)queryService.QueryResultTotalQuantity(queryId.ToString("B")),
                         QueryId = queryId,
                         StartRecordNumber = (int)request.controlActEvent.QueryContinuation.StartResultNumber
                     },
