@@ -200,7 +200,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 {
                     if (retVal.TargetDomain == null) retVal.TargetDomain = new List<DomainIdentifier>();
                     var dmn = CreateDomainIdentifier(rid, dtls);
-                    if (String.IsNullOrEmpty(dmn.Domain) || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
+                    if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
                         throw new ResultDetailException(new UnrecognizedTargetDomainResultDetail(this.m_locale));
                     retVal.TargetDomain.Add(dmn);
                 }
