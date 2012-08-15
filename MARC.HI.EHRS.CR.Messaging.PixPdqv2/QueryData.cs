@@ -22,6 +22,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         public static readonly QueryData Empty = new QueryData();
 
+        /// <summary>
+        /// The minimum degree of match
+        /// </summary>
+        [XmlAttribute("minDegreeMatch")]
+        public float MinimumDegreeMatch { get; set; }
 
         // Target (filter) domains for clients
         [XmlElement("target")]
@@ -38,12 +43,16 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         [XmlAttribute("responseMessage")]
         public string ResponseMessageType { get; set; }
-
+        /// <summary>
+        /// The Query identifier
+        /// </summary>
+        [XmlAttribute("tag")]
+        public string QueryTag { get; set; }
         /// <summary>
         /// Gets or sets the query id for the query 
         /// </summary>
-        [XmlAttribute("tag")]
-        public String QueryTag { get; set; }
+        [XmlAttribute("id")]
+        public String QueryId { get; set; }
         /// <summary>
         /// Gets or sets the originator of the request
         /// </summary>

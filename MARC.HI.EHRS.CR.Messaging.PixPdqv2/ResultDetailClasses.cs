@@ -28,18 +28,7 @@ using MARC.HI.EHRS.SVC.Core.Services;
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
 
-    /// <summary>
-    /// Occurs when a function wishes to raise an IResultDetail
-    /// </summary>
-    public class ResultDetailException : Exception
-    {
-        public IResultDetail Detail { get; set; }
-        public ResultDetailException(IResultDetail detail)
-        {
-            this.Detail = detail;
-        }
-    }
-
+ 
     /// <summary>
     /// Patient was not found result detail
     /// </summary>

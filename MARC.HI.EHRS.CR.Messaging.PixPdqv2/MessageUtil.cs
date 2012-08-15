@@ -71,6 +71,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var config = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             NHapi.Model.V25.Message.ACK ack = new NHapi.Model.V25.Message.ACK();
+
             Terser terser = new Terser(ack);
             MessageUtil.UpdateMSH(terser, request, config);
             int errLevel = 0;

@@ -92,13 +92,6 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 response = dcu.CreateRSP_K23(result, dtls);
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
             }
-            catch (ResultDetailException e)
-            {
-                response = new RSP_K23();
-                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
-                (response as RSP_K23).MSA.AcknowledgmentCode.Value = "AE";
-                MessageUtil.UpdateERR((response as RSP_K23).ERR, e.Detail, this.Context);
-            }
             catch (Exception e)
             {
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))

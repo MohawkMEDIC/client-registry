@@ -31,7 +31,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
                 {
                     Confidence = 1.0f,
                     MatchStrength = MatchStrength.Exact,
-                    MatchingAlgorithm = MatchAlgorithm.Exact
+                    MatchingAlgorithm = MatchAlgorithm.Unspecified
                 };
             
             // First, how many of the alternate identifiers in this patient match the other
@@ -42,13 +42,26 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
             if (other.Names != null)
             {
                 exactMatch.Confidence = GetMaxNameConfidence(other.Names);
-                if (exactMatch.Confidence < 1.0f)
-                    exactMatch.MatchingAlgorithm = MatchAlgorithm.Soundex | MatchAlgorithm.Variant;
-                exactMatch.MatchStrength = exactMatch.Confidence < 0.50 ? MatchStrength.Weak : exactMatch.Confidence < 0.75 ? MatchStrength.Moderate : exactMatch.Confidence < 1.0 ? MatchStrength.Strong : MatchStrength.Exact;
+                if (exactMatch.Confidence == 1.0f)
+                    exactMatch.MatchingAlgorithm = MatchAlgorithm.Exact;
+                else
+                    exactMatch.MatchingAlgorithm = GetMatchAlgorithmUsed(other.Names);
+                exactMatch.MatchStrength = exactMatch.Confidence < 0.50 ? MatchStrength.Weak : exactMatch.Confidence < 0.75 ? MatchStrength.Moderate : MatchStrength.Strong;
             }
 
             return exactMatch;
 
+        }
+
+        /// <summary>
+        /// Get the match algorithm used
+        /// </summary>
+        private MatchAlgorithm GetMatchAlgorithmUsed(List<NameSet> otherNames)
+        {
+            foreach (var name in otherNames)
+                if (this.Names.Exists(o => o.IsSoundexMatch(name)))
+                    return MatchAlgorithm.Soundex;
+            return MatchAlgorithm.Variant;
         }
 
         /// <summary>

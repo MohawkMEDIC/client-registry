@@ -18,6 +18,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         public int StartRecordNumber { get; set; }
 
         /// <summary>
+        /// Continuation pointer
+        /// </summary>
+        public string ContinuationPtr { get; set; }
+        /// <summary>
         /// Gets or sets the identifier of the query the result set is for
         /// </summary>
         public string QueryTag { get; set; }

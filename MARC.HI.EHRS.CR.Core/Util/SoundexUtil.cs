@@ -19,7 +19,7 @@ namespace MARC.HI.EHRS.CR.Core.Util
         {
             bool isMatch = true;
             foreach (var cmp in ns.Parts)
-                isMatch &= other.Parts.Exists(o => other.Parts.Exists(p => p.CalculateSoundexCode() == o.CalculateSoundexCode() && o.Type == p.Type));
+                isMatch &= ns.Parts.Exists(o => other.Parts.Exists(p => p.CalculateSoundexCode() == o.CalculateSoundexCode() && o.Type == p.Type));
             return isMatch;
 
         }
@@ -31,7 +31,7 @@ namespace MARC.HI.EHRS.CR.Core.Util
         {
 
             // Matches
-            int nExact = other.Parts.Count(o => ns.Parts.Exists(p => p.Value == o.Value && p.Type == o.Type)),
+            int nExact = other.Parts.Count(o => ns.Parts.Exists(p => p.Value.ToLower() == o.Value.ToLower() && p.Type == o.Type)),
                 nSoundex = other.Parts.Count(o => ns.Parts.Exists(p => p.CalculateSoundexCode() == o.CalculateSoundexCode() && o.Type == p.Type)) - nExact,
                 nOthers = other.Parts.Count - nExact - nSoundex,
                 nParts = other.Parts.Count;
@@ -52,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Core.Util
                 int prevCode = 0, currentCode = 0;
                 soundex.Append(nc.Value[0]);
 
-                foreach (char letter in nc.Value.ToLower())
+                foreach (char letter in nc.Value.Substring(1).ToLower())
                 {
                     if ("bpfv".Contains(letter))
                         currentCode = 1;

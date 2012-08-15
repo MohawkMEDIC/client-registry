@@ -78,9 +78,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
                 // Query continuation
-                if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(qd.QueryTag))
+                if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(qd.QueryId))
                 {
-                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", qd.QueryTag));
+                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", qd.QueryId));
                 }
                 else
                 {
@@ -92,12 +92,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                     // Persist the query
                     if (this.m_queryPersistence != null)
-                        this.m_queryPersistence.RegisterQuerySet(qd.QueryTag, recordIds, qd);
+                        this.m_queryPersistence.RegisterQuerySet(qd.QueryId, recordIds, qd);
 
                     // Return query data
                     return new QueryResultData()
                     {
                         QueryTag = qd.QueryTag,
+                        ContinuationPtr = qd.QueryId,
                         Results = retVal.ToArray(),
                         TotalResults = retRecordId.Count
                     };
@@ -263,6 +264,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (filter != null)
                         filter = (filter as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
                     var confidence = (subject as Person).Confidence(filter as Person);
+
+                    if (confidence.Confidence < qd.MinimumDegreeMatch)
+                        return null;
+
                     (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
                 }
 
@@ -299,8 +304,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // Query continuation
                 if (this.m_registrationService == null)
                     throw new InvalidOperationException("No record registration service is registered. Querying for records cannot be done unless this service is present");
-                else if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(filter.QueryTag))
-                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", filter.QueryTag));
+                else if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(filter.QueryId))
+                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", filter.QueryId));
                 else
                 {
 
@@ -309,11 +314,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     var queryFilter = filter.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf); // The outer filter data is usually just parameter control..
 
                     VersionedDomainIdentifier[] recordIds = this.m_registrationService.QueryRecord(queryFilter as HealthServiceRecordComponent);
-
-                    if (recordIds.Length == 0)
-                        throw new ResultDetailException(new PatientNotFoundResultDetail(this.m_localeService));
-
                     var retVal = GetRecordsAsync(recordIds, retRecordId, dtls, filter);
+                    if (retVal.Count == 0 && filter.IsSummary)
+                        dtls.Add(new PatientNotFoundResultDetail(this.m_localeService));
+
 
                     // Sort control?
                     // TODO: Support sort control
@@ -321,12 +325,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                     // Persist the query
                     if (this.m_queryPersistence != null)
-                        this.m_queryPersistence.RegisterQuerySet(filter.QueryTag, recordIds, filter);
+                        this.m_queryPersistence.RegisterQuerySet(filter.QueryId, recordIds, filter);
 
                     // Return query data
                     return new QueryResultData()
                     {
                         QueryTag = filter.QueryTag,
+                        ContinuationPtr = filter.QueryId,
                         Results = retVal.ToArray(),
                         TotalResults = recordIds.Length
                     };

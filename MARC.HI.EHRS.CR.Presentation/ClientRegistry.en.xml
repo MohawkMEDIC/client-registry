@@ -85,6 +85,12 @@
   <string name="MSGE05D">MSGE05D : Cannot locate QPD segment (QPD)</string>
   <string name="MSGE05E">MSGE05E : Cannot locate RCP segment (RCP)</string>
   <string name="MSGE05F">MSGE05F : IHE restriction : QPD-3 must be populated and must be of type CX</string>
+  <string name="MSGE060">MSGE060 : IHE restriction : QPD-3 must be populated with a valid component</string>
+  <string name="MSGE061">MSGE061 : Cannot parse QPD^3 component</string>
+  <string name="MSGE062">MSGE062 : Unsupported segment passed in parameter</string>
+  <string name="MSGW017">MSGW017 : Unsupported PID.5.7 value</string>
+  <string name="MSGW018">MSGW018 : Unsupported PID.11.7 value</string>
+  <string name="MSGE062">MSGE062 : Unsupported match algorithm. Supported algorithms are "Soundex", "Exact", and "Variant" </string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
