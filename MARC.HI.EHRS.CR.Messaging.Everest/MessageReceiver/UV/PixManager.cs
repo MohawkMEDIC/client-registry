@@ -14,6 +14,7 @@ using MARC.Everest.Exceptions;
 using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -41,9 +42,141 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             return response;
         }
 
+        /// <summary>
+        /// Handle duplicates resolved message
+        /// </summary>
         private IGraphable HandlePatientRegistryDuplicatesResolved(MARC.Everest.Connectors.UnsolicitedDataEventArgs e, MARC.Everest.Connectors.IReceiveResult receivedMessage)
         {
-            throw new NotImplementedException();
+            // Setup the lists of details and issues
+            List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
+            List<DetectedIssue> issues = new List<DetectedIssue>();
+
+            // System configuration service
+            ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            // Localization service
+            ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Do basic check and add common validation errors
+            MessageUtil.ValidateTransportWrapperUv(receivedMessage.Structure as IInteraction, configService, dtls);
+
+            // Check the request is valid
+            var request = receivedMessage.Structure as PRPA_IN201304UV02;
+            if (request == null)
+                return null;
+
+            // Determine if the received message was interpreted properly
+            bool isValid = MessageUtil.IsValid(receivedMessage);
+
+            // set the URI
+            request.controlActProcess.Code = request.controlActProcess.Code ?? Util.Convert<CD<String>>(PRPA_IN201302UV02.GetTriggerEvent());
+            request.Receiver[0].Telecom = request.Receiver[0].Telecom ?? e.ReceiveEndpoint.ToString();
+
+            // Construct the acknowledgment
+            var response = new MCCI_IN000002UV01(
+                new II(configService.OidRegistrar.GetOid("CR_MSGID").Oid, Guid.NewGuid().ToString()),
+                DateTime.Now,
+                MCCI_IN000002UV01.GetInteractionId(),
+                request.ProcessingCode,
+                request.ProcessingModeCode,
+                MessageUtil.CreateReceiver(request.Sender),
+                MessageUtil.CreateSenderUv(e.ReceiveEndpoint, configService)
+            );
+
+
+            // Create the support classes
+            List<AuditData> audits = new List<AuditData>();
+
+            IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
+
+            // Try to execute the record
+            try
+            {
+                // Determine if the message is valid
+                if (!isValid)
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
+
+                // Construct the canonical data structure
+                UvComponentUtil cu = new UvComponentUtil() { Context = this.Context };
+                var data = cu.CreateComponents(request.controlActProcess, dtls);
+
+                // Componentization fail?
+                if (data == null || !dataUtil.ValidateIdentifiers(data, dtls))
+                    throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
+
+                // Store 
+                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+
+                if (vid == null)
+                    throw new Exception(locale.GetString("DTPE001"));
+
+                // prepare the delete audit
+                var person = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                var replc = person.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ReplacementOf);
+
+                foreach (PersonRegistrationRef rplc in replc)
+                    audits.Add(dataUtil.CreateAuditData("ITI-44",
+                        ActionType.Delete,
+                        dtls.Exists(r => r.Type == ResultDetailType.Error) ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success,
+                        e,
+                        receivedMessage,
+                        new List<VersionedDomainIdentifier>() {
+                            new VersionedDomainIdentifier()
+                            {
+                                Domain = rplc.AlternateIdentifiers[0].Domain,
+                                Identifier = rplc.AlternateIdentifiers[0].Identifier
+                            }
+                        },
+                        data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant));
+            
+
+                // Prepare for audit
+                audits.Add(dataUtil.CreateAuditData("ITI-44",
+                    ActionType.Update,
+                    dtls.Exists(r => r.Type == ResultDetailType.Error) ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success,
+                    e,
+                    receivedMessage,
+                    new List<VersionedDomainIdentifier>() { vid },
+                    data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
+                ));
+
+                // Add ack
+                response.Acknowledgement.Add(new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Acknowledgement(
+                    AcknowledgementType.AcceptAcknowledgementCommitAccept,
+                    new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
+                ));
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+
+                // Prepare for audit
+                audits.Add(dataUtil.CreateAuditData("ITI-44", ActionType.Create, OutcomeIndicator.EpicFail, e, receivedMessage,
+                    new List<VersionedDomainIdentifier>(),
+                    null
+                ));
+
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+                response.Acknowledgement.Add(new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Acknowledgement(
+                    AcknowledgementType.AcceptAcknowledgementCommitError,
+                    new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
+                ));
+            }
+            finally
+            {
+                IAuditorService auditService = Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditService != null)
+                    foreach(var aud in audits)
+                        auditService.SendAudit(aud);
+            }
+
+            // Common response parameters
+            response.ProfileId = new SET<II>(MCCI_IN000002UV01.GetProfileId());
+            response.VersionCode = HL7StandardVersionCode.Version3_Prerelease1;
+            response.AcceptAckCode = AcknowledgementCondition.Never;
+            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(dtls.ToArray()));
+            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(issues.ToArray()));
+            return response;
         }
 
         /// <summary>

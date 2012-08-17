@@ -65,6 +65,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     else
                         this.CreatePerson(conn, tx, psn);
                 }
+                // TODO: Components
+                DbUtil.PersistComponents(conn, tx, false, this, psn);
 
                 return new VersionedDomainIdentifier()
                 {
@@ -199,8 +201,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var emp in psn.Employment)
                     this.PersistPersonEmployment(conn, tx, psn, emp);
 
-            // TODO: Components
-            DbUtil.PersistComponents(conn, tx, false, this, psn);
         }
 
         /// <summary>
@@ -402,6 +402,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, false));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_prvt_in", DbType.Boolean, othId.Value.IsPrivate));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, codeId.HasValue ? (object)codeId.Value : DBNull.Value));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, othId.Value.Domain));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, othId.Value.Identifier));
@@ -446,6 +447,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_hcn_in", DbType.Boolean, true));
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "is_prvt_in", DbType.Boolean, altId.IsPrivate));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_purp_in", DbType.Decimal, DBNull.Value));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_domain_in", DbType.String, altId.Domain));
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "id_value_in", DbType.String, altId.Identifier));
@@ -569,7 +571,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Create a new version of a patient record
         /// </summary>
-        private void CreatePersonVersion(IDbConnection conn, IDbTransaction tx, Person psn)
+        internal void CreatePersonVersion(IDbConnection conn, IDbTransaction tx, Person psn)
         {
             
             // Create the person
@@ -795,22 +797,28 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if (Convert.ToBoolean(rdr["is_hcn"]))
                             person.AlternateIdentifiers.Add(new DomainIdentifier()
                             {
+                                Key = Convert.ToDecimal(rdr["efft_vrsn_id"]),
                                 Domain = Convert.ToString(rdr["id_domain"]),
                                 Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
-                                AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"])
+                                AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
+                                IsPrivate = Convert.ToBoolean(rdr["is_prvt"])
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
                                 rdr["id_purp_cd_id"] == DBNull.Value ? null : new CodeValue() { Key = Convert.ToDecimal(rdr["id_purp_cd_id"]) },
                                 new DomainIdentifier()
                                 {
+                                    Key = Convert.ToDecimal(rdr["efft_vrsn_id"]),
                                     Domain = Convert.ToString(rdr["id_domain"]),
                                     Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
-                                    AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"])
+                                    AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
+                                    IsPrivate = Convert.ToBoolean(rdr["is_prvt"])
                                 })
                             );
                     }
 
+                    person.AlternateIdentifiers.RemoveAll(o => o.IsPrivate);
+                    person.OtherIdentifiers.RemoveAll(o => o.Value.IsPrivate);
                     // Close the reader
                     rdr.Close();
 
@@ -1001,21 +1009,32 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         #endregion
 
         /// <summary>
+        /// Merge two persons
+        /// </summary>
+        internal void MergePersons(Person newPerson, Person oldPerson)
+        {
+            MergePersons(newPerson, oldPerson, false);
+        }
+
+        /// <summary>
         /// Merge person records together ensuring that appropriate update modes are set. This 
         /// will clean newPerson to only include data which is changing. Data which remains the same
         /// will be removed from newPerson
         /// </summary>
-        internal void MergePersons(Person newPerson, Person oldPerson)
+        /// <param name="newerOnly">When true, do the merge based on newer keys rather than newPerson always overrides oldPerson</param>
+        internal void MergePersons(Person newPerson, Person oldPerson, bool newerOnly)
         {
 
             // Start the merging process for addresses
             // For each of the addresses in the new person record, determine if
             // they are additions (new addresses), modifications (old addresses 
             // with the same use) or removals (not in the new but in old)
-            if (newPerson.Addresses != null)
+            if (newPerson.Addresses != null && oldPerson.Addresses != null) 
             {
                 foreach (var addr in newPerson.Addresses)
                 {
+                    if (addr.UpdateMode == UpdateModeType.Remove) continue;
+
                     UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
                     var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
                     if (candidateOtherAddress.Count == 1)
@@ -1025,7 +1044,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             //candidateOtherAddress[0].Key = -1;
                             addr.Key = -2;
                         }
-                        else
+                        else if(!newerOnly || candidateOtherAddress[0].Key < addr.Key)
                         {
                             addr.UpdateMode = UpdateModeType.Update;
                             addr.Key = candidateOtherAddress[0].Key;
@@ -1040,12 +1059,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         {
                             if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
                                 addr.Key = -2;
-                            else
+                            else if (!newerOnly || secondLevelFoundAddress.Key < addr.Key)
+                            {
                                 addr.UpdateMode = UpdateModeType.Update;
+                                addr.Key = secondLevelFoundAddress.Key;
+                            }
                         }
                         else
                             addr.UpdateMode = UpdateModeType.Add;
-                        addr.Key = secondLevelFoundAddress.Key;
                         //secondLevelFoundAddress.Key = -1;
                     }
                     else // Couldn't find an address in the old in the new so it is an add
@@ -1054,7 +1075,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         var secondLevelFoundAddress = oldPerson.Addresses.Find(o => QueryUtil.MatchAddress(addr, o) == 1);
                         if (secondLevelFoundAddress == null)
                             addr.UpdateMode = UpdateModeType.Add;
-                        else
+                        else if(!newerOnly || secondLevelFoundAddress.Key < addr.Key)
                         {
                              // maybe an update (of the use) or a remove (if marked bad)
 
@@ -1075,16 +1096,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Next merge the citizenship information
-            if (newPerson.Citizenship != null)
+            if (newPerson.Citizenship != null && oldPerson.Citizenship != null)
             {
                 foreach (var cit in newPerson.Citizenship)
                 {
+                    if (cit.UpdateMode == UpdateModeType.Remove) continue;
+
                     var candidateOtherCit = oldPerson.Citizenship.Find(o => o.CountryCode == cit.CountryCode);
                     if (candidateOtherCit != null) // Matched on the name of the country, therefore it is an update
                     {
                         if(candidateOtherCit.Status == cit.Status) // no change
                             cit.Id = -2;
-                        else
+                        else if(!newerOnly || candidateOtherCit.Id < cit.Id)
                         {
                             
                             cit.UpdateMode = UpdateModeType.Update;
@@ -1098,16 +1121,17 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Next merge the employment information
-            if (newPerson.Employment != null)
+            if (newPerson.Employment != null && oldPerson.Employment != null)
             {
                 foreach (var emp in newPerson.Employment)
                 {
+                    if (emp.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateOtherEmp = oldPerson.Employment.Find(o => o.Occupation == null && emp.Occupation == null || o.Occupation != null && emp.Occupation != null && o.Occupation.Code == emp.Occupation.Code && o.Occupation.CodeSystem == emp.Occupation.CodeSystem);
                     if (candidateOtherEmp != null) // Matched on the name of the country, therefore it is an update
                     {
                         if (candidateOtherEmp.Status == emp.Status) // no change
                             emp.Id = -2;
-                        else
+                        else if(!newerOnly || candidateOtherEmp.Id < emp.Id)
                         {
                             emp.UpdateMode = UpdateModeType.Update;
                             emp.Id = candidateOtherEmp.Id;
@@ -1119,10 +1143,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Next we want to do the same for names
-            if (newPerson.Names != null)
+            if (newPerson.Names != null && oldPerson.Names != null)
             {
                 foreach (var name in newPerson.Names)
                 {
+                    if (name.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
                     if (candidateOtherName.Count == 1)
                     {
@@ -1131,7 +1156,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             //candidateOtherName[0].Key = -1;
                             name.Key = -2;
                         }
-                        else // Need to update the contents of the name 
+                        else if(!newerOnly ||  candidateOtherName[0].Key < name.Key) // Need to update the contents of the name 
                         {
                             name.UpdateMode = UpdateModeType.Update;
                             name.Key = candidateOtherName[0].Key;
@@ -1147,9 +1172,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         {
                             if (QueryUtil.MatchName(secondLevelFoundName, name) == 1) // No change
                                 name.Key = -2;
-                            else 
+                            else if(!newerOnly || secondLevelFoundName.Key < name.Key)
+                            {
                                 name.UpdateMode = UpdateModeType.Update;
-                            name.Key = secondLevelFoundName.Key;
+                                name.Key = secondLevelFoundName.Key;
+                            }
                         }
                         else // Could not find a name that sufficiently matched
                             name.UpdateMode = UpdateModeType.Add;
@@ -1162,7 +1189,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         var secondLevelFoundName = oldPerson.Names.Find(o => QueryUtil.MatchName(name, o) == 1);
                         if (secondLevelFoundName == null) // Couldn't find a name that exactly matches (with different use) so it is an add
                             name.UpdateMode = UpdateModeType.Add;
-                        else
+                        else if(!newerOnly || secondLevelFoundName.Key < name.Key)
                         { // Found another name that exactly matches, this means it is an update or remove
                             name.Key = secondLevelFoundName.Key;
                             //secondLevelFoundName.Key = -1;
@@ -1201,10 +1228,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 newPerson.DeceasedTime = null;
 
             // Race codes 
-            if (newPerson.Race != null)
+            if (newPerson.Race != null && oldPerson.Race != null)
             {
                 foreach (var rce in newPerson.Race)
                 {
+                    if (rce.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateRace = oldPerson.Race.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
                     if (candidateRace != null) // New exists in the old
                     {
@@ -1218,11 +1246,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Language codes
-            if (newPerson.Language != null)
+            if (newPerson.Language != null && oldPerson.Language != null)
             {
                 List<PersonLanguage> garbagePail = new List<PersonLanguage>();
                 foreach (var lang in newPerson.Language)
                 {
+                    if (lang.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateLanguage = oldPerson.Language.Find(o => o.Language == lang.Language);
                     if (candidateLanguage != null) // New exists in the old
                     {
@@ -1243,11 +1272,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 newPerson.Language.RemoveAll(o => garbagePail.Contains(o));
             }
 
-            if (newPerson.TelecomAddresses != null)
+            if (newPerson.TelecomAddresses != null && oldPerson.TelecomAddresses != null)
             {
                 // Telecom addresses
                 foreach (var tel in newPerson.TelecomAddresses)
                 {
+                    if (tel.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateTel = oldPerson.TelecomAddresses.Find(o => o.Use == tel.Use && tel.Value == o.Value);
                     if (candidateTel != null) // New exists in the old
                     {
@@ -1259,7 +1289,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         candidateTel = oldPerson.TelecomAddresses.Find(o => o.Value == tel.Value);
                         if (candidateTel == null)
                             tel.UpdateMode = UpdateModeType.Add;
-                        else
+                        else if(!newerOnly || candidateTel.Key < tel.Key)
                         {
                             tel.UpdateMode = UpdateModeType.Update;
                             tel.Key = candidateTel.Key;
@@ -1275,11 +1305,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 newPerson.TelecomAddresses.RemoveAll(o => o.Key < 0);
             }
 
-            if (newPerson.AlternateIdentifiers != null)
+            if (newPerson.AlternateIdentifiers != null && oldPerson.AlternateIdentifiers != null)
             {
                 // Alternate identifiers
                 foreach (var alt in newPerson.AlternateIdentifiers)
                 {
+                    if (alt.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain && o.Identifier == alt.Identifier);
                     if (candidateAlt != null) // New exists in the old
                     {
@@ -1290,15 +1321,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         // Subsumption?
                         candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain);
-                        if (candidateAlt != null)
+                        if (candidateAlt != null && (!newerOnly || candidateAlt.Key < alt.Key))
                         {
-                            // Remove the old alt id
-                            candidateAlt.UpdateMode = UpdateModeType.Remove;
-                            // Add the new
-                            // Send an duplicates resolved message
-                            IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                            if (notificationService != null)
-                                notificationService.NotifyDuplicatesResolved(newPerson, candidateAlt);
+                        //    // Remove the old alt id
+                              candidateAlt.UpdateMode = UpdateModeType.Remove;
+                        //    // Add the new
+                        //    // Send an duplicates resolved message
+                              //IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                              //if (notificationService != null)
+                              //  notificationService.NotifyDuplicatesResolved(newPerson, candidateAlt);
                         }
                         else
                             alt.UpdateMode = UpdateModeType.Add;
@@ -1313,11 +1344,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 newPerson.AlternateIdentifiers.RemoveAll(o => o.Key < 0);
             }
 
-            if (newPerson.OtherIdentifiers != null)
+            if (newPerson.OtherIdentifiers != null && oldPerson.OtherIdentifiers != null)
             {
                 // Other identifiers
                 foreach (var alt in newPerson.OtherIdentifiers)
                 {
+                    if (alt.Value.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateAlt = oldPerson.OtherIdentifiers.Find(o => o.Key != null && alt.Key != null && o.Key.Code == alt.Key.Code && o.Key.CodeSystem == alt.Key.CodeSystem);
                     if (!candidateAlt.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>))) // New exists in the old
                     {

@@ -63,7 +63,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     HealthServiceRecordSiteRoleType.PlaceOfRecord | HealthServiceRecordSiteRoleType.ResponsibleFor,
                     new List<SVC.Core.DataTypes.DomainIdentifier>()
                     {
-                        CreateDomainIdentifier(subject.Custodian.AssignedDevice.Id)
+                        CreateDomainIdentifier(subject.Custodian.AssignedDevice.Id, dtls)
                     });
             }
 
@@ -75,10 +75,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     rplc.PriorRegistration.Subject.PriorRegisteredRole != null && rplc.PriorRegistration.Subject.PriorRegisteredRole.NullFlavor == null)
                     subjectOf.Add(new PersonRegistrationRef()
                     {
-                        AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id) }
+                        AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id, dtls) }
                     }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf,
                     new List<SVC.Core.DataTypes.DomainIdentifier>() {
-                        CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id)
+                        CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id, dtls)
                     });
 
             // Process additional data
@@ -90,7 +90,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 subjectOf.AlternateIdentifiers = new List<DomainIdentifier>();
                 foreach (var ii in regRole.Id)
                     if (!ii.IsNull)
-                        subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
+                        subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii, dtls));
 
             }
 
@@ -197,7 +197,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     {
                         subjectOf.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             CreateCodeValue(id.Code, dtls),
-                            CreateDomainIdentifier(id.Id)
+                            CreateDomainIdentifier(id.Id, dtls)
                          ));
                         if (id.AssigningIdOrganization != null && id.AssigningIdOrganization.NullFlavor == null)
                         {
@@ -206,7 +206,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                                 subjectOf.Add(new ExtendedAttribute()
                                 {
                                     PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension ),
-                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id),
+                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id, dtls),
                                     Name = "AssigningIdOrganizationId"
                                 });
                             // Other identifier assigning organization name
@@ -268,7 +268,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         psn.RelationshipHolder.NullFlavor == null)
                         subjectOf.Add(new PersonalRelationship()
                         {
-                            AlternateIdentifiers = new List<DomainIdentifier>(ident.PersonalRelationship.Count) {  CreateDomainIdentifier(psn.RelationshipHolder.Id) },
+                            AlternateIdentifiers = new List<DomainIdentifier>(ident.PersonalRelationship.Count) {  CreateDomainIdentifier(psn.RelationshipHolder.Id, dtls) },
                             LegalName = CreateNameSet(psn.RelationshipHolder.Name, dtls),
                             RelationshipKind = Util.ToWireFormat(psn.Code),
                             Status = StatusType.Active
@@ -325,7 +325,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     HealthServiceRecordSiteRoleType.PlaceOfRecord | HealthServiceRecordSiteRoleType.ResponsibleFor,
                     new List<SVC.Core.DataTypes.DomainIdentifier>()
                     {
-                        CreateDomainIdentifier(subject.Custodian.AssignedDevice.Id)
+                        CreateDomainIdentifier(subject.Custodian.AssignedDevice.Id, dtls)
                     });
             }
             
@@ -337,10 +337,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     rplc.PriorRegistration.Subject.PriorRegisteredRole != null && rplc.PriorRegistration.Subject.PriorRegisteredRole.NullFlavor == null)
                     subjectOf.Add(new PersonRegistrationRef()
                     {
-                        AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id) }
+                        AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id, dtls) }
                     }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf,
                     new List<SVC.Core.DataTypes.DomainIdentifier>() {
-                        CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id)
+                        CreateDomainIdentifier(rplc.PriorRegistration.Subject.PriorRegisteredRole.Id, dtls)
                     });
 
             // Process additional data
@@ -352,7 +352,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 subjectOf.AlternateIdentifiers = new List<DomainIdentifier>(regRole.Id.Count);
                 foreach (var ii in regRole.Id)
                     if (!ii.IsNull)
-                        subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii));
+                        subjectOf.AlternateIdentifiers.Add(CreateDomainIdentifier(ii, dtls));
 
             }
 
@@ -459,7 +459,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     {
                         subjectOf.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             CreateCodeValue(id.Code, dtls),
-                            CreateDomainIdentifier(id.Id)
+                            CreateDomainIdentifier(id.Id, dtls)
                          ));
                         if(id.AssigningIdOrganization != null && id.AssigningIdOrganization.NullFlavor == null)
                         {
@@ -468,7 +468,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                                 subjectOf.Add(new ExtendedAttribute()
                                 {
                                     PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Id.Root, id.Id.Extension),
-                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id),
+                                    Value = CreateDomainIdentifier(id.AssigningIdOrganization.Id, dtls),
                                     Name = "AssigningIdOrganizationId"
                                 });
                             // Other identifier assigning organization name
@@ -530,7 +530,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         psn.RelationshipHolder.NullFlavor == null)
                         subjectOf.Add(new PersonalRelationship()
                         {
-                            AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(psn.RelationshipHolder.Id) },
+                            AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(psn.RelationshipHolder.Id, dtls) },
                             LegalName = CreateNameSet(psn.RelationshipHolder.Name, dtls),
                             RelationshipKind = Util.ToWireFormat(psn.Code),
                             Status = StatusType.Active

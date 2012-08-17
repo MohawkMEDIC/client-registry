@@ -120,16 +120,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a domain identifier list from the list 
         /// </summary>
-        public virtual List<DomainIdentifier> CreateDomainIdentifierList(IEnumerable<II> iiList)
+        public virtual List<DomainIdentifier> CreateDomainIdentifierList(IEnumerable<II> iiList, List<IResultDetail> dtls)
         {
             List<DomainIdentifier> retVal = new List<DomainIdentifier>(10);
             foreach (var ii in iiList)
-                retVal.Add(new DomainIdentifier()
-                {
-                    Domain = ii.Root,
-                    Identifier = ii.Extension,
-                    AssigningAuthority = ii.AssigningAuthorityName
-                });
+                retVal.Add(CreateDomainIdentifier(ii, dtls));
             return retVal;
         }
 
@@ -379,14 +374,31 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         /// <param name="iI"></param>
         /// <returns></returns>
-        protected virtual DomainIdentifier CreateDomainIdentifier(MARC.Everest.DataTypes.II iI)
+        protected virtual DomainIdentifier CreateDomainIdentifier(MARC.Everest.DataTypes.II iI, List<IResultDetail> dtls)
         {
-            return new DomainIdentifier()
+            var retVal = new DomainIdentifier()
             {
                 Domain = iI.Root,
                 Identifier = iI.Extension,
-                AssigningAuthority = iI.AssigningAuthorityName
+                AssigningAuthority = iI.AssigningAuthorityName 
             };
+
+            // Assign the assigning authority identifier from configuration
+            var config = this.m_context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            var oidData = config.OidRegistrar.FindData(iI.Root);
+            if (oidData != null)
+            {
+                var assigningAut = oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName"));
+                if (!assigningAut.Equals(default(KeyValuePair<String, String>)))
+                {
+                    if (!String.IsNullOrEmpty(retVal.AssigningAuthority) &&
+                        !retVal.AssigningAuthority.Equals(assigningAut.Value))
+                        dtls.Add(new FixedValueMisMatchedResultDetail(retVal.AssigningAuthority, assigningAut.Value, true, null));
+
+                    retVal.AssigningAuthority = assigningAut.Value;
+                }
+            }
+            return retVal;
         }
 
         

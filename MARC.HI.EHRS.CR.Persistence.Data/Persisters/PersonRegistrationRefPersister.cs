@@ -7,6 +7,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using System.Data;
 using System.Reflection;
 using MARC.HI.EHRS.CR.Core.Services;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -36,11 +37,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Is this a replacement
             var pp = new PersonPersister();
             PersonRegistrationRef refr = data as PersonRegistrationRef;
-            Person psn = pp.GetPerson(conn, tx, refr.AlternateIdentifiers[0], true);
-            Person cntrPsn = refr.Site.Container as Person;
-
+            Person psn = pp.GetPerson(conn, tx, refr.AlternateIdentifiers[0], false);
+            Person cntrPsn = data.Site.Container as Person;
+            
             if (psn == null || cntrPsn == null)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00B"));
+
+            cntrPsn = pp.GetPerson(conn, tx, new SVC.Core.DataTypes.DomainIdentifier()
+            {
+                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
+                Identifier = cntrPsn.Id.ToString()
+            }, false);
+            cntrPsn.Site = (psn.Site.Container as IComponent).Site;
 
             var role = (refr.Site as HealthServiceRecordSite).SiteRoleType;
             var symbolic = (refr.Site as HealthServiceRecordSite).IsSymbolic; // If true, the replacement does not cascade and is a symbolic replacement of only the identifiers listed
@@ -51,12 +59,67 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // First, we obsolete all records with the existing person
                 foreach (var id in psn.AlternateIdentifiers.FindAll(o => refr.AlternateIdentifiers.Exists(a => a.Domain == o.Domain)))
                     id.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
-                psn.AlternateIdentifiers.RemoveAll(o => o.UpdateMode != SVC.Core.DataTypes.UpdateModeType.Remove);
+                //psn.AlternateIdentifiers.RemoveAll(o => o.UpdateMode != SVC.Core.DataTypes.UpdateModeType.Remove);
 
                 // Not symbolic, means that we do a hard replace
+                // Symbolic replace = Just replace the reference to that identifier
+                // Hard replace = Merge the new and old record and then replace them
                 if(!symbolic)
                 {
-                    // TODO: Support other obsoletion methods
+                    // Merge the two records in memory taking the newer data
+                    // This is a merge from old to new in order to capture any data elements 
+                    // that have been updated in the old that might be newer (or more accurate) than the 
+                    // the new
+                    if(psn.AlternateIdentifiers == null)
+                        cntrPsn.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
+                    else if(psn.OtherIdentifiers == null)
+                        cntrPsn.OtherIdentifiers = new List<KeyValuePair<SVC.Core.DataTypes.CodeValue, SVC.Core.DataTypes.DomainIdentifier>>();
+                    foreach (var id in psn.AlternateIdentifiers)
+                    {
+                        // Remove the identifier from the original
+                        id.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
+
+                        // If this is a duplicate id then don't add
+                        if(cntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
+                            continue;
+
+                        // Add to alternate identifiers
+                        cntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
+                        {
+                            AssigningAuthority = id.AssigningAuthority,
+                            UpdateMode = SVC.Core.DataTypes.UpdateModeType.Add,
+                            IsLicenseAuthority = false,
+                            IsPrivate = (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
+                            Identifier = id.Identifier,
+                            Domain = id.Domain
+                        });
+                    }
+                    foreach (var id in psn.OtherIdentifiers)
+                    {
+                        // Remove the identifier from the original
+                        id.Value.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
+                        
+                        // If this is a duplicate id then don't add
+                        if(cntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain && i.Value.Identifier == id.Value.Identifier))
+                            continue;
+
+                        // Add to other identifiers
+                        cntrPsn.OtherIdentifiers.Add(new KeyValuePair<SVC.Core.DataTypes.CodeValue,SVC.Core.DataTypes.DomainIdentifier>(
+                            id.Key,
+                            new SVC.Core.DataTypes.DomainIdentifier()
+                            {
+                                AssigningAuthority = id.Value.AssigningAuthority,
+                                UpdateMode = SVC.Core.DataTypes.UpdateModeType.Add,
+                                IsLicenseAuthority = false,
+                                IsPrivate = (cntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain)),
+                                Identifier = id.Value.Identifier,
+                                Domain = id.Value.Domain
+                            }));
+                    }
+
+                    // Store the merged new record
+                    pp.CreatePersonVersion(conn, tx, cntrPsn);
+
                     // Remove the old person from the db
                     psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the person
                     psn.Addresses= null;
@@ -64,7 +127,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     psn.Employment= null;
                     psn.Language= null;
                     psn.Names= null;
-                    psn.OtherIdentifiers= null;
                     psn.Race= null;
                     psn.TelecomAddresses= null;
                     psn.BirthTime = null;

@@ -47,7 +47,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // Alternative identifiers
-            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(patient.Id));
+            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(patient.Id, dtls));
 
             // Client Legal Name
             PN legalName = patient.PatientPerson.Name;
@@ -200,7 +200,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // Identifiers
-            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(assignedEntity.Id));
+            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(assignedEntity.Id, dtls));
 
             // Name
             if (assignedEntity.AssignedPerson == null || assignedEntity.AssignedPerson.NullFlavor != null)
@@ -324,7 +324,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // Identifiers
-            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(assignedEntity.Id));
+            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(assignedEntity.Id, dtls));
 
             // Name
             if (assignedEntity.AssignedPerson != null && assignedEntity.AssignedPerson.NullFlavor == null
@@ -577,7 +577,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 else
                     retVal.Add(new HealthServiceRecordComponentRef()
                     {
-                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id)
+                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
                     });
             }
             return retVal;
@@ -605,7 +605,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 else
                     retVal.Add(new HealthServiceRecordComponentRef()
                     {
-                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id)
+                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
                     });
             }
             return retVal;
@@ -639,7 +639,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // Alternative identifiers
-            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(patient.Id));
+            retVal.AlternateIdentifiers.AddRange(CreateDomainIdentifierList(patient.Id, dtls));
 
             // Client Legal Name
             PN legalName = patient.PatientPerson.Name;
@@ -710,7 +710,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (assignedDevice.Id == null || assignedDevice.Id.IsNull)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE00D"), null));
             else
-                retVal.AlternateIdentifier = CreateDomainIdentifier(assignedDevice.Id);
+                retVal.AlternateIdentifier = CreateDomainIdentifier(assignedDevice.Id, dtls);
 
             // Repository jurisdiction
             if (assignedDevice.RepresentedRepositoryJurisdiction == null || assignedDevice.RepresentedRepositoryJurisdiction.NullFlavor != null ||

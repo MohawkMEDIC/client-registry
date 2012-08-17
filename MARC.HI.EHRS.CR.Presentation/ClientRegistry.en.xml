@@ -91,6 +91,14 @@
   <string name="MSGW017">MSGW017 : Unsupported PID.5.7 value</string>
   <string name="MSGW018">MSGW018 : Unsupported PID.11.7 value</string>
   <string name="MSGE062">MSGE062 : Unsupported match algorithm. Supported algorithms are "Soundex", "Exact", and "Variant" </string>
+  <string name="MSGE063">MSGE063 : Patient association is missing primary identifier</string>
+  <string name="MSGE064">MSGE064 : Insufficient number of repetitions in the patient association identifier</string>
+  <string name="MSGE065">MSGE065 : registeredRole  is missing the subject1 association</string>
+  <string name="MSGE066">MSGE066 : IHE Restriction: There SHALL be a replacementOf relationship</string>
+  <string name="MSGE067">MSGE067 : IHE Restriction: PriorRegistration.StatusCode SHALL be "Obsolete"</string>
+  <string name="MSGE068">MSGE068 : IHE Restriction: There SHALL be a priorRegsitration association</string>
+  <string name="MSGE069">MSGE069 : IHE Restriction: There shall be a single priorRegisteredRole.id association</string>
+  <string name="MSGE06A">MSGE06A : ISO OID '{0}' has no known assigning authority, and is not recognized by this registry</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
