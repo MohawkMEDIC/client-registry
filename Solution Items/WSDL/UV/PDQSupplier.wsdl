@@ -91,7 +91,7 @@
     </binding>
     <service name="PDQSupplier_Service">
         <port binding="tns:PDQSupplier_Binding_Soap12" name="PDQSupplier_Port_Soap12">
-            <wsoap12:address location="http://localhost:8080/PDQSupplier"/>
+            <wsoap12:address location="http://cr.marc-hi.ca:8080/PDQSupplier"/>
         </port>
     </service>
 </definitions>

@@ -117,7 +117,7 @@
     </binding>
     <service name="PIXManager_Service">
         <port binding="tns:PIXManager_Binding_Soap12" name="PIXManager_Port_Soap12">
-            <wsoap12:address location="http://localhost:8080/PIXManager"/>
+            <wsoap12:address location="http://cr.marc-hi.ca:8080/PIXManager"/>
         </port>
     </service>
 </definitions>
