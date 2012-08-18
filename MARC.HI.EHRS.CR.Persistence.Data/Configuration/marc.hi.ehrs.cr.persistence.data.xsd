@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="MatchStrength">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Exact"/>
+      <xs:enumeration value="Strong"/>
+      <xs:enumeration value="Moderate"/>
+      <xs:enumeration value="Weak"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MatchAlgorithm">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Exact"/>
+      <xs:enumeration value="Soundex"/>
+      <xs:enumeration value="Variant"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="marc.hi.ehrs.cr.persistence.data">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="validation">
+          <xs:complexType>
+            <xs:attribute name="allowDuplicates" type="xs:boolean" use="optional" />
+            <xs:attribute name="personMustExist" type="xs:boolean" use="optional" />
+            <xs:attribute name="minPersonNameMatch" type="xs:decimal" use="optional" />
+            <xs:attribute name="validateProvidersAgainstPR" type="xs:boolean" use="optional"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nameMatching">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="algorithm">
+                <xs:complexType>
+                  <xs:attribute name="name" type="MatchAlgorithm" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="defaultMatchStr" type="MatchStrength" use="required" />
+            <xs:attribute name="seekExactMatchFirst" type="xs:boolean" use="optional"/>
+          </xs:complexType>
+          
+        </xs:element>
+        <xs:element name="connectionManager">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="connection" type="xs:string" use="required" />
+                <xs:attribute name="readOnlyConnection" type="xs:string" use="optional" />
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

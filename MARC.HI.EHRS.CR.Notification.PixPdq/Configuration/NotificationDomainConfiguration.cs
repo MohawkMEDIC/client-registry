@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
+{
+    /// <summary>
+    /// Represents notification domain configuration
+    /// </summary>
+    public class NotificationDomainConfiguration
+    {
+
+        /// <summary>
+        /// Creates a new notification domain configuration
+        /// </summary>
+        public NotificationDomainConfiguration(string domain)
+        {
+            this.Domain = domain;
+            this.Actions = new List<ActionConfiguration>();
+        }
+
+        /// <summary>
+        /// Gets the domain of the notification configuration
+        /// </summary>
+        public string Domain { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a list of actions that trigger notifications within a 
+        /// domain
+        /// </summary>
+        public List<ActionConfiguration> Actions { get; private set; }
+
+        /// <summary>
+        /// Returns true if the notification domain should be applied for
+        /// the specified <paramref name="action"/>
+        /// </summary>
+        public bool IsApplicableFor(ActionType action)
+        {
+            return this.Actions.Exists(a => a.Action == action);
+        }
+    }
+}

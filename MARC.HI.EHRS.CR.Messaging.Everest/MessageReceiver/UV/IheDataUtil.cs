@@ -225,9 +225,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 var retVal = this.m_persistenceService.StoreContainer(healthServiceRecord, mode);
                 retVal.UpdateMode = UpdateModeType.Add;
 
-                // Call notifier
-                if (this.m_notificationService != null)
-                    this.m_notificationService.NotifyRegister(healthServiceRecord);
 
                 // Notify that reconciliation is required
                 if (this.m_notificationService != null && needsReconciliation)
@@ -331,10 +328,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 var retVal = this.m_persistenceService.UpdateContainer(healthServiceRecord, mode);
 
                 retVal.UpdateMode = UpdateModeType.Update;
-
-                // Call notifier
-                if (this.m_notificationService != null)
-                    this.m_notificationService.NotifyUpdate(healthServiceRecord);
 
                 // Call the dss
                 if (this.m_decisionService != null)

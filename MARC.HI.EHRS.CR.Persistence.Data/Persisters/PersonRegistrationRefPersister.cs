@@ -39,9 +39,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             PersonRegistrationRef refr = data as PersonRegistrationRef;
             Person psn = pp.GetPerson(conn, tx, refr.AlternateIdentifiers[0], false);
             Person cntrPsn = data.Site.Container as Person;
-            
+
             if (psn == null || cntrPsn == null)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00B"));
+            else if (psn.Id == cntrPsn.Id)
+                throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00D"));
 
             cntrPsn = pp.GetPerson(conn, tx, new SVC.Core.DataTypes.DomainIdentifier()
             {
@@ -152,13 +154,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
             
             // Send notification that duplicates were resolved
-            if (symbolic)
-            {
-                // Send an duplicates resolved message
-                IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                if (notificationService != null)
-                    notificationService.NotifyDuplicatesResolved(cntrPsn, refr.AlternateIdentifiers[0]);
-            }
+            //if (symbolic)
+            //{
+            //    // Send an duplicates resolved message
+            //    IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+            //    if (notificationService != null)
+            //        notificationService.NotifyDuplicatesResolved(cntrPsn, refr.AlternateIdentifiers[0]);
+            //}
 
             // Person identifier
             return new SVC.Core.DataTypes.VersionedDomainIdentifier()

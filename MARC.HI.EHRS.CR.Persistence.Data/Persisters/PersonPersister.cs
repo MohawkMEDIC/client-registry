@@ -65,15 +65,24 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     else
                         this.CreatePerson(conn, tx, psn);
                 }
-                // TODO: Components
+
+                // Components
                 DbUtil.PersistComponents(conn, tx, false, this, psn);
 
-                return new VersionedDomainIdentifier()
+                // Next we'll load the alternate identifiers from the database into this client person
+                // this is done because higher level functions may need access to the complete list of 
+                // identifiers for things like notifications, etc.
+                psn.AlternateIdentifiers.Clear();
+                GetPersonAlternateIdentifiers(conn, tx, psn);
+                var retVal = new VersionedDomainIdentifier()
                 {
                     Identifier = psn.Id.ToString(),
                     Version = psn.VersionId.ToString(),
-                    Domain = ClientRegistryOids.CLIENT_CRID
+                    Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid
                 };
+                // Also add the local CRID to the list
+                psn.AlternateIdentifiers.Add(retVal);
+                return retVal;
             }
             catch (Exception e)
             {

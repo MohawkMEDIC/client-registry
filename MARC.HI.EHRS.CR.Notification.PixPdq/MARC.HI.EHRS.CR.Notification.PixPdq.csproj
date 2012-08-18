@@ -5,14 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{257710CF-713E-4534-B562-DB25CDBADD79}</ProjectGuid>
+    <ProjectGuid>{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MARC.HI.EHRS.CR.Messaging.HL7</RootNamespace>
-    <AssemblyName>MARC.HI.EHRS.CR.Messaging.HL7</AssemblyName>
+    <RootNamespace>MARC.HI.EHRS.CR.Notification.PixPdq</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Notification.PixPdq</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,44 +31,51 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MARC.HI.EHRS.SVC.Auditing">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.dll</HintPath>
+    <Reference Include="MARC.Everest">
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.ClientIdentity">
-      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll</HintPath>
+    <Reference Include="MARC.Everest.Connectors.WCF">
+      <HintPath>..\Solution Items\MARC.Everest.Connectors.WCF.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.Datatypes.R1">
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.ITS1">
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.ITS1.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.UV.NE2008">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.UV.NE2008.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
     </Reference>
-    <Reference Include="NHapi.Base">
-      <HintPath>..\Solution Items\NHapi.Base.dll</HintPath>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
     </Reference>
-    <Reference Include="NHapi.Model.V231">
-      <HintPath>..\Solution Items\NHapi.Model.V231.dll</HintPath>
+    <Reference Include="MARC.HI.EHRS.SVC.Localization">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Localization.dll</HintPath>
     </Reference>
-    <Reference Include="NHapi.Model.V25">
-      <HintPath>..\Solution Items\NHapi.Model.V25.dll</HintPath>
+    <Reference Include="MARC.HI.EHRS.SVC.Terminology">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationContext.cs" />
+    <Compile Include="Configuration\ActionConfiguration.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
-    <Compile Include="Configuration\HL7ConfigurationSection.cs" />
-    <Compile Include="HL7MessageHandler.cs" />
-    <Compile Include="IHL7MessageHandler.cs" />
+    <Compile Include="Configuration\NotificationConfiguration.cs" />
+    <Compile Include="Configuration\NotificationDomainConfiguration.cs" />
+    <Compile Include="Configuration\TargetConfiguration.cs" />
+    <Compile Include="NotificationQueueWorkItem.cs" />
+    <Compile Include="PixNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceHandler.cs" />
-    <Compile Include="TransportProtocol\ITransportProtocol.cs" />
-    <Compile Include="TransportProtocol\LlpTransport.cs" />
-    <Compile Include="TransportProtocol\TcpTransport.cs" />
-    <Compile Include="TransportProtocol\TransportUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
@@ -78,9 +84,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Configuration\marc.hi.ehrs.cr.messaging.hl7.xsd">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="Configuration\marc.hi.ehrs.cr.notification.pixpdq" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -144,6 +144,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Coreschemas", "Coreschemas"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.PixPdqv2", "MARC.HI.EHRS.CR.Messaging.PixPdqv2\MARC.HI.EHRS.CR.Messaging.PixPdqv2.csproj", "{89CA50BC-141F-4216-818F-6A6DA76BF745}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notifications", "Notifications", "{330196EE-CA01-4513-84C3-F2991AC7A061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Notification.PixPdq", "MARC.HI.EHRS.CR.Notification.PixPdq\MARC.HI.EHRS.CR.Notification.PixPdq.csproj", "{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,6 +194,12 @@ Global
 		{89CA50BC-141F-4216-818F-6A6DA76BF745}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89CA50BC-141F-4216-818F-6A6DA76BF745}.Release|Any CPU.Build.0 = Release|Any CPU
 		{89CA50BC-141F-4216-818F-6A6DA76BF745}.Release|x86.ActiveCfg = Release|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -206,6 +216,7 @@ Global
 		{82164D14-10B4-437D-BD40-562E0B691BAA} = {FECA7295-CED2-42B2-9999-0B5F4DA01981}
 		{7529517E-C4D2-43A0-824F-1F3295108B73} = {82164D14-10B4-437D-BD40-562E0B691BAA}
 		{64644FD8-5C26-43F4-81A6-510F915B74B3} = {82164D14-10B4-437D-BD40-562E0B691BAA}
+		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E} = {330196EE-CA01-4513-84C3-F2991AC7A061}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .

@@ -15,6 +15,7 @@ using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -106,6 +107,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 // Store 
                 var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+
+                // Notify
+                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                if (notificationService != null)
+                    notificationService.NotifyDuplicatesResolved(data);
 
                 if (vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
@@ -243,6 +249,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Store 
                 var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
+                // Notify
+                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                if (notificationService != null)
+                    notificationService.NotifyUpdate(data);
+
                 if (vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
 
@@ -361,6 +372,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 // Store 
                 var vid = dataUtil.Register(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+
+                // Notify
+                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                if (notificationService != null)
+                {
+                    if(vid.UpdateMode == UpdateModeType.Update)
+                        notificationService.NotifyUpdate(data);
+                    else
+                        notificationService.NotifyRegister(data);
+
+                }
 
                 if (vid == null)
                     throw new Exception(locale.GetString("DTPE001"));

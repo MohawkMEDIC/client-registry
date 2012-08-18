@@ -34,6 +34,6 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Notification that duplicates have been resolved
         /// </summary>
-        void NotifyDuplicatesResolved(Person newPerson, SVC.Core.DataTypes.DomainIdentifier candidateAlt);
+        void NotifyDuplicatesResolved(RegistrationEvent evt);
     }
 }
