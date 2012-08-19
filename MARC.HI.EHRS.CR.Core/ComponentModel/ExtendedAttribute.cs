@@ -27,6 +27,18 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
                     return cmp as ExtendedAttribute;
             return null;
         }
+
+        /// <summary>
+        /// Find an extension
+        /// </summary>
+        public static IEnumerable<ExtendedAttribute> FindAllExtensions(this HealthServiceRecordContainer me, Predicate<ExtendedAttribute> match)
+        {
+            List<ExtendedAttribute> retr = new List<ExtendedAttribute>();
+            foreach (var cmp in me.Components)
+                if (cmp is ExtendedAttribute && match.Invoke(cmp as ExtendedAttribute))
+                    retr.Add(cmp as ExtendedAttribute);
+            return retr;
+        }
     }
 
     /// <summary>

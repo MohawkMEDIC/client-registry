@@ -38,17 +38,11 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// <summary>
         /// Creates a new action configuration
         /// </summary>
-        public ActionConfiguration(ActionType action, bool asRevise)
+        public ActionConfiguration(ActionType action)
         {
-            this.AsRevise = asRevise;
             this.Action = action;
         }
 
-        /// <summary>
-        /// When true, indicates that this particular action should be sent as a revise message
-        /// rather than the original message request
-        /// </summary>
-        public bool AsRevise { get; private set; }
         /// <summary>
         /// Gets or sets the action type
         /// </summary>

@@ -116,7 +116,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     Telecom = receiveEndpoint == null ? new TEL() { NullFlavor = NullFlavor.NoInformation } : (TEL)receiveEndpoint.ToString(),
                     Device = new Device1()
                     {
-                        Id = new II(configService.DeviceIdentifier, Environment.MachineName),
+                        Id = new II(configService.DeviceIdentifier),
                         Name = configService.DeviceName,
                         SoftwareName = SoftwareName.Product,
                         Desc = SoftwareDescription.Description,

@@ -50,7 +50,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = cntrPsn.Id.ToString()
             }, false);
-            cntrPsn.Site = (psn.Site.Container as IComponent).Site;
+            if (psn == null || cntrPsn == null)
+                throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00B"));
+            cntrPsn.Site = (data.Site.Container as IComponent).Site;
 
             var role = (refr.Site as HealthServiceRecordSite).SiteRoleType;
             var symbolic = (refr.Site as HealthServiceRecordSite).IsSymbolic; // If true, the replacement does not cascade and is a symbolic replacement of only the identifiers listed

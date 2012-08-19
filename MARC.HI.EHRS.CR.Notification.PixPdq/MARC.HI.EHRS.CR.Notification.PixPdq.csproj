@@ -73,6 +73,8 @@
     <Compile Include="Configuration\NotificationConfiguration.cs" />
     <Compile Include="Configuration\NotificationDomainConfiguration.cs" />
     <Compile Include="Configuration\TargetConfiguration.cs" />
+    <Compile Include="MessageUtility.Datatypes.cs" />
+    <Compile Include="MessageUtility.cs" />
     <Compile Include="NotificationQueueWorkItem.cs" />
     <Compile Include="PixNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,7 +86,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Configuration\marc.hi.ehrs.cr.notification.pixpdq" />
+    <None Include="Configuration\marc.hi.ehrs.cr.notification.pixpdq.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

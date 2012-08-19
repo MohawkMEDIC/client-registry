@@ -189,7 +189,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
 
             // Check version identifier
-            if (interaction.VersionCode != null && !interaction.VersionCode.CodeValue.Equals("V3PR1"))
+            if (interaction.VersionCode != null && !interaction.VersionCode.CodeValue.Equals(HL7StandardVersionCode.Version3_Prerelease1))
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Version '{0}' is not supported by this endpoint", interaction.VersionCode)));
             
             if(profile == null)

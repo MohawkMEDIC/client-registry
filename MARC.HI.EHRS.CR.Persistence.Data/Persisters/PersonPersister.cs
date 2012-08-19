@@ -109,18 +109,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "reg_vrsn_id_in", DbType.Decimal, regEvt.VersionIdentifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.String, psn.Status.ToString()));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null || psn.BirthTime.UpdateMode == UpdateModeType.Ignore ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
 
                 decimal? religionCode = null,
                     vipCode = null,
                     maritalStatusCode = null,
                     birthLocation = null;
-                if (psn.ReligionCode != null)
+                if (psn.ReligionCode != null && psn.ReligionCode.UpdateMode != UpdateModeType.Ignore)
                     religionCode = DbUtil.CreateCodedValue(conn, tx, psn.ReligionCode);
-                if (psn.VipCode != null)
+                if (psn.VipCode != null && psn.VipCode.UpdateMode != UpdateModeType.Ignore)
                     vipCode = DbUtil.CreateCodedValue(conn, tx, psn.VipCode);
-                if (psn.MaritalStatus != null)
+                if (psn.MaritalStatus != null && psn.MaritalStatus.UpdateMode != UpdateModeType.Ignore)
                     maritalStatusCode = DbUtil.CreateCodedValue(conn, tx, psn.MaritalStatus);
                 if (psn.BirthPlace != null)
                 {
@@ -217,7 +217,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonCitizenship(IDbConnection conn, IDbTransaction tx, Person psn, Citizenship cit)
         {
-            if (cit == null) return; // skip
+            if (cit == null || cit.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (cit.UpdateMode == UpdateModeType.Remove || cit.UpdateMode == UpdateModeType.Update || cit.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -261,7 +261,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonEmployment(IDbConnection conn, IDbTransaction tx, Person psn, Employment emp)
         {
-            if (emp == null) return; // skip
+            if (emp == null || emp.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (emp.UpdateMode == UpdateModeType.Remove || emp.UpdateMode == UpdateModeType.Update || emp.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -306,7 +306,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonLanguage(IDbConnection conn, IDbTransaction tx, Person psn, PersonLanguage lang)
         {
-            if (lang == null) return; // skip
+            if (lang == null || lang.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (lang.UpdateMode == UpdateModeType.Remove || lang.UpdateMode == UpdateModeType.Update || lang.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -343,7 +343,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonRace(IDbConnection conn, IDbTransaction tx, Person psn, CodeValue race)
         {
-            if (race == null) return; // skip
+            if (race == null || race.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (race.UpdateMode == UpdateModeType.Remove || race.UpdateMode == UpdateModeType.Update || race.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -381,7 +381,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonOtherIdentifiers(IDbConnection conn, IDbTransaction tx, Person psn, KeyValuePair<CodeValue, DomainIdentifier> othId)
         {
-            if (othId.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>))) return; // skip
+            if (othId.Equals(default(KeyValuePair<CodeValue, DomainIdentifier>)) || othId.Value.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (othId.Value.UpdateMode == UpdateModeType.Remove || othId.Value.UpdateMode == UpdateModeType.Update || othId.Value.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -432,7 +432,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonAlternateIdentifier(IDbConnection conn, IDbTransaction tx, Person psn, DomainIdentifier altId)
         {
-            if (altId == null) return; // skip
+            if (altId == null || altId.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (altId.UpdateMode == UpdateModeType.Remove || altId.UpdateMode == UpdateModeType.Update || altId.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -478,7 +478,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonTelecom(IDbConnection conn, IDbTransaction tx, Person psn, TelecommunicationsAddress tel)
         {
-            if (tel == null) return; // skip
+            if (tel == null || tel.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (tel.UpdateMode == UpdateModeType.Remove || tel.UpdateMode == UpdateModeType.Update || tel.UpdateMode == UpdateModeType.AddOrUpdate)
@@ -514,7 +514,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonNames(IDbConnection conn, IDbTransaction tx, Person psn, NameSet name)
         {
-            if (name == null) return; // skip
+            if (name == null || name.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (name.UpdateMode == UpdateModeType.Remove || name.UpdateMode == UpdateModeType.Update || name.UpdateMode == UpdateModeType.AddOrUpdate && name.Key != default(decimal))
@@ -548,7 +548,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         private void PersistPersonAddress(IDbConnection conn, IDbTransaction tx, Person psn, AddressSet addr)
         {
-            if (addr == null) return; // skip
+            if (addr == null || addr.UpdateMode == UpdateModeType.Ignore) return; // skip
 
             // Update or add or update? we first have to obsolete the existing
             if (addr.UpdateMode == UpdateModeType.Remove || addr.UpdateMode == UpdateModeType.Update || addr.UpdateMode == UpdateModeType.AddOrUpdate && addr.Key != default(decimal))
@@ -597,19 +597,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "reg_vrsn_id_in", DbType.Decimal, regEvt.VersionIdentifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.String, psn.Status.ToString()));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime != null ? (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null) : DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dcsd_ts_in", DbType.Decimal, psn.DeceasedTime != null ? (object)DbUtil.CreateTimestamp(conn, tx, psn.DeceasedTime, null) : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime != null && psn.BirthTime.UpdateMode != UpdateModeType.Ignore ? (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null) : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dcsd_ts_in", DbType.Decimal, psn.DeceasedTime != null && psn.DeceasedTime.UpdateMode != UpdateModeType.Ignore ? (object)DbUtil.CreateTimestamp(conn, tx, psn.DeceasedTime, null) : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
 
                 decimal? religionCode = null,
                     vipCode = null,
                     maritalStatusCode = null,
                     birthLocation = null;
-                if (psn.ReligionCode != null)
+                if (psn.ReligionCode != null && psn.ReligionCode.UpdateMode != UpdateModeType.Ignore)
                     religionCode = DbUtil.CreateCodedValue(conn, tx, psn.ReligionCode);
-                if (psn.VipCode != null)
+                if (psn.VipCode != null && psn.VipCode.UpdateMode != UpdateModeType.Ignore)
                     vipCode = DbUtil.CreateCodedValue(conn, tx, psn.VipCode);
-                if (psn.MaritalStatus != null)
+                if (psn.MaritalStatus != null && psn.MaritalStatus.UpdateMode != UpdateModeType.Ignore)
                     maritalStatusCode = DbUtil.CreateCodedValue(conn, tx, psn.MaritalStatus);
                 if (psn.BirthPlace != null)
                 {
@@ -1051,7 +1051,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if (QueryUtil.MatchAddress(candidateOtherAddress[0], addr) == 1) // Remove .. no change
                         {
                             //candidateOtherAddress[0].Key = -1;
-                            addr.Key = -2;
+                            addr.UpdateMode = UpdateModeType.Ignore;
                         }
                         else if(!newerOnly || candidateOtherAddress[0].Key < addr.Key)
                         {
@@ -1067,7 +1067,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if (secondLevelFoundAddress != null)
                         {
                             if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
-                                addr.Key = -2;
+                                addr.UpdateMode = UpdateModeType.Ignore;
                             else if (!newerOnly || secondLevelFoundAddress.Key < addr.Key)
                             {
                                 addr.UpdateMode = UpdateModeType.Update;
@@ -1101,7 +1101,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (addr.Key > 0)
                 //        addr.UpdateMode = UpdateModeType.Remove;
                 newPerson.Addresses.AddRange(oldPerson.Addresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-                newPerson.Addresses.RemoveAll(o => o.Key < 0);
+                //newPerson.Addresses.RemoveAll(o => o.Key < 0);
             }
 
             // Next merge the citizenship information
@@ -1126,7 +1126,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     }
                 }
 
-                newPerson.Citizenship.RemoveAll(o => o.Id < 0);
+                //newPerson.Citizenship.RemoveAll(o => o.Id < 0);
             }
 
             // Next merge the employment information
@@ -1148,7 +1148,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     }
                 }
 
-                newPerson.Employment.RemoveAll(o => o.Id < 0);
+                //newPerson.Employment.RemoveAll(o => o.Id < 0);
             }
 
             // Next we want to do the same for names
@@ -1163,7 +1163,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if (QueryUtil.MatchName(candidateOtherName[0], name) == 1) // No difference so no db operation
                         {
                             //candidateOtherName[0].Key = -1;
-                            name.Key = -2;
+                            name.UpdateMode = UpdateModeType.Ignore;
                         }
                         else if(!newerOnly ||  candidateOtherName[0].Key < name.Key) // Need to update the contents of the name 
                         {
@@ -1180,7 +1180,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if (secondLevelFoundName != null)
                         {
                             if (QueryUtil.MatchName(secondLevelFoundName, name) == 1) // No change
-                                name.Key = -2;
+                                name.UpdateMode = UpdateModeType.Ignore;
                             else if(!newerOnly || secondLevelFoundName.Key < name.Key)
                             {
                                 name.UpdateMode = UpdateModeType.Update;
@@ -1213,28 +1213,29 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (name.Key > 0)
                 //        name.UpdateMode = UpdateModeType.Remove;
                 //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-                newPerson.Names.RemoveAll(o => o.Key < 0);
+                //newPerson.Names.RemoveAll(o => o.Key < 0);
             }
 
             // Birth time
             if (newPerson.BirthTime != null && oldPerson.BirthTime != null &&
                 newPerson.BirthTime.Value == oldPerson.BirthTime.Value)
-                newPerson.BirthTime = null;
-
-            // MB order
-            if (newPerson.BirthOrder == oldPerson.BirthOrder)
-                newPerson.BirthOrder = null;
+                newPerson.BirthTime.UpdateMode = UpdateModeType.Ignore;
 
             // Religion code
             if (newPerson.ReligionCode != null && oldPerson.ReligionCode != null &&
                 newPerson.ReligionCode.Code == oldPerson.ReligionCode.Code &&
                 newPerson.ReligionCode.CodeSystem == oldPerson.ReligionCode.CodeSystem)
-                newPerson.ReligionCode = null;
+                newPerson.ReligionCode.UpdateMode = UpdateModeType.Ignore;
 
             // Deceased
             if (newPerson.DeceasedTime != null && oldPerson.DeceasedTime != null &&
                 newPerson.DeceasedTime.Value == oldPerson.DeceasedTime.Value)
-                newPerson.DeceasedTime = null;
+                newPerson.DeceasedTime.UpdateMode = UpdateModeType.Ignore;
+
+            // Marital Status
+            if (newPerson.MaritalStatus != null && oldPerson.MaritalStatus != null &&
+                newPerson.MaritalStatus.Code == oldPerson.MaritalStatus.Code)
+                newPerson.MaritalStatus.UpdateMode = UpdateModeType.Ignore;
 
             // Race codes 
             if (newPerson.Race != null && oldPerson.Race != null)
@@ -1245,13 +1246,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     var candidateRace = oldPerson.Race.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
                     if (candidateRace != null) // New exists in the old
                     {
-                        rce.Key = -2;
+                        rce.UpdateMode = UpdateModeType.Ignore;
                         //candidateRace.Key = -1;
                     }
                     else
                         rce.UpdateMode = UpdateModeType.Add;
                 }
-                newPerson.Race.RemoveAll(o => o.Key < 0);
+                //newPerson.Race.RemoveAll(o => o.Key < 0);
             }
 
             // Language codes
@@ -1278,7 +1279,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (!newPerson.Language.Exists(o => o.Language == lang.Language))
                 //        lang.UpdateMode = UpdateModeType.Remove;
                 //newPerson.Language.AddRange(oldPerson.Language.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-                newPerson.Language.RemoveAll(o => garbagePail.Contains(o));
+                //newPerson.Language.RemoveAll(o => garbagePail.Contains(o));
             }
 
             if (newPerson.TelecomAddresses != null && oldPerson.TelecomAddresses != null)
@@ -1290,7 +1291,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     var candidateTel = oldPerson.TelecomAddresses.Find(o => o.Use == tel.Use && tel.Value == o.Value);
                     if (candidateTel != null) // New exists in the old
                     {
-                        tel.Key = -2;
+                        tel.UpdateMode = UpdateModeType.Ignore;
                         //candidateTel.Key = -1;
                     }
                     else
@@ -1311,7 +1312,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (alt.Key > 0)
                 //        alt.UpdateMode = UpdateModeType.Remove;
                 //newPerson.TelecomAddresses.AddRange(oldPerson.TelecomAddresses.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-                newPerson.TelecomAddresses.RemoveAll(o => o.Key < 0);
+                //newPerson.TelecomAddresses.RemoveAll(o => o.Key < 0);
             }
 
             if (newPerson.AlternateIdentifiers != null && oldPerson.AlternateIdentifiers != null)
@@ -1323,7 +1324,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     var candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain && o.Identifier == alt.Identifier);
                     if (candidateAlt != null) // New exists in the old
                     {
-                        alt.Key = -2;
+                        alt.UpdateMode = UpdateModeType.Ignore;
                         //candidateAlt.Key = -1;
                     }
                     else
@@ -1350,7 +1351,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (alt.Key > 0)
                 //        alt.UpdateMode = UpdateModeType.Remove;
                 newPerson.AlternateIdentifiers.AddRange(oldPerson.AlternateIdentifiers.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
-                newPerson.AlternateIdentifiers.RemoveAll(o => o.Key < 0);
+                //newPerson.AlternateIdentifiers.RemoveAll(o => o.Key < 0);
             }
 
             if (newPerson.OtherIdentifiers != null && oldPerson.OtherIdentifiers != null)
@@ -1365,7 +1366,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         // Found based on the code, so this is an update
                         if (alt.Value.Identifier == candidateAlt.Value.Identifier &&
                             alt.Value.Domain == candidateAlt.Value.Identifier)
-                            alt.Value.Key = -2;
+                            alt.Value.UpdateMode = UpdateModeType.Ignore;
                         else
                             alt.Value.UpdateMode = UpdateModeType.Update;
                         //candidateAlt.Value.Key = -1;
@@ -1379,7 +1380,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             if (alt.Key != candidateAlt.Key)
                                 alt.Value.UpdateMode = UpdateModeType.Update;
                             else
-                                alt.Value.Key = -2;
+                                alt.Value.UpdateMode = UpdateModeType.Ignore;
                             //candidateAlt.Value.Key = -1;
                         }
                         else
@@ -1391,7 +1392,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //    if (alt.Value.Key > 0)
                 //        alt.Value.UpdateMode = UpdateModeType.Remove;
                 //newPerson.OtherIdentifiers.AddRange(oldPerson.OtherIdentifiers.FindAll(o => o.Value.UpdateMode == UpdateModeType.Remove));
-                newPerson.OtherIdentifiers.RemoveAll(o => o.Value.Key < 0);
+                //newPerson.OtherIdentifiers.RemoveAll(o => o.Value.Key < 0);
             }
 
             // Copy over extended attributes not mentioned in the new person

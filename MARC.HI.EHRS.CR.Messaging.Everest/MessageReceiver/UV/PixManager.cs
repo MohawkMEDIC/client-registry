@@ -99,7 +99,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 // Construct the canonical data structure
                 UvComponentUtil cu = new UvComponentUtil() { Context = this.Context };
-                var data = cu.CreateComponents(request.controlActProcess, dtls);
+                RegistrationEvent data = cu.CreateComponents(request.controlActProcess, dtls);
 
                 // Componentization fail?
                 if (data == null || !dataUtil.ValidateIdentifiers(data, dtls))
@@ -108,13 +108,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Store 
                 var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
+                if(vid == null)
+                    throw new Exception(locale.GetString("DTPE001"));
+
                 // Notify
                 IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
                 if (notificationService != null)
                     notificationService.NotifyDuplicatesResolved(data);
-
-                if (vid == null)
-                    throw new Exception(locale.GetString("DTPE001"));
 
                 // prepare the delete audit
                 var person = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
@@ -249,13 +249,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Store 
                 var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
+                if (vid == null)
+                    throw new Exception(locale.GetString("DTPE001"));
+
                 // Notify
                 IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
                 if (notificationService != null)
                     notificationService.NotifyUpdate(data);
-
-                if (vid == null)
-                    throw new Exception(locale.GetString("DTPE001"));
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",
@@ -373,19 +373,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Store 
                 var vid = dataUtil.Register(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
+
+                if (vid == null)
+                    throw new Exception(locale.GetString("DTPE001"));
+
+
                 // Notify
                 IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
                 if (notificationService != null)
                 {
-                    if(vid.UpdateMode == UpdateModeType.Update)
-                        notificationService.NotifyUpdate(data);
-                    else
-                        notificationService.NotifyRegister(data);
-
+                    notificationService.NotifyRegister(data);
                 }
-
-                if (vid == null)
-                    throw new Exception(locale.GetString("DTPE001"));
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",

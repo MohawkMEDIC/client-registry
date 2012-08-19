@@ -33,11 +33,14 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         {
             // throw new NotImplementedException();
             var targetsElement = section.SelectNodes("./*[local-name() = 'targets']/*[local-name() = 'add']");
-            var retVal = new NotificationConfiguration();
+            var retVal = new NotificationConfiguration(1);
 
             // Targets element not found
             if (targetsElement == null || targetsElement.Count == 0)
                 return retVal;
+
+            if (section.Attributes["concurrencyLevel"] != null)
+                retVal = new NotificationConfiguration(Int32.Parse(section.Attributes["concurrencyLevel"].Value));
 
             // Iterate through the <targets><add> elements and add them to the configuration
             foreach (XmlElement targ in targetsElement)
@@ -54,8 +57,16 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                 if (targ.Attributes["name"] != null)
                     targetName = targ.Attributes["name"].Value;
 
+                TargetActorType type = TargetActorType.PAT_IDENTITY_X_REF_MGR;
+                if(targ.Attributes["myActor"] != null && !Enum.TryParse(targ.Attributes["myActor"].Value, out type))
+                    throw new ConfigurationErrorsException(String.Format("Actor type '{0}' is not valid", targ.Attributes["myActor"].Value));
+
+                string deviceId = String.Empty;
+                if (targ.Attributes["deviceId"] != null)
+                    deviceId = targ.Attributes["deviceId"].Value;
+
                 // Now create the target
-                TargetConfiguration targetConfig = new TargetConfiguration(targetName, connectionString);
+                TargetConfiguration targetConfig = new TargetConfiguration(targetName, connectionString, type, deviceId);
                 
                 // Get the notification domains and add them to the configuration
                 var notificationElements = targ.SelectNodes("./*[local-name() = 'notify']");
@@ -82,12 +93,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                         else if (!Enum.TryParse(ae.Attributes["type"].Value, out value))
                             throw new ConfigurationErrorsException(String.Format("Invalid action type '{0}'", ae.Attributes["type"].Value));
 
-                        // True as revise
-                        bool asRevise = false;
-                        if (ae.Attributes["asRevise"] != null && !Boolean.TryParse(ae.Attributes["asRevise"].Value, out asRevise))
-                            throw new ConfigurationErrorsException("asRevise element must be a valid boolean");
-
-                        notificationConfig.Actions.Add(new ActionConfiguration(value, asRevise));
+                        notificationConfig.Actions.Add(new ActionConfiguration(value));
                     }
 
                     targetConfig.NotificationDomain.Add(notificationConfig);

@@ -435,7 +435,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             retVal.Add(new ExtendedAttribute()
                             {
                                 PropertyPath = String.Format("OtherIdentifiers[{0}{1}]", priId.Root, priId.Extension),
-                                Value = id.Id[i],
+                                Value = CreateDomainIdentifier(id.Id[i], dtls),
                                 Name = "AssigningIdOrganizationExtraId"
                             });
 
@@ -1238,7 +1238,20 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         if (rplc.PriorRegistration.Subject1 == null || rplc.PriorRegistration.Subject1.NullFlavor != null ||
                             rplc.PriorRegistration.Subject1.PriorRegisteredRole == null || rplc.PriorRegistration.Subject1.PriorRegisteredRole.NullFlavor != null)
-                            dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE068"), "//urn:hl7-org:v3#priorRegisteredRole"));
+                        {
+                            // HACK: This should be an error according to the IHE ITI-TF 2b specification
+                            dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Warning, m_localeService.GetString("MSGW019"), "//urn:hl7-org:v3#priorRegistration"));
+                            if (rplc.PriorRegistration.Id != null && !rplc.PriorRegistration.Id.IsNull)
+                            {
+                                var re = new PersonRegistrationRef()
+                                {
+                                    AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Id, dtls)
+                                };
+                                subjectOf.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                            }
+                            else
+                                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE068"), "//urn:hl7-org:v3#priorRegistration/urn:hl7-org:v3#id"));
+                        }
                         else if (rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id == null || rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsEmpty ||
                             rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsNull || rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.Count > 1)
                             dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE069"), "//urn:hl7-org:v3#priorRegisteredRole"));

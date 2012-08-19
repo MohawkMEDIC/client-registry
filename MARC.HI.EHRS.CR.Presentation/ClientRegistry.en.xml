@@ -96,7 +96,8 @@
   <string name="MSGE065">MSGE065 : registeredRole  is missing the subject1 association</string>
   <string name="MSGE066">MSGE066 : IHE Restriction: There SHALL be a replacementOf relationship</string>
   <string name="MSGE067">MSGE067 : IHE Restriction: PriorRegistration.StatusCode SHALL be "Obsolete"</string>
-  <string name="MSGE068">MSGE068 : IHE Restriction: There SHALL be a priorRegsitration association</string>
+  <string name="MSGW019">MSGW019 : Quirk : IHE Restriction: There SHALL be a priorRegisteredRole association, however the message sent doesn't contain this. Will attempt to process the priorRegistration.id instead</string>
+  <string name="MSGE068">MSGE068 : Quirk : IHE Restriction: Attempt to parse priorRegistration.id failed as it is not present or not populated</string>
   <string name="MSGE069">MSGE069 : IHE Restriction: There shall be a single priorRegisteredRole.id association</string>
   <string name="MSGE06A">MSGE06A : ISO OID '{0}' has no known assigning authority, and is not recognized by this registry</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
@@ -144,4 +145,10 @@
   <string name="HL7202">Unsupported processing id</string>
   <string name="HL7203">Unsupported version id</string>
   <string name="HL7207">Application internal error</string>
+  
+  <!-- Notification Strings -->
+  <string name="NTFE001">NTFE001 : Cannot find subject for notification</string>
+  <string name="NTFW002">NTFW001 : Couldn't send the request to {0}</string>
+  <string name="NTFW003">NTFW001 : Couldn't process the result from {0}</string>
+  <string name="NTFW004">NTFW001 : Negative ACK received from {0}</string>
 </locale>

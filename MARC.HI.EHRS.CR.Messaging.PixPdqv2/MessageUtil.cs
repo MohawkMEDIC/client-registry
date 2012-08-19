@@ -26,7 +26,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             Terser inboundTerser = new Terser(inboundMsh);
 
             terser.Set("/MSH-10", Guid.NewGuid().ToString());
-            terser.Set("/MSH-3", config.Custodianship.Name);
+            terser.Set("/MSH-3", config.DeviceName);
             terser.Set("/MSH-4", config.JurisdictionData.Name);
             terser.Set("/MSH-5", inboundTerser.Get("/MSH-3"));
             terser.Set("/MSH-6", inboundTerser.Get("/MSH-4"));

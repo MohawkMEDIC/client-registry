@@ -14,9 +14,10 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// <summary>
         /// Creates a new instance of the NotificationConfiguration
         /// </summary>
-        public NotificationConfiguration()
+        public NotificationConfiguration(int concurrencyLevel)
         {
             this.Targets = new List<TargetConfiguration>();
+            this.ConcurrencyLevel = concurrencyLevel;
         }
 
 
@@ -25,5 +26,9 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// </summary>
         public List<TargetConfiguration> Targets { get; private set; }
 
+        /// <summary>
+        /// Gets the concurrency level
+        /// </summary>
+        public int ConcurrencyLevel { get; private set; }
     }
 }
