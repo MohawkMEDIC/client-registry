@@ -39,6 +39,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.Connectors.WCF.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=50c44f29d884a7e5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.ITS1.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.Everest.RMIM.CA.R020402">
       <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
     </Reference>
@@ -86,6 +94,7 @@
   <ItemGroup>
     <Compile Include="ComponentUtil\ComponentUtil.Datatypes.cs" />
     <Compile Include="MessageReceiver\CA\CaComponentUtil.Messages.cs" />
+    <Compile Include="MessageReceiver\UV\GetIdentifiersQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\UV\IheDataUtil.cs" />
     <Compile Include="MessageReceiver\UV\UvComponentUtil.cs" />
     <Compile Include="MessageUtil.Ca.cs" />

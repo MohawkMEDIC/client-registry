@@ -12,6 +12,13 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.Everest.Connectors.WCF;
 using System.Net;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using MARC.Everest.RMIM.UV.NE2008.Interactions;
+using MARC.Everest.Interfaces;
+using MARC.Everest.Formatters.XML.ITS1;
+using MARC.Everest.Formatters.XML.Datatypes.R1;
+using System.IO;
+using MARC.Everest.Xml;
+using System.Xml;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -20,6 +27,29 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
     /// </summary>
     public class IheDataUtil : DataUtil
     {
+
+        /// <summary>
+        /// Create audit data that is in response to a query
+        /// </summary>
+        internal AuditData CreateAuditData(string itiName, ActionType actionType, OutcomeIndicator outcomeIndicator, UnsolicitedDataEventArgs msgEvent, IReceiveResult msgReceiveResult, QueryResultData result, HealthcareParticipant author)
+        {
+
+            // Create the call to the other create audit data message by constructing the list of disclosed identifiers
+            List<VersionedDomainIdentifier> vids = new List<VersionedDomainIdentifier>(result.Results.Length);
+            foreach (var res in result.Results)
+            {
+                var subj = res.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                if (subj == null)
+                    continue;
+                vids.Add(new VersionedDomainIdentifier()
+                {
+                    Domain = this.m_configService.OidRegistrar.GetOid("CR_CID").Oid,
+                    Identifier = subj.Id.ToString()
+                });
+            }
+
+            return CreateAuditData(itiName, actionType, outcomeIndicator, msgEvent, msgReceiveResult, vids, author);
+        }
 
         /// <summary>
         /// Create audit data
@@ -31,13 +61,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             AuditableObjectLifecycle lifecycle = AuditableObjectLifecycle.Access;
             var wcfReceiveResult = msgReceiveResult as WcfReceiveResult;
+            var msgReplyTo = wcfReceiveResult == null || wcfReceiveResult.Headers == null || wcfReceiveResult.Headers.ReplyTo == null ? msgEvent.SolicitorEndpoint.ToString() : wcfReceiveResult.Headers.ReplyTo.Uri.ToString();
 
             switch (itiName)
             {
                 case "ITI-44":
                     retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "IHE Transactions"));
 
-                    var msgReplyTo = wcfReceiveResult == null || wcfReceiveResult.Headers == null || wcfReceiveResult.Headers.ReplyTo == null ? msgEvent.SolicitorEndpoint.ToString() : wcfReceiveResult.Headers.ReplyTo.Uri.ToString();
                     // Audit actor for Patient Identity Source
                     retVal.Actors.Add( new AuditActorData() {
                         UserIsRequestor = true, 
@@ -57,6 +87,42 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         NetworkAccessPointType = NetworkAccessPointType.MachineName,
                         NetworkAccessPointId = Dns.GetHostName()
                     });
+                    break;
+                case "ITI-45":
+                    retVal = new AuditData(DateTime.Now, ActionType.Execute, outcome, EventIdentifierType.Query, new CodeValue("ITI-45", "IHE Transactions") { DisplayName = "PIX Query" });
+                    // Audit actor for Patient Identity Source
+                    retVal.Actors.Add(new AuditActorData()
+                    {
+                        UserIsRequestor = true,
+                        UserIdentifier = msgReplyTo,
+                        ActorRoleCode = new List<CodeValue>() {
+                            new  CodeValue("110153", "DCM") { DisplayName = "Source" }
+                        },
+                        NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
+                        NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                    });
+                    // Audit actor for PIX manager
+                    retVal.Actors.Add(new AuditActorData()
+                    {
+                        UserIdentifier = msgEvent.ReceiveEndpoint.ToString(),
+                        UserIsRequestor = false,
+                        ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
+                        NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                        NetworkAccessPointId = Dns.GetHostName()
+                    });
+
+                    // Add query 
+                    var request = msgReceiveResult.Structure as PRPA_IN201309UV02;
+                
+                    retVal.AuditableObjects.Add(new AuditableObject()
+                    {
+                        Type = AuditableObjectType.SystemObject,
+                        Role = AuditableObjectRole.Query,
+                        IDTypeCode = AuditableObjectIdType.Custom,
+                        CustomIdTypeCode = new CodeValue("ITI45", "IHE Transactions"),
+                        QueryData = Convert.ToBase64String(SerializeQuery(request.controlActProcess.queryByParameter))
+                    });
+
                     break;
             }
 
@@ -109,6 +175,28 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             }
             return retVal;
+        }
+
+        /// <summary>
+        /// Serialize query 
+        /// </summary>
+        private byte[] SerializeQuery(IGraphable queryByParameter)
+        {
+            using (XmlIts1Formatter fmtr = new XmlIts1Formatter() { ValidateConformance = false })
+            {
+                StringBuilder sb = new StringBuilder();
+                XmlStateWriter writer = new XmlStateWriter(XmlWriter.Create(sb));
+
+                // Write the start element
+                writer.WriteStartElement("queryByParameter", "urn:hl7-org:v3");
+                fmtr.GraphAides.Add(new DatatypeFormatter() { CompatibilityMode = DatatypeFormatterCompatibilityMode.Universal, ValidateConformance = false });
+                fmtr.Graph(writer, queryByParameter);
+                writer.WriteEndElement();
+                writer.Close();
+
+                // Return the constructed result
+                return Encoding.ASCII.GetBytes(sb.ToString());
+            }
         }
 
         /// <summary>
@@ -424,5 +512,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             return isValid;
         }
+
+       
     }
 }

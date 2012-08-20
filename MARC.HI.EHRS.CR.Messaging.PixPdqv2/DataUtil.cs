@@ -12,6 +12,11 @@ using System.Data;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.Threading;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
+using NHapi.Base.Util;
+using System.Net;
+using System.IO;
+using NHapi.Base.Parser;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -20,6 +25,121 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     /// </summary>
     public class DataUtil : IUsesHostContext
     {
+
+        /// <summary>
+        /// Create audit data
+        /// </summary>
+        public AuditData CreateAuditData(string itiName, ActionType action, OutcomeIndicator outcome, Hl7MessageReceivedEventArgs msgEvent, QueryResultData result)
+        {
+            // Audit data
+            AuditData retVal = null;
+
+            AuditableObjectLifecycle lifecycle = AuditableObjectLifecycle.Access;
+
+            // Get the config service
+            ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            Terser terser = new Terser(msgEvent.Message);
+
+            // Source and dest
+            string sourceData = String.Format("{0}|{1}", terser.Get("/MSH-3"), terser.Get("/MSH-4")),
+                destData = String.Format("{0}|{1}",terser.Get("/MSH-5"), terser.Get("/MSH-6"));
+
+            switch (itiName)
+            {
+                case "ITI-21":
+                    retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.Query, new CodeValue(itiName, "IHE Transactions"));
+
+                    // Audit actor for Patient Identity Source
+                    retVal.Actors.Add(new AuditActorData()
+                    {
+                        UserIsRequestor = true,
+                        UserIdentifier = sourceData,
+                        ActorRoleCode = new List<CodeValue>() {
+                            new  CodeValue("110153", "DCM") { DisplayName = "Source" }
+                        },
+                        NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
+                        NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                    });
+
+                    // Audit actor for PDQ
+                    retVal.Actors.Add(new AuditActorData()
+                    {
+                        UserIdentifier = destData,
+                        UserIsRequestor = false,
+                        ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
+                        NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                        NetworkAccessPointId = Dns.GetHostName()
+                    });
+                    break;
+            }
+
+            var expDatOid = config.OidRegistrar.GetOid("CR_CID");
+
+            // Audit patients
+            foreach (var pat in result.Results)
+            {
+                // Construct the audit object
+                AuditableObject aud = new AuditableObject()
+                {
+                    IDTypeCode = AuditableObjectIdType.PatientNumber,
+                    Role = AuditableObjectRole.Patient,
+                    Type = AuditableObjectType.Person
+                };
+
+                // Lifecycle
+                switch (action)
+                {
+                    case ActionType.Create:
+                        aud.LifecycleType = AuditableObjectLifecycle.Creation;
+                        break;
+                    case ActionType.Delete:
+                        aud.LifecycleType = AuditableObjectLifecycle.LogicalDeletion;
+                        break;
+                    case ActionType.Execute:
+                        aud.LifecycleType = AuditableObjectLifecycle.Access;
+                        break;
+                    case ActionType.Read:
+                        aud.LifecycleType = AuditableObjectLifecycle.Disclosure;
+                        break;
+                    case ActionType.Update:
+                        aud.LifecycleType = AuditableObjectLifecycle.Amendment;
+                        break;
+                }
+
+                var subj = pat.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                
+                aud.ObjectId = String.Format("{1}^^^{2}&{0}&ISO", expDatOid.Oid, subj.Id, expDatOid.Attributes.Find(o=>o.Key == "AssigningAuthorityName").Value);
+                retVal.AuditableObjects.Add(aud);
+            }
+
+            // Add query parameters
+            retVal.AuditableObjects.Add(
+                new AuditableObject()
+                {
+                    IDTypeCode = AuditableObjectIdType.Custom,
+                    CustomIdTypeCode = new CodeValue(itiName.Replace("-","")),
+                    QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
+                    Type = AuditableObjectType.SystemObject,
+                    Role = AuditableObjectRole.Query
+                }
+            );
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create a serialized message
+        /// </summary>
+        private byte[] CreateMessageSerialized(NHapi.Base.Model.IMessage iMessage)
+        {
+            MemoryStream ms = new MemoryStream();
+            string msg = new PipeParser().Encode(iMessage);
+            ms.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            ms.Flush();
+            return ms.GetBuffer();
+        }
+
         #region IUsesHostContext Members
 
         // Host context

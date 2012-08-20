@@ -8,6 +8,8 @@ using NHapi.Base.Model;
 using NHapi.Model.V25.Segment;
 using NHapi.Model.V25.Message;
 using MARC.Everest.Connectors;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -37,7 +39,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 switch (msh.MessageType.TriggerEvent.Value)
                 {
                     case "Q22":
-                        response = HandlePdqQuery(e.Message as QBP_Q21);
+                        response = HandlePdqQuery(e.Message as QBP_Q21, e);
                         break;
                     default:
                         response = MessageUtil.CreateNack(e.Message, "AR", "201", locale.GetString("HL7201"), config);
@@ -54,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Handle the pdq query
         /// </summary>
-        private IMessage HandlePdqQuery(QBP_Q21 request)
+        private IMessage HandlePdqQuery(QBP_Q21 request, Hl7MessageReceivedEventArgs evt)
         {
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -72,7 +74,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (request == null)
                 return null;
 
+
             // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            // Construct appropriate audit
+            AuditData audit = null;
+
             try
             {
 
@@ -83,9 +90,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data.Equals(QueryData.Empty))
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                DataUtil dataUtil = new DataUtil() { Context = this.Context };
                 QueryResultData result = dataUtil.Query(data, dtls);
-                                
+                audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.Success, evt, result);
+
                 // Now process the result
                 response = dcu.CreateRSP_K21(result, dtls);
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
@@ -96,8 +103,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
+                audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
-
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
+            }
 
             return response;
         }

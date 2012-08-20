@@ -294,6 +294,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         public ON CreateON(MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameSet)
         {
             EntityNameUse enUse = EntityNameUse.Legal;
+            if (nameSet == null) return null;
 
             try
             {
