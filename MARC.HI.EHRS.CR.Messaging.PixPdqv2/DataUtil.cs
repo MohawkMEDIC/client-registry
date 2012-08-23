@@ -121,7 +121,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     CustomIdTypeCode = new CodeValue(itiName.Replace("-","")),
                     QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                     Type = AuditableObjectType.SystemObject,
-                    Role = AuditableObjectRole.Query
+                    Role = AuditableObjectRole.Query,
+                    ObjectId = result.QueryTag
                 }
             );
 

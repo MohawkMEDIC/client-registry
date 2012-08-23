@@ -120,7 +120,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         Role = AuditableObjectRole.Query,
                         IDTypeCode = AuditableObjectIdType.Custom,
                         CustomIdTypeCode = new CodeValue("ITI45", "IHE Transactions"),
-                        QueryData = Convert.ToBase64String(SerializeQuery(request.controlActProcess.queryByParameter))
+                        QueryData = Convert.ToBase64String(SerializeQuery(request.controlActProcess.queryByParameter)),
+                        ObjectId = String.Format("{1}^^^&{0}&ISO", request.controlActProcess.queryByParameter.QueryId.Root, request.controlActProcess.queryByParameter.QueryId.Extension)
                     });
 
                     break;
