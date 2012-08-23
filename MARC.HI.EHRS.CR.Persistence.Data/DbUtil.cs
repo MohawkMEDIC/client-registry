@@ -42,6 +42,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         [ThreadStatic]
         private static List<HealthServiceRecordComponent> m_alreadyDepersisted = new List<HealthServiceRecordComponent>(100);
 
+        private static Object s_syncLock = new object();
 
         /// <summary>
         /// DAta about components
@@ -458,6 +459,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             try
             {
+                
                 cmd.CommandText = "crt_name_cmp";
                 cmd.Parameters.Add(CreateParameterIn(cmd, "name_value_in", DbType.StringFixedLength, null));
                 cmd.Parameters.Add(CreateParameterIn(cmd, "name_cls_in", DbType.Decimal, null));
@@ -474,7 +476,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     if (nameSet.Key == default(decimal))
                         nameSet.Key = retVal;
                 }
-
                 return nameSet.Key;
             }
             finally

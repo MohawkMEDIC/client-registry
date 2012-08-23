@@ -505,8 +505,16 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
 
                 // Add data
-                if(altId != null)
-                    subjectOf.AlternateIdentifiers = new List<DomainIdentifier>() { altId };
+                if (altId != null)
+                {
+                    // Fill out the altId
+                    NHapi.Model.V25.Datatype.CX tcx = new NHapi.Model.V25.Datatype.CX(request);
+                    tcx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority;
+                    tcx.AssigningAuthority.UniversalID.Value = altId.Domain;
+                    tcx.AssigningAuthority.UniversalIDType.Value = "ISO";
+                    tcx.IDNumber.Value = altId.Identifier;
+                    subjectOf.AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(tcx, dtls) };
+                }
                 if (name != null)
                     subjectOf.Names = new List<NameSet>() { name };
                 if(address != null)
