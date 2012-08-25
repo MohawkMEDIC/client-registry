@@ -23,6 +23,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.DecisionSupport;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV;
 
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
@@ -624,14 +625,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 if (!didReturn)
                     throw new TimeoutException("The query could not complete in the specified amount of time");
 
-                // Audit the event
-                if (this.m_auditorService != null)
-                {
-                    AuditData audit = new AuditData(DateTime.Now, ActionType.Read, retRecordId.Count == 0 ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success, EventIdentifierType.Query, null);
-                    UpdateAuditData(qd.QueryRequest, audit, AuditableObjectLifecycle.ReceiptOfDisclosure);
-                    UpdateAuditData(AuditableObjectLifecycle.Disclosure, retRecordId, audit);
-                    this.m_auditorService.SendAudit(audit);
-                }
             }
             finally
             {

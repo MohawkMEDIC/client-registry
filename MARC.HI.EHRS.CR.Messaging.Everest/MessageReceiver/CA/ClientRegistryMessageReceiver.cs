@@ -470,6 +470,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
             bool isValid = MessageUtil.IsValid(receivedMessage);
 
+            AuditData audit = null;
             try
             {
                 if (!isValid)
@@ -489,13 +490,38 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 var results = dataUtil.Query(filter, dtls, issues);
-                return fact.Create(request, results, dtls, issues);
 
+                // Audit
+                audit = new MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.IheDataUtil() { Context = this.Context }.CreateAuditData(request.controlActEvent.Code.Code,
+                    ActionType.Read,
+                    OutcomeIndicator.Success,
+                    e,
+                    receivedMessage,
+                    results,
+                    filter.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
+                );
+
+
+                return fact.Create(request, results, dtls, issues);
 
             }
             catch (Exception ex)
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex.StackTrace, ex));
+               
+                // Prepare for audit
+                audit = new MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.IheDataUtil() { Context = this.Context }.CreateAuditData(request.controlActEvent.Code.Code, ActionType.Read, OutcomeIndicator.EpicFail, e, receivedMessage,
+                    new List<VersionedDomainIdentifier>(),
+                    null
+                );
+            }
+            finally
+            {
+                IAuditorService auditService = Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                // Audit the event
+                if (auditService != null)
+                    auditService.SendAudit(audit);
+
             }
 
             PRPA_IN101106CA nackResponse = new PRPA_IN101106CA(
@@ -555,7 +581,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 return null;
 
             bool isValid = MessageUtil.IsValid(receivedMessage);
-
+            AuditData audit = null;
             try
             {
                 if (!isValid)
@@ -575,6 +601,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                         throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 var results = dataUtil.Query(filter, dtls, issues);
+
+                // Audit
+                audit = new MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.IheDataUtil() { Context = this.Context }.CreateAuditData(request.controlActEvent.Code.Code,
+                    ActionType.Read,
+                    OutcomeIndicator.Success,
+                    e,
+                    receivedMessage,
+                    results,
+                    filter.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
+                );
+
                 return fact.Create(request, results, dtls, issues);
 
 
@@ -582,7 +619,22 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             catch (Exception ex)
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex.StackTrace, ex));
+
+                // Prepare for audit
+                audit = new MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.IheDataUtil() { Context = this.Context }.CreateAuditData(request.controlActEvent.Code.Code, ActionType.Read, OutcomeIndicator.EpicFail, e, receivedMessage,
+                    new List<VersionedDomainIdentifier>(),
+                    null
+                );
             }
+            finally
+            {
+                IAuditorService auditService = Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                // Audit the event
+                if (auditService != null)
+                    auditService.SendAudit(audit);
+
+            }
+
 
             PRPA_IN101104CA nackResponse = new PRPA_IN101104CA(
                 Guid.NewGuid(),
