@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:mif="urn:hl7-org:v3/mif" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:v3="urn:hl7-org:v3"
+           xmlns:ex="urn:hl7-org/v3-example"
+           targetNamespace="urn:hl7-org:v3"
+           elementFormDefault="qualified">
+   <xs:annotation xmlns="urn:hl7-org:v3">
+      <xs:documentation>Source Information
+     Rendered by: RoseTree 4.2.22
+     Rendered on: 2008-11-01T16:09:49
+This model was rendered into XML using software provided to HL7 by Beeler Consulting LLC.
+ Transform: $RCSfile: RoseTreeRimToMIFStaticModel.xsl,v $ $Revision: 1.8 $ $Date: 2007/10/19 05:55:13 $
+ Generated using schema builder version: 3.1.8
+ RIM MIF Infrastructure Root to Schema Transform: $Id: RimInfrastructureRootToXsd.xsl,v 1.4 2007/03/20 02:48:50 wbeeler Exp $
+  Static MIF to Schema Transform: $Id: StaticMifToXsd.xsl,v 1.30 2007/12/06 05:50:08 wbeeler Exp $
+  Package Id Conversion: $Id: TransformPackageIds.xsl,v 1.6 2007/03/20 02:48:49 wbeeler Exp $</xs:documentation>
+      <xs:appinfo>
+         <mif:class name="InfrastructureRoot" isAbstract="false">
+            <mif:annotations>
+               <mif:definition>
+                  <mif:text>
+                     <mif:p>An abstract super-type for all RIM classes, either directly or through inheritance. </mif:p>
+                     <mif:p>
+                        <mif:i>Usage Notes: </mif:i> Infrastructure Root provides a set of communication infrastructure attributes that may be used in instances of HL7-specified, RIM-based communications. When valued in a communication instance, these attributes indicate whether the information structure is being constrained by specifically defined templates, realms or common communication element types. </mif:p>
+                     <mif:p>
+                        <mif:i>Usage Constraint: </mif:i> In general, constraint declarations, such as those communicated in this class's attributes, may occur wherever a RIM class or one of its derived clones is instantiated in an HL7 communication. Thus, the attributes MUST be available in all RIM classes and clones. </mif:p>
+                  </mif:text>
+               </mif:definition>
+            </mif:annotations>
+            <mif:specializationChild childClassName="Act" sortKey="01"/>
+            <mif:specializationChild childClassName="ActRelationship" sortKey="02"/>
+            <mif:specializationChild childClassName="Participation" sortKey="03"/>
+            <mif:specializationChild childClassName="Entity" sortKey="01"/>
+            <mif:specializationChild childClassName="LanguageCommunication" sortKey="02"/>
+            <mif:specializationChild childClassName="Role" sortKey="01"/>
+            <mif:specializationChild childClassName="RoleLink" sortKey="02"/>
+            <mif:specializationChild childClassName="Acknowledgement" sortKey="01"/>
+            <mif:specializationChild childClassName="AcknowledgementDetail" sortKey="02"/>
+            <mif:specializationChild childClassName="Attachment" sortKey="03"/>
+            <mif:specializationChild childClassName="AttentionLine" sortKey="04"/>
+            <mif:specializationChild childClassName="CommunicationFunction" sortKey="06"/>
+            <mif:specializationChild childClassName="Transmission" sortKey="08"/>
+            <mif:specializationChild childClassName="TransmissionRelationship" sortKey="09"/>
+            <mif:specializationChild childClassName="Parameter" sortKey="02"/>
+            <mif:specializationChild childClassName="QueryEvent" sortKey="09"/>
+            <mif:specializationChild childClassName="SelectionExpression" sortKey="12"/>
+            <mif:specializationChild childClassName="SortControl" sortKey="13"/>
+         </mif:class>
+      </xs:appinfo>
+   </xs:annotation>
+   <xs:include schemaLocation="../coreschemas/voc.xsd"/>
+   <xs:include schemaLocation="../coreschemas/datatypes.xsd"/>
+   <xs:group name="InfrastructureRootElements">
+      <xs:sequence>
+         <xs:element xmlns="urn:hl7-org:v3" name="realmCode" type="CS" minOccurs="0"
+                     maxOccurs="unbounded">
+            <xs:annotation>
+               <xs:appinfo>
+                  <mif:attribute name="realmCode" sortKey="002" minimumMultiplicity="0" maximumMultiplicity="*"
+                                 isMandatory="false">
+                     <mif:annotations>
+                        <mif:definition>
+                           <mif:text>
+                              <mif:p>A vocabulary domain qualifier that allows the vocabulary domain of coded attributes to be specialized according to the geographical, organizational, or political environment where the HL7 standard is being used.</mif:p>
+                           </mif:text>
+                        </mif:definition>
+                     </mif:annotations>
+                     <mif:type name="SET">
+                        <mif:supplierBindingArgumentDatatype name="CS"/>
+                     </mif:type>
+                     <mif:supplierDomainSpecification domainName="Realm" codingStrength="CNE"/>
+                  </mif:attribute>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:element>
+         <xs:element xmlns="urn:hl7-org:v3" name="typeId" type="II" minOccurs="0" maxOccurs="1">
+            <xs:annotation>
+               <xs:appinfo>
+                  <mif:attribute name="typeId" sortKey="003" minimumMultiplicity="0" maximumMultiplicity="1"
+                                 isMandatory="false">
+                     <mif:annotations>
+                        <mif:definition>
+                           <mif:text>
+                              <mif:p>The unique identifier for an HL7 static structure that imposes constraints on the artifact.</mif:p>
+                              <mif:p>
+                                 <mif:i>Usage Notes: </mif:i>This might be a common type (also known as CMET in the messaging communication environment), or content included within a wrapper.</mif:p>
+                           </mif:text>
+                        </mif:definition>
+                     </mif:annotations>
+                     <mif:type name="II"/>
+                  </mif:attribute>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:element>
+         <xs:element xmlns="urn:hl7-org:v3" name="templateId" type="II" minOccurs="0"
+                     maxOccurs="unbounded">
+            <xs:annotation>
+               <xs:appinfo>
+                  <mif:attribute name="templateId" sortKey="004" minimumMultiplicity="0" maximumMultiplicity="*"
+                                 isMandatory="false">
+                     <mif:annotations>
+                        <mif:definition>
+                           <mif:text>
+                              <mif:p>The unique identifier for a template that imposes constraints on the artifact.</mif:p>
+                           </mif:text>
+                        </mif:definition>
+                     </mif:annotations>
+                     <mif:type name="LIST">
+                        <mif:supplierBindingArgumentDatatype name="II"/>
+                     </mif:type>
+                  </mif:attribute>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:element>
+      </xs:sequence>
+   </xs:group>
+   <xs:attributeGroup name="InfrastructureRootAttributes"/>
+</xs:schema>

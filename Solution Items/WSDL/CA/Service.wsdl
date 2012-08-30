@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="pCS_MR2009"
+                  targetNamespace="http://marc.mohawkcollege.ca/hi"
+                  xmlns:marc="http://marc.mohawkcollege.ca/hi"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:hl7="urn:hl7-org:v3"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+                  xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+                  xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                  xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract"
+                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+                  xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+                  >
+  <wsp:Policy wsu:Id="addressingPolicy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <wsaw:UsingAddressing wsdl:required="true" />
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:hl7-org:v3" xmlns="urn:hl7-org:v3">
+      <xsd:include schemaLocation="./schemas/PRPA_IN101101CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101102CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101103CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101104CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101105CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101106CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101201CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101202CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101203CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101204CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101205CA.xsd" />
+      <xsd:include schemaLocation="./schemas/PRPA_IN101206CA.xsd" />
+      <xsd:complexType name="PRPA_IN101201CAOutChoice">
+        <xsd:choice>
+          <xsd:element ref="hl7:PRPA_IN101202CA" />
+          <xsd:element ref="hl7:PRPA_IN101203CA" />
+        </xsd:choice>
+      </xsd:complexType>
+      <xsd:complexType name="PRPA_IN101204CAOutChoice">
+        <xsd:choice>
+          <xsd:element ref="hl7:PRPA_IN101205CA" />
+          <xsd:element ref="hl7:PRPA_IN101206CA" />
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:schema>
+
+  </wsdl:types>
+  <wsdl:message name="PRPA_IN101101CAIn">
+    <wsdl:part name="body" element="hl7:PRPA_IN101101CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101101CAOut">
+    <wsdl:part name="body" element="hl7:PRPA_IN101102CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101103CAIn">
+    <wsdl:part name="body" element="hl7:PRPA_IN101103CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101103CAOut">
+    <wsdl:part name="body" element="hl7:PRPA_IN101104CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101105CAIn">
+    <wsdl:part name="body" element="hl7:PRPA_IN101105CA"/>
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101105CAOut">
+    <wsdl:part name="body" element="hl7:PRPA_IN101106CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101201CAIn">
+    <wsdl:part name="body" element="hl7:PRPA_IN101201CA"/>
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101201CAOut">
+    <wsdl:part name="body" type="hl7:PRPA_IN101201CAOutChoice" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101204CAIn">
+    <wsdl:part name="body" element="hl7:PRPA_IN101204CA" />
+  </wsdl:message>
+  <wsdl:message name="PRPA_IN101204CAOut">
+    <wsdl:part name="body" type="hl7:PRPA_IN101204CAOutChoice" />
+  </wsdl:message>
+
+
+  <wsdl:portType name="pCS_MR2009PortType">
+    <wsdl:operation name="PRPA_IN101101CA">
+      <wsdl:input wsaw:Action="submit" message="marc:PRPA_IN101101CAIn"/>
+      <wsdl:output message="marc:PRPA_IN101101CAOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101103CA">
+      <wsdl:input wsaw:Action="submit" message="marc:PRPA_IN101103CAIn"/>
+      <wsdl:output message="marc:PRPA_IN101103CAOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101105CA">
+      <wsdl:input wsaw:Action="submit" message="marc:PRPA_IN101105CAIn"/>
+      <wsdl:output message="marc:PRPA_IN101105CAOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101201CA">
+      <wsdl:input wsaw:Action="submit" message="marc:PRPA_IN101201CAIn"/>
+      <wsdl:output message="marc:PRPA_IN101201CAOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101204CA">
+      <wsdl:input wsaw:Action="submit" message="marc:PRPA_IN101204CAIn"/>
+      <wsdl:output message="marc:PRPA_IN101204CAOut"/>
+    </wsdl:operation>
+
+  </wsdl:portType>
+  <wsdl:binding name="pCS_MR2009Binding" type="marc:pCS_MR2009PortType">
+    <!-- Connections a la .NET -->
+    <wsp:PolicyReference URI="#addressingPolicy" />
+    <!-- Connections a la Jaba -->
+    <!--<wsaw:UsingAddressing wsdl:required="true" />-->
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+
+    <wsdl:operation name="PRPA_IN101101CA">
+      <soap:operation style="document" soapAction="submit" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101103CA">
+      <soap:operation style="document" soapAction="submit" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101105CA">
+      <soap:operation style="document" soapAction="submit" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101201CA">
+      <soap:operation style="document" soapAction="submit" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PRPA_IN101204CA">
+      <soap:operation style="document" soapAction="submit" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    
+  </wsdl:binding>
+  <wsdl:service name="pCS_MR2009Service">
+    <wsdl:port name="pCS_MR2009Soap12" binding="marc:pCS_MR2009Binding">
+      <soap:address location="http://cr.marc-hi.ca:8080/cr" />
+      <wsa10:EndpointReference>
+        <wsa10:Address>http://cr.marc-hi.ca:8080/cr</wsa10:Address>
+      </wsa10:EndpointReference>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
