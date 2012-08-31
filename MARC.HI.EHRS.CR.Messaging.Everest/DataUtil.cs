@@ -100,6 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// Query data structure
         /// </summary>
         [XmlRoot("qd")]
+        [Serializable]
         public struct QueryData
         {
             // Target (filter) identifiers for clients
@@ -156,14 +157,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             /// <summary>
             /// Original Request
             /// </summary>
-            [XmlAttribute("originalConvo")]
-            public string OriginalMessageQueryId { get; set; }
-            
+            [XmlIgnore]
+            public IGraphable OriginalMessageQuery { get; set; }
             /// <summary>
             /// Record Ids to be fetched
             /// </summary>
-            [XmlIgnore]
-            public List<VersionedDomainIdentifier> RecordIds { get; set; }
+            [XmlElement("restriction")]
+            public List<DomainIdentifier> TargetDomains { get; set; }
 
             /// <summary>
             /// Represent the QD as string
@@ -417,20 +417,26 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 }
 
                 // Calculate the matching algorithm
-                var subject = result.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                var subject = result.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
-                if (subject is Person)
+                // Remove all but the alternate identifiers specifed in the query
+                if (qd.TargetDomains != null && subject != null && qd.TargetDomains.Count > 0)
                 {
-                    var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf);
-                    if (filter != null)
-                        filter = (filter as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
-                    var confidence = (subject as Person).Confidence(filter as Person);
-
-                    if (confidence.Confidence < qd.MinimumDegreeMatch)
+                    subject.AlternateIdentifiers.RemoveAll(o => !qd.TargetDomains.Exists(t => t.Domain.Equals(o.Domain)));
+                    if (subject.AlternateIdentifiers.Count == 0)
                         return null;
-
-                    (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
                 }
+
+                // Filter data for confidence
+                var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf);
+                if (filter != null)
+                    filter = (filter as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                var confidence = (subject as Person).Confidence(filter as Person);
+
+                if (confidence.Confidence < qd.MinimumDegreeMatch)
+                    return null;
+
+                (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
                 // Mask
                 if (this.m_policyService != null)
                     result = this.m_policyService.ApplyPolicies(qd.QueryRequest, result, issues) as RegistrationEvent;

@@ -34,7 +34,7 @@ using MARC.HI.EHRS.SVC.Core;
 using MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
-using MARC.Everest.RMIM.UV.NE2008.QUQI_MT020001UV01;
+using MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -220,21 +220,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         //            );
         //    return retVal;
         //}
-
-        /// <summary>
-        /// Create query data structure 
-        /// </summary>
-        public static DataUtil.QueryData CreateQueryDataUv<T>(QueryByParameter<T> queryByParameter, string originator)
-        {
-            return  new DataUtil.QueryData()
-            {
-                QueryId = new Guid(queryByParameter.QueryId.Root),
-                IncludeHistory = false,
-                IncludeNotes = false,
-                Quantity = (int)(queryByParameter.InitialQuantity ?? new INT(100)),
-                Originator = originator
-            };
-        }
 
         /// <summary>
         /// Create ack details

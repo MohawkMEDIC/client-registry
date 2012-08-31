@@ -47,7 +47,7 @@
   <string name="MSGE02C">MSGE02C : Personal relationship must have an identifier</string>
   <string name="MSGE02D">MSGE02D : Personal relationship must have a relationship holder</string>
   <string name="MSGE02E">MSGE02E : Personal relationship kind must be specified and must be derived from x_SimplePersonalRelationship</string>
-  <string name="MSGE02F">MSGE02F : Assigned person is missing primary identifiers</string>
+  <string name="MSGE02F">MSGE02F : Assigned person is missing primary identifier</string>
   <string name="MSGE030">MSGE030 : Assigned entity must have an assigned person element</string>
   <string name="MSGE031">MSGE031 : Missing healthcare provider role type code</string>
   <string name="MSGW010">MSGW010 : Couln't process representedOrganization node, information will be ignored</string>
@@ -100,6 +100,10 @@
   <string name="MSGE068">MSGE068 : Quirk : IHE Restriction: Attempt to parse priorRegistration.id failed as it is not present or not populated</string>
   <string name="MSGE069">MSGE069 : IHE Restriction: There shall be a single priorRegisteredRole.id association</string>
   <string name="MSGE06A">MSGE06A : ISO OID '{0}' has no known assigning authority, and is not recognized by this registry</string>
+  <string name="MSGE06B">MSGE06B : IHE Restriction: The participation SHOULD be a person or MAY be a device</string>
+  <string name="MSGE06C">MSGE06C : IHE Restriction: Exactly one PatientIdentifier parameter SHALL be present</string>
+  <string name="MSGE06D">MSGE06D : IHE Restriction: Exactly one PatientIdentifier.value attribute SHALL be present</string>
+  
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

@@ -871,7 +871,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match for find candidates
         /// </summary>
-        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<VersionedDomainIdentifier> recordIds)
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -903,7 +903,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             Person filterPerson = new Person();
 
             // Discrete record identifiers
-            recordIds = new List<VersionedDomainIdentifier>(100);
+            recordIds = new List<DomainIdentifier>(100);
             filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
             foreach (var recId in parameterList.ClientId)
                 if (recId != null &&
@@ -1078,7 +1078,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match parameter for the get message
         /// </summary>
-        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<VersionedDomainIdentifier> recordIds)
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
 
@@ -1105,7 +1105,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // Discrete record identifiers
-            recordIds = new List<VersionedDomainIdentifier>(100);
+            recordIds = new List<DomainIdentifier>(100);
 
             // Create the actual query
             Person filterPerson = new Person();

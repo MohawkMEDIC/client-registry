@@ -40,7 +40,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             compUtil.Context = this.Context;
             PRPA_IN101105CA rqst = request as PRPA_IN101105CA;
 
-            List<VersionedDomainIdentifier> ids = new List<VersionedDomainIdentifier>();
+            List<DomainIdentifier> ids = new List<DomainIdentifier>();
             var queryData = compUtil.CreateQueryMatch(rqst.controlActEvent, dtls, ref ids);
 
             if (ids == null || queryData == null)
@@ -50,9 +50,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     rqst.Sender.Device.Id.Root,
                     rqst.Sender.Device.Id.Extension)
                 );
-            filter.OriginalMessageQueryId = request.Id.Root;
+            filter.OriginalMessageQuery = request;
             filter.QueryRequest = queryData;
-            filter.RecordIds = ids;
+            filter.TargetDomains = ids;
             filter.IncludeHistory = true;
 
             return filter;

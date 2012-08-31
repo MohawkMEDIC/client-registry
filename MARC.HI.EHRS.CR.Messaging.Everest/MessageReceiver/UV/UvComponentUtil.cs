@@ -121,6 +121,132 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         }
 
         /// <summary>
+        /// Create components for the registration event based on the control act process
+        /// </summary>
+        private RegistrationEvent CreateComponents<T>(MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01.ControlActProcess<T> controlActEvent, List<IResultDetail> dtls)
+        {
+            // Get services
+            ITerminologyService term = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            RegistrationEvent retVal = new RegistrationEvent();
+            retVal.Context = this.Context;
+
+            // All items here are "completed" so do a proper transform
+            retVal.Status = StatusType.Completed;
+
+            // Language code
+            if (controlActEvent.LanguageCode == null || controlActEvent.LanguageCode.IsNull)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGE002"), null, null));
+                retVal.LanguageCode = config.JurisdictionData.DefaultLanguageCode;
+            }
+            else
+            {
+                // By default the language codes used by the SHR is ISO 639-1 
+                // However the code used in the messaging is ISO 639-3 so we 
+                // have to convert
+                var iso6393code = CreateCodeValue(controlActEvent.LanguageCode, dtls);
+                if (iso6393code.CodeSystem != config.OidRegistrar.GetOid("ISO639-3").Oid &&
+                    iso6393code.CodeSystem != config.OidRegistrar.GetOid("ISO639-1").Oid)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04B"), null));
+
+                // Translate the language code
+                if (iso6393code.CodeSystem == config.OidRegistrar.GetOid("ISO639-3").Oid) // we need to translate
+                    iso6393code = term.Translate(iso6393code, config.OidRegistrar.GetOid("ISO639-1").Oid);
+
+                if (iso6393code == null)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04C"), null, null));
+                else
+                    retVal.LanguageCode = iso6393code.Code;
+            }
+
+            // Prepare a change summary (ie: the act)
+            // All events store a copy of their cact as the "reason" for the change
+            ChangeSummary changeSummary = new ChangeSummary();
+            changeSummary.ChangeType = CreateCodeValue<String>(controlActEvent.Code, dtls);
+            changeSummary.Status = StatusType.Completed;
+            changeSummary.Timestamp = DateTime.Now;
+            changeSummary.LanguageCode = retVal.LanguageCode;
+
+            if (controlActEvent.EffectiveTime != null && !controlActEvent.EffectiveTime.IsNull)
+                changeSummary.EffectiveTime = CreateTimestamp(controlActEvent.EffectiveTime, dtls);
+
+            if (controlActEvent.ReasonCode != null)
+                foreach (var ce in controlActEvent.ReasonCode)
+                    changeSummary.Add(new Reason()
+                    {
+                        ReasonType = CreateCodeValue<String>(ce, dtls)
+                    }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReasonFor, null);
+            retVal.Add(changeSummary, "CHANGE", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
+            (changeSummary.Site as HealthServiceRecordSite).IsSymbolic = true; // this link adds no real value to the parent's data
+
+
+            // author ( this is optional in IHE)
+            if (controlActEvent.AuthorOrPerformer.Count != 0)
+            {
+                var autOrPerf = controlActEvent.AuthorOrPerformer[0];
+                HealthServiceRecordComponent aut = null;
+
+                if (autOrPerf.Time != null && !autOrPerf.Time.IsNull)
+                {
+                    var time = autOrPerf.Time.ToBoundIVL();
+                    changeSummary.Timestamp = retVal.Timestamp = (DateTime)(time.Value ?? time.Low);
+                }
+                // Assigned entity
+                if (autOrPerf.ParticipationChoice == null || autOrPerf.ParticipationChoice.NullFlavor != null)
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE006"), null, null));
+                else
+                    aut = CreateParticipantComponent(autOrPerf.ParticipationChoice, dtls);
+
+                if (aut != null)
+                {
+                    changeSummary.Add(aut, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
+                    retVal.Add(aut.Clone() as IComponent, "AUT".ToString(), HealthServiceRecordSiteRoleType.AuthorOf, null);
+
+                }
+                else
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE004"), null, null));
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create the participant component
+        /// </summary>
+        private HealthServiceRecordComponent CreateParticipantComponent(MARC.Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.ParticipationChoice participationChoice, List<IResultDetail> dtls)
+        {
+            if (participationChoice is MARC.Everest.RMIM.UV.NE2008.COCT_MT090100UV01.AssignedPerson)
+            {
+                var psn = participationChoice as MARC.Everest.RMIM.UV.NE2008.COCT_MT090100UV01.AssignedPerson;
+                HealthcareParticipant retval = new HealthcareParticipant()
+                {
+                    Classifier = HealthcareParticipant.HealthcareParticipantType.Person
+                };
+
+                // Identifiers
+                if (psn.Id != null && !psn.Id.IsNull)
+                    retval.AlternateIdentifiers = CreateDomainIdentifierList(psn.Id, dtls);
+                else
+                    dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE02F"), null));
+                return retval;
+            }
+            else if (participationChoice is MARC.Everest.RMIM.UV.NE2008.COCT_MT090300UV01.AssignedDevice)
+            {
+                var dev = participationChoice as MARC.Everest.RMIM.UV.NE2008.COCT_MT090300UV01.AssignedDevice;
+                var retVal = new RepositoryDevice();
+
+                if (dev.Id != null && !dev.Id.IsEmpty)
+                    retVal.AlternateIdentifier = CreateDomainIdentifier(dev.Id[0], dtls);
+                return retVal;
+            }
+            else
+                dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE06B"), null, null));
+            return null;
+        }
+
+        /// <summary>
         /// Create a person component
         /// </summary>
         private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity assignedPerson, List<IResultDetail> dtls)
@@ -1277,6 +1403,66 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Error?
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 retVal = null;
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create query match paramters for the get identifiers query
+        /// </summary>
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01.ControlActProcess<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201307UV02.QueryByParameter> controlActProcess, List<IResultDetail> dtls, ref List<DomainIdentifier> ids)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+            // Details about the query
+            if (!controlActProcess.Code.Code.Equals(PRPA_IN201309UV02.GetTriggerEvent().Code))
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
+                return null;
+            }
+
+            // REturn value
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201307UV02.QueryByParameter>(controlActProcess, dtls);
+
+            // Filter
+            RegistrationEvent filter = new RegistrationEvent();
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+
+            // Parameter list validation
+            var parameterList = controlActProcess.queryByParameter.ParameterList;
+            if (parameterList == null || parameterList.NullFlavor != null)
+            {
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04E"), null));
+                parameterList = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201307UV02.ParameterList();
+            }
+
+            // Discrete record identifiers
+            ids = new List<DomainIdentifier>(100);
+
+            // Create the actual query
+            Person filterPerson = new Person();
+
+            // Alternate identifiers
+            filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
+            if (parameterList.PatientIdentifier == null ||
+                    parameterList.PatientIdentifier.Count != 1)
+                dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE06C"), null, null));
+            else if(parameterList.PatientIdentifier[0].Value == null ||
+                    parameterList.PatientIdentifier[0].Value.IsNull ||
+                    parameterList.PatientIdentifier[0].Value.Count != 1)
+                dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE06D"), null, null));
+            else
+                filterPerson.AlternateIdentifiers.Add(CreateDomainIdentifier(parameterList.PatientIdentifier[0].Value[0], dtls));
+
+            // Target domains
+            foreach(var id in parameterList.DataSource)
+                ids.Add(CreateDomainIdentifier(id.Value[0], dtls));
+
+            // Filter
+            filter.Add(filterPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            // Determine if errors exist that prevent the processing of this message
+            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                return null;
 
             return retVal;
         }

@@ -38,6 +38,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             List<VersionedDomainIdentifier> vids = new List<VersionedDomainIdentifier>(result.Results.Length);
             foreach (var res in result.Results)
             {
+                if (res == null) continue;
                 var subj = res.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 if (subj == null)
                     continue;

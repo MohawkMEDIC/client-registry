@@ -113,7 +113,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     (int)request.controlActEvent.QueryContinuation.StartResultNumber,
                     (int)request.controlActEvent.QueryContinuation.ContinuationQuantity
                 );
-                var qd = DataUtil.QueryData.ParseXml(queryService.GetQueryTag(queryId.ToString("B")));
+                var qd = (MARC.HI.EHRS.CR.Messaging.Everest.DataUtil.QueryData)queryService.GetQueryTag(queryId.ToString("B"));
 
                 // Rules for Query Continuation
                 // 1. The Query Continuation must come from the originating system
@@ -125,7 +125,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     throw new SecurityException("Cannot display results");
                 }
                 // 2. The original conversation that was used to fetch the original result set must be available
-                IGraphable originalRequest = (sender as IFormattedConnector).Formatter.ParseObject(msgPersistenceService.GetMessage(qd.OriginalMessageQueryId));
+                IGraphable originalRequest = qd.OriginalMessageQuery;
                 if (originalRequest == null)
                     throw new InvalidOperationException("Cannot find the original query message in the message persistence store");
                 
