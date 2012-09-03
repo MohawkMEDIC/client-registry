@@ -45,11 +45,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             else if (psn.Id == cntrPsn.Id)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00D"));
 
+            // Load the container person
             cntrPsn = pp.GetPerson(conn, tx, new SVC.Core.DataTypes.DomainIdentifier()
             {
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = cntrPsn.Id.ToString()
             }, false);
+
+            // Load the components for the person
+            DbUtil.DePersistComponents(conn, psn, this, true);
+
             if (psn == null || cntrPsn == null)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00B"));
             cntrPsn.Site = (data.Site.Container as IComponent).Site;
@@ -70,6 +75,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Hard replace = Merge the new and old record and then replace them
                 if(!symbolic)
                 {
+
+                    // Now to copy the components of the current version down
+                    foreach (IComponent cmp in refr.Site.Container.Components)
+                        if (cmp != refr)
+                            cntrPsn.Add((cmp as HealthServiceRecordComponent).Clone() as IComponent);
+
                     // Merge the two records in memory taking the newer data
                     // This is a merge from old to new in order to capture any data elements 
                     // that have been updated in the old that might be newer (or more accurate) than the 
@@ -97,6 +108,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             Identifier = id.Identifier,
                             Domain = id.Domain
                         });
+
                     }
                     foreach (var id in psn.OtherIdentifiers)
                     {
@@ -108,7 +120,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             continue;
 
                         // Add to other identifiers
-                        cntrPsn.OtherIdentifiers.Add(new KeyValuePair<SVC.Core.DataTypes.CodeValue,SVC.Core.DataTypes.DomainIdentifier>(
+                        var oth = new KeyValuePair<SVC.Core.DataTypes.CodeValue,SVC.Core.DataTypes.DomainIdentifier>(
                             id.Key,
                             new SVC.Core.DataTypes.DomainIdentifier()
                             {
@@ -118,23 +130,35 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 IsPrivate = (cntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain)),
                                 Identifier = id.Value.Identifier,
                                 Domain = id.Value.Domain
-                            }));
+                            });
+
+                        // Copy extensions
+                        var extns = psn.FindAllExtensions(o => o.PropertyPath == String.Format("OtherIdentifiers[{0}{1}]", oth.Value.Domain, oth.Value.Identifier));
+                        if(extns != null)
+                            foreach(var ex in extns)
+                                if(cntrPsn.FindExtension(o => o.PropertyPath == ex.PropertyPath && o.Name == ex.Name) == null)
+                                    cntrPsn.Add(ex);
+                        cntrPsn.OtherIdentifiers.Add(oth);
                     }
+
+                    // Make sure we don't update what we don't need to 
+                    cntrPsn.Addresses = psn.Addresses = null;
+                    cntrPsn.Citizenship = psn.Citizenship = null;
+                    cntrPsn.Employment = psn.Employment = null;
+                    cntrPsn.Language = psn.Language = null;
+                    cntrPsn.Names = psn.Names = null;
+                    cntrPsn.Race = psn.Race = null;
+                    cntrPsn.TelecomAddresses = psn.TelecomAddresses = null;
+                    cntrPsn.BirthTime = psn.BirthTime = null;
+                    cntrPsn.DeceasedTime = psn.DeceasedTime = null;
 
                     // Store the merged new record
                     pp.CreatePersonVersion(conn, tx, cntrPsn);
+                    // Components
+                    DbUtil.PersistComponents(conn, tx, false, this, cntrPsn);
 
                     // Remove the old person from the db
                     psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the person
-                    psn.Addresses= null;
-                    psn.Citizenship= null;
-                    psn.Employment= null;
-                    psn.Language= null;
-                    psn.Names= null;
-                    psn.Race= null;
-                    psn.TelecomAddresses= null;
-                    psn.BirthTime = null;
-                    psn.DeceasedTime = null;
                 }
 
                 // Now update the person

@@ -177,7 +177,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <returns></returns>
         public II CreateII(DomainIdentifier id, List<IResultDetail> dtls)
         {
-            return new II() { Root = id.Domain, Extension = id.Identifier };
+
+            string assAuth = id.AssigningAuthority;
+
+            if (String.IsNullOrEmpty(assAuth))
+            {
+                var oidData = this.m_configService.OidRegistrar.FindData(o => o.Attributes != null && o.Attributes.Exists(a => a.Key == "AssigningAuthorityName") && o.Oid == id.Domain);
+                if (oidData != null)
+                    assAuth = oidData.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
+            }
+
+            return new II() { Root = id.Domain, Extension = id.Identifier, AssigningAuthorityName = assAuth };
         }
 
         /// <summary>
@@ -187,7 +197,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         {
             SET<II> retVal = new SET<II>(identifiers.Count, II.Comparator);
             foreach (var id in identifiers)
-                retVal.Add(new II() { Root = id.Domain, Extension = id.Identifier });
+                retVal.Add(CreateII(id, dtls));
             return retVal;
         }
 
@@ -291,6 +301,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
         // Host context
         protected MARC.HI.EHRS.SVC.Core.HostContext m_context;
+        protected ISystemConfigurationService m_configService;
 
         /// <summary>
         /// Gets or sets the context of under which this persister runs
@@ -304,6 +315,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 m_context = value;
                 this.m_terminologyService = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
                 this.m_localeService = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+                this.m_configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             }
         }
 

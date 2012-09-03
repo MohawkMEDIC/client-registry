@@ -97,6 +97,7 @@
     <Compile Include="MessageReceiver\UV\GetIdentifiersQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\UV\IheDataUtil.cs" />
     <Compile Include="MessageReceiver\UV\UvComponentUtil.cs" />
+    <Compile Include="MessageReceiver\UV\UvDeComponentUtil.cs" />
     <Compile Include="MessageUtil.Ca.cs" />
     <Compile Include="DataUtil.cs" />
     <Compile Include="DeComponentUtil\DeComponentUtil.cs" />

@@ -19,6 +19,7 @@ using MARC.Everest.Formatters.XML.Datatypes.R1;
 using System.IO;
 using MARC.Everest.Xml;
 using System.Xml;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -595,6 +596,71 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             return isValid;
         }
 
-       
+        /// <summary>
+        /// Override query method
+        /// </summary>
+        internal override QueryResultData Query(QueryData filter, List<IResultDetail> dtls, List<DetectedIssue> issues)
+        {
+            try
+            {
+
+                List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
+                // Query continuation
+                if (this.m_docRegService == null)
+                    throw new InvalidOperationException("No record registration service is registered. Querying for records cannot be done unless this service is present");
+                else if (this.m_queryService != null && this.m_queryService.IsRegistered(filter.QueryId.ToLower()))
+                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003UV01 interaction", filter.QueryId));
+                else
+                {
+
+                    // Query the document registry service
+                    var queryFilter = filter.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf); // The outer filter data is usually just parameter control..
+
+                    var recordIds = this.m_docRegService.QueryRecord(queryFilter as HealthServiceRecordComponent);
+                    if (recordIds.Length == 0 && filter.IsSummary)
+                        dtls.Add(new PatientNotFoundResultDetail(this.m_localeService));
+
+                    var retVal = GetRecordsAsync(recordIds, retRecordId, issues, dtls, filter);
+
+                    // Sort control?
+                    // TODO: Support sort control
+                    //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
+
+                    // Persist the query
+                    if (this.m_queryService != null)
+                        this.m_queryService.RegisterQuerySet(filter.QueryId.ToLower(), recordIds, filter);
+
+                    // Return query data
+                    return new QueryResultData()
+                    {
+                        QueryId = filter.QueryId.ToLower(),
+                        Results = retVal.ToArray(),
+                        TotalResults = retRecordId.Count(o => o != null)
+                    };
+
+                }
+
+            }
+            catch (TimeoutException ex)
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return QueryResultData.Empty;
+            }
+            catch (DbException ex)
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return QueryResultData.Empty;
+            }
+            catch (DataException ex)
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return QueryResultData.Empty;
+            }
+            catch (Exception ex)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return QueryResultData.Empty;
+            }
+        }
     }
 }

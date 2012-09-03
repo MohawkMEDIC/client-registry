@@ -352,7 +352,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             // Construct
             var retVal = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization(
                 CreateIISet(providerOrg.AlternateIdentifiers),
-                CreateCD<EntityCode>(providerOrg.Type),
+                CreateCD<String>(providerOrg.Type),
                 BAG<ON>.CreateBAG(CreateON(providerOrg.LegalName)),
                 null
             );
@@ -362,7 +362,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             {
                 var contact = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty(
                     CreateIISet(cp.AlternateIdentifiers),
-                    CreateCD<RoleCode>(cp.Type),
+                    CreateCD<String>(cp.Type),
                     BAG<AD>.CreateBAG(CreateAD(cp.PrimaryAddress)),
                     null,
                     null);
@@ -429,7 +429,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     {
                         otherIdentifier.ScopingOrganization = new Everest.RMIM.UV.NE2008.COCT_MT150002UV01.Organization(
                             new SET<II>(),
-                            extCode != null ? CreateCD<EntityCode>(extCode.Value as CodeValue) : null,
+                            extCode != null ? CreateCD<String>(extCode.Value as CodeValue) : null,
                             null,
                             null
                         );

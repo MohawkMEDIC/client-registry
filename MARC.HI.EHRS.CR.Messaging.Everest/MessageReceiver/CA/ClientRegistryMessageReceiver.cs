@@ -318,7 +318,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     }
 
                     // Registration Data for update
-                    var verified = dataUtil.GetRecord(vdi, dtls, issues, new DataUtil.QueryData() { IsSummary = true, QueryId = Guid.NewGuid(), QueryRequest = components }) as RegistrationEvent;
+                    var verified = dataUtil.GetRecord(vdi, dtls, issues, new DataUtil.QueryData() { IsSummary = true, QueryId = Guid.NewGuid().ToString(), QueryRequest = components }) as RegistrationEvent;
                     var verifiedPerson = verified.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
                     // Create the response

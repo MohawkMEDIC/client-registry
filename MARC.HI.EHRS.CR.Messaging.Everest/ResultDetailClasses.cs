@@ -25,6 +25,8 @@ using MARC.Everest.Connectors;
 using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 using MARC.Everest.RMIM.CA.R020402.COCT_MT090302CA;
 using MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA;
+using MARC.HI.EHRS.SVC.Core.Services;
+using MARC.Everest.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -84,5 +86,29 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
         public DetectedIssueResultDetail(ResultDetailType type, string message, Exception exception)
             : base(type, message, exception) { }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class PatientNotFoundResultDetail : ResultDetail
+    {
+        public PatientNotFoundResultDetail(ILocalizationService locale) : base(ResultDetailType.Error, locale.GetString("DTPE006"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value", null) { }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class UnrecognizedPatientDomainResultDetail : ResultDetail
+    {
+        public UnrecognizedPatientDomainResultDetail(ILocalizationService locale, string domain) : base(ResultDetailType.Error, locale.GetString("DBCF00C"), String.Format("//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value[@root='{0}']", domain), null) { }
+    }
+
+    /// <summary>
+    /// Patient was not found result detail
+    /// </summary>
+    public class UnrecognizedTargetDomainResultDetail : ResultDetail
+    {
+        public UnrecognizedTargetDomainResultDetail(ILocalizationService locale, string domain) : base(ResultDetailType.Error, locale.GetString("DBCF00C"), String.Format("//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value[@root='{0}']", domain), null) { }
     }
 }

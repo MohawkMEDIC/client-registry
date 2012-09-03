@@ -97,10 +97,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 else if (!isValid)
                     throw new MessageValidationException("Cannot process invalid message", request);
 
-                Guid queryId = new Guid(request.controlActEvent.QueryContinuation.QueryId.Root);
+                string queryId = String.Format("{1}^^^&{0}&ISO", request.controlActEvent.QueryContinuation.QueryId.Root, request.controlActEvent.QueryContinuation.QueryId.Extension);
 
                 // Determine if we can process the message
-                if (!queryService.IsRegistered(queryId.ToString("B")))
+                if (!queryService.IsRegistered(queryId.ToLower()))
                 {
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Error,
                         String.Format("The query '{0}' has not been registered with the query service", queryId),
@@ -109,11 +109,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 }
 
                 // Continue the Query 
-                var recordIds = queryService.GetQueryResults(queryId.ToString("B"), 
+                var recordIds = queryService.GetQueryResults(queryId.ToLower(), 
                     (int)request.controlActEvent.QueryContinuation.StartResultNumber,
                     (int)request.controlActEvent.QueryContinuation.ContinuationQuantity
                 );
-                var qd = (MARC.HI.EHRS.CR.Messaging.Everest.DataUtil.QueryData)queryService.GetQueryTag(queryId.ToString("B"));
+                var qd = (MARC.HI.EHRS.CR.Messaging.Everest.DataUtil.QueryData)queryService.GetQueryTag(queryId.ToLower());
 
                 // Rules for Query Continuation
                 // 1. The Query Continuation must come from the originating system
@@ -150,7 +150,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     new DataUtil.QueryResultData()
                     {
                         Results = records.ToArray(),
-                        TotalResults = (int)queryService.QueryResultTotalQuantity(queryId.ToString("B")),
+                        TotalResults = (int)queryService.QueryResultTotalQuantity(queryId.ToLower()),
                         QueryId = queryId,
                         StartRecordNumber = (int)request.controlActEvent.QueryContinuation.StartResultNumber
                     },

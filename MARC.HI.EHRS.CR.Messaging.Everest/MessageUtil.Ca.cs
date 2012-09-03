@@ -265,7 +265,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         {
             return  new DataUtil.QueryData()
             {
-                QueryId = new Guid(queryByParameter.QueryId.Root),
+                QueryId = String.Format("{1}^^^&{0}&ISO", queryByParameter.QueryId.Root, queryByParameter.QueryId.Extension),
                 IncludeHistory = false,
                 IncludeNotes = false,
                 Quantity = (int)(queryByParameter.InitialQuantity ?? new INT(100)),

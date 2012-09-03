@@ -533,7 +533,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 m_configuration.ConnectionManager.ReleaseConnection(conn);
             }
 
-
+            retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
         }
 

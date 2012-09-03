@@ -113,9 +113,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 if (filter.QueryRequest == null)
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
-
+                
                 // Query
                 var results = dataUtil.Query(filter, dtls, issues);
+                
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-45",

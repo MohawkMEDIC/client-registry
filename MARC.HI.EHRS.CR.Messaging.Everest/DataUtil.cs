@@ -78,7 +78,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             /// <summary>
             /// Gets or sets the identifier of the query the result set is for
             /// </summary>
-            public Guid QueryId { get; set; }
+            public string QueryId { get; set; }
             /// <summary>
             /// Gets or sets the results for the query
             /// </summary>
@@ -118,7 +118,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             /// Gets or sets the query id for the query 
             /// </summary>
             [XmlIgnore]
-            public Guid QueryId { get; set; }
+            public string QueryId { get; set; }
             /// <summary>
             /// Gets or sets the originator of the request
             /// </summary>
@@ -467,7 +467,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
                 // Query continuation
-                if (this.m_queryService != null && this.m_queryService.IsRegistered(qd.QueryId.ToString("B")))
+                if (this.m_queryService != null && this.m_queryService.IsRegistered(qd.QueryId.ToLower()))
                 {
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", qd.QueryId));
                 }
@@ -481,14 +481,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                     // Persist the query
                     if (this.m_queryService != null)
-                        this.m_queryService.RegisterQuerySet(qd.QueryId.ToString("B"), recordIds, qd);
+                        this.m_queryService.RegisterQuerySet(qd.QueryId.ToLower(), recordIds, qd);
 
                     // Return query data
                     return new QueryResultData()
                     {
-                        QueryId = qd.QueryId,
+                        QueryId = qd.QueryId.ToLower(),
                         Results = retVal.ToArray(),
-                        TotalResults = retRecordId.Count
+                        TotalResults = retRecordId.Count(o=>o != null)
                     };
 
                 }
@@ -637,7 +637,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 wtp.Dispose();
             }
 
-            return new List<RegistrationEvent>(retVal);
+            var matchingRecords = new List<RegistrationEvent>(retVal);
+            matchingRecords.RemoveAll(o => o == null);
+            return matchingRecords;
         }
 
         /// <summary>
@@ -726,7 +728,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Query continuation
                 if (this.m_docRegService == null)
                     throw new InvalidOperationException("No record registration service is registered. Querying for records cannot be done unless this service is present");
-                else if (this.m_queryService != null && this.m_queryService.IsRegistered(filter.QueryId.ToString("B")))
+                else if (this.m_queryService != null && this.m_queryService.IsRegistered(filter.QueryId.ToLower()))
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", filter.QueryId));
                 else
                 {
@@ -743,14 +745,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                     // Persist the query
                     if (this.m_queryService != null)
-                        this.m_queryService.RegisterQuerySet(filter.QueryId.ToString("B"), recordIds, filter);
+                        this.m_queryService.RegisterQuerySet(filter.QueryId.ToLower(), recordIds, filter);
 
                     // Return query data
                     return new QueryResultData()
                     {
-                        QueryId = filter.QueryId,
+                        QueryId = filter.QueryId.ToLower(),
                         Results = retVal.ToArray(),
-                        TotalResults = recordIds.Length
+                        TotalResults = retRecordId.Count(o => o != null)
                     };
 
                 }

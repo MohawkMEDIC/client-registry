@@ -35,6 +35,7 @@ using MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01;
+using System.Text.RegularExpressions;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -129,17 +130,40 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     ackDetail.Code = new CE<string>(Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedInteraction), "2.16.840.1.113883.5.1100");
                 else if (dtl is UnrecognizedSenderResultDetail)
                     ackDetail.Code = new CE<string>(Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnknownSender), "2.16.840.1.113883.5.1100");
+                else if (dtl is PatientNotFoundResultDetail || dtl is UnrecognizedTargetDomainResultDetail)
+                    ackDetail.Code = new CE<string>("204");
                 else if (dtl is DetectedIssueResultDetail) // Don't handle these
                     continue;
                 else
                     ackDetail.Code = new CE<string>(Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.InternalSystemError), "2.16.840.1.113883.5.1100");
-                
+
+                // Correct the Xpath
+                if (!String.IsNullOrEmpty(dtl.Location))
+                {
+                    dtl.Location += "/";
+                    StringBuilder xPath = new StringBuilder();
+                    Regex regEx = new Regex(@"^(\/\/?)(.*?)#(.*?)(\[.*?])?/");
+                    while (regEx.IsMatch(dtl.Location))
+                    {
+                        var match = regEx.Match(dtl.Location);
+                        if(match.Groups.Count > 3)
+                            xPath.AppendFormat("{0}*[namespace-uri() = '{1}' and local-name() = '{2}']", match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);
+                        if (match.Groups.Count > 4)
+                            xPath.Append(match.Groups[4].Value);
+                        dtl.Location = regEx.Replace(dtl.Location, "/");
+                    }
+                    dtl.Location = xPath.ToString();
+                }
+
                 // Mesage
                 ackDetail.Location = dtl.Location == null ? null : new SET<ST>((ST)dtl.Location, (a,b) => ST.Comparator(a, b));
                 ackDetail.Text = dtl.Message;
                 if (dtl.Exception != null)
-                    ackDetail.Location = new SET<ST>((ST)String.Format("({0})", dtl.Exception.StackTrace));
-
+                {
+                    if (ackDetail.Location == null)
+                        ackDetail.Location = new SET<ST>();
+                    ackDetail.Location.Add((ST)String.Format("({0})", dtl.Exception.StackTrace));
+                }
                 retVal.Add(ackDetail);
             }
 
