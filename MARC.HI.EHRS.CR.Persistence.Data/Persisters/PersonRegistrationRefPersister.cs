@@ -102,9 +102,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         cntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
                         {
                             AssigningAuthority = id.AssigningAuthority,
-                            UpdateMode = SVC.Core.DataTypes.UpdateModeType.Add,
+                            UpdateMode = SVC.Core.DataTypes.UpdateModeType.AddOrUpdate,
                             IsLicenseAuthority = false,
-                            IsPrivate = (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
+                            IsPrivate = false, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
                             Identifier = id.Identifier,
                             Domain = id.Domain
                         });
@@ -152,11 +152,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cntrPsn.BirthTime = psn.BirthTime = null;
                     cntrPsn.DeceasedTime = psn.DeceasedTime = null;
 
-                    // Store the merged new record
-                    pp.CreatePersonVersion(conn, tx, cntrPsn);
-                    // Components
-                    DbUtil.PersistComponents(conn, tx, false, this, cntrPsn);
-
                     // Remove the old person from the db
                     psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the person
                 }
@@ -164,7 +159,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Now update the person
                 psn.Site = refr.Site;
                 pp.Persist(conn, tx, psn, true); // update the person record
-                
+
+                if (!symbolic) // Update the container person adding any new identifiers
+                {
+                    // Store the merged new record
+                    pp.CreatePersonVersion(conn, tx, cntrPsn);
+                    // Components
+                    DbUtil.PersistComponents(conn, tx, false, this, cntrPsn);
+                }
             }
 
             // Create the link

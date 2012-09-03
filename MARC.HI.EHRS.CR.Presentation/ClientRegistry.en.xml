@@ -123,7 +123,7 @@
   <string name="DBCF005">DBCF005 :</string>
   <string name="DBCF006">DBCF006 :</string>
   <string name="DBCF007">DBCF007 : Cannot determine the primary subject of the registration event</string>
-  <string name="DBCF008">DBCF008 : Identifier is already registered to another person</string>
+  <string name="DBCF008">DBCF008 : {0}</string>
   <string name="DBCF009">DBCF009 : Repository device must have an identifier</string>
   <string name="DBCF00A">DBCF00A : Data consistency issue, the supplied name does not seem to match the name registered with the client. Linking of records aborted</string>
   <string name="DBCF00B">DBCF00B : Data consistency issue, cannot create a link with a non-existant record</string>

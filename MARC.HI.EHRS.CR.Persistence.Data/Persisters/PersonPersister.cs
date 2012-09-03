@@ -467,9 +467,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                     }
                 }
-                catch
+                catch(Exception e)
                 {
-                    throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DBCF008"));
+                    throw new DuplicateNameException(String.Format(ApplicationContext.LocaleService.GetString("DBCF008"), e.Message));
                 }
         }
 
@@ -1330,18 +1330,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     else
                     {
                         // Subsumption?
-                        candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain);
-                        if (candidateAlt != null && (!newerOnly || candidateAlt.Key < alt.Key))
-                        {
-                        //    // Remove the old alt id
-                              candidateAlt.UpdateMode = UpdateModeType.Remove;
-                        //    // Add the new
-                        //    // Send an duplicates resolved message
-                              //IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                              //if (notificationService != null)
-                              //  notificationService.NotifyDuplicatesResolved(newPerson, candidateAlt);
-                        }
-                        else
+                        //candidateAlt = oldPerson.AlternateIdentifiers.Find(o => o.Domain == alt.Domain);
+                        //if (candidateAlt != null && (!newerOnly || candidateAlt.Key < alt.Key))
+                        //{
+                        ////    // Remove the old alt id
+                        //      candidateAlt.UpdateMode = UpdateModeType.Remove;
+                        ////    // Add the new
+                        ////    // Send an duplicates resolved message
+                        //      //IClientNotificationService notificationService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                        //      //if (notificationService != null)
+                        //      //  notificationService.NotifyDuplicatesResolved(newPerson, candidateAlt);
+                        //}
+                        //else
                             alt.UpdateMode = UpdateModeType.Add;
                     }
                 }
