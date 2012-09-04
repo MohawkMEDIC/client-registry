@@ -1083,7 +1083,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
 
             // Details about the query
-            if (!controlActEvent.Code.Code.Equals(PRPA_IN101105CA.GetTriggerEvent().Code))
+            if (!controlActEvent.Code.Code.Equals(PRPA_IN101105CA.GetTriggerEvent().Code) && 
+                !controlActEvent.Code.Code.Equals(PRPA_IN101101CA.GetTriggerEvent().Code))
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
                 return null;

@@ -16,7 +16,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
     /// <summary>
     /// A query response factory for the get candidates message
     /// </summary>
-    public class GetCandidatesQueryResponseFactory : IQueryResponseFactory
+    public class GetCandidateAlternateIdentifiersQueryResponseFactory : IQueryResponseFactory
     {
         #region IQueryResponseFactory Members
 
@@ -25,7 +25,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// </summary>
         public Type CreateType
         {
-            get { return typeof(PRPA_IN101102CA); }
+            get { return typeof(PRPA_IN101106CA); }
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             // Componentize the message into the data model
             CaComponentUtil compUtil = new CaComponentUtil();
             compUtil.Context = this.Context;
-            PRPA_IN101101CA rqst = request as PRPA_IN101101CA;
+            PRPA_IN101105CA rqst = request as PRPA_IN101105CA;
 
             List<DomainIdentifier> ids = new List<DomainIdentifier>();
             var queryData = compUtil.CreateQueryMatch(rqst.controlActEvent, dtls, ref ids);
@@ -66,21 +66,21 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             // GEt the config services
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
-            List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity>>(results.Results.Count());
+            List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>>(results.Results.Count());
             CaDeComponentUtil dCompUtil = new CaDeComponentUtil();
             dCompUtil.Context = this.Context;
 
-            PRPA_IN101101CA rqst = request as PRPA_IN101101CA;
+            PRPA_IN101105CA rqst = request as PRPA_IN101105CA;
 
             // Convert results to HL7v3
             foreach (var res in results.Results)
             {
-                var retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity>(
-                    dCompUtil.CreateRegistrationEventDetailEx(res, details)
+                var retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>(
+                    dCompUtil.CreateRegistrationEventDetail(res, details)
                 );
                 if (retRec.RegistrationEvent  == null)
-                    retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity>(
-                        new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity>()
+                    retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>(
+                        new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>()
                         {
                             NullFlavor = NullFlavor.NoInformation
                         }
@@ -92,13 +92,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             retHl7v3.Sort((a, b) => b.RegistrationEvent.Subject.registeredRole.SubjectOf.ObservationEvent.Value.CompareTo(a.RegistrationEvent.Subject.registeredRole.SubjectOf.ObservationEvent.Value));
 
             // Create the response
-            PRPA_IN101102CA response = new PRPA_IN101102CA
+            PRPA_IN101106CA response = new PRPA_IN101106CA
             (
                 Guid.NewGuid(),
                 DateTime.Now,
                 ResponseMode.Immediate,
-                PRPA_IN101102CA.GetInteractionId(),
-                PRPA_IN101102CA.GetProfileId(),
+                PRPA_IN101106CA.GetInteractionId(),
+                PRPA_IN101106CA.GetProfileId(),
                 ProcessingID.Production,
                 AcknowledgementCondition.Never,
                 MessageUtil.CreateReceiver(rqst.Sender),
@@ -109,9 +109,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 )
             );
             response.Acknowledgement.AcknowledgementDetail = MessageUtil.CreateAckDetails(details.ToArray());
-            response.controlActEvent = PRPA_IN101102CA.CreateControlActEvent(
+            response.controlActEvent = PRPA_IN101106CA.CreateControlActEvent(
                 new II(configService.Custodianship.Id.Domain, Guid.NewGuid().ToString()),
-                PRPA_IN101102CA.GetTriggerEvent(),
+                PRPA_IN101106CA.GetTriggerEvent(),
                 new MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.QueryAck(
                     rqst.controlActEvent.QueryByParameter.QueryId,
                     results.TotalResults == 0 ? QueryResponse.NoDataFound : (AcknowledgementType)response.Acknowledgement.TypeCode == AcknowledgementType.ApplicationAcknowledgementError ? QueryResponse.ApplicationError : QueryResponse.DataFound,

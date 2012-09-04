@@ -105,6 +105,45 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         break;
                     }
+                case "PRPA_TE101101CA":
+                    {
+                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "HL7 Trigger Events"));
+
+                        // Audit actor for Patient Identity Source
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIsRequestor = true,
+                            UserIdentifier = msgReplyTo,
+                            ActorRoleCode = new List<CodeValue>() {
+                            new  CodeValue("110153", "DCM") { DisplayName = "Source" }
+                        },
+                            NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                        });
+                        // Audit actor for PIX manager
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIdentifier = msgEvent.ReceiveEndpoint.ToString(),
+                            UserIsRequestor = false,
+                            ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
+                            NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                            NetworkAccessPointId = Dns.GetHostName()
+                        });
+
+
+                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020402.Interactions.PRPA_IN101101CA;
+                        retVal.AuditableObjects.Add(new AuditableObject()
+                        {
+                            Type = AuditableObjectType.SystemObject,
+                            Role = AuditableObjectRole.Query,
+                            IDTypeCode = AuditableObjectIdType.SearchCritereon,
+                            QueryData = Convert.ToBase64String(SerializeQuery(request.controlActEvent.QueryByParameter)),
+                            ObjectId = String.Format("{1}^^^&{0}&ISO", request.controlActEvent.QueryByParameter.QueryId.Root, request.controlActEvent.QueryByParameter.QueryId.Extension)
+                        });
+
+                        break;
+                    }
+
                 case "PRPA_TE101105CA":
                     {
                         retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "HL7 Trigger Events"));
