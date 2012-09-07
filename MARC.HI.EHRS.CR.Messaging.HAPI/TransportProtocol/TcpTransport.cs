@@ -36,7 +36,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Start the handler
         /// </summary>
-        public void Start(IPEndPoint bind)
+        public void Start(IPEndPoint bind, ServiceHandler handler)
         {
 
             this.m_listener = new TcpListener(bind);

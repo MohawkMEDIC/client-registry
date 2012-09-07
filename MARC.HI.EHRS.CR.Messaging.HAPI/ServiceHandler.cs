@@ -26,6 +26,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         private ITransportProtocol m_transport;
 
         /// <summary>
+        /// Gets the service definition for this handler
+        /// </summary>
+        public ServiceDefinition Definition { get { return this.m_serviceDefinition; } }
+
+        /// <summary>
         /// Constructs the new service handler
         /// </summary>
         public ServiceHandler(ServiceDefinition serviceDefinition)
@@ -107,7 +112,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
 
             try
             {
-                this.m_transport.Start(new IPEndPoint(address, port));
+                this.m_transport.Start(new IPEndPoint(address, port), this);
             }
             catch (ThreadAbortException ta)
             {

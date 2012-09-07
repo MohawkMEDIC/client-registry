@@ -33,6 +33,12 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
                     if (xConnection.Attributes["name"] != null)
                         sd.Name = xConnection.Attributes["name"].Value;
                     sd.Address = new Uri(xConnection.Attributes["address"].Value);
+                    
+                    // Timeout
+                    TimeSpan timeout = new TimeSpan(0,0,0,0,500);
+                    if (xConnection.Attributes["timeout"] != null && !TimeSpan.TryParse(xConnection.Attributes["timeout"].Value, out timeout))
+                        throw new ConfigurationErrorsException("Cannot parse the 'timeout' attribute");
+                    sd.ReceiveTimeout = timeout;
 
                     // Message handlers
                     var xHandlers = xConnection.SelectNodes("./*[local-name() = 'handler']");

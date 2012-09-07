@@ -65,7 +65,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Start the transport protocol
         /// </summary>
-        void Start(IPEndPoint bind);
+        void Start(IPEndPoint bind, ServiceHandler handler);
 
         /// <summary>
         /// Stop listening

@@ -14,6 +14,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     /// Query data structure
     /// </summary>
     [XmlRoot("qd")]
+    [Serializable]
     public struct QueryData
     {
 

@@ -47,6 +47,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         }
 
         /// <summary>
+        /// Gets or sets the timeout
+        /// </summary>
+        public TimeSpan ReceiveTimeout { get; set; }
+
+        /// <summary>
         /// Gets or sets the address of the service
         /// </summary>
         public Uri Address { get; set; }

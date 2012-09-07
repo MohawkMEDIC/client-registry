@@ -18,6 +18,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
     {
         #region ITransportProtocol Members
 
+        // Timeout
+        private TimeSpan m_timeout;
+
         // The socket
         private TcpListener m_listener;
 
@@ -35,10 +38,10 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Start the transport
         /// </summary>
-        public void Start(IPEndPoint bind)
+        public void Start(IPEndPoint bind, ServiceHandler handler)
         {
 
-            
+            this.m_timeout = handler.Definition.ReceiveTimeout;
             this.m_listener = new TcpListener(bind);
             this.m_listener.Start();
             Trace.TraceInformation("LLP Transport bound to {0}", bind);
@@ -62,41 +65,52 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             NetworkStream stream = tcpClient.GetStream();
             try
             {
-
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
+                DateTime lastReceive = DateTime.Now;
 
-                // Read LLP head byte
-                int llpByte = stream.ReadByte();
-                if (llpByte != 0x0B) // first byte must be HT
-                    throw new InvalidOperationException("Invalid LLP First Byte");
-
-                StringBuilder messageData = new StringBuilder();
-                byte[] buffer = new byte[1024];
-                while (stream.DataAvailable)
+                while (DateTime.Now.Subtract(lastReceive) < this.m_timeout)
                 {
-                    int br = stream.Read(buffer, 0, 1024);
-                    messageData.Append(Encoding.ASCII.GetString(buffer, 0, br));
+
+                    if (!stream.DataAvailable)
+                    {
+                        Thread.Sleep(10);
+                        continue;
+                    }
+
+                    // Read LLP head byte
+                    int llpByte = stream.ReadByte();
+                    if (llpByte != 0x0B) // first byte must be HT
+                        throw new InvalidOperationException("Invalid LLP First Byte");
+
+                    StringBuilder messageData = new StringBuilder();
+                    byte[] buffer = new byte[1024];
+                    while (stream.DataAvailable)
+                    {
+                        int br = stream.Read(buffer, 0, 1024);
+                        messageData.Append(Encoding.ASCII.GetString(buffer, 0, br));
+                    }
+
+                    var message = parser.Parse(messageData.ToString());
+                    var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                    var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
+                    Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
+                    Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+                    var messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
+
+                    this.MessageReceived(this, messageArgs);
+
+                    // Send the response back
+                    stream.WriteByte(0xb);
+                    StreamWriter writer = new StreamWriter(stream);
+                    if (messageArgs.Response != null)
+                    {
+                        writer.Write(parser.Encode(messageArgs.Response));
+                        writer.Flush();
+                    }
+                    stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2);
+                    lastReceive = DateTime.Now;
                 }
-
-                var message = parser.Parse(messageData.ToString());
-                var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
-                Uri localEndpoint = new Uri(String.Format("tcp://{0}:{1}", localEp.Address, localEp.Port));
-                Uri remoteEndpoint = new Uri(String.Format("tcp://{0}:{1}", remoteEp.Address, remoteEp.Port));
-                var messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
-
-                this.MessageReceived(this, messageArgs);
-
-                // Send the response back
-                stream.WriteByte(0xb);
-                StreamWriter writer = new StreamWriter(stream);
-                if (messageArgs.Response != null)
-                {
-                    writer.Write(parser.Encode(messageArgs.Response));
-                    writer.Flush();
-                }
-                stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2);
             }
             catch (Exception e)
             {
