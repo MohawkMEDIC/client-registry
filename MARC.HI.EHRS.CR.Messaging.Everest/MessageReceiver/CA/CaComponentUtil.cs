@@ -20,7 +20,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
     /// </summary>
     public partial class CaComponentUtil : ComponentUtil
     {
-
+        
         /// <summary>
         /// Create client component
         /// </summary>

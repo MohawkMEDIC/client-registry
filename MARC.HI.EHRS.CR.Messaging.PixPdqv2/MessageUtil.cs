@@ -70,7 +70,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             var config = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
-            NHapi.Model.V25.Message.ACK ack = new NHapi.Model.V25.Message.ACK();
+            IMessage ack = null;
+
+            if (request.Version == "2.3.1")
+                ack = new NHapi.Model.V231.Message.ACK();
+            else
+                ack = new NHapi.Model.V25.Message.ACK();
 
             Terser terser = new Terser(ack);
             MessageUtil.UpdateMSH(terser, request, config);
@@ -78,15 +83,90 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             foreach (var dtl in errors)
             {
-                var err = ack.GetERR(ack.ERRRepetitionsUsed);
-                var tErr = MessageUtil.UpdateERR(err, dtl, context);
-                if (tErr > errLevel)
-                    errLevel = tErr;
+                if (request.Version == "2.3.1" && dtl.Type == ResultDetailType.Error)
+                {
+                    
+                    var err = (ack as NHapi.Model.V231.Message.ACK).ERR;
+                    var tErr = MessageUtil.UpdateERR(err, dtl, context);
+                    if (tErr > errLevel)
+                        errLevel = tErr;
+                }
+                else if (request.Version == "2.5")
+                {
+                    var err = (ack as NHapi.Model.V25.Message.ACK).GetERR((ack as NHapi.Model.V25.Message.ACK).ERRRepetitionsUsed);
+                    var tErr = MessageUtil.UpdateERR(err, dtl, context);
+                    if (tErr > errLevel)
+                        errLevel = tErr;
+                }
             }
 
             terser.Set("/MSA-1", errLevel == 0 ? "AA" : errLevel == 1 ? "AE" : "AR");
 
             return ack;
+        }
+
+        /// <summary>
+        /// Update an ERR
+        /// </summary>
+        private static int UpdateERR(NHapi.Model.V231.Segment.ERR err, IResultDetail dtl, SVC.Core.HostContext context)
+        {
+            var locale = context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            
+
+            // Determine the type of acknowledgement
+            string errCode = String.Empty;
+            string errSys = "2.16.840.1.113883.5.1100";
+            if (dtl is InsufficientRepetionsResultDetail)
+                errCode = "100";
+            else if (dtl is MandatoryElementMissingResultDetail)
+                errCode = "101";
+            else if (dtl is NotImplementedElementResultDetail)
+                errCode = "207";
+            else if (dtl is RequiredElementMissingResultDetail)
+                errCode = "101";
+            else if (dtl is PersistenceResultDetail)
+                errCode = "207";
+            else if (dtl is VocabularyIssueResultDetail)
+                errCode = "103";
+            else if (dtl is FixedValueMisMatchedResultDetail)
+                errCode = "103";
+            else if (dtl is UnsupportedProcessingModeResultDetail)
+                errCode = "202";
+            else if (dtl is UnsupportedResponseModeResultDetail)
+                errCode = "207";
+            else if (dtl is UnsupportedVersionResultDetail)
+                errCode = "203";
+            else if (dtl.Exception is NotImplementedException)
+                errCode = "200";
+            else if (dtl is UnrecognizedTargetDomainResultDetail ||
+                dtl is UnrecognizedPatientDomainResultDetail ||
+                dtl is PatientNotFoundResultDetail)
+                errCode = "204";
+            else
+                errCode = "207";
+
+            var eld = err.GetErrorCodeAndLocation(err.ErrorCodeAndLocationRepetitionsUsed);
+            eld.CodeIdentifyingError.Text.Value = locale.GetString(String.Format("HL7{0}", errCode));
+
+            if (dtl.Location != null && dtl.Location.Contains("^"))
+            {
+                var cmp = dtl.Location.Split('^');
+                for (int i = 0; i < cmp.Length; i++)
+                {
+                    var st = eld.SegmentID as NHapi.Model.V231.Datatype.ST;
+                    if (st != null)
+                        st.Value = cmp[i];
+                    else
+                    {
+                        var nm = eld.FieldPosition as NHapi.Model.V231.Datatype.NM;
+                        if (nm != null)
+                            nm.Value = cmp[i];
+                    }
+                }
+            }
+
+            return Int32.Parse(errCode[0].ToString());
         }
 
         /// <summary>
@@ -203,5 +283,6 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
 
         }
+
     }
 }

@@ -104,6 +104,8 @@
   <string name="MSGE06C">MSGE06C : IHE Restriction: Exactly one PatientIdentifier parameter SHALL be present</string>
   <string name="MSGE06D">MSGE06D : IHE Restriction: Exactly one PatientIdentifier.value attribute SHALL be present</string>
   <string name="MSGE06E">MSGE06E : IHE Restriction: Only one cross referenced patient identifier can be returned in this message. Only the first result is returned</string>
+  <string name="MSGE06F">MSGE06F : Could not determine the assigning authority (CX.4) of the specified identifier</string>
+  <string name="MSGE070">MSGE070 : Could not determine the OID for the specified code system</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

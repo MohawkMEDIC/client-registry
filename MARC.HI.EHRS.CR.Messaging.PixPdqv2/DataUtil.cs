@@ -17,6 +17,7 @@ using NHapi.Base.Util;
 using System.Net;
 using System.IO;
 using NHapi.Base.Parser;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -154,6 +155,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         private IPolicyEnforcementService m_policyService; // policy service
         private IQueryPersistenceService m_queryPersistence; // qp service
         private ILocalizationService m_localeService; // locale
+        private IClientNotificationService m_notificationService; // client notification service
 
         /// <summary>
         /// Gets or sets the context of the host
@@ -171,6 +173,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 this.m_policyService = this.m_context.GetService(typeof(IPolicyEnforcementService)) as IPolicyEnforcementService; // policy service
                 this.m_queryPersistence = this.m_context.GetService(typeof(IQueryPersistenceService)) as IQueryPersistenceService; // qp service
                 this.m_localeService = this.m_context.GetService(typeof(ILocalizationService)) as ILocalizationService; // locale service
+                this.m_notificationService = this.m_context.GetService(typeof(IClientNotificationService)) as IClientNotificationService; // notification service
             }
         }
 
@@ -479,6 +482,220 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Register the patient
+        /// </summary>
+        internal VersionedDomainIdentifier Register(RegistrationEvent healthServiceRecord, List<IResultDetail> dtls, DataPersistenceMode mode)
+        {
+            bool needsReconciliation = false; // true when the record registered needs to be reconciled
+
+            try
+            {
+
+                // Can't find persistence
+                if (this.m_persistenceService == null)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Couldn't locate an implementation of a PersistenceService object, storage is aborted", null));
+                    return null;
+                }
+                else if (healthServiceRecord == null)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Can't register null health service record data", null));
+                    return null;
+                }
+                else if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist invalid message", null));
+                    return null;
+                }
+
+                // First, IHE is a little different first we have to see if we can match any of the records for cross referencing
+                // therefore we do a query, first with identifiers and then without identifiers, 100% match
+                var subject = healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                QueryParameters qp = new QueryParameters()
+                {
+                    Confidence = 1.0f,
+                    MatchingAlgorithm = MatchAlgorithm.Exact,
+                    MatchStrength = MatchStrength.Exact
+                };
+                var patientQuery = new RegistrationEvent();
+                patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                patientQuery.Add(new Person() { AlternateIdentifiers = subject.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                // Perform the query
+                var pid = this.m_registrationService.QueryRecord(patientQuery);
+                if (pid.Length == 0)
+                {
+                    // No match based on ID, get rid of the identifiers and then match
+                    // based on Name, DOB, Gender, Address and Other Identifiers
+                    // Basically:
+                    //  - One of the supplied names in the register message must match and
+                    //  - One of the other identifiers in the register message must match or address 
+                    //  - DOB must match
+                    //  - Gender must match
+                    //var subject = (healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person).Clone() as Person;
+                    patientQuery.RemoveAllFromRole(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf);
+                    var ssubject = new Person()
+                    {
+                        GenderCode = subject.GenderCode,
+                        Names = subject.Names,
+                        BirthTime = subject.BirthTime
+                    };
+
+                    if (subject.OtherIdentifiers != null) ssubject.OtherIdentifiers = subject.OtherIdentifiers;
+                    else if (subject.Addresses != null) ssubject.Addresses = subject.Addresses;
+                    patientQuery.Add(ssubject, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, subject.AlternateIdentifiers);
+
+                    int nQualifier = Convert.ToInt16(ssubject.GenderCode != null) +
+                        Convert.ToInt16(ssubject.Names != null) +
+                        Convert.ToInt16(ssubject.BirthTime != null) +
+                        Convert.ToInt16(ssubject.OtherIdentifiers != null) +
+                        Convert.ToInt16(ssubject.Addresses != null);
+
+                    if (nQualifier > 3) // At least four items
+                        pid = this.m_registrationService.QueryRecord(patientQuery); // Try to cross reference again   
+                }
+
+                // Did we cross reference a patient?
+                if (pid.Length == 1)
+                {
+                    // Add the pid to the list of registration event identifiers
+                    healthServiceRecord.AlternateIdentifier = pid[0];
+                    // Update
+                    dtls.Add(new ResultDetail( ResultDetailType.Warning, String.Format(m_localeService.GetString("DTPW002"), pid[0].Domain, pid[0].Identifier), null, null));
+                    var vid = this.Update(healthServiceRecord, dtls, mode);
+                    return vid;
+                }
+                else if (pid.Length > 1) // Add a warning
+                {
+                    dtls.Add(new ResultDetail( ResultDetailType.Warning, m_localeService.GetString("DTPW001"), null, null));
+                    // Notify someone that this needs to occur
+                    needsReconciliation = true;
+
+                }
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    foreach (var iss in this.m_decisionSupportService.RecordPersisting(healthServiceRecord))
+                        dtls.Add(new ResultDetail(iss.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : ResultDetailType.Warning, iss.Text, null, null));
+
+                // Any errors?
+                if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist message due to detected issues", null));
+
+                // Persist
+                var retVal = this.m_persistenceService.StoreContainer(healthServiceRecord, mode);
+                retVal.UpdateMode = UpdateModeType.Add;
+
+
+                // Notify that reconciliation is required
+                if (this.m_notificationService != null && needsReconciliation)
+                {
+                    var list = new List<VersionedDomainIdentifier>(pid) { retVal };
+                    this.m_notificationService.NotifyReconciliationRequired(list);
+                }
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    this.m_decisionSupportService.RecordPersisted(healthServiceRecord);
+
+                // Register the document set if it is a document
+                if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(healthServiceRecord, mode))
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
+
+                return retVal;
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (ConstraintException ex)
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (Exception ex)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Update an existing patient record
+        /// </summary>
+        private VersionedDomainIdentifier Update(RegistrationEvent healthServiceRecord, List<IResultDetail> dtls, DataPersistenceMode mode)
+        {
+            try
+            {
+
+                // Can't find persistence
+                if (this.m_persistenceService == null)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Couldn't locate an implementation of a PersistenceService object, storage is aborted", null));
+                    return null;
+                }
+                else if (healthServiceRecord == null)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Can't register null health service record data", null));
+                    return null;
+                }
+                else if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                {
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist invalid message", null));
+                    return null;
+                }
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    foreach (var iss in this.m_decisionSupportService.RecordPersisting(healthServiceRecord))
+                        dtls.Add(new DetectedIssueResultDetail(iss.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : ResultDetailType.Warning, iss.Text, (string)null));
+                
+                // Any errors?
+                if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist message due to detected issues", null));
+
+                // Persist
+                var retVal = this.m_persistenceService.UpdateContainer(healthServiceRecord, mode);
+
+                retVal.UpdateMode = UpdateModeType.Update;
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    this.m_decisionSupportService.RecordPersisted(healthServiceRecord);
+
+                // Register the document set if it is a document
+                if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(healthServiceRecord, mode))
+                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
+
+                return retVal;
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (ConstraintException ex)
+            {
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+                return null;
+            }
+            catch (Exception ex)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+                return null;
             }
         }
     }
