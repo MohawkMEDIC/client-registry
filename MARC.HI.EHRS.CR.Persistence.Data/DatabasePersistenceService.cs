@@ -489,9 +489,21 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         if (subjectOfQuery.BirthTime != null)
                             sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
 
-                        
+                        // Other Identifiers
                         if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
                             sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.OtherIdentifiers));
+
+                        // Addresses
+                        if (subjectOfQuery.Addresses != null && subjectOfQuery.Addresses.Count > 0)
+                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterAddress(subjectOfQuery.Addresses));
+
+                        // Telecom Addresses
+                        if (subjectOfQuery.TelecomAddresses != null && subjectOfQuery.TelecomAddresses.Count > 0)
+                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterTelecom(subjectOfQuery.TelecomAddresses));
+
+                        // Gender
+                        if (!String.IsNullOrEmpty(subjectOfQuery.GenderCode))
+                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_GNDR_CS('{0}')) INTERSECT ", subjectOfQuery.GenderCode);
 
                         // TRIM INTERSECT
                         if (sb.ToString().EndsWith("INTERSECT "))
@@ -535,6 +547,50 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
+        }
+
+        /// <summary>
+        /// Filter telecommunications address
+        /// </summary>
+        private string BuildFilterTelecom(List<TelecommunicationsAddress> telecoms)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var tel in telecoms)
+            {
+                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_TEL('{0}','{1}')", tel.Value, tel.Use);
+                if (!tel.Equals(telecoms.Last()))
+                    retVal.AppendFormat(" UNION ");
+            }
+            return retVal.ToString();
+        }
+
+        /// <summary>
+        /// Build a filter for addresses
+        /// </summary>
+        private string BuildFilterAddress(List<AddressSet> addresses)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var addr in addresses)
+            {
+                if (addr == null)
+                    continue;
+                // Build the filter
+                StringBuilder filterString = new StringBuilder(),
+                    cmpTypeString = new StringBuilder();
+                foreach (var cmp in addr.Parts)
+                {
+                    filterString.AppendFormat("{0}{1}", cmp.AddressValue, cmp == addr.Parts.Last() ? "" : ",");
+                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : ",");
+                }
+
+                // Match strength & algorithms
+                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_ADDR_SET('{{{0}}}','{{{1}}}', {2})",
+                    filterString, cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
+
+                if (addr != addresses.Last())
+                    retVal.AppendFormat(" UNION ");
+            }
+            return retVal.ToString();
         }
 
         /// <summary>

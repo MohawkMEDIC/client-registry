@@ -1466,5 +1466,134 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             return retVal;
         }
+
+        /// <summary>
+        /// Create the query match parameters
+        /// </summary>
+        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01.ControlActProcess<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.QueryByParameter> controlActProcess, List<IResultDetail> dtls, ref List<DomainIdentifier> ids)
+        {
+            ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+            // Details about the query
+            if (!controlActProcess.Code.Code.Equals(PRPA_IN201305UV02.GetTriggerEvent().Code))
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE00C"), null, null));
+                return null;
+            }
+
+            // REturn value
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.QueryByParameter>(controlActProcess, dtls);
+
+            // Filter
+            RegistrationEvent filter = new RegistrationEvent();
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+
+            // Parameter list validation
+            var qbp = controlActProcess.queryByParameter;
+            if (qbp == null || qbp.NullFlavor != null)
+            {
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04E"), null));
+                qbp = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.QueryByParameter();
+            }
+
+            var parameterList = qbp.ParameterList;
+            if (parameterList == null || parameterList.NullFlavor != null)
+            {
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04E"), null));
+                parameterList = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.ParameterList();
+            }
+
+            // Discrete record identifiers
+            ids = new List<DomainIdentifier>(100);
+
+            // Create the actual query
+            Person filterPerson = new Person();
+
+            // Alternate identifiers
+            filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
+            
+            // Administrative gender
+            foreach (var gender in parameterList.LivingSubjectAdministrativeGender)
+            {
+                if (gender.NullFlavor == null && gender.Value != null && gender.Value.Count == 1)
+                    filterPerson.GenderCode = Util.ToWireFormat(gender.Value[0].Code);
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectAdministrativeGender"));
+                break;
+            }
+
+            // Living Subject Birth Time
+            foreach (var birth in parameterList.LivingSubjectBirthTime)
+            {
+                if (birth.NullFlavor == null && birth.Value != null && birth.Value.Count == 1)
+                    filterPerson.BirthTime = CreateTimestamp(birth.Value[0].Value, dtls);
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectBirthTime"));
+                break;
+            }
+
+            // Living Subject Id
+            foreach (var id in parameterList.LivingSubjectId)
+            {
+                if (filterPerson.AlternateIdentifiers == null) filterPerson.AlternateIdentifiers = new List<DomainIdentifier>();
+
+                if (id.NullFlavor == null && id.Value != null && id.Value.Count == 1)
+                    filterPerson.AlternateIdentifiers.Add(CreateDomainIdentifier(id.Value[0], dtls));
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectId"));
+            }
+
+            // Living Subject Name
+            foreach (var name in parameterList.LivingSubjectName)
+            {
+                if (filterPerson.Names == null) filterPerson.Names = new List<NameSet>();
+                if (name.NullFlavor == null && name.Value != null && name.Value.Count == 1)
+                    filterPerson.Names.Add(CreateNameSet(name.Value[0], dtls));
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectName"));
+            }
+
+            // Living Subject Address
+            foreach (var addr in parameterList.PatientAddress)
+            {
+                if (addr.NullFlavor == null && addr.Value != null && addr.Value.Count == 1)
+                    filterPerson.Addresses = new List<AddressSet>() { CreateAddressSet(addr.Value[0], dtls) };
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientAddress"));
+                break;
+            }            
+
+            // Telecom
+            foreach (var tel in parameterList.PatientTelecom)
+            {
+                if (filterPerson.TelecomAddresses == null) filterPerson.TelecomAddresses = new List<TelecommunicationsAddress>();
+                if (tel.NullFlavor == null && tel.Value != null && tel.Value.Count == 1)
+                    filterPerson.TelecomAddresses.Add(new TelecommunicationsAddress()
+                    {
+                        Use = Util.ToWireFormat(tel.Value[0].Use),
+                        Value = tel.Value[0].Value
+                    });
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientTelecom"));
+            }
+
+            // Other ids
+            foreach (var otherId in parameterList.OtherIDsScopingOrganization)
+            {
+                if(otherId != null && otherId.NullFlavor == null &&
+                    otherId.Value.Count == 1)
+                    ids.Add(CreateDomainIdentifier(otherId.Value[0], dtls));
+                else
+                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#otherIDsScopingOrganization"));
+            }
+
+            // Filter
+            filter.Add(filterPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            // Determine if errors exist that prevent the processing of this message
+            if (dtls.Count(o => o.Type == ResultDetailType.Error) > 0)
+                return null;
+
+            return retVal;
+        }
     }
 }

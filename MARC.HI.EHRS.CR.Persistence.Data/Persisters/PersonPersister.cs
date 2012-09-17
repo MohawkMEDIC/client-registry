@@ -1048,7 +1048,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
                     if (candidateOtherAddress.Count == 1)
                     {
-                        if (QueryUtil.MatchAddress(candidateOtherAddress[0], addr) == 1) // Remove .. no change
+                        if (QueryUtil.MatchAddress(addr, candidateOtherAddress[0]) == 1) // Remove .. no change
                         {
                             //candidateOtherAddress[0].Key = -1;
                             addr.UpdateMode = UpdateModeType.Ignore;

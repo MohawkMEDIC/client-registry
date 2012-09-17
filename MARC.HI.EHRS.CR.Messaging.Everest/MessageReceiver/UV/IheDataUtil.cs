@@ -246,6 +246,45 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         break;
                     }
+                case "ITI-47":
+                    {
+                        retVal = new AuditData(DateTime.Now, ActionType.Execute, outcome, EventIdentifierType.Query, new CodeValue("ITI-47", "IHE Transactions") { DisplayName = "Patient Demographics Query" });
+                        // Audit actor for Patient Identity Source
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIsRequestor = true,
+                            UserIdentifier = msgReplyTo,
+                            ActorRoleCode = new List<CodeValue>() {
+                            new  CodeValue("110153", "DCM") { DisplayName = "Source" }
+                        },
+                            NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                        });
+                        // Audit actor for PIX manager
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIdentifier = msgEvent.ReceiveEndpoint.ToString(),
+                            UserIsRequestor = false,
+                            ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
+                            NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                            NetworkAccessPointId = Dns.GetHostName()
+                        });
+
+                        // Add query 
+                        var request = msgReceiveResult.Structure as PRPA_IN201305UV02;
+
+                        retVal.AuditableObjects.Add(new AuditableObject()
+                        {
+                            Type = AuditableObjectType.SystemObject,
+                            Role = AuditableObjectRole.Query,
+                            IDTypeCode = AuditableObjectIdType.Custom,
+                            CustomIdTypeCode = new CodeValue("ITI47", "IHE Transactions"),
+                            QueryData = Convert.ToBase64String(SerializeQuery(request.controlActProcess.queryByParameter)),
+                            ObjectId = String.Format("{1}^^^&{0}&ISO", request.controlActProcess.queryByParameter.QueryId.Root, request.controlActProcess.queryByParameter.QueryId.Extension)
+                        });
+
+                        break;
+                    }
             }
 
             // Audit authors
@@ -380,7 +419,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         BirthTime = subject.BirthTime
                     };
 
-                    if (subject.OtherIdentifiers != null) ssubject.OtherIdentifiers = subject.OtherIdentifiers;
+                    if (subject.OtherIdentifiers.Count > 0) ssubject.OtherIdentifiers = subject.OtherIdentifiers;
                     else if (subject.Addresses != null) ssubject.Addresses = subject.Addresses;
                     patientQuery.Add(ssubject, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, subject.AlternateIdentifiers);
 
