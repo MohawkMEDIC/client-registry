@@ -109,6 +109,7 @@
   <string name="MSGE071">MSGE071 : Match algorithm '{0}' is not understood. Valid values are 'SOUNDEX', 'VARIANT', 'DEFAULT'</string>
   <string name="MSGE072">MSGE072 : Minimum degree match must be between 0 and 100</string>
   <string name="MSGE073">MSGE073 : IHE Restriction: Only one value element may appear within a query parameter</string>
+  <string name="MSGE074">MSGE074 : ADT message must be of type ADT_A01</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>
@@ -154,7 +155,8 @@
   <string name="HL7202">Unsupported processing id</string>
   <string name="HL7203">Unsupported version id</string>
   <string name="HL7207">Application internal error</string>
-  
+  <string name="HL7101">Required field missing</string>
+  <string name="HL7901">Unknown sender</string>
   <!-- Notification Strings -->
   <string name="NTFE001">NTFE001 : Cannot find subject for notification</string>
   <string name="NTFW002">NTFW001 : Couldn't send the request to {0}</string>

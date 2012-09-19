@@ -8,6 +8,7 @@ using NHapi.Base.validation.impl;
 using System.IO;
 using System.Diagnostics;
 using System.Threading;
+using NHapi.Base.Model;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -19,18 +20,18 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         #region ITransportProtocol Members
 
         // Timeout
-        private TimeSpan m_timeout;
+        protected TimeSpan m_timeout;
 
         // The socket
-        private TcpListener m_listener;
+        protected TcpListener m_listener;
 
         // Will run while true
-        private bool m_run = true;
+        protected bool m_run = true;
 
         /// <summary>
         /// Gets the name of the protocol
         /// </summary>
-        public string ProtocolName
+        public virtual string ProtocolName
         {
             get { return "llp"; }
         }
@@ -38,18 +39,18 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Start the transport
         /// </summary>
-        public void Start(IPEndPoint bind, ServiceHandler handler)
+        public virtual void Start(IPEndPoint bind, ServiceHandler handler)
         {
 
             this.m_timeout = handler.Definition.ReceiveTimeout;
             this.m_listener = new TcpListener(bind);
             this.m_listener.Start();
             Trace.TraceInformation("LLP Transport bound to {0}", bind);
-
+            
             while (m_run) // run the service
             {
                 var client = this.m_listener.AcceptTcpClient();
-                Thread clientThread = new Thread(ReceiveMessage);
+                Thread clientThread = new Thread(OnReceiveMessage);
                 clientThread.IsBackground = true;
                 clientThread.Start(client);
                 
@@ -59,7 +60,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Receive and process message
         /// </summary>
-        private void ReceiveMessage(object client)
+        protected virtual void OnReceiveMessage(object client)
         {
             TcpClient tcpClient = client as TcpClient;
             NetworkStream stream = tcpClient.GetStream();
@@ -83,6 +84,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     if (llpByte != 0x0B) // first byte must be HT
                         throw new InvalidOperationException("Invalid LLP First Byte");
 
+                    // Standard stream stuff, read until the stream is exhausted
                     StringBuilder messageData = new StringBuilder();
                     byte[] buffer = new byte[1024];
                     while (stream.DataAvailable)
@@ -91,25 +93,30 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         messageData.Append(Encoding.ASCII.GetString(buffer, 0, br));
                     }
 
+                    // Use the nHAPI parser to process the data
                     var message = parser.Parse(messageData.ToString());
+
+                    // Setup local and remote receive endpoint data for auditing
                     var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
                     var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
                     Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
                     Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
                     var messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
 
-                    this.MessageReceived(this, messageArgs);
+                    // Call any bound event handlers that there is a message available
+                    OnMessageReceived(messageArgs);
 
                     // Send the response back
-                    stream.WriteByte(0xb);
+                    stream.WriteByte(0xb); // header
                     StreamWriter writer = new StreamWriter(stream);
                     if (messageArgs.Response != null)
                     {
+                        // Since nHAPI only emits a string we just send that along the stream
                         writer.Write(parser.Encode(messageArgs.Response));
                         writer.Flush();
                     }
-                    stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2);
-                    lastReceive = DateTime.Now;
+                    stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                    lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                 }
             }
             catch (Exception e)
@@ -122,6 +129,16 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 stream.Close();
                 tcpClient.Close();
             }
+        }
+
+        /// <summary>
+        /// Message received
+        /// </summary>
+        /// <param name="message"></param>
+        protected void OnMessageReceived(Hl7MessageReceivedEventArgs messageArgs)
+        {
+            if (this.MessageReceived != null)
+                this.MessageReceived(this, messageArgs);
         }
 
         /// <summary>

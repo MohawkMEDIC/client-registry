@@ -72,6 +72,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
                         throw new InvalidOperationException(String.Format("Cannot find message handler for '{0}'", messageType));
 
                     e.Response = (handler ?? defaultHandler).Handler.HandleMessage(e);
+                    if (e.Response == null)
+                        throw new InvalidOperationException("Couldn't process message");
+
                     msgTerser = new Terser(e.Response);
 
                     if (messagePersister != null)

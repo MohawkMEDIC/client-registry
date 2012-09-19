@@ -40,6 +40,18 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
                         throw new ConfigurationErrorsException("Cannot parse the 'timeout' attribute");
                     sd.ReceiveTimeout = timeout;
 
+                    // Attributes
+                    var xAttributes = xConnection.SelectNodes("./*[local-name() = 'attribute']");
+                    sd.Attributes = new List<KeyValuePair<string, string>>();
+                    foreach (XmlElement xAttr in xAttributes)
+                    {
+                        if (xAttr.Attributes["name"] != null && xAttr.Attributes["value"] != null)
+                            sd.Attributes.Add(new KeyValuePair<string, string>(
+                                xAttr.Attributes["name"].Value,
+                                xAttr.Attributes["value"].Value
+                            ));
+                    }
+
                     // Message handlers
                     var xHandlers = xConnection.SelectNodes("./*[local-name() = 'handler']");
                     foreach (XmlElement xHandler in xHandlers)

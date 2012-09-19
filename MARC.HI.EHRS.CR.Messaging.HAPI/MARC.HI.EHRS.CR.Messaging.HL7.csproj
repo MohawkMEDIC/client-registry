@@ -67,6 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceHandler.cs" />
     <Compile Include="TransportProtocol\ITransportProtocol.cs" />
+    <Compile Include="TransportProtocol\SllpTransport.cs" />
     <Compile Include="TransportProtocol\LlpTransport.cs" />
     <Compile Include="TransportProtocol\TcpTransport.cs" />
     <Compile Include="TransportProtocol\TransportUtil.cs" />

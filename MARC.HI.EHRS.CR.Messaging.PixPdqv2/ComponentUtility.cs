@@ -592,8 +592,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             retVal.Quantity = 100;
             if (rcp != null)
             {
-                if (rcp.QuantityLimitedRequest != null)
+                if (!String.IsNullOrEmpty(rcp.QuantityLimitedRequest.Quantity.Value))
                     retVal.Quantity = Int32.Parse(rcp.QuantityLimitedRequest.Quantity.Value);
+                 
             }
 
             // Construct additional query data
@@ -628,7 +629,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
-            var aaut = String.Format("{0}|{1}", request.MSH.SendingApplication, request.MSH.SendingFacility); // sending application
+            var aaut = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
 
             if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
@@ -645,7 +646,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.PatientID, aaut, dtls));
             if (pid.PatientIdentifierListRepetitionsUsed > 0)
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
-                    subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), dtls));
+                    subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
             else
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE063"), "PID^3"));
             // Alt patient identifiers

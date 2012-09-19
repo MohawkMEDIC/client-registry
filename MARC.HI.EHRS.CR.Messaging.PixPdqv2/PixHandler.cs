@@ -8,6 +8,7 @@ using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using NHapi.Base.Util;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -27,36 +28,53 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             ISystemConfigurationService config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
-
+            
             // Get the message type
             IMessage response = null;
-            if (e.Message.Version == "2.5" || e.Message.Version == "2.3.1")
+            try
             {
-                // Get the MSH segment
-                var terser = new Terser(e.Message);
-                var trigger = terser.Get("/MSH-9-2");
-                switch (trigger)
+
+                if (e.Message.Version == "2.5" || e.Message.Version == "2.3.1")
                 {
-                    case "Q23":
-                        response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21);
-                        break;
-                    case "A01":
-                    case "A04":
-                    case "A05":
-                        response = HandlePixAdmit(e.Message as NHapi.Model.V231.Message.ADT_A01);
-                        break;
-                    case "A08":
-                        response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A01);
-                        break;
-                    default:
-                        response = MessageUtil.CreateNack(e.Message, "AR", "201", locale.GetString("HL7201"), config);
-                        break;
+                    // Get the MSH segment
+                    var terser = new Terser(e.Message);
+                    var trigger = terser.Get("/MSH-9-2");
+                    switch (trigger)
+                    {
+                        case "Q23":
+                            response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21);
+                            break;
+                        case "A01":
+                        case "A04":
+                        case "A05":
+                            if(e.Message is NHapi.Model.V231.Message.ADT_A01)
+                                response = HandlePixAdmit(e.Message as NHapi.Model.V231.Message.ADT_A01);
+                            else
+                                response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+                            break;
+                        case "A08":
+                            if(e.Message is NHapi.Model.V231.Message.ADT_A01)
+                                response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A01);
+                            else
+                                response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+                            break;
+                        default:
+                            response = MessageUtil.CreateNack(e.Message, "AR", "201", locale.GetString("HL7201"), config);
+                            Trace.TraceError("{0} is not a supported trigger", trigger);
+                            break;
+                    }
                 }
+
+                // response still null?
+                if (response == null)
+                    response = MessageUtil.CreateNack(e.Message, "AR", "203", locale.GetString("HL7203"), config);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                response = MessageUtil.CreateNack(e.Message, "AR", "207", ex.Message, config);
             }
 
-            // response still null?
-            if (response == null)
-                response = MessageUtil.CreateNack(e.Message, "AR", "203", locale.GetString("HL7203"), config);
             return response;
         }
 

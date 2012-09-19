@@ -143,6 +143,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 dtl is UnrecognizedPatientDomainResultDetail ||
                 dtl is PatientNotFoundResultDetail)
                 errCode = "204";
+            else if (dtl is UnrecognizedSenderResultDetail)
+                errCode = "901";
             else
                 errCode = "207";
 
@@ -155,7 +157,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 for (int i = 0; i < cmp.Length; i++)
                 {
                     var st = eld.SegmentID as NHapi.Model.V231.Datatype.ST;
-                    if (st != null)
+                    if (string.IsNullOrEmpty(st.Value))
                         st.Value = cmp[i];
                     else
                     {
@@ -256,31 +258,37 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
 
             // Validation of sending application
-            Terser msgTerser = new Terser(message);
-            object obj = msgTerser.getSegment("MSH") as NHapi.Model.V25.Segment.MSH;
-            if (obj != null)
+            try
             {
-                var msh = obj as NHapi.Model.V25.Segment.MSH;
-                var domainId = new ComponentUtility() { Context = context }.CreateDomainIdentifier(msh.SendingApplication, dtls);
-                if (!config.IsRegisteredDevice(domainId))
-                    dtls.Add(new UnrecognizedSenderResultDetail(domainId));
-
-            }
-            else
-            {
-                obj = msgTerser.getSegment("MSH") as NHapi.Model.V231.Segment.MSH;
+                Terser msgTerser = new Terser(message);
+                object obj = msgTerser.getSegment("MSH") as NHapi.Model.V25.Segment.MSH;
                 if (obj != null)
                 {
-                    var msh = obj as NHapi.Model.V231.Segment.MSH;
+                    var msh = obj as NHapi.Model.V25.Segment.MSH;
                     var domainId = new ComponentUtility() { Context = context }.CreateDomainIdentifier(msh.SendingApplication, dtls);
                     if (!config.IsRegisteredDevice(domainId))
                         dtls.Add(new UnrecognizedSenderResultDetail(domainId));
 
                 }
                 else
-                    dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Missing MSH", "MSH"));
-            }
+                {
+                    obj = msgTerser.getSegment("MSH") as NHapi.Model.V231.Segment.MSH;
+                    if (obj != null)
+                    {
+                        var msh = obj as NHapi.Model.V231.Segment.MSH;
+                        var domainId = new ComponentUtility() { Context = context }.CreateDomainIdentifier(msh.SendingApplication, dtls);
+                        if (!config.IsRegisteredDevice(domainId))
+                            dtls.Add(new UnrecognizedSenderResultDetail(domainId));
 
+                    }
+                    else
+                        dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Missing MSH", "MSH"));
+                }
+            }
+            catch (Exception e)
+            {
+                dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+            }
 
         }
 
