@@ -72,8 +72,16 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
                         hd.Handler = msh;
                         // Message types
                         foreach(XmlElement typ in xHandler.ChildNodes)
-                            if(typ.Name == "message" && typ.Attributes["name"] != null)
-                                hd.Types.Add(typ.Attributes["name"].Value);
+                            if (typ.Name == "message" && typ.Attributes["name"] != null)
+                            {
+                                MessageDefinition md = new MessageDefinition()
+                                {
+                                    Name = typ.Attributes["name"].Value
+                                };
+                                if (typ.Attributes["isQuery"] != null)
+                                    md.IsQuery = Convert.ToBoolean(typ.Attributes["isQuery"].Value);
+                                hd.Types.Add(md);
+                            }
                         sd.Handlers.Add(hd);
                     }
 

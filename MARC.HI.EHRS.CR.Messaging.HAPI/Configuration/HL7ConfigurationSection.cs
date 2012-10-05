@@ -18,7 +18,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         /// </summary>
         public HandlerDefinition()
         {
-            this.Types = new List<string>();
+            this.Types = new List<MessageDefinition>();
         }
 
         /// <summary>
@@ -29,7 +29,23 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         /// <summary>
         /// Message types that trigger this (MSH-9)
         /// </summary>
-        public List<String> Types { get; set; }
+        public List<MessageDefinition> Types { get; set; }
+    }
+
+    /// <summary>
+    /// Message definition
+    /// </summary>
+    public class MessageDefinition
+    {
+
+        /// <summary>
+        /// Gets or sets the name
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets a value identifying whether this is a query
+        /// </summary>
+        public bool IsQuery { get; set; }
     }
 
     /// <summary>

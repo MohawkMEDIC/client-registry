@@ -216,10 +216,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (interaction.VersionCode != null && !interaction.VersionCode.CodeValue.Equals(HL7StandardVersionCode.Version3_Prerelease1))
                 dtls.Add(new UnsupportedVersionResultDetail(String.Format("Version '{0}' is not supported by this endpoint", interaction.VersionCode)));
             
-            if(profile == null)
-                dtls.Add(new FixedValueMisMatchedResultDetail(String.Empty, String.Format("{1}^^^&{0}&ISO", MCCI_IN000002UV01.GetProfileId()[0].Root, MCCI_IN000002UV01.GetProfileId()[0].Extension), false, "//urn:hl7-org:v3#profileId"));
-            else if (profile == null || profile.ProfileId.Count(o => II.Comparator(o, MCCI_IN000002UV01.GetProfileId()[0]) == 0) == 0)
-                dtls.Add(new UnsupportedVersionResultDetail(String.Format("Supplied profile identifier does not match any profile identifier this endpoint can reliably process")));
+            //if(profile == null)
+            //    dtls.Add(new FixedValueMisMatchedResultDetail(String.Empty, String.Format("{1}^^^&{0}&ISO", MCCI_IN000002UV01.GetProfileId()[0].Root, MCCI_IN000002UV01.GetProfileId()[0].Extension), false, "//urn:hl7-org:v3#profileId"));
+            //else if (profile == null || profile.ProfileId.Count(o => II.Comparator(o, MCCI_IN000002UV01.GetProfileId()[0]) == 0) == 0)
+            //    dtls.Add(new UnsupportedVersionResultDetail(String.Format("Supplied profile identifier does not match any profile identifier this endpoint can reliably process")));
 
             Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
             if(sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)

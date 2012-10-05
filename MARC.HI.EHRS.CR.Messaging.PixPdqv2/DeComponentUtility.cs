@@ -282,6 +282,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var qak = retVal.QAK;
             var msa = retVal.MSA;
+            var dsc = retVal.DSC;
 
             qak.QueryTag.Value = result.QueryTag;
             msa.AcknowledgmentCode.Value = "AA";

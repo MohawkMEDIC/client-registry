@@ -53,6 +53,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
             string messageType = String.Format("{0}^{1}", msgTerser.Get("/MSH-9-1"), msgTerser.Get("/MSH-9-2"));
             string messageId = msgTerser.Get("/MSH-10");
 
+            // Find a handler
+            HandlerDefinition handler = m_serviceDefinition.Handlers.Find(o => o.Types.Exists(a => a.Name == messageType)),
+                defaultHandler = m_serviceDefinition.Handlers.Find(o => o.Types.Exists(a => a.Name == "*"));
+
+            if (handler != null && handler.Types.Find(o => o.Name == messageType).IsQuery ||
+                defaultHandler != null && defaultHandler.Types.Find(o => o.Name == "*").IsQuery)
+                messagePersister = null;
+
             // Have we already processed this message?
             MessageState msgState = MessageState.New;
             if (messagePersister != null)
@@ -61,13 +69,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
             switch (msgState)
             {
                 case MessageState.New:
+
                     if (messagePersister != null)
                         messagePersister.PersistMessage(messageId, CreateMessageStream(e.Message));
 
-                    // Find a handler
-                    HandlerDefinition handler = m_serviceDefinition.Handlers.Find(o => o.Types.Contains(messageType)),
-                        defaultHandler = m_serviceDefinition.Handlers.Find(o => o.Types.Contains("*"));
-
+                    
                     if (handler == null && defaultHandler == null)
                         throw new InvalidOperationException(String.Format("Cannot find message handler for '{0}'", messageType));
 

@@ -112,6 +112,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         internal SVC.Core.DataTypes.DomainIdentifier CreateDomainIdentifier(NHapi.Model.V25.Datatype.HD id, List<Everest.Connectors.IResultDetail> dtls)
         {
+            if (id == null)
+                return null;
+
             DomainIdentifier retVal = new DomainIdentifier();
             if (!String.IsNullOrEmpty(id.NamespaceID.Value))
                 retVal.Identifier = id.NamespaceID.Value;
@@ -155,6 +158,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Assigning authority
             var addlData = CreateDomainIdentifier(id.AssigningAuthority, dtls);
+            if (addlData == null)
+            {
+                dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
+                return retVal;
+            }
             if (!String.IsNullOrEmpty(addlData.Domain))
                 retVal.Domain = addlData.Domain;
             if (!String.IsNullOrEmpty(addlData.Identifier))
