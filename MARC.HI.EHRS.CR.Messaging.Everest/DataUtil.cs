@@ -57,6 +57,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         protected IDataPersistenceService m_persistenceService;
         // localization service
         protected ILocalizationService m_localeService;
+        // Configuration service
+        protected IClientRegistryConfigurationService m_clientRegistryConfigService;
         
 
         /// <summary>
@@ -211,6 +213,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 this.m_queryService = value.GetService(typeof(IQueryPersistenceService)) as IQueryPersistenceService;
                 this.m_localeService = value.GetService(typeof(ILocalizationService)) as ILocalizationService;
                 this.m_notificationService = value.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                this.m_clientRegistryConfigService = this.m_context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService; // config
+
             }
         }
 

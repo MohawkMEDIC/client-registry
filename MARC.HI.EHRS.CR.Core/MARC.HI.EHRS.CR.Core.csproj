@@ -39,14 +39,15 @@
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientRegistryConfigurationProvider.cs" />
     <Compile Include="ComponentModel\Citizenship.cs" />
     <Compile Include="ComponentModel\Employment.cs" />
     <Compile Include="ComponentModel\MatchAlgorithm.cs" />
@@ -61,11 +62,17 @@
     <Compile Include="ComponentModel\PersonLanguage.cs" />
     <Compile Include="ComponentModel\RepositoryDevice.cs" />
     <Compile Include="ComponentModel\VersionedResultIdentifier.cs" />
+    <Compile Include="Configuration\ClientRegistryConfiguration.cs" />
+    <Compile Include="Configuration\ClientRegistryConfigurationSectionHandler.cs" />
+    <Compile Include="Configuration\MergeCriterion.cs" />
+    <Compile Include="Configuration\RegistrationConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CrHealthServiceRecordContainer.cs" />
     <Compile Include="Services\IClientNotificationService.cs" />
+    <Compile Include="Services\IClientRegistryConfigurationService.cs" />
     <Compile Include="Util\SoundexUtil.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
