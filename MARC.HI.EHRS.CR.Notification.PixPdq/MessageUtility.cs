@@ -191,6 +191,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             personData.AsOtherIDs.Clear();
             retVal.controlActProcess.Subject.Add(eventRegistration);
 
+            // TODO: Replacement of compatibility mode for other XDS registries
             // Replacement 
             foreach(PersonRegistrationRef rplc in replacements)
                 eventRegistration.RegistrationEvent.ReplacementOf.Add(new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.ReplacementOf(
