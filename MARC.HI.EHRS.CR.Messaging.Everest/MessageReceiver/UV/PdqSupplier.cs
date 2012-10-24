@@ -75,10 +75,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
 
             // Construct the acknowledgment
-            var response = new PRPA_IN201310UV02(
+            var response = new PRPA_IN201306UV02(
                 new II(configService.OidRegistrar.GetOid("CR_MSGID").Oid, Guid.NewGuid().ToString()),
                 DateTime.Now,
-                PRPA_IN201310UV02.GetInteractionId(),
+                PRPA_IN201306UV02.GetInteractionId(),
                 request.ProcessingCode,
                 request.ProcessingModeCode,
                 AcknowledgementCondition.Never,
@@ -122,7 +122,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 );
 
 
-                response = fact.Create(request, results, dtls, issues) as PRPA_IN201310UV02;
+                response = fact.Create(request, results, dtls, issues) as PRPA_IN201306UV02;
             }
             catch (Exception ex)
             {

@@ -58,7 +58,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 verifiedPerson.DeceasedTime != null,
                 CreateTS(verifiedPerson.DeceasedTime, dtls),
                 verifiedPerson.BirthOrder.HasValue,
-                verifiedPerson.BirthOrder,
+                verifiedPerson.BirthOrder.HasValue && verifiedPerson.BirthOrder >= 0 ? verifiedPerson.BirthOrder : null,
                 null,
                 null,
                 null,

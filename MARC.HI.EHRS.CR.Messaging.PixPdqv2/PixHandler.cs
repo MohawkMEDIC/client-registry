@@ -9,6 +9,8 @@ using MARC.Everest.Connectors;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using NHapi.Base.Util;
 using System.Diagnostics;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -42,19 +44,19 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     switch (trigger)
                     {
                         case "Q23":
-                            response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21);
+                            response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21, e);
                             break;
                         case "A01":
                         case "A04":
                         case "A05":
                             if(e.Message is NHapi.Model.V231.Message.ADT_A01)
-                                response = HandlePixAdmit(e.Message as NHapi.Model.V231.Message.ADT_A01);
+                                response = HandlePixAdmit(e.Message as NHapi.Model.V231.Message.ADT_A01, e);
                             else
                                 response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
                             break;
                         case "A08":
                             if(e.Message is NHapi.Model.V231.Message.ADT_A01)
-                                response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A01);
+                                response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A01, e);
                             else
                                 response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
                             break;
@@ -78,15 +80,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             return response;
         }
 
-        private IMessage HandlePixUpdate(NHapi.Model.V231.Message.ADT_A01 aDT_A01)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
-        /// Handle a PIX admission
+        /// Handle PIX update
         /// </summary>
-        private IMessage HandlePixAdmit(NHapi.Model.V231.Message.ADT_A01 request)
+        private IMessage HandlePixUpdate(NHapi.Model.V231.Message.ADT_A01 request, Hl7MessageReceivedEventArgs evt)
         {
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -105,6 +102,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 return null;
 
             // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            // Construct appropriate audit
+            AuditData audit = null;
             try
             {
 
@@ -115,8 +115,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data == null)
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                DataUtil dataUtil = new DataUtil() { Context = this.Context };
-                var vid = dataUtil.Register(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
 
                 if (vid == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
@@ -129,19 +129,25 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
             catch (Exception e)
             {
+                Trace.TraceError(e.ToString());
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
+                audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
-
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
+            }
             return response;
         }
 
-
         /// <summary>
-        /// Handle a PIX query
+        /// Handle a PIX admission
         /// </summary>
-        private IMessage HandlePixQuery(NHapi.Model.V25.Message.QBP_Q21 request)
+        private IMessage HandlePixAdmit(NHapi.Model.V231.Message.ADT_A01 request, Hl7MessageReceivedEventArgs evt)
         {
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -160,6 +166,76 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 return null;
 
             // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            // Construct appropriate audit
+            AuditData audit = null;
+            try
+            {
+
+                // Create Query Data
+                ComponentUtility cu = new ComponentUtility() { Context = this.Context };
+                DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
+                var data = cu.CreateComponents(request, dtls);
+                if (data == null)
+                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+
+                var vid = dataUtil.Register(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
+
+                if (vid == null)
+                    throw new InvalidOperationException(locale.GetString("DTPE001"));
+
+                // Now process the result
+                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.TriggerEvent.Value = request.MSH.MessageType.TriggerEvent.Value;
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.MessageType.Value = "ACK";
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError(e.ToString());
+                if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+            }
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
+            }
+            return response;
+        }
+
+
+        /// <summary>
+        /// Handle a PIX query
+        /// </summary>
+        private IMessage HandlePixQuery(NHapi.Model.V25.Message.QBP_Q21 request, Hl7MessageReceivedEventArgs evt)
+        {
+            // Get config
+            var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Create a details array
+            List<IResultDetail> dtls = new List<IResultDetail>();
+
+            // Validate the inbound message
+            MessageUtil.Validate((IMessage)request, config, dtls, this.Context);
+
+            IMessage response = null;
+
+            // Control 
+            if (request == null)
+                return null;
+
+            // Construct appropriate audit
+            AuditData audit = null;
+
+            // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+
             try
             {
 
@@ -170,8 +246,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data.Equals(QueryData.Empty))
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                DataUtil dataUtil = new DataUtil() { Context = this.Context };
+                
                 QueryResultData result = dataUtil.Query(data, dtls);
+                audit = dataUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result
                 response = dcu.CreateRSP_K23(result, dtls);
@@ -179,9 +256,17 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
             catch (Exception e)
             {
+                Trace.TraceError(e.ToString());
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
+                audit = dataUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+            }
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
             }
 
             return response;

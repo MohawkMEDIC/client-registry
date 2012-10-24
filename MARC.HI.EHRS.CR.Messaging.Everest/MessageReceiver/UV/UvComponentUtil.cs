@@ -523,7 +523,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Multiple Birth
             if (ident.MultipleBirthInd != null && !ident.MultipleBirthInd.IsNull)
-                dtls.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "DeceasedInd", this.m_localeService.GetString("MSGW007"), null));
+            {
+                dtls.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "MultipleBirthInd", this.m_localeService.GetString("MSGW007"), null));
+                retVal.BirthOrder = -1;
+            }
             if (ident.MultipleBirthOrderNumber != null && !ident.MultipleBirthOrderNumber.IsNull)
                 retVal.BirthOrder = ident.MultipleBirthOrderNumber;
 
@@ -1348,7 +1351,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 patient.ProviderOrganization.NullFlavor == null)
             {
                 var scoper = CreateProviderOrganization(patient.ProviderOrganization, dtls);
-                retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry | HealthServiceRecordSiteRoleType.InformantTo, null);
+                subjectOf.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry | HealthServiceRecordSiteRoleType.InformantTo, null);
 
             }
             

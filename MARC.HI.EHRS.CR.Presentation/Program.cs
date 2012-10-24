@@ -36,13 +36,6 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
         static void Console() 
         {
             ShowCopyright();
-            Trace.CorrelationManager.ActivityId = typeof(Program).GUID;
-            Trace.TraceInformation("Starting host context on Console Presentation System at {0}", DateTime.Now);
-
-            // Detect platform
-            if (System.Environment.OSVersion.Platform != PlatformID.Win32NT)
-                Trace.TraceWarning("Not running on WindowsNT, some features may not function correctly");
-
             // Do this because loading stuff is tricky ;)
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
@@ -51,6 +44,14 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
             // Initialize 
             HostContext context = new HostContext();
 
+            Trace.CorrelationManager.ActivityId = typeof(Program).GUID;
+            Trace.TraceInformation("Starting host context on Console Presentation System at {0}", DateTime.Now);
+
+            // Detect platform
+            if (System.Environment.OSVersion.Platform != PlatformID.Win32NT)
+                Trace.TraceWarning("Not running on WindowsNT, some features may not function correctly");
+
+            
             // Start the message handler service
             IMessageHandlerService messageHandlerService = null;
             try

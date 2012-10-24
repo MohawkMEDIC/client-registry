@@ -10,6 +10,7 @@ using NHapi.Model.V25.Message;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -100,6 +101,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
             catch (Exception e)
             {
+                Trace.TraceError(e.ToString());
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
