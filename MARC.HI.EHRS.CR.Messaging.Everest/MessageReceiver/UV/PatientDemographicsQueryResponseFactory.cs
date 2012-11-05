@@ -53,7 +53,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 QueryId = String.Format("{1}^^^&{0}&ISO", rqst.controlActProcess.queryByParameter.QueryId.Root, rqst.controlActProcess.queryByParameter.QueryId.Extension),
                 IncludeHistory = false,
                 IncludeNotes = false,
-                Quantity = (int)rqst.controlActProcess.queryByParameter.InitialQuantity,
+                Quantity = rqst.controlActProcess.queryByParameter.InitialQuantity == null ? 100 : (int)rqst.controlActProcess.queryByParameter.InitialQuantity,
                 Originator = String.Format("^^^&{0}&ISO",
                     rqst.Sender.Device.Id[0].Root),
                 OriginalMessageQuery = request,
@@ -135,11 +135,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
 
             // HACK: Sort by confidence score (if present)
-            retHl7v3.Sort((a, b) => 
-                a.RegistrationEvent.Subject1 != null && b.RegistrationEvent.Subject1 != null &&
-                a.RegistrationEvent.Subject1.registeredRole != null && b.RegistrationEvent.Subject1.registeredRole != null &&
-                (a.RegistrationEvent.Subject1.registeredRole.SubjectOf1.Count > 0) && (b.RegistrationEvent.Subject1.registeredRole.SubjectOf1.Count > 0) ?
-                (b.RegistrationEvent.Subject1.registeredRole.SubjectOf1[0].QueryMatchObservation.Value as INT).CompareTo((a.RegistrationEvent.Subject1.registeredRole.SubjectOf1[0].QueryMatchObservation.Value as INT)) : 0);
+            //retHl7v3.Sort((a, b) => 
+            //    a != null && b != null &&
+            //    a.RegistrationEvent != null && b.RegistrationEvent != null &&
+            //    a.RegistrationEvent.Subject1 != null && b.RegistrationEvent.Subject1 != null &&
+            //    a.RegistrationEvent.Subject1.registeredRole != null && b.RegistrationEvent.Subject1.registeredRole != null &&
+            //    (a.RegistrationEvent.Subject1.registeredRole.SubjectOf1.Count > 0) && (b.RegistrationEvent.Subject1.registeredRole.SubjectOf1.Count > 0) ?
+            //    (b.RegistrationEvent.Subject1.registeredRole.SubjectOf1[0].QueryMatchObservation.Value as INT).CompareTo((a.RegistrationEvent.Subject1.registeredRole.SubjectOf1[0].QueryMatchObservation.Value as INT)) : 0);
 
             // Create the response
             PRPA_IN201306UV02 response = new PRPA_IN201306UV02 

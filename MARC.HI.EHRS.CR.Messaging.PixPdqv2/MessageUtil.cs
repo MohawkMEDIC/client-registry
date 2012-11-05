@@ -40,6 +40,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         internal static IMessage CreateNack(IMessage request, string responseCode, string errCode, string errDescription, ISystemConfigurationService config)
         {
+            System.Diagnostics.Trace.TraceWarning(String.Format("NACK Condition : {0}", errDescription));
+
             if (request.Version == "2.3.1")
             {
                 NHapi.Model.V231.Message.ACK ack = new NHapi.Model.V231.Message.ACK();

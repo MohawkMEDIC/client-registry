@@ -44,7 +44,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     switch (trigger)
                     {
                         case "Q23":
-                            response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21, e);
+                            if(e.Message is NHapi.Model.V25.Message.QBP_Q21)
+                                response = HandlePixQuery(e.Message as NHapi.Model.V25.Message.QBP_Q21, e);
+                            else
+                                response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
                             break;
                         case "A01":
                         case "A04":

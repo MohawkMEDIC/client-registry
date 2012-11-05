@@ -16,8 +16,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
     /// <summary>
     /// Component utility for converting components to message parts
     /// </summary>
-	public partial class DeComponentUtil : IUsesHostContext
-	{
+    public partial class DeComponentUtil : IUsesHostContext
+    {
 
         // Invalid classifier
         private const string ERR_EVENT_CLASSIFIER = "Event cannot be translated to messaging format, invalid classifier code";
@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         protected ILocalizationService m_localeService = null;
 
 
-       
+
 
         /// <summary>
         /// Create an IVL from the TimeStampSet
@@ -43,7 +43,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             IVL<TS> retVal = new IVL<TS>();
             foreach (var part in timestampSet.Parts)
             {
-                switch(part.PartType)
+                switch (part.PartType)
                 {
                     case TimestampPart.TimestampPartType.HighBound:
                         retVal.High = CreateTS(part, dtls);
@@ -98,10 +98,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Fill in details
             if (m_terminologyService != null && (retVal.Code.IsAlternateCodeSpecified ||
-                typeof(T) == typeof(String))) 
+                typeof(T) == typeof(String)))
                 codeValue = m_terminologyService.FillInDetails(codeValue);
 
-            if(!String.IsNullOrEmpty(codeValue.CodeSystem))
+            if (!String.IsNullOrEmpty(codeValue.CodeSystem))
                 retVal.CodeSystem = codeValue.CodeSystem;
             retVal.CodeSystemVersion = codeValue.CodeSystemVersion;
             if (codeValue.DisplayName != null)
@@ -109,9 +109,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             else if (codeValue.CodeSystem != null)
                 retVal.CodeSystemName = codeValue.CodeSystemName;
 
-            if(codeValue.OriginalText != null)
+            if (codeValue.OriginalText != null)
                 retVal.OriginalText = codeValue.OriginalText;
-            
+
             // Qualifiers
             if (codeValue.Qualifies != null)
             {
@@ -128,7 +128,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             return retVal;
         }
 
-       
+
 
         /// <summary>
         /// Create an address from the specified address set
@@ -146,12 +146,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (retVal.Use.IsEmpty)
                 retVal.Use = null;
 
-            foreach(var pt in addressSet.Parts)
-                retVal.Part.Add(new ADXP(pt.AddressValue, (AddressPartType)Enum.Parse(typeof(AddressPart.AddressPartType), pt.PartType.ToString())));
+            foreach (var pt in addressSet.Parts)
+                retVal.Part.Add(new ADXP(pt.AddressValue, (AddressPartType)Enum.Parse(typeof(AddressPartType), pt.PartType.ToString())));
             return retVal;
         }
 
-      
+
         /// <summary>
         /// Create an Everest TEL from the data model TEL
         /// </summary>
@@ -161,7 +161,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             {
                 Value = tel.Value
             };
-            if (tel.Use != null)
+            if (!String.IsNullOrEmpty(tel.Use))
                 retVal.Use = new SET<CS<TelecommunicationAddressUse>>(
                     (CS<TelecommunicationAddressUse>)Util.FromWireFormat(tel.Use, typeof(CS<TelecommunicationAddressUse>)),
                     CS<TelecommunicationAddressUse>.Comparator);
@@ -207,22 +207,22 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         public PN CreatePN(MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameSet, List<IResultDetail> dtls)
         {
             EntityNameUse enUse = EntityNameUse.Legal;
-            
+
             try
             {
                 enUse = (EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString());
             }
-            catch 
+            catch
             {
                 throw;
             }
 
             PN retVal = new PN();
-            if(enUse != EntityNameUse.Search)
+            if (enUse != EntityNameUse.Search)
                 retVal.Use = new SET<CS<EntityNameUse>>(enUse);
-            
+
             // Parts
-            foreach(var part in nameSet.Parts)
+            foreach (var part in nameSet.Parts)
                 switch (part.Type)
                 {
                     case NamePart.NamePartType.Family:
@@ -269,9 +269,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             retVal.CodeSystemVersion = codeValue.CodeSystemVersion;
             if (!String.IsNullOrEmpty(codeValue.CodeSystem))
                 retVal.CodeSystem = codeValue.CodeSystem;
-            if(codeValue.DisplayName != null)
+            if (codeValue.DisplayName != null)
                 retVal.DisplayName = codeValue.DisplayName;
-            else if(codeValue.CodeSystem != null)
+            else if (codeValue.CodeSystem != null)
                 retVal.CodeSystemName = codeValue.CodeSystemName;
 
             if (codeValue.OriginalText != null)
@@ -280,7 +280,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             return retVal;
 
         }
-        
+
         /// <summary>
         /// Create an instance identifier set
         /// </summary>
@@ -290,7 +290,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         {
             SET<II> retVal = new SET<II>(2, II.Comparator);
             retVal.Add(new II(id.Domain, id.Identifier) { Scope = IdentifierScope.BusinessIdentifier });
-            retVal.Add(new II(id.Domain, id.Version) { Scope = IdentifierScope.VersionIdentifier});
+            retVal.Add(new II(id.Domain, id.Version) { Scope = IdentifierScope.VersionIdentifier });
             return retVal;
 
         }
@@ -322,6 +322,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         #endregion
 
 
-     
+
     }
 }
