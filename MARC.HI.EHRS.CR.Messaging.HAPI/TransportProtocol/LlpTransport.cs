@@ -68,6 +68,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             {
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
+                
+                
                 DateTime lastReceive = DateTime.Now;
 
                 while (DateTime.Now.Subtract(lastReceive) < this.m_timeout)
@@ -107,8 +109,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     OnMessageReceived(messageArgs);
 
                     // Send the response back
-                    stream.WriteByte(0xb); // header
                     StreamWriter writer = new StreamWriter(stream);
+                    stream.Write(new byte[] { 0xb }, 0, 1); // header
                     if (messageArgs.Response != null)
                     {
                         // Since nHAPI only emits a string we just send that along the stream

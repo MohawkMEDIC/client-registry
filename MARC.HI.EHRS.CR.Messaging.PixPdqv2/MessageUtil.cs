@@ -119,7 +119,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Determine the type of acknowledgement
             string errCode = String.Empty;
             string errSys = "2.16.840.1.113883.5.1100";
-            if (dtl is InsufficientRepetionsResultDetail)
+            if (dtl is InsufficientRepetitionsResultDetail)
                 errCode = "100";
             else if (dtl is MandatoryElementMissingResultDetail)
                 errCode = "101";
@@ -185,7 +185,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Determine the type of acknowledgement
             string errCode = String.Empty;
             string errSys = "2.16.840.1.113883.5.1100";
-            if (dtl is InsufficientRepetionsResultDetail)
+            if (dtl is InsufficientRepetitionsResultDetail)
                 errCode = "100";
             else if (dtl is MandatoryElementMissingResultDetail)
                 errCode = "101";

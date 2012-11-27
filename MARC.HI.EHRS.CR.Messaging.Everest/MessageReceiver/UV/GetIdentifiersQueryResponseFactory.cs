@@ -101,7 +101,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             
             if(retHl7v3.Count > 1)
-                details.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Warning, localeService.GetString("MSGE06E"), null));
+                details.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, localeService.GetString("MSGE06E"), null));
 
             // Create the response
             PRPA_IN201310UV02 response = new PRPA_IN201310UV02

@@ -312,7 +312,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Very important, if there is more than one subject then we have a problem
             if (controlActProcess.Subject.Count != 1)
             {
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
                 return null;
             }
 
@@ -439,7 +439,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if(retVal.AlternateIdentifiers == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE063"), null));
             else if(retVal.AlternateIdentifiers.Count == 0)
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE064"), null));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE064"), null));
 
 
             // Status code
@@ -1130,7 +1130,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Very important, if there is more than one subject then we have a problem
             if (controlActProcess.Subject.Count != 1)
             {
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
                 return null;
             }
 
@@ -1253,7 +1253,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Very important, if there is more than one subject then we have a problem
             if (controlActProcess.Subject.Count != 1)
             {
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04F"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#subject"));
                 return null;
             }
 
@@ -1319,7 +1319,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if(subjectOf.AlternateIdentifiers == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE063"), null));
             else if (subjectOf.AlternateIdentifiers.Count == 0)
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE064"), null));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE064"), null));
 
             // STatus code IHE rule this must be active
             if (patient.StatusCode == null || patient.StatusCode.IsNull)
@@ -1344,7 +1344,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if (subjectOf.Names == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE02A"), null));
             else if (subjectOf.Names.Count == 0)
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE02A"), null));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE02A"), null));
 
             // Scoping org?
             if (patient.ProviderOrganization != null &&
@@ -1357,7 +1357,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             
             // Replacement of?
             if (subject.ReplacementOf == null || subject.ReplacementOf.Count == 0)
-                dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE066"), null));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE066"), null));
             else
                 foreach (var rplc in subject.ReplacementOf)
                     if (rplc.NullFlavor == null &&
@@ -1383,7 +1383,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         }
                         else if (rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id == null || rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsEmpty ||
                             rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.IsNull || rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id.Count > 1)
-                            dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE069"), "//urn:hl7-org:v3#priorRegisteredRole"));
+                            dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE069"), "//urn:hl7-org:v3#priorRegisteredRole"));
                         else
                         {
                             var re = new PersonRegistrationRef()
@@ -1521,7 +1521,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (gender.NullFlavor == null && gender.Value != null && gender.Value.Count == 1)
                     filterPerson.GenderCode = Util.ToWireFormat(gender.Value[0].Code);
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectAdministrativeGender"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectAdministrativeGender"));
                 break;
             }
 
@@ -1531,7 +1531,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (birth.NullFlavor == null && birth.Value != null && birth.Value.Count == 1)
                     filterPerson.BirthTime = CreateTimestamp(birth.Value[0].Value, dtls);
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectBirthTime"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectBirthTime"));
                 break;
             }
 
@@ -1543,7 +1543,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (id.NullFlavor == null && id.Value != null && id.Value.Count == 1)
                     filterPerson.AlternateIdentifiers.Add(CreateDomainIdentifier(id.Value[0], dtls));
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectId"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectId"));
             }
 
             // Living Subject Name
@@ -1553,7 +1553,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (name.NullFlavor == null && name.Value != null && name.Value.Count == 1)
                     filterPerson.Names.Add(CreateNameSet(name.Value[0], dtls));
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectName"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectName"));
             }
 
             // Living Subject Address
@@ -1562,7 +1562,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (addr.NullFlavor == null && addr.Value != null && addr.Value.Count == 1)
                     filterPerson.Addresses = new List<AddressSet>() { CreateAddressSet(addr.Value[0], dtls) };
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientAddress"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientAddress"));
                 break;
             }            
 
@@ -1577,7 +1577,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         Value = tel.Value[0].Value
                     });
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientTelecom"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientTelecom"));
             }
 
             // Other ids
@@ -1587,7 +1587,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     otherId.Value.Count == 1)
                     ids.Add(CreateDomainIdentifier(otherId.Value[0], dtls));
                 else
-                    dtls.Add(new InsufficientRepetionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#otherIDsScopingOrganization"));
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#otherIDsScopingOrganization"));
             }
 
             // Filter

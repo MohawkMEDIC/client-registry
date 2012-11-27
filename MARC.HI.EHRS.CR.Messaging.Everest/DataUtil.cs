@@ -261,7 +261,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Audit the creation
                 if (this.m_auditorService != null)
                 {
-                    AuditData auditData = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.Success, EventIdentifierType.ProvisioningEvent, null);
+                    AuditData auditData = new AuditData(DateTime.Now, ActionType.Create, OutcomeIndicator.Success, EventIdentifierType.ProvisioningEvent, new CodeValue("PRPA_TE101201CA", "HL7 Trigger Events"));
                     UpdateAuditData(healthServiceRecord, auditData, 0);
                     UpdateAuditData(AuditableObjectLifecycle.Creation, new List<VersionedDomainIdentifier>(new VersionedDomainIdentifier[] { retVal }), auditData);
                     this.m_auditorService.SendAudit(auditData);
@@ -856,7 +856,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Audit the creation
                 if (this.m_auditorService != null)
                 {
-                    AuditData auditData = new AuditData(DateTime.Now, ActionType.Update, OutcomeIndicator.Success, EventIdentifierType.ProvisioningEvent, null);
+                    AuditData auditData = new AuditData(DateTime.Now, ActionType.Update, OutcomeIndicator.Success, EventIdentifierType.ProvisioningEvent, new CodeValue("PRPA_TE101204CA", "HL7 Trigger Events"));
                     UpdateAuditData(healthServiceRecord, auditData, 0);
                     UpdateAuditData(AuditableObjectLifecycle.Amendment, new List<VersionedDomainIdentifier>(new VersionedDomainIdentifier[] { retVal }), auditData);
                     this.m_auditorService.SendAudit(auditData);

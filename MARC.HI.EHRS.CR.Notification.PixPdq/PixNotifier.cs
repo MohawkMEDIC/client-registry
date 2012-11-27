@@ -15,6 +15,7 @@ using MARC.Everest.Formatters.XML.ITS1;
 using MARC.Everest.Formatters.XML.Datatypes.R1;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
+using MARC.Everest.Connectors;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq
 {
@@ -151,7 +152,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// <summary>
         /// Dump result details
         /// </summary>
-        private void DumpResultDetails(Everest.Connectors.IResultDetail[] dtls)
+        private void DumpResultDetails(IEnumerable<IResultDetail> dtls)
         {
             foreach (var itm in dtls)
                 Trace.TraceWarning("{0} : {1} at {2}", itm.Type, itm.Message, itm.Location);

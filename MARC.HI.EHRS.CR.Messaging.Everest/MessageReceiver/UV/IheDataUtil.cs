@@ -387,6 +387,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     return null;
                 }
 
+                // TODO: don't match if the person is in the same source
+                // TODO: mark strong matches out of band for future mgmt ui.
+
                 // First, IHE is a little different first we have to see if we can match any of the records for cross referencing
                 // therefore we do a query, first with identifiers and then without identifiers, 100% match
                 VersionedDomainIdentifier[] pid = null;

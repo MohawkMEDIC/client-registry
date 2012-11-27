@@ -288,7 +288,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                                 )
                             ));
                     else
-                        response.controlActEvent.Subject.RegistrationEvent.Subject.registeredRole.IdentifiedPerson.NullFlavor = NullFlavor.NoInformation;
+                        response.controlActEvent.Subject.RegistrationEvent.Subject.registeredRole.IdentifiedPerson.AsOtherIDs = new List<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.OtherIDs>()
+                            {
+                                new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.OtherIDs() { NullFlavor = NullFlavor.NoInformation }
+                            };
 
                     // Response
                     response.controlActEvent.LanguageCode = request.controlActEvent.LanguageCode ?? MessageUtil.GetDefaultLanguageCode(this.Context);
@@ -338,7 +341,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                                 request.controlActEvent.Subject.RegistrationRequest.Subject.registeredRole.EffectiveTime,
                                 request.controlActEvent.Subject.RegistrationRequest.Subject.registeredRole.ConfidentialityCode ?? new CV<x_VeryBasicConfidentialityKind>() { NullFlavor = NullFlavor.NoInformation },
                                 new MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.Person(
-                                ),
+
+                                )
+                                {
+                                    AsOtherIDs = new List<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.OtherIDs>()
+                                },
                                 new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.Subject() { NullFlavor = NullFlavor.NoInformation }
                             )
                         ),

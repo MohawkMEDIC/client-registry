@@ -160,7 +160,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             new AuditableObject()
                             {
                                 IDTypeCode = AuditableObjectIdType.Custom,
-                                CustomIdTypeCode = new CodeValue(itiName),
+                                CustomIdTypeCode = new CodeValue("ITI9"),
                                 QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                                 Type = AuditableObjectType.SystemObject,
                                 Role = AuditableObjectRole.Query,

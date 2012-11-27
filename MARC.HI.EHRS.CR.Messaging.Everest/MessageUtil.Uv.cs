@@ -91,7 +91,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a list of ack details from the supplied list of details
         /// </summary>
-        public static List<AcknowledgementDetail> CreateAckDetailsUv(IResultDetail[] details)
+        public static List<AcknowledgementDetail> CreateAckDetailsUv(IEnumerable<IResultDetail> details)
         {
             List<AcknowledgementDetail> retVal = new List<AcknowledgementDetail>(10);
             foreach (IResultDetail dtl in details ?? new IResultDetail[0])
@@ -106,7 +106,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 };
 
                 // Determine the type of acknowledgement
-                if (dtl is InsufficientRepetionsResultDetail)
+                if (dtl is InsufficientRepetitionsResultDetail)
                     ackDetail.Code = new CE<string>(Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.InsufficientRepetitions), "2.16.840.1.113883.5.1100");
                 else if (dtl is MandatoryElementMissingResultDetail)
                     ackDetail.Code = new CE<string>(Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.MandatoryElementWithNullValue), "2.16.840.1.113883.5.1100");

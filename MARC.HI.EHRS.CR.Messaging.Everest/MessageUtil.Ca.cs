@@ -128,7 +128,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a list of ack details from the supplied list of details
         /// </summary>
-        public static List<AcknowledgementDetail> CreateAckDetails(IResultDetail[] details)
+        public static List<AcknowledgementDetail> CreateAckDetails(IEnumerable<IResultDetail> details)
         {
             List<AcknowledgementDetail> retVal = new List<AcknowledgementDetail>(10);
             foreach (IResultDetail dtl in details ?? new IResultDetail[0])
@@ -140,7 +140,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     dtl.Type == ResultDetailType.Warning ? AcknowledgementDetailType.Warning : AcknowledgementDetailType.Information);
 
                 // Determine the type of acknowledgement
-                if (dtl is InsufficientRepetionsResultDetail)
+                if (dtl is InsufficientRepetitionsResultDetail)
                     ackDetail.Code = AcknowledgementDetailCode.InsufficientRepetitions;
                 else if (dtl is MandatoryElementMissingResultDetail)
                     ackDetail.Code = AcknowledgementDetailCode.MandatoryElementWithNullValue;
@@ -184,7 +184,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Generate altnerative ack detilas for the MCCI message set
         /// </summary>
-        public static IEnumerable<AcknowledgementDetail> CreateGenAckDetails(IResultDetail[] details)
+        public static IEnumerable<AcknowledgementDetail> CreateGenAckDetails(IEnumerable<IResultDetail> details)
         {
             List<AcknowledgementDetail> retVal = new List<AcknowledgementDetail>(10);
             foreach (var item in MessageUtil.CreateAckDetails(details))

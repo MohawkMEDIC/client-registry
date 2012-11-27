@@ -398,7 +398,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE034"), null));
                 return null;
             }
-            retVal.LocationType = CreateCodeValue<ServiceDeliveryLocationRoleType>(serviceDeliveryLocation.Code, dtls);
+            retVal.LocationType = CreateCodeValue(serviceDeliveryLocation.Code, dtls);
 
             return retVal;
         }
@@ -532,7 +532,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (serviceDeliveryLocation.Code == null || serviceDeliveryLocation.Code.IsNull)
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE034"), null, null));
             else
-                retVal.LocationType = CreateCodeValue<ServiceDeliveryLocationRoleType>(serviceDeliveryLocation.Code, dtls);
+                retVal.LocationType = CreateCodeValue(serviceDeliveryLocation.Code, dtls);
 
             // Telecom
             if (serviceDeliveryLocation.Telecom != null)

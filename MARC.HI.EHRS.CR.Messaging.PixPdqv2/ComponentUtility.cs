@@ -878,7 +878,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (MARC.Everest.Connectors.Util.TryFromWireFormat(ts.TimeOfAnEvent.Value, typeof(MARC.Everest.DataTypes.TS), out mts))
             {
                 var ets = mts as MARC.Everest.DataTypes.TS;
-                return new TimestampPart(TimestampPart.TimestampPartType.Standlone, ets.DateValue, TS_PREC_MAP[ets.DateValuePrecision.Value]);
+                string precision;
+                if(TS_PREC_MAP.TryGetValue(ets.DateValuePrecision.Value, out precision))
+                    return new TimestampPart(TimestampPart.TimestampPartType.Standlone, ets.DateValue, precision);
+                return new TimestampPart(TimestampPart.TimestampPartType.Standlone, ets.DateValue, "F");
             }
             else
                 throw new ArgumentException();
