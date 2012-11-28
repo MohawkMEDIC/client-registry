@@ -6,6 +6,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.CR.Core.Util;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
@@ -86,30 +87,35 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Represents the alternate identifier that this record is known as
         /// </summary>
         [XmlElement("altId")]
+        [Description("Patient identifiers")]
         public List<DomainIdentifier> AlternateIdentifiers { get; set; }
 
         /// <summary>
         /// Other, non health care domain identifiers
         /// </summary>
         [XmlElement("otherId")]
+        [Description("Alternate (non medical) identifiers")]
         public List<KeyValuePair<CodeValue, DomainIdentifier>> OtherIdentifiers { get; set; }
 
         /// <summary>
         /// Identifies the birth time of the person
         /// </summary>
         [XmlElement("birthTime")]
+        [Description("Date of birth")]
         public TimestampPart BirthTime { get; set; }
 
         /// <summary>
         /// IDentifies the gender code
         /// </summary>
         [XmlAttribute("genderCode")]
+        [Description("Gender code")]
         public string GenderCode { get; set; }
 
         /// <summary>
         /// Identifies the telecommunications addresses
         /// </summary>
         [XmlElement("telecom")]
+        [Description("Telecommunications addresses")]
         public List<TelecommunicationsAddress> TelecomAddresses { get; set; }
 
         /// <summary>
@@ -128,18 +134,21 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Identifies the deceased time of the person
         /// </summary>
         [XmlElement("deceased")]
+        [Description("Deceased time")]
         public TimestampPart DeceasedTime { get; set; }
 
         /// <summary>
         /// Identifies the birth order of the person 
         /// </summary>
         [XmlElement("birth")]
+        [Description("Birth order")]
         public int? BirthOrder { get; set; }
 
         /// <summary>
         /// Identifies the religion code of the person
         /// </summary>
         [XmlElement("religionCode")]
+        [Description("Religion code")]
         public CodeValue ReligionCode { get; set; }
 
         /// <summary>
@@ -152,30 +161,35 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Identifies the addresses for the person
         /// </summary>
         [XmlElement("addr")]
+        [Description("Addresses")]
         public List<AddressSet> Addresses { get; set; }
 
         /// <summary>
         /// Identifies the known names for the person
         /// </summary>
         [XmlElement("name")]
+        [Description("Names")]
         public List<NameSet> Names { get; set; }
 
         /// <summary>
         /// Identifies the race of the person
         /// </summary>
         [XmlElement("race")]
+        [Description("Race code")]
         public List<CodeValue> Race { get; set; }
 
         /// <summary>
         /// Gets or sets the VIP code
         /// </summary>
         [XmlElement("vip")]
+        [Description("VIP Code")]
         public CodeValue VipCode { get; set; }
 
         /// <summary>
         /// Gets or sets the marital status
         /// </summary>
         [XmlElement("marital")]
+        [Description("Marital status")]
         public CodeValue MaritalStatus { get; set; }
 
         /// <summary>
@@ -194,12 +208,14 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Gets or sets the citizenships of the person
         /// </summary>
         [XmlElement("citizenship")]
+        [Description("Citizenship")]
         public List<Citizenship> Citizenship { get; set; }
 
         /// <summary>
         /// Gets a list of employment
         /// </summary>
         [XmlElement("employment")]
+        [Description("Employment codes")]
         public List<Employment> Employment { get; set; }
     }
 }

@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MARC.HI.EHRS.SHR.Configurator.SharedHealthCore</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.SHR.Configurator.SharedHealthCore</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MARC.Everest">
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Auditing">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Auditing.Atna">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.Everest">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.Persistence.Data">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Terminology">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConfigHelper.cs" />
+    <Compile Include="Forms\Configurators\ucBasicConfigurator.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Configurators\ucBasicConfigurator.Designer.cs">
+      <DependentUpon>ucBasicConfigurator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Configurators\ucFileConfigurator.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Configurators\ucFileConfigurator.Designer.cs">
+      <DependentUpon>ucFileConfigurator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Configurators\ucWcfConfigurator.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Configurators\ucWcfConfigurator.Designer.cs">
+      <DependentUpon>ucWcfConfigurator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frmAddCachedInteraction.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmAddCachedInteraction.Designer.cs">
+      <DependentUpon>frmAddCachedInteraction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frmEditListener.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmEditListener.Designer.cs">
+      <DependentUpon>frmEditListener.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frmEditRevision.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmEditRevision.Designer.cs">
+      <DependentUpon>frmEditRevision.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InfoClasses.cs" />
+    <Compile Include="MessagingConfigurationPanel.cs" />
+    <Compile Include="Panels\pnlConfigureDatabase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Panels\pnlConfigureDatabase.Designer.cs">
+      <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Panels\pnlConfigureTerminology.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Panels\pnlConfigureTerminology.Designer.cs">
+      <DependentUpon>pnlConfigureTerminology.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PersistenceConfigurationPanel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="QueryPersistenceConfigurationPanel.cs" />
+    <Compile Include="TerminologyConfigurationPanel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\Configurators\ucBasicConfigurator.resx">
+      <DependentUpon>ucBasicConfigurator.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Configurators\ucFileConfigurator.resx">
+      <DependentUpon>ucFileConfigurator.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Configurators\ucWcfConfigurator.resx">
+      <DependentUpon>ucWcfConfigurator.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmAddCachedInteraction.resx">
+      <DependentUpon>frmAddCachedInteraction.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmEditListener.resx">
+      <DependentUpon>frmEditListener.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmEditRevision.resx">
+      <DependentUpon>frmEditRevision.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Panels\pnlConfigureDatabase.resx">
+      <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Panels\pnlConfigureTerminology.resx">
+      <DependentUpon>pnlConfigureTerminology.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Persistence.Data\MARC.HI.EHRS.CR.Persistence.Data.csproj">
+      <Project>{6C5C870F-0C4F-403D-87E0-7EA798F772D6}</Project>
+      <Name>MARC.HI.EHRS.CR.Persistence.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

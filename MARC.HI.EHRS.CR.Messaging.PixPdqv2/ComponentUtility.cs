@@ -613,7 +613,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             else
                 retVal.QueryTag = retVal.QueryId;
 
-            retVal.IsSummary = true;
+            retVal.IsSummary = false;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
 
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
