@@ -295,7 +295,23 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             // Provider org
             if (providerOrg != null)
                 retVal.registeredRole.ProviderOrganization = CreateProviderOrganization(providerOrg);
-
+            else
+            {
+                var oidData = m_configService.OidRegistrar.FindData(subject.AlternateIdentifiers[0].Domain);
+                if (oidData != null)
+                {
+                    retVal.registeredRole.ProviderOrganization = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization()
+                    {
+                        Id = SET<II>.CreateSET(new II(oidData.Oid)),
+                        Name = BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(oidData.Description))),
+                        ContactParty = new List<Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty>()
+                        {
+                            new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
+                        }
+                    };
+                    
+                }
+            }
             return retVal;
         }
 
@@ -684,6 +700,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 var dev = custodian as RepositoryDevice;
 
                 if (dev.Name != null) // Fully named device
+                {
                     retVal.AssignedEntity.SetAssignedPrincipalChoiceList(
                         new Everest.RMIM.UV.NE2008.COCT_MT090303UV01.Device(
                             SET<II>.CreateSET(CreateII(dev.AlternateIdentifier)),
@@ -691,10 +708,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                             dev.Name
                         )
                     );
+                    retVal.AssignedEntity.Id = SET<II>.CreateSET(CreateII(dev.AlternateIdentifier));
+                }
                 else
                     retVal.AssignedEntity = new Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity(
                         new SET<II>(CreateII(dev.AlternateIdentifier))
                     );
+                
 
             }
             else

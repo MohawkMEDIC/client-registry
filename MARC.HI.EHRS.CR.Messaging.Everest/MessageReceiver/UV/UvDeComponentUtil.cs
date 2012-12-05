@@ -465,7 +465,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             
             // Identifier
-            retVal.Id = new SET<II>(new II(rel.Id.ToString(), this.m_configService.OidRegistrar.GetOid("CR_PRID").Oid));
+            retVal.Id = new SET<II>(new II(this.m_configService.OidRegistrar.GetOid("CR_PRID").Oid, rel.Id.ToString()));
             if (!String.IsNullOrEmpty(rel.RelationshipKind))
                 retVal.Code = new CE<string>(rel.RelationshipKind, "2.16.840.1.113883.5.111");
 
