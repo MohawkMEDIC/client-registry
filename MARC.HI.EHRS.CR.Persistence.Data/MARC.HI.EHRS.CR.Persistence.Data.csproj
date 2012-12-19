@@ -90,6 +90,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\MARC.HI.EHRS.CR.licenseheader">
+      <Link>MARC.HI.EHRS.CR.licenseheader</Link>
+    </None>
     <None Include="Configuration\marc.hi.ehrs.cr.persistence.data.xsd">
       <SubType>Designer</SubType>
     </None>

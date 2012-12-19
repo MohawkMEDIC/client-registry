@@ -79,6 +79,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\MARC.HI.EHRS.CR.licenseheader">
+      <Link>MARC.HI.EHRS.CR.licenseheader</Link>
+    </None>
     <None Include="Configuration\marc.hi.ehrs.cr.messaging.hl7.xsd">
       <SubType>Designer</SubType>
     </None>

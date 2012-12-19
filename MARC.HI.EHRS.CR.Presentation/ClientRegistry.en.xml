@@ -1,4 +1,7 @@
-﻿<locale name="en" xmlns="urn:marc-hi:ca/localization"> 
+﻿<!--
+Sample license text.
+-->
+<locale name="en" xmlns="urn:marc-hi:ca/localization"> 
   
   <!-- MESSAGE VALIDATION ERRORS AND WARNINGS -->
   <string name="MSGE000">MSGE000 : General Message validation &amp; translation Error</string>
