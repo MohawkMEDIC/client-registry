@@ -510,6 +510,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             sb.Remove(sb.Length - 10, 10);
                         sb.Append(")");
 
+
                         #endregion
 
                         cmd.CommandText = sb.ToString();
@@ -539,6 +540,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             break;
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                throw new DataException("Query error : " + e.Message, e);
             }
             finally
             {
@@ -601,7 +606,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             StringBuilder retVal = new StringBuilder();
             foreach (var id in identifiers)
             {
-                retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Value.Domain.Replace("'", "''"), id.Value.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                if(!String.IsNullOrEmpty(id.Value.Identifier))
+                    retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Value.Domain.Replace("'", "''"), id.Value.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                else
+                    retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_EXTERN('{0}')", id.Value.Domain.Replace("'", "''"), identifiers.Count * 4);
                 if (!id.Equals(identifiers.Last()))
                     retVal.AppendFormat(" UNION ");
             }
@@ -657,7 +665,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             foreach (var id in identifiers)
             {
                 if (id.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
-                    retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                {
+                    if(!String.IsNullOrEmpty(id.Identifier))
+                        retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
+                    else
+                        retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_EXTERN('{0}')", id.Domain.Replace("'", "''"));
+
+                }
                 else
                     retVal.AppendFormat("SELECT {0}", id.Identifier);
                 if (id != identifiers.Last())

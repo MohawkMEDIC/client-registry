@@ -36,6 +36,7 @@
             this.lstMerge = new System.Windows.Forms.CheckedListBox();
             this.chkMerge = new System.Windows.Forms.CheckBox();
             this.pnlConnection = new System.Windows.Forms.Panel();
+            this.label12 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.dlStrength = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -55,7 +56,6 @@
             this.label9 = new System.Windows.Forms.Label();
             this.txtUserName = new System.Windows.Forms.TextBox();
             this.txtDatabaseAddress = new System.Windows.Forms.TextBox();
-            this.label12 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMinCriteria)).BeginInit();
             this.pnlConnection.SuspendLayout();
@@ -83,7 +83,7 @@
             this.groupBox1.Enabled = false;
             this.groupBox1.Location = new System.Drawing.Point(11, 426);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(360, 207);
+            this.groupBox1.Size = new System.Drawing.Size(309, 207);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Merge Criteria";
@@ -101,7 +101,7 @@
             // numMinCriteria
             // 
             this.numMinCriteria.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.numMinCriteria.Location = new System.Drawing.Point(291, 178);
+            this.numMinCriteria.Location = new System.Drawing.Point(240, 178);
             this.numMinCriteria.Name = "numMinCriteria";
             this.numMinCriteria.Size = new System.Drawing.Size(63, 20);
             this.numMinCriteria.TabIndex = 2;
@@ -112,7 +112,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label10.Location = new System.Drawing.Point(6, 25);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(348, 34);
+            this.label10.Size = new System.Drawing.Size(297, 34);
             this.label10.TabIndex = 1;
             this.label10.Text = "Select the fields you would like to match in order for an automatic merge to be p" +
     "erformed. These fields are AND filtered";
@@ -125,7 +125,7 @@
             this.lstMerge.FormattingEnabled = true;
             this.lstMerge.Location = new System.Drawing.Point(6, 62);
             this.lstMerge.Name = "lstMerge";
-            this.lstMerge.Size = new System.Drawing.Size(348, 94);
+            this.lstMerge.Size = new System.Drawing.Size(297, 94);
             this.lstMerge.TabIndex = 0;
             this.lstMerge.SelectedIndexChanged += new System.EventHandler(this.lstMerge_SelectedIndexChanged);
             // 
@@ -169,8 +169,22 @@
             this.pnlConnection.Controls.Add(this.txtDatabaseAddress);
             this.pnlConnection.Location = new System.Drawing.Point(3, 3);
             this.pnlConnection.Name = "pnlConnection";
-            this.pnlConnection.Size = new System.Drawing.Size(387, 652);
+            this.pnlConnection.Size = new System.Drawing.Size(336, 652);
             this.pnlConnection.TabIndex = 47;
+            // 
+            // label12
+            // 
+            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label12.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label12.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label12.Location = new System.Drawing.Point(0, 335);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(336, 21);
+            this.label12.TabIndex = 47;
+            this.label12.Text = "Merging";
+            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label1
             // 
@@ -180,7 +194,7 @@
             this.label1.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(387, 20);
+            this.label1.Size = new System.Drawing.Size(336, 20);
             this.label1.TabIndex = 24;
             this.label1.Text = "Connection";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -198,7 +212,7 @@
             "Weak"});
             this.dlStrength.Location = new System.Drawing.Point(149, 311);
             this.dlStrength.Name = "dlStrength";
-            this.dlStrength.Size = new System.Drawing.Size(130, 21);
+            this.dlStrength.Size = new System.Drawing.Size(79, 21);
             this.dlStrength.TabIndex = 46;
             // 
             // label2
@@ -210,7 +224,7 @@
             this.label2.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.label2.Location = new System.Drawing.Point(0, 174);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(387, 21);
+            this.label2.Size = new System.Drawing.Size(336, 21);
             this.label2.TabIndex = 25;
             this.label2.Text = "Validation";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -232,7 +246,7 @@
             this.cbxProviderType.FormattingEnabled = true;
             this.cbxProviderType.Location = new System.Drawing.Point(111, 34);
             this.cbxProviderType.Name = "cbxProviderType";
-            this.cbxProviderType.Size = new System.Drawing.Size(260, 21);
+            this.cbxProviderType.Size = new System.Drawing.Size(209, 21);
             this.cbxProviderType.TabIndex = 27;
             // 
             // chkExact
@@ -301,7 +315,7 @@
             this.label3.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.label3.Location = new System.Drawing.Point(0, 218);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(387, 21);
+            this.label3.Size = new System.Drawing.Size(336, 21);
             this.label3.TabIndex = 41;
             this.label3.Text = "Query Control";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -333,7 +347,7 @@
             this.cbxDatabase.FormattingEnabled = true;
             this.cbxDatabase.Location = new System.Drawing.Point(111, 139);
             this.cbxDatabase.Name = "cbxDatabase";
-            this.cbxDatabase.Size = new System.Drawing.Size(260, 21);
+            this.cbxDatabase.Size = new System.Drawing.Size(209, 21);
             this.cbxDatabase.TabIndex = 34;
             // 
             // txtPassword
@@ -343,7 +357,7 @@
             this.txtPassword.Location = new System.Drawing.Point(111, 113);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(260, 20);
+            this.txtPassword.Size = new System.Drawing.Size(209, 20);
             this.txtPassword.TabIndex = 32;
             this.txtPassword.TextChanged += new System.EventHandler(this.connectionParameter_Validated);
             // 
@@ -362,7 +376,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtUserName.Location = new System.Drawing.Point(111, 87);
             this.txtUserName.Name = "txtUserName";
-            this.txtUserName.Size = new System.Drawing.Size(260, 20);
+            this.txtUserName.Size = new System.Drawing.Size(209, 20);
             this.txtUserName.TabIndex = 31;
             this.txtUserName.Validated += new System.EventHandler(this.connectionParameter_Validated);
             // 
@@ -372,23 +386,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtDatabaseAddress.Location = new System.Drawing.Point(111, 61);
             this.txtDatabaseAddress.Name = "txtDatabaseAddress";
-            this.txtDatabaseAddress.Size = new System.Drawing.Size(260, 20);
+            this.txtDatabaseAddress.Size = new System.Drawing.Size(209, 20);
             this.txtDatabaseAddress.TabIndex = 29;
             this.txtDatabaseAddress.Validated += new System.EventHandler(this.connectionParameter_Validated);
-            // 
-            // label12
-            // 
-            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label12.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label12.Location = new System.Drawing.Point(0, 335);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(387, 21);
-            this.label12.TabIndex = 47;
-            this.label12.Text = "Merging";
-            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // pnlConfigureDatabase
             // 
@@ -397,7 +397,7 @@
             this.AutoScroll = true;
             this.Controls.Add(this.pnlConnection);
             this.Name = "pnlConfigureDatabase";
-            this.Size = new System.Drawing.Size(393, 280);
+            this.Size = new System.Drawing.Size(342, 280);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMinCriteria)).EndInit();

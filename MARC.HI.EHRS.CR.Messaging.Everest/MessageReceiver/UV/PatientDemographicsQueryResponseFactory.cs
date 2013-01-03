@@ -76,7 +76,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     rqst.Sender.Device.Id[0].Root),
                 OriginalMessageQuery = request,
                 QueryRequest = queryData,
-                TargetDomains = ids,
                 IsSummary = true
             };
 

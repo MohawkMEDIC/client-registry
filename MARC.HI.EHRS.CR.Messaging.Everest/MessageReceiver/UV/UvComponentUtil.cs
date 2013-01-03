@@ -1601,9 +1601,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Other ids
             foreach (var otherId in parameterList.OtherIDsScopingOrganization)
             {
-                if(otherId != null && otherId.NullFlavor == null &&
+                if (otherId != null && otherId.NullFlavor == null &&
                     otherId.Value.Count == 1)
-                    ids.Add(CreateDomainIdentifier(otherId.Value[0], dtls));
+                    filterPerson.AlternateIdentifiers.Add(new DomainIdentifier()
+                    {
+                        Domain = otherId.Value[0].Root
+                    });
                 else
                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#otherIDsScopingOrganization"));
             }
