@@ -114,9 +114,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             retVal.controlActProcess.Subject.Add(subject);
 
             // Custodian?
-            var custodian = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.PlaceOfRecord | SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ResponsibleFor);
-            if (custodian != null)
-                subject.RegistrationEvent.Custodian = CreateCustodian(custodian);
+            subject.RegistrationEvent.Custodian = CreateCustodian(registrationEvent, configuration);
 
             return retVal;
         }
@@ -153,9 +151,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             retVal.controlActProcess.Subject.Add(subject);
 
             // Custodian?
-            var custodian = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.PlaceOfRecord | SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ResponsibleFor);
-            if (custodian != null && configuration.ActAs == TargetActorType.PAT_IDENTITY_SRC)
-                subject.RegistrationEvent.Custodian = CreateCustodian(custodian);
+            subject.RegistrationEvent.Custodian = CreateCustodian(registrationEvent, configuration);
 
             return retVal;
         }
@@ -226,8 +222,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     ));
             
             // Custodian?
-            if (custodian != null && configuration.ActAs == TargetActorType.PAT_IDENTITY_SRC)
-                eventRegistration.RegistrationEvent.Custodian = CreateCustodian(custodian);
+            eventRegistration.RegistrationEvent.Custodian = CreateCustodian(registrationEvent, configuration);
 
             return retVal;
         }
@@ -311,24 +306,19 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 retVal.registeredRole.ConfidentialityCode = new SET<CE<string>>(CreateCD<String>(masking.MaskingCode));
 
             // Provider org
-            if (providerOrg != null)
-                retVal.registeredRole.ProviderOrganization = CreateProviderOrganization(providerOrg);
-            else
+            var oidData = m_configService.OidRegistrar.FindData(iiSet[0].Root);
+            if (oidData != null)
             {
-                var oidData = m_configService.OidRegistrar.FindData(subject.AlternateIdentifiers[0].Domain);
-                if (oidData != null)
+                retVal.registeredRole.ProviderOrganization = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization()
                 {
-                    retVal.registeredRole.ProviderOrganization = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization()
+                    Id = SET<II>.CreateSET(new II(oidData.Oid)),
+                    Name = BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(oidData.Attributes.Find(o=>o.Key == "CustodialOrgName").Value ?? oidData.Description))),
+                    ContactParty = new List<Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty>()
                     {
-                        Id = SET<II>.CreateSET(new II(oidData.Oid)),
-                        Name = BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(oidData.Description))),
-                        ContactParty = new List<Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty>()
-                        {
-                            new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
-                        }
-                    };
+                        new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
+                    }
+                };
                     
-                }
             }
             return retVal;
         }
@@ -706,53 +696,33 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// <summary>
         /// Create custodial data from either a RepositoryDevice or a HealthcareParticipant
         /// </summary>
-        private Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Custodian CreateCustodian(System.ComponentModel.IComponent custodian)
+        private Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Custodian CreateCustodian(RegistrationEvent registrationEvent, TargetConfiguration configuration)
         {
+
+
+            ISystemConfigurationService sysConfig = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            var subject = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var iiSet = new List<II>(CreateIISet(subject.AlternateIdentifiers));
+            iiSet.RemoveAll(ii => !configuration.NotificationDomain.Exists(o => o.Domain.Equals(ii.Root)));
+
+            var oidData = sysConfig.OidRegistrar.FindData(iiSet[0].Root);
+            if(oidData == null)
+                throw new InvalidOperationException("Cannot find notification settings for " + oidData);
+
             var retVal = new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Custodian(
                 new Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity()
             );
 
             // Device
-            if (custodian is RepositoryDevice)
-            {
-                var dev = custodian as RepositoryDevice;
-
-                if (dev.Name != null) // Fully named device
-                {
-                    retVal.AssignedEntity.SetAssignedPrincipalChoiceList(
-                        new Everest.RMIM.UV.NE2008.COCT_MT090303UV01.Device(
-                            SET<II>.CreateSET(CreateII(dev.AlternateIdentifier)),
-                            null,
-                            dev.Name
-                        )
-                    );
-                    retVal.AssignedEntity.Id = SET<II>.CreateSET(CreateII(dev.AlternateIdentifier));
-                }
-                else
-                    retVal.AssignedEntity = new Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity(
-                        new SET<II>(CreateII(dev.AlternateIdentifier))
-                    );
-                
-
-            }
-            else
-            {
-                var hcp = custodian as HealthcareParticipant;
-                retVal.AssignedEntity.SetAssignedPrincipalChoiceList(
-                    new Everest.RMIM.UV.NE2008.COCT_MT090203UV01.Organization(
-                        BAG<EN>.CreateBAG(new EN(EntityNameUse.Legal, CreatePN(hcp.LegalName).Part))
-                    )
-                );
-                retVal.AssignedEntity.Id = CreateIISet(hcp.AlternateIdentifiers);
-                if (hcp.PrimaryAddress != null)
-                    retVal.AssignedEntity.Addr = BAG<AD>.CreateBAG(CreateAD(hcp.PrimaryAddress));
-                if (hcp.TelecomAddresses != null)
-                {
-                    retVal.AssignedEntity.Telecom = new BAG<TEL>();
-                    foreach (var tel in hcp.TelecomAddresses)
-                        retVal.AssignedEntity.Telecom.Add(CreateTEL(tel));
-                }
-            }
+            retVal.AssignedEntity.SetAssignedPrincipalChoiceList(
+                new Everest.RMIM.UV.NE2008.COCT_MT090303UV01.Device(
+                    SET<II>.CreateSET(new II(oidData.Attributes.Find(o => o.Key == "CustodialDeviceId").Value ?? oidData.Oid)),
+                    null,
+                    oidData.Attributes.Find(o=>o.Key == "CustodialDeviceName").Value ?? oidData.Description
+                )
+            );
+            retVal.AssignedEntity.Id = SET<II>.CreateSET(new II(oidData.Oid));
 
             return retVal;
 
