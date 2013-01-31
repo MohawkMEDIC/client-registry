@@ -39,6 +39,7 @@ using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
 using MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister;
 using System.Text;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -77,7 +78,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Connection manager
         /// </summary>
-        internal static ConnectionManager ConnectionManager { get { return m_configuration.ConnectionManager; } }
+        public static ConnectionManager ConnectionManager { get { return m_configuration.ConnectionManager; } }
 
         /// <summary>
         /// Connection manager
@@ -487,7 +488,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                         // Match birth time
                         if (subjectOfQuery.BirthTime != null)
-                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
+                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0:MM/dd/yyyy HH:mm:ss Z}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
 
                         // Other Identifiers
                         if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
@@ -681,7 +682,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         }
 
         #endregion
-
 
     }
 }

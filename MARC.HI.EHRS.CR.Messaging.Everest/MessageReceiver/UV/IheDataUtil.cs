@@ -411,9 +411,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // First, IHE is a little different first we have to see if we can match any of the records for cross referencing
                 // therefore we do a query, first with identifiers and then without identifiers, 100% match
                 VersionedDomainIdentifier[] pid = null;
-                if (this.m_clientRegistryConfigService != null && (this.m_clientRegistryConfigService.Configuration.Registration.AutoMerge || this.m_clientRegistryConfigService.Configuration.Registration.UpdateIfExists))
+                if (this.m_clientRegistryConfigService != null)
                 {
+                    bool isFuzzyMatch = false;
                     // Check if the person exists just via the identifier?
+                    // This is important because it is not necessarily a merge but an "update if exists"
                     var subject = healthServiceRecord.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                     QueryParameters qp = new QueryParameters()
                     {
@@ -421,22 +423,26 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         MatchingAlgorithm = MatchAlgorithm.Exact,
                         MatchStrength = MatchStrength.Exact
                     };
+                    
                     var patientQuery = new RegistrationEvent();
                     patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
                     patientQuery.Add(new Person() { AlternateIdentifiers = subject.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                     // Perform the query
                     pid = this.m_docRegService.QueryRecord(patientQuery);
-
-                    if (pid.Length == 0 && this.m_clientRegistryConfigService.Configuration.Registration.AutoMerge)
+                    
+                    if (pid.Length == 0)
                     {
-
+                        isFuzzyMatch = true;
                         // No match based on ID, get rid of the identifiers and then match
                         // based on configured criteria
                         patientQuery.RemoveAllFromRole(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf);
                         var ssubject = this.m_clientRegistryConfigService.CreateMergeFilter(subject);
 
                         if (ssubject != null) // Minimum criteria was met
-                            pid = this.m_docRegService.QueryRecord(patientQuery); // Try to cross reference again   
+                        {
+                           patientQuery.Add(ssubject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                           pid = this.m_docRegService.QueryRecord(patientQuery); // Try to cross reference again   
+                         }
                     }
 
                     // Did we cross reference a patient?
@@ -444,17 +450,36 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     {
                         // Add the pid to the list of registration event identifiers
                         healthServiceRecord.AlternateIdentifier = pid[0];
+                        VersionedDomainIdentifier vid = null;
                         // Update
-                        dtls.Add(new ResultDetail(ResultDetailType.Warning, String.Format(m_localeService.GetString("DTPW002"), pid[0].Domain, pid[0].Identifier), null, null));
-                        var vid = this.Update(healthServiceRecord, dtls, issues, mode);
-                        return vid;
+                        //   1. If it is a fuzzy match and the automerge is enabled
+                        //   2. If it is an exact match with update if exists
+                        if (this.m_clientRegistryConfigService.Configuration.Registration.AutoMerge || !isFuzzyMatch && this.m_clientRegistryConfigService.Configuration.Registration.UpdateIfExists)
+                        {
+                            dtls.Add(new ResultDetail(ResultDetailType.Warning, String.Format(m_localeService.GetString("DTPW002"), pid[0].Domain, pid[0].Identifier), null, null));
+                            vid = this.Update(healthServiceRecord, dtls, issues, mode);
+                            return vid;
+                        }
+                        else // candidate match but no auto-merge or update if exists, that means we need to link
+                        {
+                            needsReconciliation = true;
+                            healthServiceRecord.Add(new HealthServiceRecordComponentRef()
+                            {
+                                AlternateIdentifier = pid[0]
+                            }, "MRGT", HealthServiceRecordSiteRoleType.TargetOf | HealthServiceRecordSiteRoleType.AlternateTo, null);
+                        }   
                     }
                     else if (pid.Length > 1) // Add a warning
                     {
                         dtls.Add(new ResultDetail(ResultDetailType.Warning, m_localeService.GetString("DTPW001"), null, null));
                         // Notify someone that this needs to occur
                         needsReconciliation = true;
-
+                        // Add each pid to a reconciliation reference
+                        foreach(var p in pid)
+                            healthServiceRecord.Add(new HealthServiceRecordComponentRef()
+                            {
+                                AlternateIdentifier = p
+                            }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.TargetOf | HealthServiceRecordSiteRoleType.AlternateTo, null);
                     }
                 }
 

@@ -36,7 +36,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
     /// <summary>
     /// Database utilities
     /// </summary>
-    internal static class DbUtil
+    public static class DbUtil
     {
 
         [ThreadStatic]
@@ -76,7 +76,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get the root event
         /// </summary>
-        internal static RegistrationEvent GetRegistrationEvent(IComponent child)
+        public static RegistrationEvent GetRegistrationEvent(IComponent child)
         {
             if (child.Site == null)
                 return null;
@@ -92,7 +92,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create a command
         /// </summary>
-        internal static IDbCommand CreateCommandStoredProc(IDbConnection conn, IDbTransaction tx)
+        public static IDbCommand CreateCommandStoredProc(IDbConnection conn, IDbTransaction tx)
         {
             IDbCommand cmd = conn.CreateCommand();
             cmd.CommandType = CommandType.StoredProcedure;
@@ -108,7 +108,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <param name="type"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static IDbDataParameter CreateParameterIn(IDbCommand owner, string name, DbType type, object value)
+        public static IDbDataParameter CreateParameterIn(IDbCommand owner, string name, DbType type, object value)
         {
             IDbDataParameter retVal = owner.CreateParameter();
             retVal.DbType = type;
@@ -121,7 +121,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create a coded value
         /// </summary>
-        internal static decimal CreateCodedValue(IDbConnection conn, IDbTransaction tx, MARC.HI.EHRS.SVC.Core.DataTypes.CodeValue codeValue)
+        public static decimal CreateCodedValue(IDbConnection conn, IDbTransaction tx, MARC.HI.EHRS.SVC.Core.DataTypes.CodeValue codeValue)
         {
 
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
@@ -160,7 +160,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get coded value from the database
         /// </summary>
-        internal static CodeValue GetCodedValue(IDbConnection conn, IDbTransaction tx, decimal? codeId)
+        public static CodeValue GetCodedValue(IDbConnection conn, IDbTransaction tx, decimal? codeId)
         {
             if (!codeId.HasValue) return null;
 
@@ -333,7 +333,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create a timeset
         /// </summary>
-        internal static decimal CreateTimeset(IDbConnection conn, IDbTransaction tx, TimestampSet dateTime)
+        public static decimal CreateTimeset(IDbConnection conn, IDbTransaction tx, TimestampSet dateTime)
         {
 
             decimal? tsSetId = null;
@@ -357,7 +357,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create timestamp part
         /// </summary>
-        internal static decimal CreateTimestamp(IDbConnection conn, IDbTransaction tx, TimestampPart tsPart, decimal? tsSetId)
+        public static decimal CreateTimestamp(IDbConnection conn, IDbTransaction tx, TimestampPart tsPart, decimal? tsSetId)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
             try
@@ -387,7 +387,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get an address set from the database
         /// </summary>
-        internal static AddressSet GetAddress(IDbConnection conn, IDbTransaction tx, decimal? addrSetId)
+        public static AddressSet GetAddress(IDbConnection conn, IDbTransaction tx, decimal? addrSetId)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
@@ -420,7 +420,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get a name from the database
         /// </summary>
-        internal static NameSet GetName(IDbConnection conn, IDbTransaction tx, decimal? nsSetId)
+        public static NameSet GetName(IDbConnection conn, IDbTransaction tx, decimal? nsSetId)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
@@ -453,7 +453,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create a name set record
         /// </summary>
-        internal static decimal CreateNameSet(IDbConnection conn, IDbTransaction tx, NameSet nameSet)
+        public static decimal CreateNameSet(IDbConnection conn, IDbTransaction tx, NameSet nameSet)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
@@ -487,7 +487,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Create an address set
         /// </summary>
-        internal static decimal CreateAddressSet(IDbConnection conn, IDbTransaction tx, AddressSet addrSet)
+        public static decimal CreateAddressSet(IDbConnection conn, IDbTransaction tx, AddressSet addrSet)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
@@ -521,7 +521,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Persist the components of the specified container
         /// </summary>
-        internal static void PersistComponents(IDbConnection conn, IDbTransaction tx, bool isUpdate, IComponentPersister persister, IContainer cont)
+        public static void PersistComponents(IDbConnection conn, IDbTransaction tx, bool isUpdate, IComponentPersister persister, IContainer cont)
         {
             // Now time for sub-components
             foreach (IComponent cmp in cont.Components)
@@ -543,7 +543,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Register component
         /// </summary>
-        internal static void RegisterComponent(IDbConnection conn, IDbTransaction tx, Decimal componentId, IComponent component, Decimal containerId, IContainer container)
+        public static void RegisterComponent(IDbConnection conn, IDbTransaction tx, Decimal componentId, IComponent component, Decimal containerId, IContainer container)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
             try
@@ -578,7 +578,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Verifies that the database being used for the persistence engine will work as expected
         /// </summary>
-        internal static Version GetSchemaVersion(IDbConnection conn)
+        public static Version GetSchemaVersion(IDbConnection conn)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, null);
             try
@@ -595,7 +595,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get an effective time set
         /// </summary>
-        internal static TimestampSet GetEffectiveTimestampSet(IDbConnection conn, IDbTransaction tx, decimal tsId)
+        public static TimestampSet GetEffectiveTimestampSet(IDbConnection conn, IDbTransaction tx, decimal tsId)
         {
             // Load the timestampset
             TimestampSet retVal = new TimestampSet();
@@ -653,7 +653,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Clear persisted cache
         /// </summary>
-        internal static void ClearPersistedCache()
+        public static void ClearPersistedCache()
         {
             m_alreadyDepersisted = new List<HealthServiceRecordComponent>();
         }
@@ -661,7 +661,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// De-Persist components
         /// </summary>
-        internal static void DePersistComponents(IDbConnection conn, IContainer cont, IComponentPersister parent, bool loadFast)
+        public static void DePersistComponents(IDbConnection conn, IContainer cont, IComponentPersister parent, bool loadFast)
         {
             List<ComponentData> tComponents = GetComponents(conn, cont, false);
             
@@ -753,7 +753,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Build the query expression
         /// </summary>
-        internal static string BuildQueryFilter(IComponent queryComponent, HostContext context)
+        public static string BuildQueryFilter(IComponent queryComponent, HostContext context)
         {
             
             StringBuilder retVal = new StringBuilder();

@@ -122,6 +122,9 @@
     <Reference Include="MARC.HI.EHRS.SVC.Terminology">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
     </Reference>
+    <Reference Include="MohawkCollege.Util.Console.Parameters">
+      <HintPath>..\Solution Items\MohawkCollege.Util.Console.Parameters.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\Mono.Security.dll</HintPath>
@@ -154,6 +157,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleParameters.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceInstaller.cs">
@@ -177,6 +181,9 @@
     <None Include="App.config.connectathon">
       <SubType>Designer</SubType>
     </None>
+    <None Include="db.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="ClientRegistry.en.xml">
@@ -186,9 +193,17 @@
     <Content Include="SHR.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Messaging.HAPI\MARC.HI.EHRS.CR.Messaging.HL7.csproj">
       <Project>{257710CF-713E-4534-B562-DB25CDBADD79}</Project>
       <Name>MARC.HI.EHRS.CR.Messaging.HL7</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Persistence.Data\MARC.HI.EHRS.CR.Persistence.Data.csproj">
+      <Project>{6C5C870F-0C4F-403D-87E0-7EA798F772D6}</Project>
+      <Name>MARC.HI.EHRS.CR.Persistence.Data</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

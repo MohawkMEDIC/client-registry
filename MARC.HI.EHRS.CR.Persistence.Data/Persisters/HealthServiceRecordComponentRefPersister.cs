@@ -52,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // In order to persist we first must get the id of the hsr
             var componentRef = data as HealthServiceRecordComponentRef;
-            if (componentRef.AlternateIdentifier.Domain.Equals(configSvc.OidRegistrar.GetOid(ClientRegistryOids.EVENT_OID).Oid))
+            if (componentRef.AlternateIdentifier.Domain.Equals(configSvc.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid))
                 componentRef.Id = Decimal.Parse(componentRef.AlternateIdentifier.Identifier);
             else
                 throw new ConstraintException("Referenced record cannot be found in this repository");
@@ -151,7 +151,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     },
                     Id = identifier
                 };
-                (container as HealthServiceRecordContainer).Add(retVal, "CMP", role.Value, null);
+                (container as HealthServiceRecordContainer).Add(retVal, Guid.NewGuid().ToString(), role.Value, null);
                 return retVal;
             }
 

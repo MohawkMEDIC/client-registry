@@ -67,8 +67,8 @@ namespace MARC.HI.EHRS.CR.Core
             Person retVal = new Person();
             
             // Sanity
-            if (!this.Configuration.Registration.AutoMerge)
-                throw new InvalidOperationException("AutoMerge is disabled");
+            //if (!this.Configuration.Registration.AutoMerge)
+            //    return null;
 
             int nCriteria = this.CopyCriterionPropertyValues(this.Configuration.Registration.MergeCriteria, retVal, p, false);
 

@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Employment
     /// </summary>
-    [XmlType("Person", Namespace = "urn:marc-hi:ca/cr")]
+    [XmlType("Employment", Namespace = "urn:marc-hi:ca/cr")]
     [Serializable]
     public class Employment
     {

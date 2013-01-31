@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
     /// <summary>
     /// Handlers for application context
     /// </summary>
-    static class ApplicationContext
+    public static class ApplicationContext
     {
 
         /// <summary>

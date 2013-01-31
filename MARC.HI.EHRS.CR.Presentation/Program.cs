@@ -30,6 +30,9 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.SVC.Presentation.Console;
+using MARC.HI.EHRS.SVC.Presentation;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Presentation.Console
 {
@@ -41,21 +44,45 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
         /// </summary>
         static void Main(string[] args)
         {
-            if (args.Length > 0 && args[0] == "c")
-                Console();
-            else
+
+            // Do this because loading stuff is tricky ;)
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+
+            // Keep track of console access so we don't throw any wonky service exceptions
+            bool hasConsole = true;
+
+            // Parser for the parameters
+            MohawkCollege.Util.Console.Parameters.ParameterParser<ConsoleParameters> parser = new MohawkCollege.Util.Console.Parameters.ParameterParser<ConsoleParameters>();
+            try
             {
-                System.ServiceProcess.ServiceBase[] ServicesToRun;
-                ServicesToRun = new System.ServiceProcess.ServiceBase[] { new SharedHealthRecord() };
-                System.ServiceProcess.ServiceBase.Run(ServicesToRun);
+                var parameters = parser.Parse(args);
+
+                // Help?
+                if (parameters.Help)
+                    parser.WriteHelp(System.Console.Out);
+                else if (parameters.Interactive)
+                    Console();
+                else
+                {
+                    hasConsole = false;
+                    System.ServiceProcess.ServiceBase[] ServicesToRun;
+                    ServicesToRun = new System.ServiceProcess.ServiceBase[] { new SharedHealthRecord() };
+                    System.ServiceProcess.ServiceBase.Run(ServicesToRun);
+                }
+            }
+            catch (Exception e)
+            {
+                if (hasConsole)
+                    console.Write(e.ToString());
+                else
+                    Trace.TraceError(e.ToString());
             }
         }
 
         static void Console() 
         {
+
             ShowCopyright();
-            // Do this because loading stuff is tricky ;)
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
             console.Write("Starting MARC-HI Service Framework...");
 

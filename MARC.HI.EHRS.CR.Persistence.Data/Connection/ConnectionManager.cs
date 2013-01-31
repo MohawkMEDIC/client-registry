@@ -78,7 +78,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Connection
         /// <summary>
         /// Release a connection
         /// </summary>
-        internal void ReleaseConnection(IDbConnection conn)
+        public void ReleaseConnection(IDbConnection conn)
         {
             conn.Close();
             conn.Dispose();
