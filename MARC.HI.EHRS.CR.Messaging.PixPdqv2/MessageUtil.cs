@@ -170,6 +170,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var eld = err.GetErrorCodeAndLocation(err.ErrorCodeAndLocationRepetitionsUsed);
             eld.CodeIdentifyingError.Text.Value = locale.GetString(String.Format("HL7{0}", errCode));
+            eld.CodeIdentifyingError.AlternateText.Value = dtl.Message;
+            eld.CodeIdentifyingError.Identifier.Value = errCode;
 
             if (dtl.Location != null && dtl.Location.Contains("^"))
             {
@@ -187,7 +189,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     }
                 }
             }
-
+            
             return Int32.Parse(errCode[0].ToString());
         }
 

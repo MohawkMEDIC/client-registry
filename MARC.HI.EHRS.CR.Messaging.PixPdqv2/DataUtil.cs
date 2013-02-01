@@ -37,6 +37,7 @@ using System.IO;
 using NHapi.Base.Parser;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -734,21 +735,25 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }
             catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
                 return null;
             }

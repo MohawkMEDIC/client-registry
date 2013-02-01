@@ -150,7 +150,7 @@ namespace MergeTool
                 foreach (var s in (v as TimestampSet).Parts)
                     sbr.AppendFormat("{0}..", ShowPrimitive(s));
                 return sbr.ToString();
-            }
+            }   
             else if (v is TimestampPart)
                 return (v as TimestampPart).Value.ToString((v as TimestampPart).Precision == "D" ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss Z");
             else if (v is NameSet)
