@@ -64,9 +64,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Connection
         /// </summary>
         public DbConnection GetConnection()
         {
-            #if DEBUG
-            Trace.TraceInformation("Creating a connection {0}", ConnectionString);
-            #endif
+
                 var rv = m_dataProviderFactory.CreateConnection();
                 rv.ConnectionString = ConnectionString;
                 rv.Open();
