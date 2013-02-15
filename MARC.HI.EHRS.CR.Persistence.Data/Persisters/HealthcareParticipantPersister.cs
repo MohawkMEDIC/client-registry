@@ -103,7 +103,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Persist the site with the container if known
-            if (ptcpt.Site.Container is RegistrationEvent)
+            if (ptcpt.Site != null && ptcpt.Site.Container is RegistrationEvent)
                 LinkHealthServiceRecord(conn, tx, (ptcpt.Site.Container as RegistrationEvent).Id, ptcpt.Site as HealthServiceRecordSite);
 
             // Persist any components within the provider record

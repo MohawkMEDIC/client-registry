@@ -65,5 +65,36 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public SVC.Core.HostContext Context { get; set;  }
         #endregion
+
+        #region IHealthcareWorkerIdentityService Members
+
+        /// <summary>
+        /// Register the health worker
+        /// </summary>
+        public void Register(SVC.Core.ComponentModel.Components.HealthcareParticipant ptcpt)
+        {
+            HealthcareParticipantPersister persister = new HealthcareParticipantPersister();
+            // HACK: I norder to work around Client Registry Hack
+            ApplicationContext.CurrentContext = Context;
+            // First we want to find the appropriate helper
+            IDbConnection conn = DatabasePersistenceService.ConnectionManager.GetConnection();
+            IDbTransaction tx = conn.BeginTransaction();
+            try
+            {
+                persister.Persist(conn, tx, ptcpt, false);
+                tx.Commit();
+            }
+            catch (Exception)
+            {
+                tx.Rollback();
+                throw;
+            }
+            finally
+            {
+                DatabasePersistenceService.ConnectionManager.ReleaseConnection(conn);
+            }
+        }
+
+        #endregion
     }
 }

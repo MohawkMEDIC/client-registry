@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             return retVal;
         }
 
-                /// <summary>
+        /// <summary>
         /// Create domain identifier from a cx
         /// </summary>
         /// <param name="rid"></param>
