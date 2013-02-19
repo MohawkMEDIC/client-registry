@@ -15,6 +15,9 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Collections;
+using MARC.HI.EHRS.SVC.Core.Services;
+using MARC.HI.EHRS.CR.Core.Services;
+using System.Threading;
 
 namespace MergeTool
 {
@@ -61,9 +64,80 @@ namespace MergeTool
         /// <summary>
         /// Merge candidates together
         /// </summary>
-        private static void MergeCandidates(System.Collections.Specialized.StringCollection stringCollection, string p)
+        private static void MergeCandidates(System.Collections.Specialized.StringCollection pids, string target)
         {
-            throw new NotImplementedException();
+            // HACK: This method is a hack and can be done better, as a matter of fact the whole tool should be re-written
+            // but this does the trick for now.
+            ConfigXmlDocument xmlDocument = new ConfigXmlDocument();
+            xmlDocument.Load(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe.config"));
+            ConfigurationSectionHandler config = new ConfigurationSectionHandler();
+            config = config.Create(null, null, xmlDocument.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.cr.persistence.data']")) as ConfigurationSectionHandler;
+            ApplicationContext.CurrentContext = new MARC.HI.EHRS.SVC.Core.HostContext();
+            List<Person> pid = new List<Person>();
+            Person pidTarget = null;
+            // Now create the db connection
+            MARC.HI.EHRS.CR.Persistence.Data.DatabasePersistenceService persister = new MARC.HI.EHRS.CR.Persistence.Data.DatabasePersistenceService();
+            persister.Context = ApplicationContext.CurrentContext;
+
+            // De-persist victims
+            foreach (var id in pids)
+            {
+                var registration = persister.GetContainer(new VersionedDomainIdentifier()
+                {
+                    Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("REG_EVT").Oid,
+                    Identifier = id
+                }
+                    , true) as RegistrationEvent;
+                if (registration == null)
+                    throw new Exception(String.Format("Could not find registration {0}", id));
+                pid.Add(registration.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person);
+            }
+
+            // De-persist target
+            var targetReg = persister.GetContainer(new VersionedDomainIdentifier()
+            {
+                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("REG_EVT").Oid,
+                Identifier = target
+            }
+                    , true) as RegistrationEvent;
+
+            if (targetReg == null)
+                throw new Exception(String.Format("Could not find registration {0}", target));
+            pidTarget = targetReg.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+
+            // Now create the merge message\
+            RegistrationEvent merge = new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Register,
+                EventType = new CodeValue("REG"),
+                Status = MARC.HI.EHRS.SVC.Core.ComponentModel.Components.StatusType.Active
+            };
+            merge.LanguageCode = targetReg.LanguageCode;
+            merge.Id = targetReg.Id;
+            merge.Add(pidTarget, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            foreach (var pi in pid)
+            {
+                PersonRegistrationRef re = new PersonRegistrationRef()
+                {
+                    AlternateIdentifiers = new List<DomainIdentifier>() { 
+                            new DomainIdentifier() { Identifier = pi.Id.ToString(),
+                                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid
+                            }
+                        }
+                };
+                pidTarget.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, re.AlternateIdentifiers);
+            }
+
+            var vid = persister.UpdateContainer(merge, DataPersistenceMode.Debugging);
+            
+            if (vid != null)
+            {
+                Console.WriteLine("Duplicates merged successfully, notifying targets...");
+                IClientNotificationService notifierService = ApplicationContext.CurrentContext.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                if (notifierService != null)
+                    notifierService.NotifyDuplicatesResolved(merge);
+                Thread.Sleep(1000); // HACK: Give time for the targets to be notified as this is async..
+            }
         }
 
         /// <summary>
@@ -84,13 +158,17 @@ namespace MergeTool
                     MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister.RegistrationEventPersister persister = new MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister.RegistrationEventPersister();
                     var registration = persister.DePersist(conn, Decimal.Parse(id), null, null, true) as RegistrationEvent;
 
-                    // Print detailed information about event
-                    Console.WriteLine("{0}\r\nREG EVT # {1}\r\n{0}", new String('-', 50), id);
-                    Console.WriteLine("CREATED : {0}\r\nVER ID : {1}\r\nALT ID(S) : {2}^^^{4}&{3}&ISO\r\nCLS ID : {5}\r\nEVT ID : {6}", registration.Timestamp, registration.VersionIdentifier, registration.AlternateIdentifier.Identifier, registration.AlternateIdentifier.Domain, registration.AlternateIdentifier.AssigningAuthority, registration.EventClassifier, registration.EventType.Code);
+                    if (registration == null)
+                        Console.WriteLine("Could not find '{0}'", id);
+                    else
+                    {
+                        // Print detailed information about event
+                        Console.WriteLine("{0}\r\nREG EVT # {1}\r\n{0}", new String('-', 50), id);
+                        Console.WriteLine("CREATED : {0}\r\nVER ID : {1}\r\nALT ID(S) : {2}^^^{4}&{3}&ISO\r\nCLS ID : {5}\r\nEVT ID : {6}", registration.Timestamp, registration.VersionIdentifier, registration.AlternateIdentifier.Identifier, registration.AlternateIdentifier.Domain, registration.AlternateIdentifier.AssigningAuthority, registration.EventClassifier, registration.EventType.Code);
 
-                    foreach (var cmp in registration.Components)
-                        DisplayComponentData((HealthServiceRecordComponent)cmp);
-
+                        foreach (var cmp in registration.Components)
+                            DisplayComponentData((HealthServiceRecordComponent)cmp);
+                    }
                 }
             }
         }

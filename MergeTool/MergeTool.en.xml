@@ -1,0 +1,187 @@
+﻿<!--
+
+  Copyright 2012-2012 Mohawk College of Applied Arts and Technology
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you 
+  may not use this file except in compliance with the License. You may 
+  obtain a copy of the License at 
+  
+  http://www.apache.org/licenses/LICENSE-2.0 
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+  License for the specific language governing permissions and limitations under 
+  the License.
+  
+  User: fyfej
+  Date: 17-9-2012
+
+
+-->
+
+<locale name="en" xmlns="urn:marc-hi:ca/localization"> 
+  
+  <!-- MESSAGE VALIDATION ERRORS AND WARNINGS -->
+  <string name="MSGE000">MSGE000 : General Message validation &amp; translation Error</string>
+  <string name="MSGE001">MSGE001 : Unable to determine effective time of the event</string>
+  <string name="MSGE002">MSGE002 : Missing languageCode, assuming eng</string>
+  <string name="MSGE003">MSGE003 : Can't determine the primary subject of this action</string>
+  <string name="MSGE004">MSGE004 : Can't determine the author of this action</string>
+  <string name="MSGE005">MSGE005 : Missing authored time for the event</string>
+  <string name="MSGE006">MSGE006 : Author must be an Organization or Healthcare Worker</string>
+  <string name="MSGW001">MSGW001 : Data enterer must either be an Organization or Healthcare Worker, information will be ignored</string>
+  <string name="MSGW002">MSGW002 : Couldn't process data enterer, information will be ignored</string>
+  <string name="MSGE007">MSGE007 : Couldn't process responsible party entry due to validation errors</string>
+  <string name="MSGW003">MSGW003 : Couldn't process occurence location, information will be ingored</string>
+  <string name="MSGW004">MSGW004 : Couldn't process data entry location, information will be ignored</string>
+  <string name="MSGE008">MSGE008 : Cannot determine the effect time for the subject of this message, you can set one directly or use ContextConduction</string>
+  <string name="MSGE009">MSGE009 : Don't understand status code</string>
+  <string name="MSGE00A">MSGE00A : Cannot process invalid message</string>
+  <string name="MSGE00B">MSGE00B : Registry record must have a custodian</string>
+  <string name="MSGE00C">MSGE00C : Unsupported trigger event code</string>
+  <string name="MSGE00D">MSGE00D : Cannot determine primary identifier of the custodial device</string>
+  <string name="MSGE00E">MSGE00E : Cannot determine jurisdiction name of the custodial device</string>
+  <string name="MSGE00F">MSGE00F : Cannot determine the assigned repository name of the custodial device</string>
+  <string name="MSGE010">MSGE010 : StatusCode for Role must come from RoleStatus</string>
+  <string name="MSGE011">MSGE011 : "Normal" state is a pseudo state for RoleStatus, please use Active or Pending instead</string>
+  <string name="MSGW005">MSGW005 : Since registered role is marked active, the effective time has been changed to be effective immediately</string>
+  <string name="MSGE012">MSGE012 : Registration event missing identified entity</string>
+  <string name="MSGW006">MSGW006 : Deceased indicator is populated based on Deceased time in this registry and will be ignored. Please populate the deceased time property instead</string>
+  <string name="MSGW007">MSGW007 : Multiple birth indicator is populated based on Multiple birth order in this registry and will be ignored. Please populate the multiple birth order property instead</string>
+
+  <string name="MSGE013">MSGE013 : Couldn't process the informant node</string>
+  <string name="MSGE014">MSGE014 : Couldn't determine the primary record target or author of this event, consider setting these nodes explicitly or conduct them using ContextConduction</string>
+  <string name="MSGE015">MSGE015 : Couldn't process annotation node</string>
+  <string name="MSGE016">MSGE016 : Predecessor element must have an"Old" event association present</string>
+  <string name="MSGE017">MSGE017 : Couldn't associate the event with a provisionEvent as the provisionEvent has no identifier specified</string>
+  <string name="MSGE01F">MSGE01F : Couldn't process occurence location</string>
+  <string name="MSGE020">MSGE020 : Couldn't process health condition outcome in provisionEvent</string>
+  <string name="MSGE023">MSGE023 : Annotation must contain text</string>
+  <string name="MSGW00D">MSGW00D : Use of the 'value' attribute on IVL is non-standard by </string>
+  <string name="MSGE027">MSGE027 : Don't understand IVL with value attribute and low/high pair specified. Only value OR low/high may be specified in this software product</string>
+  <string name="MSGE04A">MSGE04A : Code '{0}' couldn't be found in domain '{1}' and no codeSystem was specified</string>
+  <string name="MSGE028">MSGE028 : Primary record target doesn't contain sufficient information to reference a client record</string>
+  <string name="MSGE029">MSGE029 : Primary record target doesn't contain a valid II.BUS by which this repository can identify the client</string>
+  <string name="MSGE02A">MSGE02A : Primary record target's patientPerson does not contain a valid name</string>
+  <string name="MSGE02B">MSGE02B : Assigned organization is missing primary identifier</string>
+  <string name="MSGW00F">MSGW00F : Can't process the assigned organization type, information will be ignored</string>
+  <string name="MSGE02C">MSGE02C : Personal relationship must have an identifier</string>
+  <string name="MSGE02D">MSGE02D : Personal relationship must have a relationship holder</string>
+  <string name="MSGE02E">MSGE02E : Personal relationship kind must be specified and must be derived from x_SimplePersonalRelationship</string>
+  <string name="MSGE02F">MSGE02F : Assigned person is missing primary identifier</string>
+  <string name="MSGE030">MSGE030 : Assigned entity must have an assigned person element</string>
+  <string name="MSGE031">MSGE031 : Missing healthcare provider role type code</string>
+  <string name="MSGW010">MSGW010 : Couln't process representedOrganization node, information will be ignored</string>
+  <string name="MSGE032">MSGE032 : Represented organization must have a primary identifier</string>
+  <string name="MSGW011">MSGW011 : Cannot process the assigned organization type, information will be ignored</string>
+  <string name="MSGE033">MSGE033 : Service delivery location is missing primary identifier</string>
+  <string name="MSGE034">MSGE034 : Service delivery location must have a type code</string>
+  <string name="MSGE037">MSGE037 : Parameter is not supported</string>
+  <string name="MSGW012">MSGW012 : Cannot process the primaryInformationRecipient node, information will be ingored</string>
+  <string name="MSGE03C">MSGE03C : Missing responsible party node</string>
+  <string name="MSGW013">MSGW013 : Missing status code, assuming"active"</string>
+  <string name="MSGE03E">MSGE03E : ActRequest or Code is missing from referral component. When referring to a service, actRequest and code must be non-null and have a valid value</string>
+  <string name="MSGW013">MSGW013 : Status must be drawn from the EntityStatus domain</string>
+  <string name="MSGW014">MSGW014 : Fixed value does not match supplied value</string>
+  <string name="MSGE04B">MSGE04B : Langauge code must come from either ISO 639-3 of ISO 639-1 code system</string>
+  <string name="MSGE04C">MSGE04C : Could not find a valid translation from the supplied language code system ISO 639-3 to ISO 639-1</string>
+  <string name="MSGE04D">MSGE04D : Address use '{0}' is not supported by this registry</string>
+  <string name="MSGE04E">MSGE04E : Query is missing parameter list</string>
+  <string name="MSGE04F">MSGE04F : controlActProcess.Subject node may only contain one repetition</string>
+  <string name="MSGE050">MSGE050 : Prior registration event must be identified  identifier</string>
+  <string name="MSGE051">MSGE051 : IHE restriction: The Assigned Entity SHOULD be a person, MAY be a device or an organization, and SHALL NOT be a non-person living subject</string>
+  <string name="MSGE052">MSGE052 : The Author.Time value must match the RegistrationEvent.Time value</string>
+  <string name="MSGE053">MSGE053 : StatusCode for Act must come from ActStatus</string>
+  <string name="MSGE054">MSGE054 : "Normal", "Held" and "Suspended" states are not supported by this registry</string>
+  <string name="MSGE055">MSGE055 : IHE restriction: the assigned entity SHALL be either an organization or a device.</string>
+  <string name="MSGE056">MSGE056 : AsCitizen relation must contain a PoliticalNation relation</string>
+  <string name="MSGE057">MSGE057 : Country code must come from either ISO 3166-1 or ISO 3166-2 code system</string>
+  <string name="MSGE058">MSGE058 : Could not find a valid translation from the supplied country code system ISO 3166-2 to ISO 3166-1</string>
+  <string name="MSGE059">MSGE059 : IHE restriction: RelationshipHolder must be a Person</string>
+  <string name="MSGE05A">MSGE05A : IHE restriction: Scoping organization must have an id and must only contain a root</string>
+  <string name="MSGW015">MSGW015 : IHE restriction: Identifiers must carry the same root as their scoping organizations</string>
+  <string name="MSGW016">MSGW016 : ISO is the only supported UniversalIDType (HD.3)</string>
+  <string name="MSGE05B">MSGE05B : Identifier UniversalID must be an ISO OID (HD.2)</string>
+  <string name="MSGE05C">MSGE05C : Cannot locate MSH segment (MSH)</string>
+  <string name="MSGE05D">MSGE05D : Cannot locate QPD segment (QPD)</string>
+  <string name="MSGE05E">MSGE05E : Cannot locate RCP segment (RCP)</string>
+  <string name="MSGE05F">MSGE05F : IHE restriction : QPD-3 must be populated and must be of type CX</string>
+  <string name="MSGE060">MSGE060 : IHE restriction : QPD-3 must be populated with a valid component</string>
+  <string name="MSGE061">MSGE061 : Cannot parse QPD^3 component</string>
+  <string name="MSGE062">MSGE062 : Unsupported segment passed in parameter</string>
+  <string name="MSGW017">MSGW017 : Unsupported PID.5.7 value</string>
+  <string name="MSGW018">MSGW018 : Unsupported PID.11.7 value</string>
+  <string name="MSGE062">MSGE062 : Unsupported match algorithm. Supported algorithms are "Soundex", "Exact", and "Variant" </string>
+  <string name="MSGE063">MSGE063 : Patient association is missing primary identifier</string>
+  <string name="MSGE064">MSGE064 : Insufficient number of repetitions in the patient association identifier</string>
+  <string name="MSGE065">MSGE065 : registeredRole  is missing the subject1 association</string>
+  <string name="MSGE066">MSGE066 : IHE Restriction: There SHALL be a replacementOf relationship</string>
+  <string name="MSGE067">MSGE067 : IHE Restriction: PriorRegistration.StatusCode SHALL be "Obsolete"</string>
+  <string name="MSGW019">MSGW019 : Quirk : IHE Restriction: There SHALL be a priorRegisteredRole association, however the message sent doesn't contain this. Will attempt to process the priorRegistration.id instead</string>
+  <string name="MSGE068">MSGE068 : Quirk : IHE Restriction: Attempt to parse priorRegistration.id failed as it is not present or not populated</string>
+  <string name="MSGE069">MSGE069 : IHE Restriction: There shall be a single priorRegisteredRole.id association</string>
+  <string name="MSGE06A">MSGE06A : ISO OID '{0}' has no known assigning authority, and is not recognized by this registry</string>
+  <string name="MSGE06B">MSGE06B : IHE Restriction: The participation SHOULD be a person or MAY be a device</string>
+  <string name="MSGE06C">MSGE06C : IHE Restriction: Exactly one PatientIdentifier parameter SHALL be present</string>
+  <string name="MSGE06D">MSGE06D : IHE Restriction: Exactly one PatientIdentifier.value attribute SHALL be present</string>
+  <string name="MSGE06E">MSGE06E : IHE Restriction: Only one cross referenced patient identifier can be returned in this message. Only the first result is returned</string>
+  <string name="MSGE06F">MSGE06F : Could not determine the assigning authority (CX.4) of the specified identifier</string>
+  <string name="MSGE070">MSGE070 : Could not determine the OID for the specified code system</string>
+  <string name="MSGE071">MSGE071 : Match algorithm '{0}' is not understood. Valid values are 'SOUNDEX', 'VARIANT', 'DEFAULT'</string>
+  <string name="MSGE072">MSGE072 : Minimum degree match must be between 0 and 100</string>
+  <string name="MSGE073">MSGE073 : IHE Restriction: Only one value element may appear within a query parameter</string>
+  <string name="MSGE074">MSGE074 : ADT message must be of type ADT_A01</string>
+  <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
+  <string name="DTPE000">General Data Translation / Persistence Error</string>
+  <string name="DTPE001">DTPE001 : Persistence of event failed</string>
+  <string name="DTPE002">DTPE002 : Cannot update an entity that does not have an identifier</string>
+  <string name="DTPE003">DTPE003 : Persistence of entity failed</string>
+  <string name="DTPE004">DTPE004 : Registration has already been persisted</string>
+  <string name="DTPE005">DTPE005 : Formal constraint violation detected</string>
+  <string name="DTPW001">DTPW001 : Cross referencing resulted in multiple candidate matches, operation will be considered an Add. Manual reconciation must be performed</string>
+  <string name="DTPW002">DTPW002 : Patient data merged with registration event {1}^^^&amp;{0}&amp;ISO</string>
+  <string name="DTPE006">DTPE006 : Could not locate specified patient identifier</string>
+  <!-- DATA ISSUES -->
+  <string name="DBCF000">DBCF000 : General Data persistence Business Constraint Failure</string>
+  <string name="DBCF001">DBCF001 : Event has already been persisted, will not persist duplicate records</string>
+  <string name="DBCF002">DBCF002 : Masking indicator must be a member of a Person container</string>
+  <string name="DBCF003">DBCF003 : Cannot link personal relationship with null container</string>
+  <string name="DBCF004">DBCF004 : Data consistency issue, cannot determine client target for update</string>
+  <string name="DBCF005">DBCF005 :</string>
+  <string name="DBCF006">DBCF006 :</string>
+  <string name="DBCF007">DBCF007 : Cannot determine the primary subject of the registration event</string>
+  <string name="DBCF008">DBCF008 : {0}</string>
+  <string name="DBCF009">DBCF009 : Repository device must have an identifier</string>
+  <string name="DBCF00A">DBCF00A : Data consistency issue, the supplied name does not seem to match the name registered with the client. Linking of records aborted</string>
+  <string name="DBCF00B">DBCF00B : Data consistency issue, cannot create a link with a non-existant record</string>
+  <string name="DBCF00C">DBCF00C : Unrecognized patient domain</string>
+  <string name="DBCF00D">DBCF00D : Record cannot reference itself</string>
+  <!-- PRIVACY AND SECURITY ISSUES -->
+  <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>
+  
+  <!-- DSS ISSUES -->
+  <string name="DSCF000">DSCF000 : General Decision Support Constraint Failure</string>
+
+  <!-- Subscription -->
+  <string name="SBSI001">Subscription</string>
+  <string name="SBSI002">New notifications</string>
+  <string name="SBSI003">All notifications</string>
+  <string name="SBSI004">In order to view this content you must execute the appropriate GET against the SHR</string>
+  <string name="SBSE001">SBSE001 : No subscription could be found that matches this criteria</string>
+  <string name="SBSE001.a">SBSE001.a : Please ensure appropriate criteria have been issued to this service</string>
+
+  <!-- HL72.x messages -->
+  <string name="HL7200">Unsupported message type</string>
+  <string name="HL7201">Unsupported event code</string>
+  <string name="HL7202">Unsupported processing id</string>
+  <string name="HL7203">Unsupported version id</string>
+  <string name="HL7207">Application internal error</string>
+  <string name="HL7101">Required field missing</string>
+  <string name="HL7901">Unknown sender</string>
+  <!-- Notification Strings -->
+  <string name="NTFE001">NTFE001 : Cannot find subject for notification</string>
+  <string name="NTFW002">NTFW001 : Couldn't send the request to {0}</string>
+  <string name="NTFW003">NTFW001 : Couldn't process the result from {0}</string>
+  <string name="NTFW004">NTFW001 : Negative ACK received from {0}</string>
+</locale>

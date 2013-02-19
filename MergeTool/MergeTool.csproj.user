@@ -4,6 +4,6 @@
     <StartArguments>--list</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>--info 9</StartArguments>
+    <StartArguments>--merge 177 --target=173</StartArguments>
   </PropertyGroup>
 </Project>

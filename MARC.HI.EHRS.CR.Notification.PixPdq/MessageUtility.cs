@@ -29,6 +29,7 @@ using System.Reflection;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq
 {
@@ -207,20 +208,50 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 
             // TODO: Replacement of compatibility mode for other XDS registries
             // Replacement 
-            foreach(PersonRegistrationRef rplc in replacements)
-                eventRegistration.RegistrationEvent.ReplacementOf.Add(new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.ReplacementOf(
-                    new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.PriorRegistration(
-                        null,
-                        ActStatus.Obsolete,
-                        new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Subject3(
-                            new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.PriorRegisteredRole(
-                                SET<II>.CreateSET(CreateII(rplc.AlternateIdentifiers[0]))
-                            )
-                        ),
-                        null
-                    )
-                    ));
-            
+            var registration = this.Context.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
+            var persistence = this.Context.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+
+            foreach (PersonRegistrationRef rplc in replacements)
+            {
+                // First, need to de-persist the identifiers
+                QueryParameters qp = new QueryParameters()
+                {
+                    Confidence = 1.0f,
+                    MatchingAlgorithm = MatchAlgorithm.Exact,
+                    MatchStrength = MatchStrength.Exact
+                };
+                var patientQuery = new RegistrationEvent();
+                patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                patientQuery.Add(new Person() { AlternateIdentifiers = rplc.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                // Perform the query
+                var pid = registration.QueryRecord(patientQuery);
+                if (pid.Length == 0)
+                    throw new InvalidOperationException();
+                var replacedPerson = (persistence.GetContainer(pid[0], true) as RegistrationEvent).FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+
+                var ids = CreateIISet(replacedPerson.AlternateIdentifiers.FindAll(o => configuration.NotificationDomain.Exists(d => d.Domain == o.Domain)));
+                if (ids.Count == 0)
+                    ; // TODO: Trace log
+                else
+                {
+                    eventRegistration.RegistrationEvent.ReplacementOf.Add(new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.ReplacementOf(
+                        new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.PriorRegistration(
+                            null,
+                            ActStatus.Obsolete,
+                            new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Subject3(
+                                new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.PriorRegisteredRole(
+                                    ids
+                                )
+                            ),
+                            null
+                        )
+                        ));
+                }
+            }
+
+            if (eventRegistration.RegistrationEvent.ReplacementOf.Count == 0)
+                throw new InvalidOperationException("Nothing to do");
+
             // Custodian?
             eventRegistration.RegistrationEvent.Custodian = CreateCustodian(registrationEvent, configuration);
 
