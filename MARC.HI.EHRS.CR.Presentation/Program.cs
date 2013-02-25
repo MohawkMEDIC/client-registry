@@ -77,6 +77,7 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
                 else
                     Trace.TraceError(e.ToString());
             }
+
         }
 
         static void Console() 
