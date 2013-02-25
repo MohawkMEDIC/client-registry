@@ -32,7 +32,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Represents a person in the client registry
     /// </summary>
     [Serializable]
-    [XmlType("Person", Namespace = "urn:marc-hi:ca/cr")]
+    [XmlType("Person")]
     public class Person : CrHealthServiceRecordContainer
     {
 

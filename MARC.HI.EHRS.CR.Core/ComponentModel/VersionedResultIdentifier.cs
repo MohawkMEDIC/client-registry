@@ -21,12 +21,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
     /// <summary>
     /// Represents a versioned domain identifier that occurred as a result of a query
     /// </summary>
+    [Serializable]
+    [XmlType("VersionedResultIdentifier")]
     public class VersionedResultIdentifier : VersionedDomainIdentifier
     {
 

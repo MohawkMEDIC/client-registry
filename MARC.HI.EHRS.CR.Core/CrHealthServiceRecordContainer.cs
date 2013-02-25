@@ -35,29 +35,46 @@ namespace MARC.HI.EHRS.CR.Core
     [XmlType("CrHealthServiceRecordContainer")]
     public class CrHealthServiceRecordContainer : HealthServiceRecordContainer
     {
+
+        // Supported components
+        private readonly Type[] m_supportedTypes = new Type[] {
+            typeof(Person),
+            typeof(ExtendedAttribute),
+            typeof(PersonRegistrationRef),
+            typeof(QueryParameters)
+        };
+
         /// <summary>
         /// Component entries for the Xml Serializer
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Browsable(false)]
-        [XmlElement("client", typeof(Person))]
-        [XmlElement("healthcareParticipant", typeof(HealthcareParticipant))]
-        [XmlElement("changeSummary", typeof(ChangeSummary))]
-        [XmlElement("healthServiceRecordComponentRef", typeof(HealthServiceRecordComponentRef))]
-        [XmlElement("mask", typeof(MaskingIndicator))]
-        [XmlElement("personalRelationship", typeof(PersonalRelationship))]
-        [XmlElement("queryRestriction", typeof(QueryRestriction))]
-        [XmlElement("serviceDeliveryLocation", typeof(ServiceDeliveryLocation))]
         [XmlElement("extension", typeof(ExtendedAttribute))]
-        public override List<HealthServiceRecordComponent> XmlComponents
+        [XmlElement("person", typeof(Person))]
+        [XmlElement("personRegRef", typeof(PersonRegistrationRef))]
+        [XmlElement("crQueryParameters", typeof(QueryParameters))]
+        public List<HealthServiceRecordComponent> CrSpecificComponents
         {
             get
             {
-                return base.XmlComponents;
+                var retVal = new List<HealthServiceRecordComponent>(this.Components.Count);
+                foreach (var mc in this.Components)
+                    if (mc is HealthServiceRecordComponent &&
+                        Array.Exists(m_supportedTypes, o => o.Equals(mc.GetType())))
+                        retVal.Add(mc as HealthServiceRecordComponent);
+                return retVal;
             }
             set
             {
-                base.XmlComponents = value;
+                if (this.m_components == null)
+                    this.m_components = new List<IComponent>(value.Count);
+                foreach (var mv in value)
+                {
+                    (mv.Site as HealthServiceRecordSite).Container = this;
+                    (mv.Site as HealthServiceRecordSite).Component = mv;
+                    (mv.Site as HealthServiceRecordSite).Context = this.Context;
+                    this.m_components.Add(mv);
+                }
             }
         }
 

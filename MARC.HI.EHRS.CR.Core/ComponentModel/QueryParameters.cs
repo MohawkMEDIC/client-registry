@@ -21,12 +21,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
     /// <summary>
     /// Query parameters 
     /// </summary>
+    [Serializable]
+    [XmlType("QueryParameters")]
     public class QueryParameters : HealthServiceRecordComponent
     {
 

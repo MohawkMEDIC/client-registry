@@ -39,7 +39,8 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Identifies a language component
     /// </summary>
-    [XmlType("PersonLanguage", Namespace = "urn:marc-hi:ca/cr")]
+    [Serializable]
+    [XmlType("PersonLanguage")]
     public class PersonLanguage
     {
 

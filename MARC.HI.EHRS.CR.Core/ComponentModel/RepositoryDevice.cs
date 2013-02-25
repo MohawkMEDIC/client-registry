@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Repository device
     /// </summary>
-    [Serializable][XmlType("RepositoryDevice", Namespace = "urn:marc-hi:ca/cr")]
+    [Serializable][XmlType("RepositoryDevice")]
     public class RepositoryDevice : HealthServiceRecordComponent
     {
 

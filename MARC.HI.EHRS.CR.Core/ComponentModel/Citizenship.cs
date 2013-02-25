@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Citizenship
     /// </summary>
     [Serializable]
-    [XmlType("Citizenship", Namespace = "urn:marc-hi:ca/cr")]
+    [XmlType("Citizenship")]
     public class Citizenship
     {
 
