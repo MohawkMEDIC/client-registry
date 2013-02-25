@@ -29,6 +29,7 @@ using NHapi.Base.Util;
 using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -109,6 +110,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var notify = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -141,6 +143,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 if (vid == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
+                else if (notify != null)
+                    notify.NotifyUpdate(data);
 
                 // Now process the result
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
@@ -173,6 +177,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var notify = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -204,6 +209,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 if (vid == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
+                else if (notify != null)
+                    notify.NotifyRegister(data);
+
 
                 audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
 

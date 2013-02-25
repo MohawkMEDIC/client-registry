@@ -507,6 +507,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if (this.m_decisionService != null)
                     this.m_decisionService.RecordPersisted(healthServiceRecord);
 
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
+
                 // Register the document set if it is a document
                 if (retVal != null && this.m_docRegService != null && !this.m_docRegService.RegisterRecord(healthServiceRecord, mode))
                     dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
@@ -602,6 +606,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Call the dss
                 if (this.m_decisionService != null)
                     this.m_decisionService.RecordPersisted(healthServiceRecord);
+
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
 
                 // Register the document set if it is a document
                 if (retVal != null && this.m_docRegService != null && !this.m_docRegService.RegisterRecord(healthServiceRecord, mode))

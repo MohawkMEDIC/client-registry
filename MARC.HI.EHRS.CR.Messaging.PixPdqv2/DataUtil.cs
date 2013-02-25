@@ -38,6 +38,7 @@ using NHapi.Base.Parser;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Diagnostics;
+using MARC.HI.EHRS.SVC.Subscription.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -270,6 +271,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         private IClientNotificationService m_notificationService; // client notification service
         private ISystemConfigurationService m_configService; // config service
         private IClientRegistryConfigurationService m_clientRegistryConfigService;
+        private ISubscriptionManagementService m_subscriptionService;
 
         /// <summary>
         /// Gets or sets the context of the host
@@ -290,6 +292,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 this.m_notificationService = this.m_context.GetService(typeof(IClientNotificationService)) as IClientNotificationService; // notification service
                 this.m_configService = this.m_context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService; // config service
                 this.m_clientRegistryConfigService = this.m_context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService; // config
+                this.m_subscriptionService = this.m_context.GetService(typeof(ISubscriptionManagementService)) as ISubscriptionManagementService;
             }
         }
 
@@ -723,9 +726,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     this.m_notificationService.NotifyReconciliationRequired(list);
                 }
 
+                
                 // Call the dss
                 if (this.m_decisionSupportService != null)
                     this.m_decisionSupportService.RecordPersisted(healthServiceRecord);
+                
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
 
                 // Register the document set if it is a document
                 if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(healthServiceRecord, mode))
@@ -801,6 +809,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // Call the dss
                 if (this.m_decisionSupportService != null)
                     this.m_decisionSupportService.RecordPersisted(healthServiceRecord);
+
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
 
                 // Register the document set if it is a document
                 if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(healthServiceRecord, mode))

@@ -42,6 +42,7 @@ using MARC.HI.EHRS.SVC.DecisionSupport;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV;
+using MARC.HI.EHRS.SVC.Subscription.Core.Services;
 
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
@@ -77,6 +78,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         protected ILocalizationService m_localeService;
         // Configuration service
         protected IClientRegistryConfigurationService m_clientRegistryConfigService;
+        protected ISubscriptionManagementService m_subscriptionService;
         
 
         /// <summary>
@@ -232,6 +234,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 this.m_localeService = value.GetService(typeof(ILocalizationService)) as ILocalizationService;
                 this.m_notificationService = value.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
                 this.m_clientRegistryConfigService = this.m_context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService; // config
+                this.m_subscriptionService = this.m_context.GetService(typeof(ISubscriptionManagementService)) as ISubscriptionManagementService;
 
             }
         }
@@ -288,6 +291,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Call the dss
                 if (this.m_decisionService != null)
                     this.m_decisionService.RecordPersisted(healthServiceRecord);
+
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
 
                 // Register the document set if it is a document
                 if (retVal != null && this.m_docRegService != null && !this.m_docRegService.RegisterRecord(healthServiceRecord, mode))
@@ -883,6 +889,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 // Call the dss
                 if (this.m_decisionService != null)
                     this.m_decisionService.RecordPersisted(healthServiceRecord);
+
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(healthServiceRecord);
 
                 // Register the document set if it is a document
                 if (retVal != null && this.m_docRegService != null && !this.m_docRegService.RegisterRecord(healthServiceRecord, mode))

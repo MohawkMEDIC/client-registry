@@ -80,6 +80,10 @@
     <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Subscription.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Subscription.Core.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Terminology">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
     </Reference>
