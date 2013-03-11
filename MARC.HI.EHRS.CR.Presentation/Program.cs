@@ -45,8 +45,6 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
         static void Main(string[] args)
         {
 
-            // Do this because loading stuff is tricky ;)
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
             // Keep track of console access so we don't throw any wonky service exceptions
             bool hasConsole = true;
@@ -61,7 +59,14 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
                 if (parameters.Help)
                     parser.WriteHelp(System.Console.Out);
                 else if (parameters.Interactive)
-                    Console();
+                {
+                    ShowCopyright();
+                    ServiceUtil.Start(typeof(Program).GUID);
+                    console.WriteLine("Press any key to stop...");
+
+                    console.ReadKey();
+                    ServiceUtil.Stop();
+                }
                 else
                 {
                     hasConsole = false;
@@ -80,92 +85,6 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
 
         }
 
-        static void Console() 
-        {
-
-            ShowCopyright();
-
-            console.Write("Starting MARC-HI Service Framework...");
-
-            // Initialize 
-            HostContext context = new HostContext();
-
-            Trace.CorrelationManager.ActivityId = typeof(Program).GUID;
-            Trace.TraceInformation("Starting host context on Console Presentation System at {0}", DateTime.Now);
-
-            // Detect platform
-            if (System.Environment.OSVersion.Platform != PlatformID.Win32NT)
-                Trace.TraceWarning("Not running on WindowsNT, some features may not function correctly");
-
-            
-            // Start the message handler service
-            IMessageHandlerService messageHandlerService = null;
-            try
-            {
-
-                
-                Trace.TraceInformation("Getting default message handler service.");
-                messageHandlerService = context.GetService(typeof(IMessageHandlerService)) as IMessageHandlerService;
-
-                console.WriteLine("ok");
-                console.Write("Starting default MessageHandler...");
-
-                if (messageHandlerService == null)
-                    Trace.TraceError("PANIC! Can't find a default message handler service: {0}", "No IMessageHandlerService classes are registered with this host context");
-                else
-                {
-                    Trace.TraceInformation("Starting message handler service {0}", messageHandlerService);
-                    if (messageHandlerService.Start())
-                    {
-                        console.WriteLine("ok\r\nService host console started succesfully, press any key to terminate...");
-                        console.ReadKey();
-                    }
-                    else
-                    {
-                        console.WriteLine("fail");
-                        Trace.TraceError("No message handler service started. Terminating program");
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                Trace.TraceError("Fatal exception occurred: {0}", e.ToString());
-            }
-            finally
-            {
-                context.Dispose();
-                if (messageHandlerService != null)
-                {
-                    console.Write("Stopping listeners...");
-                    Trace.TraceInformation("Stopping message handler service {0}", messageHandlerService);
-                    messageHandlerService.Stop();
-                    console.WriteLine("ok");
-                }
-            }
-
-            
-            console.WriteLine("Service Terminated, press any key to close...");
-            console.ReadKey();
-        }
-
-        internal static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-                if (args.Name == asm.FullName)
-                    return asm;
-
-            /// Try for an non-same number Version
-            foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                string fAsmName = args.Name;
-                if (fAsmName.Contains(","))
-                    fAsmName = fAsmName.Substring(0, fAsmName.IndexOf(","));
-                if (fAsmName == asm.GetName().Name)
-                    return asm;
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Show copyright information on screen
