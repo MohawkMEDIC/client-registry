@@ -49,7 +49,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Gets or sets the context of this handler
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get;
             set;

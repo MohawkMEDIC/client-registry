@@ -56,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// The host context
         /// </summary>
-        private HostContext m_context;
+        private IServiceProvider m_context;
 
         // Notification service
         protected IClientNotificationService m_notificationService;
@@ -216,7 +216,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Gets or sets the host context
         /// </summary>
-        public MARC.HI.EHRS.SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get { return m_context; }
             set

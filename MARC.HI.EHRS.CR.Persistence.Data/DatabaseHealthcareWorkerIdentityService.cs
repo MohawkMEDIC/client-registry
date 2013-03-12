@@ -63,7 +63,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Gets or sets the context within which this service operates
         /// </summary>
-        public SVC.Core.HostContext Context { get; set;  }
+        public IServiceProvider Context { get; set; }
         #endregion
 
         #region IHealthcareWorkerIdentityService Members

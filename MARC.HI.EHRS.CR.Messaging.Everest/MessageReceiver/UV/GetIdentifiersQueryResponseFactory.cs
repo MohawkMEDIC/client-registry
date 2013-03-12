@@ -171,7 +171,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// GEts or sets the host context
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get;
             set;

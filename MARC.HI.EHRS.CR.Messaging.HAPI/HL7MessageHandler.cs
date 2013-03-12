@@ -86,12 +86,12 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         #region IUsesHostContext Members
 
         // Host context
-        private MARC.HI.EHRS.SVC.Core.HostContext m_context;
+        private IServiceProvider m_context;
 
         /// <summary>
         /// Gets or sets the host context
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get
             {

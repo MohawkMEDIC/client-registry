@@ -58,7 +58,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Host context for instance
         /// </summary>
-        private HostContext m_hostContext;
+        private IServiceProvider m_hostContext;
 
         /// <summary>
         /// Configuration section handler
@@ -408,7 +408,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
         #region IUsesHostContext Members
 
-        public MARC.HI.EHRS.SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get { return m_hostContext; }
             set

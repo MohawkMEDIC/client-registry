@@ -40,7 +40,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         #region IUsesHostContext Members
 
         // Host context
-        private MARC.HI.EHRS.SVC.Core.HostContext m_context;
+        private IServiceProvider m_context;
 
         // Localization service
         private ILocalizationService m_locale;
@@ -112,7 +112,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Gets or sets the application context of this component
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get { return this.m_context; }
             set
@@ -304,7 +304,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 var dmn = CreateDomainIdentifier(tcx, dtls);
 
-                if (String.IsNullOrEmpty(dmn.Domain) || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
+                if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
                     dtls.Add(new UnrecognizedPatientDomainResultDetail(this.m_locale));
                 subjectOf.AlternateIdentifiers.Add(dmn);
                 

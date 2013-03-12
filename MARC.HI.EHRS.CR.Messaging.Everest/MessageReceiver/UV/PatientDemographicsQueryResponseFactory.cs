@@ -212,7 +212,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Gets or sets the context
         /// </summary>
-        public SVC.Core.HostContext Context { get; set; }
+        public IServiceProvider Context { get; set; }
 
         #endregion
     }

@@ -310,7 +310,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Gets or sets the context
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get;
             set;

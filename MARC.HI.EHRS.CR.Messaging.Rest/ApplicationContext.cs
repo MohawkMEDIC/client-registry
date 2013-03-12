@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 13-8-2012
+ * Date: 7-5-2012
  */
 
 using System;
@@ -24,7 +24,7 @@ using System.Text;
 using MARC.HI.EHRS.SVC.Core;
 using MARC.HI.EHRS.SVC.Core.Services;
 
-namespace MARC.HI.EHRS.CR.Messaging.HL7
+namespace MARC.HI.EHRS.CR.Messaging.Rest
 {
     /// <summary>
     /// Handlers for application context
@@ -35,11 +35,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         /// <summary>
         /// Host context backing field for singleton
         /// </summary>
-        private static IServiceProvider s_hostContext;
-        /// <summary>
-        /// Localization service
-        /// </summary>
-        private static ILocalizationService s_localeService;
+        private static HostContext s_hostContext;
         /// <summary>
         /// Sync-lock
         /// </summary>
@@ -60,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         /// <summary>
         /// Gets or sets the current host context
         /// </summary>
-        public static IServiceProvider CurrentContext
+        public static HostContext CurrentContext
         {
             get
             {
@@ -74,19 +70,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
                         s_hostContext = value;
                         s_sysConfigService = s_hostContext.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
                     }
-            }
-        }
-
-        /// <summary>
-        /// Localization service
-        /// </summary>
-        public static ILocalizationService LocaleService
-        {
-            get
-            {
-                if (s_localeService == null)
-                    s_localeService = CurrentContext.GetService(typeof(ILocalizationService)) as ILocalizationService;
-                return s_localeService;
             }
         }
     }

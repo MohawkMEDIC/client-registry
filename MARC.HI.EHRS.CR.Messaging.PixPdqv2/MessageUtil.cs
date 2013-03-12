@@ -86,7 +86,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create NACK
         /// </summary>
-        internal static IMessage CreateNack(IMessage request, List<IResultDetail> errors, MARC.HI.EHRS.SVC.Core.HostContext context )
+        internal static IMessage CreateNack(IMessage request, List<IResultDetail> errors, IServiceProvider context)
         {
             var config = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
@@ -128,7 +128,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update an ERR
         /// </summary>
-        private static int UpdateERR(NHapi.Model.V231.Segment.ERR err, IResultDetail dtl, SVC.Core.HostContext context)
+        private static int UpdateERR(NHapi.Model.V231.Segment.ERR err, IResultDetail dtl, IServiceProvider context)
         {
             var locale = context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 
@@ -196,7 +196,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update err
         /// </summary>
-        public static int UpdateERR(NHapi.Model.V25.Segment.ERR err, IResultDetail dtl, MARC.HI.EHRS.SVC.Core.HostContext context)
+        public static int UpdateERR(NHapi.Model.V25.Segment.ERR err, IResultDetail dtl, IServiceProvider context)
         {
             var locale = context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 
@@ -265,7 +265,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Validate the message
         /// </summary>
-        internal static void Validate(IMessage message, ISystemConfigurationService config, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.HostContext context)
+        internal static void Validate(IMessage message, ISystemConfigurationService config, List<IResultDetail> dtls, IServiceProvider context)
         {
             
             // Structure validation

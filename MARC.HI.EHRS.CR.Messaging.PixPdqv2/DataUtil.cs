@@ -258,7 +258,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         #region IUsesHostContext Members
 
         // Host context
-        private MARC.HI.EHRS.SVC.Core.HostContext m_context;
+        private IServiceProvider m_context;
 
         // Services
         private IAuditorService m_auditService; // Auditor
@@ -276,7 +276,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Gets or sets the context of the host
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get { return this.m_context; }
             set

@@ -388,7 +388,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Get the default language code
         /// </summary>
-        internal static CE<string> GetDefaultLanguageCode(HostContext context)
+        internal static CE<string> GetDefaultLanguageCode(IServiceProvider context)
         {
             ISystemConfigurationService configSvc = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 

@@ -386,12 +386,12 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         #region IUsesHostContext Members
 
         // Host context
-        protected MARC.HI.EHRS.SVC.Core.HostContext m_context;
+        protected IServiceProvider m_context;
 
         /// <summary>
         /// Gets or sets the context of under which this persister runs
         /// </summary>
-        public MARC.HI.EHRS.SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get
             { return m_context; }

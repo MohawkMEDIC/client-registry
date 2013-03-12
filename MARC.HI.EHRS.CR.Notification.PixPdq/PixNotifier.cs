@@ -222,7 +222,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// <summary>
         /// Gets or sets the context
         /// </summary>
-        public SVC.Core.HostContext Context
+        public IServiceProvider Context
         {
             get;
             set;
