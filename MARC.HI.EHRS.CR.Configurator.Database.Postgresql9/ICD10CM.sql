@@ -1,3 +1,24 @@
+--
+-- Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License"); you 
+-- may not use this file except in compliance with the License. You may 
+-- obtain a copy of the License at 
+-- 
+-- http://www.apache.org/licenses/LICENSE-2.0 
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+-- License for the specific language governing permissions and limitations under 
+-- the License.
+-- 
+-- User: fyfej
+-- Date: 5-12-2012
+--
+
+-- CONTENTS FROM ICD 10 CODE SYSTEM 
+-- COPYRIGHT (C) WORLD HEALTH ORGANIZATION
 SELECT QDCDB_REG_CD('Z67','2.16.840.1.113883.6.90','Blood Type',NULL);
 SELECT QDCDB_REG_CD('Z67.1','2.16.840.1.113883.6.90','Blood type,  Type A blood',QDCDB_GET_CD('2.16.840.1.113883.6.90','Z67'));
 SELECT QDCDB_REG_CD('Z67.10','2.16.840.1.113883.6.90','Blood type,  Type A blood,  Rh positive',QDCDB_GET_CD('2.16.840.1.113883.6.90','Z67.1'));

@@ -1,32 +1,21 @@
-﻿/* 
- * POSTGRESHR - MARC-HI SHARED SCHEMA FOR MESSAGE TRACKING
- * VERSION: 3.0
- * AUTHOR: JUSTIN FYFE
- * DATE: AUGUST 5, 2010
- * FILES:
- *	MTDB.SQL		- SQL CODE TO CREATE TABLES, INDECIES, VIEWS AND SEQUENCES AND FUNCTIONS
- * DESCRIPTION:
- *	THIS FILE CLEANS AND THEN RE-CREATES THE POSTGRESQL MESSAGE TRACKING
- *	DATABASE SCHEMA INCLUDING TABLES, VIEWS, INDECIES, SEQUENCES AND FUNCTIONS. 
- * LICENSE:
- * 	Licensed under the Apache License, Version 2.0 (the "License");
- * 	you may not use this file except in compliance with the License.
- * 	You may obtain a copy of the License at
- *
- *     		http://www.apache.org/licenses/LICENSE-2.0
- *
- * 	Unless required by applicable law or agreed to in writing, software
- * 	distributed under the License is distributed on an "AS IS" BASIS,
- * 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * 	See the License for the specific language governing permissions and
- * 	limitations under the License.
- *
- * REMARKS:
- *	THE SCHEMA THAT IS CREATED BY THIS FILE SHOULD NOT BE CONFUSED WITH THE
- *	SCHEMA FOR THE MESSAGE BOX SERVICE. THE MESSAGE BOX SERVICE SCHEMA IS
- *	INTENDED FOR NOT ONLY TRACKING REQUEST/RESPONSE PAIRS BUT FOR TRACKING
- *	THE RESPONSE TO QUEUED MODE OPERATIONS.
- */
+﻿--
+-- Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License"); you 
+-- may not use this file except in compliance with the License. You may 
+-- obtain a copy of the License at 
+-- 
+-- http://www.apache.org/licenses/LICENSE-2.0 
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+-- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+-- License for the specific language governing permissions and limitations under 
+-- the License.
+-- 
+-- User: fyfej
+-- Date: 5-12-2012
+--
 
 CREATE OR REPLACE FUNCTION make_plpgsql()
 RETURNS VOID
