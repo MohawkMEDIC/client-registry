@@ -88,7 +88,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
                 
-                
                 DateTime lastReceive = DateTime.Now;
 
                 while (DateTime.Now.Subtract(lastReceive) < this.m_timeout)
@@ -115,35 +114,42 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     }
 
                     // Use the nHAPI parser to process the data
-                    var message = parser.Parse(messageData.ToString());
-
-                    // Setup local and remote receive endpoint data for auditing
-                    var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                    var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
-                    Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
-                    Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
-                    var messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
-
-                    // Call any bound event handlers that there is a message available
-                    OnMessageReceived(messageArgs);
-
-                    // Send the response back
-                    StreamWriter writer = new StreamWriter(stream);
-                    stream.Write(new byte[] { 0xb }, 0, 1); // header
-                    if (messageArgs.Response != null)
+                    Hl7MessageReceivedEventArgs messageArgs = null;
+                    try
                     {
-                        // Since nHAPI only emits a string we just send that along the stream
-                        writer.Write(parser.Encode(messageArgs.Response));
-                        writer.Flush();
+                        var message = parser.Parse(messageData.ToString());
+
+                        // Setup local and remote receive endpoint data for auditing
+                        var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                        var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
+                        Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
+                        Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+                        messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
+
+                        // Call any bound event handlers that there is a message available
+                        OnMessageReceived(messageArgs);
                     }
-                    stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
-                    lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
+                    finally
+                    {
+                        // Send the response back
+                        StreamWriter writer = new StreamWriter(stream);
+                        stream.Write(new byte[] { 0xb }, 0, 1); // header
+                        if (messageArgs != null && messageArgs.Response != null)
+                        {
+                            // Since nHAPI only emits a string we just send that along the stream
+                            writer.Write(parser.Encode(messageArgs.Response));
+                            writer.Flush();
+                        }
+                        stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                        lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
+                    }
                 }
             }
             catch (Exception e)
             {
                 Trace.TraceError(e.ToString());
-                // TODO: NACK
+
+                
             }
             finally
             {
