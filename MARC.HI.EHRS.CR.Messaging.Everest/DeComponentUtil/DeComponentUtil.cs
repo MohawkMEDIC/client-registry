@@ -206,7 +206,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     assAuth = oidData.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
             }
 
-            return new II() { Root = id.Domain, Extension = id.Identifier, AssigningAuthorityName = assAuth };
+            return new II() { Root = id.Domain, Extension = String.IsNullOrEmpty(id.Identifier) ? null : id.Identifier, AssigningAuthorityName = assAuth };
         }
 
         /// <summary>
@@ -260,6 +260,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         retVal.Part.Add(new ENXP(part.Value, EntityNamePartType.Suffix));
                         break;
                     default:
+                        retVal.Part.Add(new ENXP(part.Value));
                         dtls.Add(new PersistenceResultDetail(ResultDetailType.Warning, String.Format("Can't represent name part type '{0}' in HL7v3", part.Type), null));
                         break;
                 }

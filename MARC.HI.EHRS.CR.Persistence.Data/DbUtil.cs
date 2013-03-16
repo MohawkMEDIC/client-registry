@@ -366,7 +366,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                 // Create a time-set, we'll use the identifier of the first time-component
                 // as the site identifier
-                cmd.Parameters.Add(CreateParameterIn(cmd, "ts_value_in", DbType.DateTime, tsPart.Value));
+                cmd.Parameters.Add(CreateParameterIn(cmd, "ts_value_in", DbType.DateTime, tsPart.Precision == "D" ? tsPart.Value.Date : tsPart.Value));
                 cmd.Parameters.Add(CreateParameterIn(cmd, "ts_precision_in", DbType.StringFixedLength, tsPart.Precision));
                 cmd.Parameters.Add(CreateParameterIn(cmd, "ts_cls_in", DbType.StringFixedLength, m_timestampPartMap[tsPart.PartType]));
                 cmd.Parameters.Add(CreateParameterIn(cmd, "ts_set_id_in", DbType.Decimal, (object)tsSetId ?? DBNull.Value));
@@ -631,8 +631,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         }
 
                         // Value
-                        pt.Value = DateTime.Parse(Convert.ToString(reader["ts_value"]));
                         pt.Precision = Convert.ToString(reader["ts_precision"]);
+                        pt.Value = pt.Precision == "D" ? Convert.ToDateTime(reader["ts_value"]).Date : Convert.ToDateTime(reader["ts_value"]);
                         retVal.Parts.Add(pt);
 
                     }

@@ -60,7 +60,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         CreateIISet(patient.AlternateIdentifiers, details),
                         ConvertStatus(patient.Status, details),
                         null,
-                        CreateOrganization(scoper, details)
+                        null
+                        //CreateOrganization(scoper, details)
                     )
                 )
             );
@@ -150,9 +151,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if(scoper.LegalName != null)
                 tName = CreatePN(scoper.LegalName, details);
 
+            var id = scoper.AlternateIdentifiers.Find(o => o.Domain != this.m_configService.OidRegistrar.GetOid("CR_PID").Oid);
+
             // Basic return value
             var retVal = new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization(
-                CreateIISet(scoper.AlternateIdentifiers, details),
+                SET<II>.CreateSET(CreateII(id, details)),
                 scoper.Type != null ? CreateCD<String>(scoper.Type, details) : null,
                 tName != null ? BAG<ON>.CreateBAG(new ON(tName.Use[0], tName.Part)) : null,
                 null
@@ -237,12 +240,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         CreateIISet(patient.AlternateIdentifiers, details),
                         ConvertStatus(patient.Status, details),
                         null,
-                        CreateOrganization(scoper, details),
+                        new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization(
+                            SET<II>.CreateSET(new II(this.m_configService.OidRegistrar.GetOid("CR_CID").Oid, null)),
+                            null,
+                            BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(this.m_configService.Custodianship.Name))),
+                            new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NotApplicable }
+                        ),
                         null
                     )
                 )
             );
 
+            
             retVal.Subject1.registeredRole.SetPatientEntityChoiceSubject(CreatePersonDetail(patient, details));
             
             

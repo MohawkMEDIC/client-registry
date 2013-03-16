@@ -509,7 +509,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                     retVal.TelecomAddresses.Add(new SVC.Core.DataTypes.TelecommunicationsAddress()
                     {
-                        Use = Util.ToWireFormat(tel.Use),
+                        Use = Util.ToWireFormat(tel.Use).Trim(),
                         Value = tel.Value
                     });
 
@@ -853,7 +853,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 // Add contact parties
                 foreach (var ctp in organization.ContactParty)
                 {
-                    if (ctp == null || ctp.NullFlavor == null) continue;
+                    if (ctp == null || ctp.NullFlavor != null) continue;
                     HealthcareParticipant contactParty = new HealthcareParticipant()
                     {
                         Classifier = HealthcareParticipant.HealthcareParticipantType.Organization

@@ -38,7 +38,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         internal static float MatchName(NameSet a, NameSet b)
         {
             if (a == b) return 1;
-            return a.SimilarityTo(b);
+            var retVal = a.SimilarityTo(b) * b.SimilarityTo(a);
+            return retVal;
         }
 
         /// <summary>
