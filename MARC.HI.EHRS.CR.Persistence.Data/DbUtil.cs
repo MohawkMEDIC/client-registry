@@ -51,6 +51,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         {
             public Type m_componentType;
             public Decimal m_componentId;
+            public Decimal m_componentVersionId;
             public HealthServiceRecordSiteRoleType m_roleType;
         }
 
@@ -680,13 +681,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 {
 
                     // Determine if we've already de-persisted the object
-                    HealthServiceRecordComponent dcComp = m_alreadyDepersisted.Find(o => o != null && o.GetType().Equals(cmp.m_componentType) && o is IIdentifiable && (o as IIdentifiable).Identifier == cmp.m_componentId);
+                    HealthServiceRecordComponent dcComp = m_alreadyDepersisted.Find(o => o != null && o.GetType().Equals(cmp.m_componentType) && o is IIdentifiable && (o as IIdentifiable).Identifier == cmp.m_componentId && (cmp.m_componentVersionId == default(Decimal) || (o as IIdentifiable).VersionIdentifier == cmp.m_componentVersionId));
                     //Trace.TraceInformation("DePersist {0}:{1}", cmp.m_componentType, cmp.m_componentId);
                     if (dcComp != null)
                         dcComp = dcComp.Clone() as HealthServiceRecordComponent;
                     else
                     {
-                        dcComp = cmpp.DePersist(conn, cmp.m_componentId, cont, cmp.m_roleType, loadFast) as HealthServiceRecordComponent;
+                        if(cmpp is IVersionComponentPersister)
+                            dcComp = (cmpp as IVersionComponentPersister).DePersist(conn, cmp.m_componentId, cmp.m_componentVersionId, cont, cmp.m_roleType, loadFast) as HealthServiceRecordComponent;
+                        else
+                            dcComp = cmpp.DePersist(conn, cmp.m_componentId, cont, cmp.m_roleType, loadFast) as HealthServiceRecordComponent;
                         if(dcComp != null) m_alreadyDepersisted.Add(dcComp);
                     }
 
@@ -734,6 +738,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         tComponents.Add(new ComponentData()
                         {
                             m_componentId = Convert.ToDecimal(reader["cmp_tbl_id"]),
+                            m_componentVersionId = reader["cmp_vrsn_id"] == DBNull.Value ? default(Decimal) : Convert.ToDecimal(reader["cmp_vrsn_id"]),
                             m_componentType = typeof(HealthServiceRecordSiteRoleType).Assembly.GetType(Convert.ToString(reader["cmp_typ"])) ?? typeof(RegistrationEvent).Assembly.GetType(Convert.ToString(reader["cmp_typ"])),
                             m_roleType = (HealthServiceRecordSiteRoleType)Convert.ToDecimal(reader["cmp_rol_typ"])
                         });

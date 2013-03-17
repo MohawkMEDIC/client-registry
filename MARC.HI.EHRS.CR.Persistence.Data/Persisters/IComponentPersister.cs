@@ -59,4 +59,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
 
     }
+
+    /// <summary>
+    /// Versioned component persister
+    /// </summary>
+    public interface IVersionComponentPersister
+    {
+        /// <summary>
+        /// Depersist with version
+        /// </summary>
+        IComponent DePersist(IDbConnection conn, decimal identifier, decimal versionId, IContainer container, HealthServiceRecordSiteRoleType? role, bool loadFast);
+
+    }
 }

@@ -338,6 +338,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             var subject = controlActProcess.Subject[0].RegistrationEvent;
 
             retVal.EventClassifier = RegistrationEventType.Register;
+            retVal.Mode = RegistrationEventType.Register;
             retVal.EventType = new CodeValue("REG");
             retVal.Status =subject.StatusCode == null || subject.StatusCode.IsNull ? StatusType.Active : ConvertStatusCode(subject.StatusCode, dtls);
 
@@ -1155,7 +1156,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             var subject = controlActProcess.Subject[0].RegistrationEvent;
 
-            retVal.EventClassifier = RegistrationEventType.Register;
+            retVal.EventClassifier = RegistrationEventType.Revise;
+            retVal.Mode = RegistrationEventType.Revise;
             retVal.EventType = new CodeValue("REG");
             retVal.Status = subject.StatusCode == null || subject.StatusCode.IsNull ? StatusType.Active : ConvertStatusCode(subject.StatusCode, dtls);
 
@@ -1279,6 +1281,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             var subject = controlActProcess.Subject[0].RegistrationEvent;
 
             retVal.EventClassifier = RegistrationEventType.Register;
+            retVal.Mode = RegistrationEventType.Replace;
             retVal.EventType = new CodeValue("REG");
             retVal.Status = subject.StatusCode == null || subject.StatusCode.IsNull ? StatusType.Active : ConvertStatusCode(subject.StatusCode, dtls);
 

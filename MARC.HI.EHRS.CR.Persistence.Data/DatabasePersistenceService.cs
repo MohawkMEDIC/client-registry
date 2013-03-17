@@ -60,6 +60,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         private IServiceProvider m_hostContext;
 
+        // Client registry configuration
+        private IClientRegistryMergeService m_clientRegistryMerge;
+
+        // Notification service
+        private IClientNotificationService m_notificationService;
+
+        // Client registry configuration
+        private IClientRegistryConfigurationService m_clientRegistryConfiguration;
+
         /// <summary>
         /// Configuration section handler
         /// </summary>
@@ -150,7 +159,32 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         public VersionedDomainIdentifier StoreContainer(System.ComponentModel.IContainer storageData, DataPersistenceMode mode)
         {
 
-            // TODO: do a sanity check, have we already persisted this record?
+            // Merge
+            IEnumerable<VersionedDomainIdentifier> pid = null;
+            var regEvent = storageData as RegistrationEvent;
+            if (this.m_clientRegistryMerge != null && regEvent != null)
+            {
+
+                bool fuzzy = false;
+                pid = this.m_clientRegistryMerge.FindIdConflicts(regEvent);
+                if (pid.Count() == 0) // if we didn't find any id conflicts go to fuzzy mode
+                {
+                    fuzzy = true;
+                    pid = this.m_clientRegistryMerge.FindFuzzyConflicts(regEvent);
+                }
+
+                // If the configuration allows, merge
+                if (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge ||
+                    !fuzzy && this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists)
+                {
+                    regEvent.AlternateIdentifier = pid.First();
+                    return this.UpdateContainer(regEvent, mode);
+                }
+            }
+            else 
+                pid = new List<VersionedDomainIdentifier>();
+
+            //// do a sanity check, have we already persisted this record?
             if (!ValidationSettings.AllowDuplicateRecords)
             {
                 var duplicateQuery = (storageData as ICloneable).Clone() as HealthServiceRecordContainer;
@@ -177,8 +211,28 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                     var retVal = persister.Persist(conn, tx, storageData as IComponent, false);
 
+                    // Commit or rollback
                     if (mode == DataPersistenceMode.Production)
+                    {
+
                         tx.Commit();
+
+                        // Notify that reconciliation is required and mark merge candidates 
+                        if (this.m_clientRegistryMerge != null)
+                        {
+                            this.m_clientRegistryMerge.MarkConflicts(retVal, pid);
+                            if (this.m_notificationService != null && pid.Count() != 0)
+                            {
+                                var list = new List<VersionedDomainIdentifier>(pid) { retVal };
+                                this.m_notificationService.NotifyReconciliationRequired(list);
+                            }
+                        }
+
+                        // Notify register
+                        if (this.m_notificationService != null && storageData is RegistrationEvent)
+                            this.m_notificationService.NotifyRegister(storageData as RegistrationEvent);
+
+                    }
                     else
                         tx.Rollback();
 
@@ -324,15 +378,30 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Next we copy this as a replacement of
                     hsrEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                     hsrEvent.Add(newRecordTarget, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
                     // Begin and update
                     tx = conn.BeginTransaction();
 
                     var retVal = persister.Persist(conn, tx, storageData as IComponent, true);
 
                     if (mode == DataPersistenceMode.Production)
+                    {
                         tx.Commit();
+
+                        // Notify register
+                        if (this.m_notificationService != null)
+                        {
+                            
+                            if (hsrEvent.Mode == RegistrationEventType.Replace)
+                                this.m_notificationService.NotifyDuplicatesResolved(hsrEvent);
+                            else
+                                this.m_notificationService.NotifyUpdate(hsrEvent);
+                        }
+                    }
                     else
                         tx.Rollback();
+
+                  
 
                     return retVal;
                 }
@@ -415,6 +484,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             {
                 ApplicationContext.CurrentContext = value;
                 this.m_hostContext = value;
+                this.m_clientRegistryMerge = value.GetService(typeof(IClientRegistryMergeService)) as IClientRegistryMergeService;
+                this.m_notificationService = value.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
+                this.m_clientRegistryConfiguration = value.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService;
             }
         }
 
@@ -488,7 +560,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                         // Match birth time
                         if (subjectOfQuery.BirthTime != null)
-                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0:MM/dd/yyyy HH:mm:ss Z}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
+                        {
+                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0:MM/dd/yyyy HH:mm:ss z}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
+                        }
 
                         // Other Identifiers
                         if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
@@ -509,8 +583,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         // TRIM INTERSECT
                         if (sb.ToString().EndsWith("INTERSECT "))
                             sb.Remove(sb.Length - 10, 10);
+                        
                         sb.Append(")");
 
+                        if (sb.ToString().EndsWith("AND PSN_ID IN ()")) // complete dump? ok
+                            sb.Remove(sb.Length - 16, 16);
 
                         #endregion
 
@@ -551,7 +628,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 m_configuration.ConnectionManager.ReleaseConnection(conn);
             }
 
-            retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
+            //retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
         }
 

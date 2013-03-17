@@ -25,6 +25,7 @@ using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core.Configuration;
 using System.Configuration;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
+using System.Collections;
 
 namespace MARC.HI.EHRS.CR.Core
 {
@@ -98,9 +99,9 @@ namespace MARC.HI.EHRS.CR.Core
                     var otherInstance = propertyInfo.GetValue(original, null);
                     propertyInfo.SetValue(filter, otherInstance, null);
 
-                    if (otherInstance != null)
+                    if ((otherInstance != null) ^ (otherInstance is ICollection && (otherInstance as ICollection).Count == 0))
                         nCriteria++;
-                    if(firstOnly && otherInstance != null)
+                    if(firstOnly && ((otherInstance != null) ^ (otherInstance is ICollection && (otherInstance as ICollection).Count == 0)))
                         return nCriteria;
                 }
                 else

@@ -65,6 +65,7 @@
     <Compile Include="Configuration\ValidationSection.cs" />
     <Compile Include="Connection\ConnectionManager.cs" />
     <Compile Include="DatabaseHealthcareWorkerIdentityService.cs" />
+    <Compile Include="DatabaseMergeService.cs" />
     <Compile Include="DatabasePersistenceService.cs" />
     <Compile Include="DbUtil.cs" />
     <Compile Include="Persisters\ChangeSummaryPersister.cs" />

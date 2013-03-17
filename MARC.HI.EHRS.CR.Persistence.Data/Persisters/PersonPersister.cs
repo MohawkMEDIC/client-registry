@@ -35,7 +35,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
     /// <summary>
     /// Persister that is responsible for the persisting of a person
     /// </summary>
-    public class PersonPersister : IComponentPersister
+    public class PersonPersister : IComponentPersister, IVersionComponentPersister
     {
         #region IComponentPersister Members
 
@@ -93,6 +93,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // identifiers for things like notifications, etc.
                 psn.AlternateIdentifiers.Clear();
                 GetPersonAlternateIdentifiers(conn, tx, psn);
+                
+                // If there is a person ref in this component then we may have to update our version identifier
+
                 var retVal = new VersionedDomainIdentifier()
                 {
                     Identifier = psn.Id.ToString(),
@@ -1431,5 +1434,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Add a relationship of person reference
             //newPerson.Add(oldPerson, "OBSLT", HealthServiceRecordSiteRoleType.OlderVersionOf, null);
         }
+
+        #region IVersionComponentPersister Members
+
+        /// <summary>
+        /// Get a specific version of the patient
+        /// </summary>
+        public System.ComponentModel.IComponent DePersist(IDbConnection conn, decimal identifier, decimal versionId, System.ComponentModel.IContainer container, HealthServiceRecordSiteRoleType? role, bool loadFast)
+        {
+            return this.GetPerson(conn, null, new VersionedDomainIdentifier()
+            {
+                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
+                Identifier = identifier.ToString(),
+                Version = versionId.ToString()
+            }, loadFast);
+        }
+
+        #endregion
     }
 }

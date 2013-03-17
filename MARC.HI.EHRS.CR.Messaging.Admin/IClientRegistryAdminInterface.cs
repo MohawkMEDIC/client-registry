@@ -25,26 +25,45 @@ using System.ServiceModel.Syndication;
 using System.ServiceModel.Web;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 
-namespace MARC.HI.EHRS.CR.Messaging.Rest
+namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
     /// <summary>
     /// Client registry interface contract
     /// </summary>
-    [ServiceContract]
+    [ServiceContract(ConfigurationName = "CrAdmin")]
     [XmlSerializerFormat]
-    public interface IClientRegistryInterface
+    public interface IClientRegistryAdminInterface
     {
 
         /// <summary>
-        /// Get all clients matching criteria
+        /// Get all registrations in the system matching a key
         /// </summary>
-        [WebGet(UriTemplate = "clients/")]
-        Atom10FeedFormatter GetClients();
+        [OperationContract(Action = "GetRegistrations")]
+        RegistrationEventCollection GetRegistrations(Person queryPrototype);
 
         /// <summary>
-        /// Get client with the specified local identifier;
+        /// Get registration event
         /// </summary>
-        [WebGet(UriTemplate = "clients/{id}")]
-        Person GetClient(string id);
+        [OperationContract(Action = "GetRegistration")]
+        RegistrationEvent GetRegistrationEvent(decimal id);
+
+        /// <summary>
+        /// Get conflicts 
+        /// </summary>
+        [OperationContract(Action = "GetConflicts")]
+        ConflictCollection GetConflicts();
+
+        /// <summary>
+        /// Merge registration events
+        /// </summary>
+        [OperationContract(Action = "Merge")]
+        RegistrationEvent Merge(decimal[] sourceIds, decimal targetId);
+
+        /// <summary>
+        /// Source id
+        /// </summary>
+        [OperationContract(Action = "Resolve")]
+        void Resolve(decimal sourceId);
+
     }
 }

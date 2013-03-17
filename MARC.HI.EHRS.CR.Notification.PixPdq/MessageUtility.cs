@@ -392,8 +392,24 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 
                 // Provider org
                 if (providerOrg != null)
-                    retVal.registeredRole.ProviderOrganization = CreateProviderOrganization(providerOrg);
+                {
+                    // Provider org
+                    var oidData = m_configService.OidRegistrar.FindData(iiSet[0].Root);
+                    if (oidData != null)
+                    {
+                        retVal.registeredRole.ProviderOrganization = new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization()
+                        {
+                            Id = SET<II>.CreateSET(new II(oidData.Oid)),
 
+                            Name = BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(oidData.Attributes.Find(o => o.Key == "CustodialOrgName").Value ?? oidData.Description))),
+                            ContactParty = new List<Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty>()
+                            {
+                                new Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
+                            }
+                        };
+
+                    }
+                }
             }
             retVal.registeredRole.SetPatientEntityChoiceSubject(person);
             return retVal;

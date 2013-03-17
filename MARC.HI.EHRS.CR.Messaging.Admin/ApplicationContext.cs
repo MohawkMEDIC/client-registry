@@ -23,7 +23,7 @@ using System.Text;
 using MARC.HI.EHRS.SVC.Core;
 using MARC.HI.EHRS.SVC.Core.Services;
 
-namespace MARC.HI.EHRS.CR.Messaging.Rest
+namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
     /// <summary>
     /// Handlers for application context
@@ -34,7 +34,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Rest
         /// <summary>
         /// Host context backing field for singleton
         /// </summary>
-        private static HostContext s_hostContext;
+        private static IServiceProvider s_hostContext;
         /// <summary>
         /// Sync-lock
         /// </summary>
@@ -55,7 +55,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Rest
         /// <summary>
         /// Gets or sets the current host context
         /// </summary>
-        public static HostContext CurrentContext
+        public static IServiceProvider CurrentContext
         {
             get
             {

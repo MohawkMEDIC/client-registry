@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MARC.HI.EHRS.CR.Messaging.Rest.Configuration
+namespace MARC.HI.EHRS.CR.Messaging.Admin.Configuration
 {
     /// <summary>
     /// Client registry interface configuration
@@ -32,14 +32,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Rest.Configuration
         /// <summary>
         /// Creates a new instance of the client registry interface configuration
         /// </summary>
-        public ClientRegistryInterfaceConfiguration(Uri address)
+        public ClientRegistryInterfaceConfiguration(String wcfServiceName)
         {
-            this.Address = address;
+            this.WcfServiceName = wcfServiceName;
         }
 
         /// <summary>
         /// Gets the address of the client registry REST interface
         /// </summary>
-        public Uri Address { get; private set; }
+        public String WcfServiceName { get; private set; }
     }
 }

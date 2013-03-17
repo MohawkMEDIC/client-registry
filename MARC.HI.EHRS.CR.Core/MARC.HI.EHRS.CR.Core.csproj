@@ -74,6 +74,7 @@
     <Compile Include="CrHealthServiceRecordContainer.cs" />
     <Compile Include="Services\IClientNotificationService.cs" />
     <Compile Include="Services\IClientRegistryConfigurationService.cs" />
+    <Compile Include="Services\IClientRegistryMergeService.cs" />
     <Compile Include="Util\SoundexUtil.cs" />
   </ItemGroup>
   <ItemGroup>

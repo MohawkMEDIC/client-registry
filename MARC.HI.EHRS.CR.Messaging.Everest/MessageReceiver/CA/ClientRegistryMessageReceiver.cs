@@ -237,13 +237,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 if (vdi != null)
                 {
 
-                    // Notify
-                    IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                    if (notificationService != null)
-                    {
-                        notificationService.NotifyRegister(components);
-                    }
-
+                    
                     // Registration ID
                     var regReq = request.controlActEvent.Subject.RegistrationRequest.Subject.registeredRole;
                     if(regReq.Id == null)
@@ -449,13 +443,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
                 if (vdi != null)
                 {
-
-                    // Notify
-                    IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                    if (notificationService != null)
-                    {
-                        notificationService.NotifyUpdate(components);
-                    }
 
                     // Registration Data for update
                     var verified = dataUtil.GetRecord(vdi, dtls, issues, new DataUtil.QueryData() { IsSummary = true, QueryId = Guid.NewGuid().ToString(), QueryRequest = components }) as RegistrationEvent;

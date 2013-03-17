@@ -33,11 +33,21 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     public class RegistrationEvent : CrHealthServiceRecordContainer, IIdentifiable
     {
 
+        public RegistrationEvent()
+        {
+
+        }
         /// <summary>
         /// Classifies the health service record
         /// </summary>
         [XmlAttribute("classifier")]
         public RegistrationEventType EventClassifier { get; set; }
+
+        /// <summary>
+        /// Gets the mode
+        /// </summary>
+        [XmlIgnore]
+        public RegistrationEventType Mode { get; set; }
 
         /// <summary>
         /// Identifies the status of the object

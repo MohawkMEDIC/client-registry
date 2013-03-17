@@ -252,11 +252,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 if(vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
 
-                // Notify
-                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                if (notificationService != null)
-                    notificationService.NotifyDuplicatesResolved(data);
-
+               
                 // prepare the delete audit
                 var person = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 var replc = person.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ReplacementOf);
@@ -394,11 +390,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 if (vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
-
-                // Notify
-                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                if (notificationService != null)
-                    notificationService.NotifyUpdate(data);
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",

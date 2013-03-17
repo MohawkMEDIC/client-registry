@@ -8,8 +8,8 @@
     <ProjectGuid>{7DFEDAD4-A75C-4333-8237-CB8453C22643}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MARC.HI.EHRS.CR.Messaging.Rest</RootNamespace>
-    <AssemblyName>MARC.HI.EHRS.CR.Messaging.Rest</AssemblyName>
+    <RootNamespace>MARC.HI.EHRS.CR.Messaging.Admin</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Messaging.Admin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,6 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MARC.Everest, Version=1.5.0.0, Culture=neutral, PublicKeyToken=ba5b2480018546af, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.Connectors.WCF.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
@@ -52,11 +60,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
-    <Compile Include="ClientRegistryInterface.cs" />
+    <Compile Include="ClientRegistryAdminInterface.cs" />
     <Compile Include="Configuration\ClientRegistryInterfaceConfiguration.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
-    <Compile Include="IClientRegistryInterface.cs" />
+    <Compile Include="ConflictCollection.cs" />
+    <Compile Include="Conflict.cs" />
+    <Compile Include="IClientRegistryAdminInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistrationEventCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">

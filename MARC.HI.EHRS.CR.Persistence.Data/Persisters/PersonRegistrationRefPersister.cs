@@ -64,8 +64,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             else if (psn.Id == cntrPsn.Id)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00D"));
 
-            // Load the container person
-            cntrPsn = pp.GetPerson(conn, tx, new SVC.Core.DataTypes.DomainIdentifier()
+            // Load the container person from DB so we get all data
+            Person dbCntrPsn = pp.GetPerson(conn, tx, new SVC.Core.DataTypes.DomainIdentifier()
             {
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = cntrPsn.Id.ToString()
@@ -74,9 +74,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Load the components for the person
             DbUtil.DePersistComponents(conn, psn, this, true);
 
-            if (psn == null || cntrPsn == null)
+            if (psn == null || dbCntrPsn == null)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF00B"));
-            cntrPsn.Site = (data.Site.Container as IComponent).Site;
+            dbCntrPsn.Site = (data.Site.Container as IComponent).Site;
 
             var role = (refr.Site as HealthServiceRecordSite).SiteRoleType;
             var symbolic = (refr.Site as HealthServiceRecordSite).IsSymbolic; // If true, the replacement does not cascade and is a symbolic replacement of only the identifiers listed
@@ -98,27 +98,27 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     // Now to copy the components of the current version down
                     foreach (IComponent cmp in refr.Site.Container.Components)
                         if (cmp != refr)
-                            cntrPsn.Add((cmp as HealthServiceRecordComponent).Clone() as IComponent);
+                            dbCntrPsn.Add((cmp as HealthServiceRecordComponent).Clone() as IComponent);
 
                     // Merge the two records in memory taking the newer data
                     // This is a merge from old to new in order to capture any data elements 
                     // that have been updated in the old that might be newer (or more accurate) than the 
                     // the new
                     if(psn.AlternateIdentifiers == null)
-                        cntrPsn.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
+                        dbCntrPsn.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
                     else if(psn.OtherIdentifiers == null)
-                        cntrPsn.OtherIdentifiers = new List<KeyValuePair<SVC.Core.DataTypes.CodeValue, SVC.Core.DataTypes.DomainIdentifier>>();
+                        dbCntrPsn.OtherIdentifiers = new List<KeyValuePair<SVC.Core.DataTypes.CodeValue, SVC.Core.DataTypes.DomainIdentifier>>();
                     foreach (var id in psn.AlternateIdentifiers)
                     {
                         // Remove the identifier from the original
                         id.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
 
                         // If this is a duplicate id then don't add
-                        if(cntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
+                        if(dbCntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
                             continue;
 
                         // Add to alternate identifiers
-                        cntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
+                        dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
                         {
                             AssigningAuthority = id.AssigningAuthority,
                             UpdateMode = SVC.Core.DataTypes.UpdateModeType.AddOrUpdate,
@@ -135,7 +135,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         id.Value.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
                         
                         // If this is a duplicate id then don't add
-                        if(cntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain && i.Value.Identifier == id.Value.Identifier))
+                        if(dbCntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain && i.Value.Identifier == id.Value.Identifier))
                             continue;
 
                         // Add to other identifiers
@@ -146,7 +146,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 AssigningAuthority = id.Value.AssigningAuthority,
                                 UpdateMode = SVC.Core.DataTypes.UpdateModeType.Add,
                                 IsLicenseAuthority = false,
-                                IsPrivate = (cntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain)),
+                                IsPrivate = (dbCntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain)),
                                 Identifier = id.Value.Identifier,
                                 Domain = id.Value.Domain
                             });
@@ -155,45 +155,55 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         var extns = psn.FindAllExtensions(o => o.PropertyPath == String.Format("OtherIdentifiers[{0}{1}]", oth.Value.Domain, oth.Value.Identifier));
                         if(extns != null)
                             foreach(var ex in extns)
-                                if(cntrPsn.FindExtension(o => o.PropertyPath == ex.PropertyPath && o.Name == ex.Name) == null)
-                                    cntrPsn.Add(ex);
-                        cntrPsn.OtherIdentifiers.Add(oth);
+                                if(dbCntrPsn.FindExtension(o => o.PropertyPath == ex.PropertyPath && o.Name == ex.Name) == null)
+                                    dbCntrPsn.Add(ex);
+                        dbCntrPsn.OtherIdentifiers.Add(oth);
                     }
 
                     // Make sure we don't update what we don't need to 
-                    cntrPsn.Addresses = psn.Addresses = null;
-                    cntrPsn.Citizenship = psn.Citizenship = null;
-                    cntrPsn.Employment = psn.Employment = null;
-                    cntrPsn.Language = psn.Language = null;
-                    cntrPsn.Names = psn.Names = null;
-                    cntrPsn.Race = psn.Race = null;
-                    cntrPsn.TelecomAddresses = psn.TelecomAddresses = null;
-                    cntrPsn.BirthTime = psn.BirthTime = null;
-                    cntrPsn.DeceasedTime = psn.DeceasedTime = null;
+                    dbCntrPsn.Addresses = psn.Addresses = null;
+                    dbCntrPsn.Citizenship = psn.Citizenship = null;
+                    dbCntrPsn.Employment = psn.Employment = null;
+                    dbCntrPsn.Language = psn.Language = null;
+                    dbCntrPsn.Names = psn.Names = null;
+                    dbCntrPsn.Race = psn.Race = null;
+                    dbCntrPsn.TelecomAddresses = psn.TelecomAddresses = null;
+                    dbCntrPsn.BirthTime = psn.BirthTime = null;
+                    dbCntrPsn.DeceasedTime = psn.DeceasedTime = null;
 
                     // Remove the old person from the db
-                    psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the person
+                    psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the old person
                 }
+                else // migrate identifiers
+                    foreach(var id in refr.AlternateIdentifiers)
+                        dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier() {
+                            AssigningAuthority = id.AssigningAuthority,
+                            UpdateMode = SVC.Core.DataTypes.UpdateModeType.AddOrUpdate,
+                            IsLicenseAuthority = false,
+                            IsPrivate = false, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
+                            Identifier = id.Identifier,
+                            Domain = id.Domain
+                        });
 
                 // Now update the person
                 psn.Site = refr.Site;
-                pp.Persist(conn, tx, psn, true); // update the person record
+                //pp.Persist(conn, tx, psn, true); // update the person record
+                 pp.CreatePersonVersion(conn, tx, psn); // update the person record
+                // Store the merged new record
+                pp.CreatePersonVersion(conn, tx, dbCntrPsn);
 
-                if (!symbolic) // Update the container person adding any new identifiers
-                {
-                    // Store the merged new record
-                    pp.CreatePersonVersion(conn, tx, cntrPsn);
-                    // Components
-                    DbUtil.PersistComponents(conn, tx, false, this, cntrPsn);
-                }
+                // Components
+                DbUtil.PersistComponents(conn, tx, false, this, dbCntrPsn);
+                // Now update the backreference to up the chain it gets updated
+                cntrPsn.VersionId = dbCntrPsn.VersionId;
             }
 
             // Create the link
             using (var cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "crt_psn_lnk";
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, cntrPsn.Id));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, cntrPsn.VersionId));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, dbCntrPsn.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, dbCntrPsn.VersionId));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "lnk_psn_id_in", DbType.Decimal, psn.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "lnk_cls_in", DbType.Decimal, (decimal)role));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "symbolic_in", DbType.Boolean, symbolic));

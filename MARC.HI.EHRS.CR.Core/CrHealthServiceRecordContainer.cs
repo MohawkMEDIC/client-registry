@@ -42,18 +42,18 @@ namespace MARC.HI.EHRS.CR.Core
             typeof(Person),
             typeof(ExtendedAttribute),
             typeof(PersonRegistrationRef),
-            typeof(QueryParameters)
+            typeof(QueryParameters),
+            typeof(RegistrationEvent)
         };
 
         /// <summary>
         /// Component entries for the Xml Serializer
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Browsable(false)]
         [XmlElement("extension", typeof(ExtendedAttribute))]
         [XmlElement("person", typeof(Person))]
         [XmlElement("personRegRef", typeof(PersonRegistrationRef))]
         [XmlElement("crQueryParameters", typeof(QueryParameters))]
+        [XmlElement("registration", typeof(RegistrationEvent))]
         public List<HealthServiceRecordComponent> CrSpecificComponents
         {
             get

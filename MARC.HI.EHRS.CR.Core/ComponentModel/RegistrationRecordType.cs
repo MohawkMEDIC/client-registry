@@ -56,6 +56,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Nullify of a person
         /// </summary>
         Nullify = 0x10,
+        /// <summary>
+        /// Replacement 
+        /// </summary>
+        Replace = 0x20
 
     }
 }

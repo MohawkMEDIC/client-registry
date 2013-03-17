@@ -76,9 +76,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         /// </summary>
         public bool Stop()
         {
-            foreach (var thd in this.m_listenerThreads)
-                if(thd.IsAlive)
-                    thd.Abort();
+            //foreach (var thd in this.m_listenerThreads)
+            //    if(thd.IsAlive)
+            //        thd.Abort();
             return true;
         }
 
