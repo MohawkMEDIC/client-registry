@@ -27,6 +27,7 @@ using System.Data;
 using System.Reflection;
 using MARC.HI.EHRS.CR.Core.Services;
 using System.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -84,6 +85,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Replacement?
             if (role == HealthServiceRecordSiteRoleType.ReplacementOf)
             {
+
                 // First, we obsolete all records with the existing person
                 foreach (var id in psn.AlternateIdentifiers.FindAll(o => refr.AlternateIdentifiers.Exists(a => a.Domain == o.Domain)))
                     id.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
@@ -199,9 +201,30 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     }
 
                 // Now update the person
-                psn.Site = refr.Site;
+                //psn.Site = refr.Site;
                 //pp.Persist(conn, tx, psn, true); // update the person record
-                 pp.CreatePersonVersion(conn, tx, psn); // update the person record
+                var regEvent = this.GetRegistrationEvent(conn, tx, psn); // get the registration event
+                var changeSummary = DbUtil.GetRegistrationEvent(refr).FindComponent(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf) as ChangeSummary;
+                regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf);
+                regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
+                regEvent.Add(new ChangeSummary() {
+                    ChangeType = changeSummary.ChangeType,
+                    EffectiveTime = changeSummary.EffectiveTime,
+                    LanguageCode = changeSummary.LanguageCode,
+                    Status = changeSummary.Status,
+                    Timestamp = changeSummary.Timestamp
+                }, "CHG", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
+                regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                if (!symbolic)
+                    regEvent.Status = StatusType.Obsolete; // obsolete
+
+                new RegistrationEventPersister().Persist(conn, tx, regEvent, true);
+
+                //pp.CreatePersonVersion(conn, tx, psn);
+                //DbUtil.PersistComponents(conn, tx, false, this, psn);
+                
+                // Now, we have to prepare an event so that this all makes sense
+                // if we de-persist the most recent version (to reflect changes made)
                 // Store the merged new record
                 pp.CreatePersonVersion(conn, tx, dbCntrPsn);
 
@@ -238,6 +261,34 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Identifier = psn.Id.ToString(),
                 Version = psn.VersionId.ToString()
             };
+        }
+
+        /// <summary>
+        /// Create a registration event version linking to the person reflecting a change
+        /// </summary>
+        private RegistrationEvent GetRegistrationEvent(IDbConnection conn, IDbTransaction tx, Person psn)
+        {
+            // First, get the registration version for the person id
+            decimal regEvtVrsn = 0,
+                regEvtId = 0;
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_hsr_EVT";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id", DbType.Decimal, psn.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id", DbType.Decimal, psn.VersionId));
+
+                // Get the registration version
+                using (IDataReader rdr = cmd.ExecuteReader())
+                {
+                    if (!rdr.Read())
+                        throw new ConstraintException("Cannot determine the registration event");
+                    regEvtVrsn = Convert.ToDecimal(rdr["hsr_vrsn_id"]);
+                    regEvtId = Convert.ToDecimal(rdr["hsr_id"]);
+                }
+            }
+
+            // Load and return
+            return new RegistrationEventPersister().DePersist(conn, regEvtId, regEvtVrsn, null, null, true) as RegistrationEvent;
         }
 
         /// <summary>

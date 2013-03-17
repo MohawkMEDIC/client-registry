@@ -70,6 +70,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
              // Audit message
             AuditData audit = this.ConstructAuditData(ActionType.Read, EventIdentifierType.Export);
+            audit.EventTypeCode = new CodeValue("ADM_GetRegistrations");
 
             try
             {
@@ -148,6 +149,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
             // Audit message
             AuditData audit = this.ConstructAuditData(ActionType.Read, EventIdentifierType.Export);
+            audit.EventTypeCode = new CodeValue("ADM_GetRegistrationEvent");
 
             try
             {
@@ -199,7 +201,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
             // Audit message
             AuditData audit = this.ConstructAuditData(ActionType.Read, EventIdentifierType.Export);
-
+            audit.EventTypeCode = new CodeValue("ADM_GetConflicts");
             try
             {
                 
@@ -309,7 +311,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
             // Audit message
             AuditData auditMessage = this.ConstructAuditData(ActionType.Update, EventIdentifierType.ApplicationActivity);
-
+            auditMessage.EventTypeCode = new CodeValue("ADM_Resolve");
             try
             {
 
@@ -323,6 +325,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 // Merge 
                 mergeSvc.MarkResolved(resolveId);
 
+                
                 auditMessage.AuditableObjects.Add(new AuditableObject()
                 {
                     IDTypeCode = AuditableObjectIdType.ReportNumber,
@@ -378,6 +381,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                     });
 
                     var am = ConstructAuditData(ActionType.Delete, EventIdentifierType.Import);
+                    am.EventTypeCode = new CodeValue("ADM_Merge");
                     am.AuditableObjects.Add(new AuditableObject()
                     {
                         IDTypeCode = AuditableObjectIdType.ReportNumber,
@@ -394,6 +398,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                     Identifier = targetId.ToString()
                 };
                 var updateAudit = ConstructAuditData(ActionType.Update, EventIdentifierType.Import);
+                updateAudit.EventTypeCode = new CodeValue("ADM_Merge");
                 updateAudit.AuditableObjects.Add(new AuditableObject()
                 {
                     IDTypeCode = AuditableObjectIdType.ReportNumber,

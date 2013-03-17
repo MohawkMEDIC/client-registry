@@ -298,28 +298,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         throw new ArgumentException(String.Format("The identifier '{0}' is not a valid identifier for this repository", hsrEvent.AlternateIdentifier.Identifier));
                     else if (hsrEvent.AlternateIdentifier == null) // The alternate identifier is null ... so we need to look up the registration event to version ... interesting....
                     {
-                        // Create a query based on the person 
-                        Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-                        subject = new Person()
-                        {
-                            AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers)
-                        };
-                        RegistrationEvent query = new RegistrationEvent();
-                        query.Status = StatusType.Active;
-                        query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-                        query.Add(new QueryParameters()
-                        {
-                            MatchingAlgorithm = MatchAlgorithm.Exact,
-                            MatchStrength = MatchStrength.Exact
-                        }, "FLTR", HealthServiceRecordSiteRoleType.FilterOf, null);
-                        var tRecordIds = QueryRecord(query);
-                        if (tRecordIds.Length != 1)
-                            throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF004"));
-                        else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
-                            throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF005"));
-
-                        tryDec = Decimal.Parse(tRecordIds[0].Identifier);
-                        hsrEvent.AlternateIdentifier = tRecordIds[0];
+                        this.EnrichRegistrationEvent(conn, tx, hsrEvent);
                     }
                     else
                     {
@@ -427,6 +406,38 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 Trace.TraceError("Can't find a persistence handler for type '{0}'", storageData.GetType().Name);
                 throw new DataException(String.Format("Can't persist type '{0}'", storageData.GetType().Name));
             }
+        }
+
+        /// <summary>
+        /// Enrich the registration event
+        /// </summary>
+        internal void EnrichRegistrationEvent(IDbConnection conn, IDbTransaction tx, RegistrationEvent hsrEvent)
+        {
+            decimal tryDec;
+            ISystemConfigurationService configService = ApplicationContext.ConfigurationService;
+
+            // Create a query based on the person 
+            Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            subject = new Person()
+            {
+                AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers)
+            };
+            RegistrationEvent query = new RegistrationEvent();
+            query.Status = StatusType.Active;
+            query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            query.Add(new QueryParameters()
+            {
+                MatchingAlgorithm = MatchAlgorithm.Exact,
+                MatchStrength = MatchStrength.Exact
+            }, "FLTR", HealthServiceRecordSiteRoleType.FilterOf, null);
+            var tRecordIds = QueryRecord(query);
+            if (tRecordIds.Length != 1)
+                throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF004"));
+            else if (tRecordIds[0].Domain != configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
+                throw new MissingPrimaryKeyException(ApplicationContext.LocaleService.GetString("DBCF005"));
+
+            tryDec = Decimal.Parse(tRecordIds[0].Identifier);
+            hsrEvent.AlternateIdentifier = tRecordIds[0];
         }
 
         /// <summary>

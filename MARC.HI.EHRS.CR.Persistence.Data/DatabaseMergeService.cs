@@ -84,7 +84,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             {
                 Mode = RegistrationEventType.Replace,
                 EventClassifier = RegistrationEventType.Register,
-                AlternateIdentifier = survivorId,
                 LanguageCode = survivorRegistrationEvent.LanguageCode
             };
             mergeRegistrationEvent.Add(new ChangeSummary()
