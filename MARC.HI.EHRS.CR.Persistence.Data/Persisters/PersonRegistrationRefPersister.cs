@@ -117,13 +117,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if(dbCntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
                             continue;
 
+                        bool isPrivate = false;
+                        var oidData = ApplicationContext.ConfigurationService.OidRegistrar.FindData(id.Domain);
+                        if (oidData != null)
+                            isPrivate = oidData.Attributes.Exists(o => o.Key == "IsUniqueIdentifier") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value);
+
                         // Add to alternate identifiers
                         dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
                         {
                             AssigningAuthority = id.AssigningAuthority,
                             UpdateMode = SVC.Core.DataTypes.UpdateModeType.AddOrUpdate,
                             IsLicenseAuthority = false,
-                            IsPrivate = false, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
+                            IsPrivate = isPrivate, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
                             Identifier = id.Identifier,
                             Domain = id.Domain
                         });
@@ -175,15 +180,23 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the old person
                 }
                 else // migrate identifiers
-                    foreach(var id in refr.AlternateIdentifiers)
-                        dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier() {
+                    foreach (var id in refr.AlternateIdentifiers)
+                    {
+                        bool isPrivate = false;
+                        var oidData = ApplicationContext.ConfigurationService.OidRegistrar.FindData(id.Domain);
+                        if (oidData != null)
+                            isPrivate = oidData.Attributes.Exists(o => o.Key == "IsUniqueIdentifier") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value);
+
+                        dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
+                        {
                             AssigningAuthority = id.AssigningAuthority,
                             UpdateMode = SVC.Core.DataTypes.UpdateModeType.AddOrUpdate,
                             IsLicenseAuthority = false,
-                            IsPrivate = false, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
+                            IsPrivate = isPrivate, // TODO: Make this a configuration flag (cntrPsn.AlternateIdentifiers.Exists(i=>i.Domain == id.Domain)),
                             Identifier = id.Identifier,
                             Domain = id.Domain
                         });
+                    }
 
                 // Now update the person
                 psn.Site = refr.Site;
