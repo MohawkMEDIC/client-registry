@@ -252,6 +252,29 @@ namespace ServiceTools
         Critical = 0x00000003
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public class ServiceConfigInformation
+    {
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.U4)]
+        public UInt32 dwServiceType;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.U4)]
+        public UInt32 dwStartType;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.U4)]
+        public UInt32 dwErrorControl;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)]
+        public String lpBinaryPathName;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)]
+        public String lpLoadOrderGroup;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.U4)]
+        public UInt32 dwTagID;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)]
+        public String lpDependencies;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)]
+        public String lpServiceStartName;
+        [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)]
+        public String lpDisplayName;
+    };
+
     /// <summary>
     /// Installs and provides functionality for handling windows services
     /// </summary>
@@ -290,6 +313,8 @@ namespace ServiceTools
         [DllImport("advapi32.dll")]
         private static extern int QueryServiceStatus(IntPtr hService,
         SERVICE_STATUS lpServiceStatus);
+        [DllImport("advapi32.dll", EntryPoint = "QueryServiceConfigW")]
+        public static extern Boolean QueryServiceConfig(IntPtr hService, IntPtr intPtrQueryConfig, UInt32 cbBufSize, out UInt32 pcbBytesNeeded);
         [DllImport("advapi32.dll", SetLastError = true)]
         private static extern int DeleteService(IntPtr hService);
         [DllImport("advapi32.dll")]
@@ -365,6 +390,29 @@ namespace ServiceTools
             }
         }
 
+        public static ServiceConfigInformation GetServiceConfig(string ServiceName)
+        {
+            IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
+            try
+            {
+                IntPtr service = OpenService(scman, ServiceName,
+                ServiceRights.AllAccess);
+                if (service == IntPtr.Zero) return null;
+                UInt32 dwBytesNeeded = 0;
+                IntPtr ptr = Marshal.AllocHGlobal(4096);
+                bool success = QueryServiceConfig(service, ptr, 4096, out dwBytesNeeded);
+                ServiceConfigInformation retVal = new ServiceConfigInformation();
+                Marshal.PtrToStructure(ptr, retVal);
+                Marshal.FreeHGlobal(ptr);
+                CloseServiceHandle(service);
+                return retVal;
+            }
+            finally
+            {
+                CloseServiceHandle(scman);
+            }
+
+        }
         /// <summary>
         /// Takes a service name, a service display name and the path to the service executable and installs / starts the windows service.
         /// </summary>
@@ -372,7 +420,7 @@ namespace ServiceTools
         /// <param name="DisplayName">The display name that this service will have</param>
         /// <param name="FileName">The path to the executable of the service</param>
         public static void InstallAndStart(string ServiceName, string DisplayName,
-        string FileName, string accountName, string accountPassword)
+        string FileName, string accountName, string accountPassword, ServiceBootFlag bootFlag)
         {
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect |
             ServiceManagerRights.CreateService);
@@ -384,7 +432,7 @@ namespace ServiceTools
                 {
                     service = CreateService(scman, ServiceName, DisplayName,
                     ServiceRights.QueryStatus | ServiceRights.Start, SERVICE_WIN32_OWN_PROCESS,
-                    ServiceBootFlag.AutoStart, ServiceError.Normal, FileName, null, IntPtr.Zero,
+                    bootFlag, ServiceError.Normal, FileName, null, IntPtr.Zero,
                     null, accountName, accountPassword);
                 }
                 if (service == IntPtr.Zero)

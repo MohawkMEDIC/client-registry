@@ -53,15 +53,23 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
+    <Compile Include="Configuration\UI\PersistenceConfigurationPanel.cs" />
+    <Compile Include="Configuration\UI\pnlConfigureDatabase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Configuration\UI\pnlConfigureDatabase.Designer.cs">
+      <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Configuration\ValidationSection.cs" />
     <Compile Include="Connection\ConnectionManager.cs" />
     <Compile Include="DatabaseHealthcareWorkerIdentityService.cs" />
@@ -97,6 +105,41 @@
     <None Include="Configuration\marc.hi.ehrs.cr.persistence.data.xsd">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\UI\pnlConfigureDatabase.resx">
+      <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SQL\PSQL9\CR-FX_CLEAN.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-MRG_CLEAN.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-NAME_CLEAN.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-SRCH_CLEAN.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="SQL\PSQL9\CR-DDL_CLEAN.SQL" />
+    <Content Include="SQL\PSQL9\CR-DDL.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-FX.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-MRG.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-NAME.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\CR-SRCH.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

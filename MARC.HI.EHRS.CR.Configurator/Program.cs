@@ -25,6 +25,7 @@ using System.Reflection;
 using System.IO;
 using MARC.HI.EHRS.SVC.Core.Configuration;
 using ServiceConfigurator;
+using System.Threading;
 
 namespace MARC.HI.EHRS.CR.Configurator
 {
@@ -55,7 +56,9 @@ namespace MARC.HI.EHRS.CR.Configurator
                     if (start.ShowDialog() == DialogResult.Cancel)
                         return;
                 }
+                
                 ConfigurationApplicationContext.s_configurationPanels.Sort((a, b) => a.Name.CompareTo(b.Name));
+                ConfigurationApplicationContext.ConfigurationApplied += new EventHandler(ConfigurationApplicationContext_ConfigurationApplied);
                 Application.Run(new frmMain());
             }
             finally
@@ -65,10 +68,48 @@ namespace MARC.HI.EHRS.CR.Configurator
         }
 
         /// <summary>
+        /// Configuration has been applied
+        /// </summary>
+        static void ConfigurationApplicationContext_ConfigurationApplied(object sender, EventArgs e)
+        {
+            if (ServiceTools.ServiceInstaller.ServiceIsInstalled("Client Registry") && 
+                ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") == ServiceTools.ServiceState.Starting &&
+                MessageBox.Show("The Client Registry service must be restarted for these changes to take affect, restart it now?", "Confirm Service Restart", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                ServiceTools.ServiceInstaller.StopService("Client Registry");
+                while (ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") == ServiceTools.ServiceState.Starting)
+                    Thread.Sleep(200);
+                ServiceTools.ServiceInstaller.StartService("Client Registry");
+                while (ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") != ServiceTools.ServiceState.Starting)
+                    Thread.Sleep(200);
+
+            }
+        }
+
+        /// <summary>
         /// Scan and load plugin files for configuration
         /// </summary>
         private static void ScanAndLoadPluginFiles()
         {
+            // Load DB providers
+            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "*.dll"))
+            {
+                try
+                {
+                    Application.DoEvents();
+                    Assembly asm = Assembly.LoadFrom(file);
+                    // Scan assembly for database configurators
+                    foreach (var typ in Array.FindAll<Type>(asm.GetTypes(), o => o.GetInterface(typeof(IDatabaseConfigurator).FullName) != null))
+                    {
+                        ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
+                        if (ci != null)
+                            DatabaseConfiguratorRegistrar.Configurators.Add(ci.Invoke(null) as IDatabaseConfigurator);
+                    }
+                }
+                catch { }
+            }
+
+            // Load Panels
             foreach (var file in Directory.GetFiles(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "*.dll"))
             {
                 try
@@ -81,13 +122,6 @@ namespace MARC.HI.EHRS.CR.Configurator
                         ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
                         if (ci != null)
                             ConfigurationApplicationContext.s_configurationPanels.Add(ci.Invoke(null) as IConfigurationPanel);
-                    }
-                    // Scan assembly for database configurators
-                    foreach (var typ in Array.FindAll<Type>(asm.GetTypes(), o => o.GetInterface(typeof(IDatabaseConfigurator).FullName) != null))
-                    {
-                        ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
-                        if (ci != null)
-                            DatabaseConfiguratorRegistrar.Configurators.Add(ci.Invoke(null) as IDatabaseConfigurator);
                     }
                 }
                 catch { }

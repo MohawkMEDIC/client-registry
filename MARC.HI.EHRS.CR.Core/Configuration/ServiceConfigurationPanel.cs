@@ -27,6 +27,8 @@ using System.Security;
 using System.Threading;
 using System.IO;
 using System.Reflection;
+using MARC.HI.EHRS.CR.Core.Configuration;
+using System.DirectoryServices.AccountManagement;
 
 namespace MARC.HI.EHRS.SVC.Presentation.Configuration
 {
@@ -37,10 +39,27 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
     {
         #region IConfigurationPanel Members
 
+        // Control panel
+        private ucServiceSettings m_controlPanel = new ucServiceSettings();
+
+        /// <summary>
+        /// Setup defaults
+        /// </summary>
+        public ServiceConfigurationPanel()
+        {
+            this.Mode = ServiceTools.ServiceBootFlag.AutoStart;
+            
+        }
+
+        /// <summary>
+        /// Gets the service mode
+        /// </summary>
+        public ServiceTools.ServiceBootFlag Mode { get; set; }
+
         /// <summary>
         /// Account password
         /// </summary>
-        public SecureString AccountPassword { get; set; }
+        public String AccountPassword { get; set; }
 
         /// <summary>
         /// Account name
@@ -52,9 +71,13 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         /// </summary>
         public void Configure(System.Xml.XmlDocument configurationDom)
         {
+            if (!this.EnableConfiguration)
+                return;
+
             try
             {
-                ServiceTools.ServiceInstaller.InstallAndStart("Client Registry", "Client Registry", Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe"), this.AccountName, this.AccountPassword == null ? null : this.AccountPassword.ToString());
+                ServiceTools.ServiceInstaller.InstallAndStart("Client Registry", "Client Registry", Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe"), this.AccountName, this.AccountPassword == null ? null : this.AccountPassword.ToString(), this.Mode);
+                
             }
             catch (Exception e)
             {
@@ -72,7 +95,19 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         /// </summary>
         public bool IsConfigured(System.Xml.XmlDocument configurationDom)
         {
-            return ServiceTools.ServiceInstaller.ServiceIsInstalled("Client Registry");
+            bool isInstalled = ServiceTools.ServiceInstaller.ServiceIsInstalled("Client Registry");
+            this.EnableConfiguration = isInstalled;
+            if (isInstalled)
+            {
+                var svcInfo = ServiceTools.ServiceInstaller.GetServiceConfig("Client Registry");
+                this.Mode = (ServiceTools.ServiceBootFlag)svcInfo.dwStartType;
+                this.AccountName = svcInfo.lpServiceStartName;
+
+            }
+
+            this.m_controlPanel.UserAccount = this.AccountName;
+            this.m_controlPanel.ServiceStart = this.Mode;
+            return isInstalled;
         }
 
         /// <summary>
@@ -88,7 +123,7 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         /// </summary>
         public System.Windows.Forms.Control Panel
         {
-            get { return new Label() { Text = "No Configuration Yet Supported", TextAlign = System.Drawing.ContentAlignment.MiddleCenter, AutoSize = false }; }
+            get { return this.m_controlPanel; }
         }
 
         /// <summary>
@@ -98,10 +133,11 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         {
             try
             {
-                if (ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") == ServiceTools.ServiceState.Run)
+                if (ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") != ServiceTools.ServiceState.Stop)
                     ServiceTools.ServiceInstaller.StopService("Client Registry");
                 while (ServiceTools.ServiceInstaller.GetServiceStatus("Client Registry") != ServiceTools.ServiceState.Stop)
                     Thread.Sleep(400);
+                
                 ServiceTools.ServiceInstaller.Uninstall("Client Registry");
             }
             catch (Exception e)
@@ -116,7 +152,50 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         /// </summary>
         public bool Validate(System.Xml.XmlDocument configurationDom)
         {
-            return true; // todo:
+            this.AccountName = this.m_controlPanel.UserAccount;
+            this.AccountPassword = this.m_controlPanel.Password;
+            this.Mode = this.m_controlPanel.ServiceStart;
+
+            if (this.AccountName != null)
+            {
+                bool valid = false;
+                string domainName = null,
+                    userName = this.AccountName;
+                if (this.AccountName.Contains("\\"))
+                {
+                    string[] arrT = this.AccountName.Split('\\');
+                    domainName = arrT[0];
+                    userName = arrT[1];
+                }
+                if (String.IsNullOrEmpty(domainName))
+                {
+                    domainName = System.Environment.MachineName;
+                }
+
+
+                // Machine store
+                try
+                {
+                    using (PrincipalContext context = new PrincipalContext(ContextType.Machine, domainName))
+                        return context.ValidateCredentials(userName, this.AccountPassword);
+                }
+                catch
+                {
+                }
+
+
+                // Domain store
+                try
+                {
+                    using (PrincipalContext context = new PrincipalContext(ContextType.Domain, domainName))
+                        return context.ValidateCredentials(userName, this.AccountPassword);
+                }
+                catch
+                {
+                }
+
+            }
+            return true;
         }
 
         /// <summary>

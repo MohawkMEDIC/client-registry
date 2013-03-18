@@ -181,12 +181,6 @@
     <None Include="App.config.connectathon">
       <SubType>Designer</SubType>
     </None>
-    <None Include="db.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="notify.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="ClientRegistry.en.xml">

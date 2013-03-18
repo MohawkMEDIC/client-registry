@@ -130,12 +130,6 @@
     <Compile Include="Panels\pnlConfigureDatabase.Designer.cs">
       <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
     </Compile>
-    <Compile Include="Panels\pnlConfigureTerminology.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Panels\pnlConfigureTerminology.Designer.cs">
-      <DependentUpon>pnlConfigureTerminology.cs</DependentUpon>
-    </Compile>
     <Compile Include="PersistenceConfigurationPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -144,7 +138,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="QueryPersistenceConfigurationPanel.cs" />
-    <Compile Include="TerminologyConfigurationPanel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\Configurators\ucBasicConfigurator.resx">
@@ -173,9 +166,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Panels\pnlConfigureDatabase.resx">
       <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Panels\pnlConfigureTerminology.resx">
-      <DependentUpon>pnlConfigureTerminology.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
