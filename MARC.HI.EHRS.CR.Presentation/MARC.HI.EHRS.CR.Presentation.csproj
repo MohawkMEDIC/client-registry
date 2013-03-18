@@ -181,6 +181,7 @@
     <None Include="App.config.connectathon">
       <SubType>Designer</SubType>
     </None>
+    <EmbeddedResource Include="License.rtf" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ClientRegistry.en.xml">

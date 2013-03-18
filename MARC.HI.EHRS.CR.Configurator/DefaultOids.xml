@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<registeredOids>
+  <add name="ICD10" ref="http://hl7.org/fhir/sid/icd-10" oid="2.16.840.1.113883.6.3" desc="International Classification of Diseases version 10">
+    <attribute name="HL70396Name" value="I10"/>
+  </add>
+  <add name="ICD10CA" oid="2.16.840.1.113883.11.19436" desc="ICD10 Canadian Codes"/>
+  <add name="ICD10CM" oid="2.16.840.1.113883.6.90" desc="International Classification of Diseases version 10 Clinical Modification">
+    <attribute name="HL70396Name" value="I10C"/>
+  </add>
+  <add name="ICD9" ref="http://hl7.org/fhir/sid/icd-9" oid="2.16.840.1.113883.6.2" desc="Internaional Classification of Diseases version 9">
+    <attribute name="HL70396Name" value="I9"/>
+  </add>
+  <add name="ISO639" oid="2.16.840.1.113883.6.99" desc="Used internally to identify a locale">
+    <attribute name="HL70396Name" value="ISO639"/>
+  </add>
+  <add name="ISO639-1" ref="http://hl7.org/fhir/sid/iso-639-1" oid="2.16.840.1.113883.6.99" desc="ISO Codes for Country portion of locale">
+    <attribute name="HL70396Name" value="ISO639-1"/>
+  </add>
+  <add name="ISO639-2" oid="2.16.840.1.113883.6.100" desc="ISO Codes for Language portion of locale">
+    <attribute name="HL70396Name" value="ISO639-2"/>
+  </add>
+  <add name="ISO639-3" ref="http://hl7.org/fhir/sid/iso-639-3" oid="2.16.840.1.113883.6.121" desc="ISO Codes for Language portion of locale">
+    <attribute name="HL70396Name" value="ISO639-3"/>
+  </add>
+  <add name="ISO3166-1" oid="1.0.3166.1">
+    <attribute name="HL70396Name" value="ISO3166-1"/>
+  </add>
+  <add name="ISO3166-2" oid="1.0.3166.2">
+    <attribute name="HL70396Name" value="ISO3166-2"/>
+  </add>
+  <add name="LOINC" ref="http://hl7.org/fhir/sid/loinc" oid="2.16.840.1.113883.6.1" desc="Logical Observation Identifiers Names and Codes">
+    <attribute name="HL70396Name" value="LN"/>
+  </add>
+  <add name="REG_EVT" oid="0.0.0.0.1" desc="Client Registry Registration Event Identifiers"/>
+  <add name="CR_CID" oid="0.0.0.0.0" desc="Client Registry client internally assigned identifier">
+  </add>
+  <add name="SNOMEDCT" ref="http://snomed.info" oid="2.16.840.1.113883.6.96" desc="SNOMED Clinical Terms">
+    <attribute name="HL70396Name" value="SNM"/>
+  </add>
+  <add name="UCUM" ref="http://hl7.org/fhir/sid/ucum" oid="2.16.840.1.113883.6.8" desc="Uniform Codes for Units of Measure"/>
+  <add name="CR_CID_VRSN" oid="0.0.0.0.9" desc="Client Registry client internally assigned version identifier"/>
+  <add name="CR_PID" oid="0.0.0.0.8" desc="Client Registry provider internally assigned identifiers"/>
+  <add name="CR_LID" oid="0.0.0.0.7" desc="Client Registry location internally assigned identifiers"/>
+  <add name="EVT_ID" oid="0.0.0.0.6" desc="Client Registry event identifiers"/>
+  <add name="CR_REG_VRSN_ID" oid="0.0.0.0.5" desc="Registration event version identifier"/>
+  <add name="CR_MSGID" oid="0.0.0.0.4" desc="Message identifiers root when not in token"/>
+  <add name="DEV_CRID" oid="0.0.0.0.3" desc="Device identifier"/>
+  <add name="CR_PRID" oid="0.0.0.0.2" desc="Personal Relationship identifiers"/>
+
+  <add name="SUBSC_PID" oid="0.0.0.0.8" desc="Subscription Provider IDs (Should point to CR_PID)"/>
+  <add name="SUBSC_RID" oid="0.0.0.0.1" desc="Subscription Record IDs (Should point to REG_EVT)"/>
+</registeredOids>

@@ -76,7 +76,7 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
 
             try
             {
-                ServiceTools.ServiceInstaller.InstallAndStart("Client Registry", "Client Registry", Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe"), this.AccountName, this.AccountPassword == null ? null : this.AccountPassword.ToString(), this.Mode);
+                ServiceTools.ServiceInstaller.Install("Client Registry", "Client Registry", Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe"), this.AccountName, this.AccountPassword == null ? null : this.AccountPassword.ToString(), this.Mode);
                 
             }
             catch (Exception e)
@@ -96,17 +96,17 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         public bool IsConfigured(System.Xml.XmlDocument configurationDom)
         {
             bool isInstalled = ServiceTools.ServiceInstaller.ServiceIsInstalled("Client Registry");
-            this.EnableConfiguration = isInstalled;
             if (isInstalled)
             {
                 var svcInfo = ServiceTools.ServiceInstaller.GetServiceConfig("Client Registry");
                 this.Mode = (ServiceTools.ServiceBootFlag)svcInfo.dwStartType;
                 this.AccountName = svcInfo.lpServiceStartName;
-
+                this.m_controlPanel.UserAccount = this.AccountName;
+                this.m_controlPanel.ServiceStart = this.Mode;
+                this.EnableConfiguration = isInstalled;
             }
-
-            this.m_controlPanel.UserAccount = this.AccountName;
-            this.m_controlPanel.ServiceStart = this.Mode;
+            
+           
             return isInstalled;
         }
 
@@ -115,7 +115,7 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         /// </summary>
         public string Name
         {
-            get { return "Client Registry Windows Service"; }
+            get { return "Client Registry/Service"; }
         }
 
         /// <summary>

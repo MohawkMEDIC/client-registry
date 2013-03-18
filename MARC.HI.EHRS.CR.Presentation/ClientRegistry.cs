@@ -47,6 +47,8 @@ namespace MARC.HI.EHRS.SVC.Presentation.Console
         protected override void OnStart(string[] args)
         {
             ExitCode = ServiceUtil.Start(typeof(Program).GUID);
+            if (ExitCode != 0)
+                Stop();
         }
 
         protected override void OnStop()

@@ -56,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Configurator
                     if (start.ShowDialog() == DialogResult.Cancel)
                         return;
                 }
-                
+
                 ConfigurationApplicationContext.s_configurationPanels.Sort((a, b) => a.Name.CompareTo(b.Name));
                 ConfigurationApplicationContext.ConfigurationApplied += new EventHandler(ConfigurationApplicationContext_ConfigurationApplied);
                 Application.Run(new frmMain());
@@ -91,6 +91,8 @@ namespace MARC.HI.EHRS.CR.Configurator
         /// </summary>
         private static void ScanAndLoadPluginFiles()
         {
+            ConfigurationApplicationContext.s_configurationPanels.Add(new ClientRegistryAboutPanel());
+
             // Load DB providers
             foreach (var file in Directory.GetFiles(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "*.dll"))
             {

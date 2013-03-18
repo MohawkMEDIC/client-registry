@@ -419,7 +419,7 @@ namespace ServiceTools
         /// <param name="ServiceName">The service name that this service will have</param>
         /// <param name="DisplayName">The display name that this service will have</param>
         /// <param name="FileName">The path to the executable of the service</param>
-        public static void InstallAndStart(string ServiceName, string DisplayName,
+        public static void Install(string ServiceName, string DisplayName,
         string FileName, string accountName, string accountPassword, ServiceBootFlag bootFlag)
         {
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect |
@@ -439,14 +439,7 @@ namespace ServiceTools
                 {
                     throw new ApplicationException("Failed to install service.");
                 }
-                try
-                {
-                    StartService(service);
-                }
-                finally
-                {
-                    CloseServiceHandle(service);
-                }
+                CloseServiceHandle(service);
             }
             finally
             {

@@ -29,6 +29,9 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.Reflection;
 using MARC.HI.EHRS.CR.Persistence.Data;
 using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.SVC.Core;
+using MARC.HI.EHRS.CR.Core.Configuration;
 
 namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
 {
@@ -72,6 +75,8 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
         {
             this.m_configPanel = new pnlConfigureDatabase();
             serviceName = typeof(DatabasePersistenceService).AssemblyQualifiedName;
+            // OID Extensions used
+            OidRegistrar.ExtendedAttributes.Add("IsUniqueIdentifier", typeof(bool));
         }
 
         #region IConfigurationPanel Members
@@ -86,7 +91,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
         /// </summary>
         public string Name
         {
-            get { return "Client Registry Persistence"; }
+            get { return "Client Registry/Persistence"; }
         }
 
         /// <summary>
@@ -129,7 +134,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("name"));
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("type"));
                 configSectionNode.Attributes["name"].Value = "marc.hi.ehrs.cr.persistence.data";
-                configSectionNode.Attributes["type"].Value = "MARC.HI.EHRS.CR.Persistence.Data.Configuration.ConfigurationSectionHandler, MARC.HI.EHRS.CR.Persistence.Data, Version=1.0.0.0";
+                configSectionNode.Attributes["type"].Value = typeof(ConfigurationSectionHandler).AssemblyQualifiedName;
                 configSectionsNode.AppendChild(configSectionNode);
             }
             configSectionNode = configSectionsNode.SelectSingleNode("./*[local-name() = 'section'][@name = 'marc.hi.ehrs.cr']") as XmlElement;
@@ -139,7 +144,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("name"));
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("type"));
                 configSectionNode.Attributes["name"].Value = "marc.hi.ehrs.cr";
-                configSectionNode.Attributes["type"].Value = "MARC.HI.EHRS.CR.Core.Configuration.ClientRegistryConfigurationSectionHandler, MARC.HI.EHRS.CR.Core, Version=1.0.0.0";
+                configSectionNode.Attributes["type"].Value = typeof(ClientRegistryConfigurationSectionHandler).AssemblyQualifiedName;
                 configSectionsNode.AppendChild(configSectionNode);
             }
 
@@ -199,6 +204,14 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             {
                 coreNode = configurationDom.CreateElement("marc.hi.ehrs.svc.core");
                 configurationDom.DocumentElement.AppendChild(coreNode);
+
+                // Add the config section
+                configSectionNode = configurationDom.CreateElement("section");
+                configSectionNode.Attributes.Append(configurationDom.CreateAttribute("name"));
+                configSectionNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                configSectionNode.Attributes["name"].Value = "marc.hi.ehrs.svc.corer";
+                configSectionNode.Attributes["type"].Value = typeof(HostConfigurationSectionHandler).AssemblyQualifiedName;
+                configSectionsNode.AppendChild(configSectionNode);
             }
             XmlElement serviceAssemblyNode = coreNode.SelectSingleNode("./*[local-name() = 'serviceAssemblies']") as XmlElement,
                 serviceProviderNode = coreNode.SelectSingleNode("./*[local-name() = 'serviceProviders']") as XmlElement;
@@ -254,14 +267,15 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 registrationCriteria.Attributes.Append(configurationDom.CreateAttribute("minimumAutoMergeMatchCriteria"));
             registrationCriteria.Attributes["minimumAutoMergeMatchCriteria"].Value = this.MinAutoMergeCriteria.ToString();
             
+            
             // Next do criteria
-            if (this.AutoMerge)
-                foreach (var prop in this.MergeCriteria)
-                {
-                    XmlElement mergeCrit = registrationCriteria.AppendChild(configurationDom.CreateElement("mergeCriterion")) as XmlElement;
-                    XmlAttribute fieldName = mergeCrit.Attributes.Append(configurationDom.CreateAttribute("field"));
-                    fieldName.Value = prop;
-                }
+            foreach (var prop in this.MergeCriteria)
+            {
+                XmlElement mergeCrit = registrationCriteria.AppendChild(configurationDom.CreateElement("mergeCriterion")) as XmlElement;
+                XmlAttribute fieldName = mergeCrit.Attributes.Append(configurationDom.CreateAttribute("field"));
+                fieldName.Value = prop;
+            }
+
             // Add registration node
             // Instruct the database to create the feature for core
             bool shouldQuit = false;
@@ -394,22 +408,25 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
 
 
             // Set config options
-            this.m_configPanel.DatabaseConfigurator = this.DatabaseConfigurator;
-            this.m_configPanel.SetConnectionString(configurationDom, this.ConnectionString);
-            this.m_configPanel.AllowDuplicates = this.AllowDuplicateRecords;
-            this.m_configPanel.DefaultMatchStrength = this.DefaultMatchStrength;
-            this.m_configPanel.MatchAlgorithms = this.MatchAlgorithms;
-            this.m_configPanel.MatchFields = this.MergeCriteria;
-            this.m_configPanel.AutoMerge = this.AutoMerge;
-            this.m_configPanel.MinMatch = this.MinAutoMergeCriteria;
-            this.m_configPanel.UpdateIfExists = this.UpdateIfExists;
-            if (configSection != null && persistenceSection != null && addAssemblyNode != null &&
-                addProviderNode != null && !EnableConfiguration && crConfigSection != null && crSection != null)
-                EnableConfiguration = true;
-
-            // Enable configuration
-            return configSection != null && persistenceSection != null && addAssemblyNode != null &&
+            bool isConfigured = configSection != null && persistenceSection != null && addAssemblyNode != null &&
                 addProviderNode != null && crSection != null && crConfigSection != null;
+            if (isConfigured)
+            {
+                this.m_configPanel.DatabaseConfigurator = this.DatabaseConfigurator;
+                this.m_configPanel.SetConnectionString(configurationDom, this.ConnectionString);
+                this.m_configPanel.AllowDuplicates = this.AllowDuplicateRecords;
+                this.m_configPanel.DefaultMatchStrength = this.DefaultMatchStrength;
+                this.m_configPanel.MatchAlgorithms = this.MatchAlgorithms;
+                this.m_configPanel.MatchFields = this.MergeCriteria;
+                this.m_configPanel.AutoMerge = this.AutoMerge;
+                this.m_configPanel.MinMatch = this.MinAutoMergeCriteria;
+                this.m_configPanel.UpdateIfExists = this.UpdateIfExists;
+                if (configSection != null && persistenceSection != null && addAssemblyNode != null &&
+                    addProviderNode != null && !EnableConfiguration && crConfigSection != null && crSection != null)
+                    EnableConfiguration = true;
+            }
+            // Enable configuration
+            return isConfigured;
         }
 
         /// <summary>

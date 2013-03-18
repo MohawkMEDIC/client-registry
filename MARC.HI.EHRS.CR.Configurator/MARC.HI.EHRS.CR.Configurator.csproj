@@ -80,6 +80,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -93,6 +94,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientRegistryAboutPanel.cs" />
     <Compile Include="frmSplash.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -101,6 +103,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ucAboutClientRegistry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucAboutClientRegistry.Designer.cs">
+      <DependentUpon>ucAboutClientRegistry.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="frmSplash.resx">
       <DependentUpon>frmSplash.cs</DependentUpon>
     </EmbeddedResource>
@@ -118,10 +126,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="ucAboutClientRegistry.resx">
+      <DependentUpon>ucAboutClientRegistry.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="..\MARC.HI.EHRS.CR.licenseheader">
       <Link>MARC.HI.EHRS.CR.licenseheader</Link>
     </None>
     <None Include="app.config" />
+    <EmbeddedResource Include="License.rtf" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -140,6 +152,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DefaultOids.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SHR.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -38,6 +38,7 @@
             this.cbxStartMode = new System.Windows.Forms.ComboBox();
             this.rdoLocalService = new System.Windows.Forms.RadioButton();
             this.rdoAccount = new System.Windows.Forms.RadioButton();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -56,7 +57,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(32, 71);
+            this.label2.Location = new System.Drawing.Point(32, 105);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(72, 13);
             this.label2.TabIndex = 26;
@@ -67,7 +68,7 @@
             this.txtUserName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtUserName.Enabled = false;
-            this.txtUserName.Location = new System.Drawing.Point(110, 68);
+            this.txtUserName.Location = new System.Drawing.Point(110, 102);
             this.txtUserName.Name = "txtUserName";
             this.txtUserName.Size = new System.Drawing.Size(184, 20);
             this.txtUserName.TabIndex = 3;
@@ -77,7 +78,7 @@
             this.txtPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPassword.Enabled = false;
-            this.txtPassword.Location = new System.Drawing.Point(110, 94);
+            this.txtPassword.Location = new System.Drawing.Point(110, 128);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(184, 20);
@@ -86,7 +87,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(32, 97);
+            this.label3.Location = new System.Drawing.Point(32, 131);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(53, 13);
             this.label3.TabIndex = 28;
@@ -99,7 +100,7 @@
             this.label4.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label4.Location = new System.Drawing.Point(0, 124);
+            this.label4.Location = new System.Drawing.Point(0, 163);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(307, 20);
             this.label4.TabIndex = 30;
@@ -109,7 +110,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 159);
+            this.label5.Location = new System.Drawing.Point(3, 198);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(71, 13);
             this.label5.TabIndex = 31;
@@ -123,7 +124,7 @@
             "Automatic",
             "Manual",
             "Disabled"});
-            this.cbxStartMode.Location = new System.Drawing.Point(80, 156);
+            this.cbxStartMode.Location = new System.Drawing.Point(80, 195);
             this.cbxStartMode.Name = "cbxStartMode";
             this.cbxStartMode.Size = new System.Drawing.Size(185, 21);
             this.cbxStartMode.TabIndex = 5;
@@ -136,6 +137,7 @@
             this.rdoLocalService.Name = "rdoLocalService";
             this.rdoLocalService.Size = new System.Drawing.Size(172, 17);
             this.rdoLocalService.TabIndex = 1;
+            this.rdoLocalService.TabStop = true;
             this.rdoLocalService.Text = "Start as Local Service Account";
             this.rdoLocalService.UseVisualStyleBackColor = true;
             this.rdoLocalService.CheckedChanged += new System.EventHandler(this.rdoLocalService_CheckedChanged);
@@ -151,10 +153,21 @@
             this.rdoAccount.UseVisualStyleBackColor = true;
             this.rdoAccount.CheckedChanged += new System.EventHandler(this.rdoAccount_CheckedChanged);
             // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.Location = new System.Drawing.Point(23, 67);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(271, 32);
+            this.label6.TabIndex = 32;
+            this.label6.Text = "This user must already have been granted \'Log On as a Service\' right";
+            // 
             // ucServiceSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.rdoAccount);
             this.Controls.Add(this.rdoLocalService);
             this.Controls.Add(this.cbxStartMode);
@@ -166,7 +179,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "ucServiceSettings";
-            this.Size = new System.Drawing.Size(307, 192);
+            this.Size = new System.Drawing.Size(307, 237);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -184,5 +197,6 @@
         private System.Windows.Forms.ComboBox cbxStartMode;
         private System.Windows.Forms.RadioButton rdoLocalService;
         private System.Windows.Forms.RadioButton rdoAccount;
+        private System.Windows.Forms.Label label6;
     }
 }
