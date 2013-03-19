@@ -77,6 +77,23 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             serviceName = typeof(DatabasePersistenceService).AssemblyQualifiedName;
             // OID Extensions used
             OidRegistrar.ExtendedAttributes.Add("IsUniqueIdentifier", typeof(bool));
+            this.UpdateIfExists = true;
+            this.AutoMerge = false;
+            this.DefaultMatchStrength = "Strong";
+            this.MatchAlgorithms = new List<string>() {
+                "Soundex",
+                "Variant",
+                "Exact"
+            };
+            this.MergeCriteria = new List<string>() {
+                "Names",
+                "GenderCode",
+                "BirthTime",
+                "OtherIdentifiers",
+                "Addresses"
+            };
+            this.MinAutoMergeCriteria = 4;
+            
         }
 
         #region IConfigurationPanel Members
@@ -209,7 +226,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 configSectionNode = configurationDom.CreateElement("section");
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("name"));
                 configSectionNode.Attributes.Append(configurationDom.CreateAttribute("type"));
-                configSectionNode.Attributes["name"].Value = "marc.hi.ehrs.svc.corer";
+                configSectionNode.Attributes["name"].Value = "marc.hi.ehrs.svc.core";
                 configSectionNode.Attributes["type"].Value = typeof(HostConfigurationSectionHandler).AssemblyQualifiedName;
                 configSectionsNode.AppendChild(configSectionNode);
             }
@@ -269,6 +286,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             
             
             // Next do criteria
+            
             foreach (var prop in this.MergeCriteria)
             {
                 XmlElement mergeCrit = registrationCriteria.AppendChild(configurationDom.CreateElement("mergeCriterion")) as XmlElement;
@@ -412,8 +430,6 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 addProviderNode != null && crSection != null && crConfigSection != null;
             if (isConfigured)
             {
-                this.m_configPanel.DatabaseConfigurator = this.DatabaseConfigurator;
-                this.m_configPanel.SetConnectionString(configurationDom, this.ConnectionString);
                 this.m_configPanel.AllowDuplicates = this.AllowDuplicateRecords;
                 this.m_configPanel.DefaultMatchStrength = this.DefaultMatchStrength;
                 this.m_configPanel.MatchAlgorithms = this.MatchAlgorithms;
@@ -425,6 +441,9 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                     addProviderNode != null && !EnableConfiguration && crConfigSection != null && crSection != null)
                     EnableConfiguration = true;
             }
+            this.m_configPanel.DatabaseConfigurator = this.DatabaseConfigurator;
+            this.m_configPanel.SetConnectionString(configurationDom, this.ConnectionString);
+
             // Enable configuration
             return isConfigured;
         }
