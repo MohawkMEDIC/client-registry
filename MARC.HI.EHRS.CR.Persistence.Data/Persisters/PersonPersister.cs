@@ -748,13 +748,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         GetPersonNames(conn, tx, retVal);
                         GetPersonAlternateIdentifiers(conn, tx, retVal);
 
-                        if (!loadFast)
-                        {
-                            GetPersonAddresses(conn, tx, retVal);
-                            GetPersonLanguages(conn, tx, retVal);
-                            GetPersonRaces(conn, tx, retVal);
-                            GetPersonTelecomAddresses(conn, tx, retVal);
-                        }
+                        GetPersonAddresses(conn, tx, retVal);
+                        GetPersonLanguages(conn, tx, retVal);
+                        GetPersonRaces(conn, tx, retVal);
+                        GetPersonTelecomAddresses(conn, tx, retVal);
 
                         if(!retVal.AlternateIdentifiers.Exists(o=>o.Domain == domainIdentifier.Domain && o.Identifier == domainIdentifier.Identifier))
                             retVal.AlternateIdentifiers.Add(domainIdentifier);
@@ -1065,54 +1062,54 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     if (addr.UpdateMode == UpdateModeType.Remove) continue;
 
-                    UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
-                    var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
-                    if (candidateOtherAddress.Count == 1)
-                    {
-                        if (QueryUtil.MatchAddress(addr, candidateOtherAddress[0]) == 1) // Remove .. no change
+                        UpdateModeType desiredUpdateMode = UpdateModeType.AddOrUpdate;
+                        var candidateOtherAddress = oldPerson.Addresses.FindAll(o => o.Use == addr.Use);
+                        if (candidateOtherAddress.Count == 1)
                         {
-                            //candidateOtherAddress[0].Key = -1;
-                            addr.UpdateMode = UpdateModeType.Ignore;
-                        }
-                        else if(!newerOnly || candidateOtherAddress[0].Key < addr.Key)
-                        {
-                            addr.UpdateMode = UpdateModeType.Update;
-                            addr.Key = candidateOtherAddress[0].Key;
-                            //candidateOtherAddress[0].Key = -1;
-                        }
-                    }
-                    else if (candidateOtherAddress.Count != 0)
-                    {
-                        // Find this address in a collection of same use addresses
-                        var secondLevelFoundAddress = candidateOtherAddress.Find(o => QueryUtil.MatchAddress(o, addr) > 0.9);
-                        if (secondLevelFoundAddress != null)
-                        {
-                            if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
+                            if (QueryUtil.MatchAddress(addr, candidateOtherAddress[0]) == 1) // Remove .. no change
+                            {
+                                //candidateOtherAddress[0].Key = -1;
                                 addr.UpdateMode = UpdateModeType.Ignore;
-                            else if (!newerOnly || secondLevelFoundAddress.Key < addr.Key)
+                            }
+                            else if (!newerOnly || candidateOtherAddress[0].Key < addr.Key)
                             {
                                 addr.UpdateMode = UpdateModeType.Update;
-                                addr.Key = secondLevelFoundAddress.Key;
+                                addr.Key = candidateOtherAddress[0].Key;
+                                //candidateOtherAddress[0].Key = -1;
                             }
                         }
-                        else
-                            addr.UpdateMode = UpdateModeType.Add;
-                        //secondLevelFoundAddress.Key = -1;
-                    }
-                    else // Couldn't find an address in the old in the new so it is an add
-                    {
-                        // Are we just changing the use?
-                        var secondLevelFoundAddress = oldPerson.Addresses.Find(o => QueryUtil.MatchAddress(addr, o) == 1);
-                        if (secondLevelFoundAddress == null)
-                            addr.UpdateMode = UpdateModeType.Add;
-                        else if(!newerOnly || secondLevelFoundAddress.Key < addr.Key)
+                        else if (candidateOtherAddress.Count != 0)
                         {
-                             // maybe an update (of the use) or a remove (if marked bad)
-
-                            addr.Key = secondLevelFoundAddress.Key;
+                            // Find this address in a collection of same use addresses
+                            var secondLevelFoundAddress = candidateOtherAddress.Find(o => QueryUtil.MatchAddress(o, addr) > 0.9);
+                            if (secondLevelFoundAddress != null)
+                            {
+                                if (QueryUtil.MatchAddress(secondLevelFoundAddress, addr) == 1) // Exact match address, no change
+                                    addr.UpdateMode = UpdateModeType.Ignore;
+                                else if (!newerOnly || secondLevelFoundAddress.Key < addr.Key)
+                                {
+                                    addr.UpdateMode = UpdateModeType.Update;
+                                    addr.Key = secondLevelFoundAddress.Key;
+                                }
+                            }
+                            else
+                                addr.UpdateMode = UpdateModeType.Add;
                             //secondLevelFoundAddress.Key = -1;
-                            addr.UpdateMode = (addr.Use & AddressSet.AddressSetUse.BadAddress) == AddressSet.AddressSetUse.BadAddress ? UpdateModeType.Remove : UpdateModeType.Update;
                         }
+                        else // Couldn't find an address in the old in the new so it is an add
+                        {
+                            // Are we just changing the use?
+                            var secondLevelFoundAddress = oldPerson.Addresses.Find(o => QueryUtil.MatchAddress(addr, o) == 1);
+                            if (secondLevelFoundAddress == null)
+                                addr.UpdateMode = UpdateModeType.Add;
+                            else if (!newerOnly || secondLevelFoundAddress.Key < addr.Key)
+                            {
+                                // maybe an update (of the use) or a remove (if marked bad)
+
+                                addr.Key = secondLevelFoundAddress.Key;
+                                //secondLevelFoundAddress.Key = -1;
+                                addr.UpdateMode = (addr.Use & AddressSet.AddressSetUse.BadAddress) == AddressSet.AddressSetUse.BadAddress ? UpdateModeType.Remove : UpdateModeType.Update;
+                            }
                     }
                 }
 

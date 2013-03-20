@@ -44,6 +44,7 @@ using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV;
 using MARC.HI.EHRS.SVC.Subscription.Core.Services;
+using System.Diagnostics;
 
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
@@ -304,6 +305,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -323,6 +325,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -342,6 +345,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -361,6 +365,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DbException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -374,6 +379,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DataException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -387,6 +393,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (IssueException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -399,6 +406,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -902,6 +910,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -921,6 +930,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -940,6 +950,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -959,6 +970,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DbException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {
@@ -972,6 +984,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
             catch (DataException ex)
             {
+                Trace.TraceError(ex.ToString());
                 // Audit exception
                 if (this.m_auditorService != null)
                 {

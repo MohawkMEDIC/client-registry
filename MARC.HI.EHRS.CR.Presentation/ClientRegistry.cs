@@ -31,13 +31,13 @@ using MARC.HI.EHRS.SVC.Core;
 
 namespace MARC.HI.EHRS.SVC.Presentation.Console
 {
-    partial class SharedHealthRecord : ServiceBase
+    partial class ClientRegistry : ServiceBase
     {
 
         // Start the message handler service
         IMessageHandlerService m_messageHandlerService = null;
 
-        public SharedHealthRecord()
+        public ClientRegistry()
         {
             // Service Name
             this.ServiceName = "Client Registry";

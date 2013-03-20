@@ -1,6 +1,6 @@
 ﻿namespace MARC.HI.EHRS.SVC.Presentation.Console
 {
-    partial class SharedHealthRecord
+    partial class ClientRegistry
     {
         /// <summary> 
         /// Required designer variable.

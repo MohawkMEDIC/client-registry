@@ -72,7 +72,7 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
                 {
                     hasConsole = false;
                     System.ServiceProcess.ServiceBase[] ServicesToRun;
-                    ServicesToRun = new System.ServiceProcess.ServiceBase[] { new SharedHealthRecord() };
+                    ServicesToRun = new System.ServiceProcess.ServiceBase[] { new ClientRegistry() };
                     System.ServiceProcess.ServiceBase.Run(ServicesToRun);
                 }
             }

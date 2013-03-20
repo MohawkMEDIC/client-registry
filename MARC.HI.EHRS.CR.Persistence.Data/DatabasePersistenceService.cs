@@ -174,9 +174,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 }
 
                 // If the configuration allows, merge
-                if (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge ||
-                    !fuzzy && this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists)
+                if (pid.Count() == 1 && 
+                    (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge ||
+                    !fuzzy && this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists))
                 {
+                    Trace.TraceInformation("Matched with {0} records (fuzzy={1}, autoOn={2}, updateEx={3})",
+                        pid.Count(), fuzzy, this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge,
+                        this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists);
+                        
                     regEvent.AlternateIdentifier = pid.First();
                     return this.UpdateContainer(regEvent, mode);
                 }
@@ -216,6 +221,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     {
 
                         tx.Commit();
+                        tx = null;
 
                         // Notify that reconciliation is required and mark merge candidates 
                         if (this.m_clientRegistryMerge != null)
@@ -366,7 +372,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     if (mode == DataPersistenceMode.Production)
                     {
                         tx.Commit();
-
+                        tx = null;
                         // Notify register
                         if (this.m_notificationService != null)
                         {
@@ -603,6 +609,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         #endregion
 
                         cmd.CommandText = sb.ToString();
+                        Debug.WriteLine(cmd.CommandText);
+
                         cmd.CommandType = CommandType.Text;
                         using (IDataReader rdr = cmd.ExecuteReader())
                         {

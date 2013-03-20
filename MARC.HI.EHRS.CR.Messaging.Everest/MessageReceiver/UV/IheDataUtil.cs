@@ -39,6 +39,7 @@ using System.IO;
 using MARC.Everest.Xml;
 using System.Xml;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -435,6 +436,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -447,6 +449,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -459,6 +462,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -471,11 +475,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (IssueException ex)
             {
+                Trace.TraceError(ex.ToString());
                 issues.Add(ex.Issue);
                 return null;
             }
             catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
                 return null;
             }
@@ -535,6 +541,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -547,6 +554,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -559,6 +567,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 issues.Add(new DetectedIssue()
                 {
@@ -571,11 +580,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             catch (IssueException ex)
             {
+                Trace.TraceError(ex.ToString());
                 issues.Add(ex.Issue);
                 return null;
             }
             catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
                 return null;
             }

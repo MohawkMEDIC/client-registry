@@ -514,13 +514,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     throw new Exception(locale.GetString("DTPE001"));
 
 
-                // Notify
-                IClientNotificationService notificationService = this.Context.GetService(typeof(IClientNotificationService)) as IClientNotificationService;
-                if (notificationService != null)
-                {
-                    notificationService.NotifyRegister(data);
-                }
-
+              
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",
                     vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create,

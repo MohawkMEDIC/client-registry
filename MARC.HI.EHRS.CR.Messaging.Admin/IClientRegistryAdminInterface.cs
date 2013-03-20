@@ -54,6 +54,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         ConflictCollection GetConflicts();
 
         /// <summary>
+        /// Get conflicts 
+        /// </summary>
+        [OperationContract(Action = "GetConflict")]
+        ConflictCollection GetConflict(decimal id);
+
+        /// <summary>
         /// Merge registration events
         /// </summary>
         [OperationContract(Action = "Merge")]

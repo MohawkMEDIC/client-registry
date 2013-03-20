@@ -190,6 +190,88 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         }
 
         /// <summary>
+        /// Get a specific conflict
+        /// </summary>
+        public ConflictCollection GetConflict(decimal id)
+        {
+            // Get all Services
+            IAuditorService auditSvc = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
+            IDataPersistenceService repSvc = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+            IClientRegistryMergeService mergeSvc = ApplicationContext.CurrentContext.GetService(typeof(IClientRegistryMergeService)) as IClientRegistryMergeService;
+
+            // Audit message
+            AuditData audit = this.ConstructAuditData(ActionType.Read, EventIdentifierType.Export);
+            audit.EventTypeCode = new CodeValue("ADM_GetConflict");
+            try
+            {
+
+                var vid = new VersionedDomainIdentifier()
+                {
+                    Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("REG_EVT").Oid,
+                    Identifier = id.ToString()
+                };
+
+                // Get all with a merge
+                var mergeResults = mergeSvc.GetConflicts(vid);
+
+                var retVal = new ConflictCollection();
+                // Construct the return, and load match
+                var conf = new Conflict()
+                {
+                    Source = repSvc.GetContainer(vid, true) as RegistrationEvent
+                };
+
+                // Add audit data
+                audit.AuditableObjects.Add(new AuditableObject()
+                {
+                    IDTypeCode = AuditableObjectIdType.ReportNumber,
+                    LifecycleType = AuditableObjectLifecycle.Export,
+                    ObjectId = String.Format("{0}^^^&{1}&ISO", conf.Source.AlternateIdentifier.Identifier, conf.Source.AlternateIdentifier.Domain),
+                    Role = AuditableObjectRole.MasterFile,
+                    Type = AuditableObjectType.SystemObject,
+                    QueryData = "loadFast=false"
+                });
+
+                // Load the matches
+                foreach (var match in mergeResults)
+                {
+                    var matchRecord = repSvc.GetContainer(match, true) as RegistrationEvent;
+                    conf.Match.Add(matchRecord);
+                    // Add audit data
+                    audit.AuditableObjects.Add(new AuditableObject()
+                    {
+                        IDTypeCode = AuditableObjectIdType.ReportNumber,
+                        LifecycleType = AuditableObjectLifecycle.Export,
+                        ObjectId = String.Format("{0}^^^&{1}&ISO", matchRecord.AlternateIdentifier.Identifier, matchRecord.AlternateIdentifier.Domain),
+                        Role = AuditableObjectRole.MasterFile,
+                        Type = AuditableObjectType.SystemObject,
+                        QueryData = "loadFast=false"
+                    });
+                }
+
+                retVal.Conflict.Add(conf);
+
+                return retVal;
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError("Could not execute GetConflicts : {0}", e.ToString());
+                audit.Outcome = OutcomeIndicator.EpicFail;
+#if DEBUG
+                throw new FaultException(new FaultReason(e.ToString()), new FaultCode(e.GetType().Name));
+
+#else
+                throw new FaultException(new FaultReason(e.Message), new FaultCode(e.GetType().Name));
+#endif
+            }
+            finally
+            {
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
+            }
+        }
+
+        /// <summary>
         /// Get all merge candidates
         /// </summary>
         public ConflictCollection GetConflicts()

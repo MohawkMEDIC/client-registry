@@ -107,16 +107,21 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     // Standard stream stuff, read until the stream is exhausted
                     StringBuilder messageData = new StringBuilder();
                     byte[] buffer = new byte[1024];
-                    while (stream.DataAvailable)
+                    bool receivedEOF = false;
+                    
+                    while (!receivedEOF)
                     {
                         int br = stream.Read(buffer, 0, 1024);
-                        messageData.Append(Encoding.ASCII.GetString(buffer, 0, br));
+                        messageData.Append(System.Text.Encoding.UTF8.GetString(buffer, 0, br));
+                        // HACK: should look for FSCR but ... meh
+                        receivedEOF = Array.Exists(buffer, o => o == 0x1c);
                     }
 
                     // Use the nHAPI parser to process the data
                     Hl7MessageReceivedEventArgs messageArgs = null;
                     try
                     {
+                     
                         var message = parser.Parse(messageData.ToString());
 
                         // Setup local and remote receive endpoint data for auditing

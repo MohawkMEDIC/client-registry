@@ -235,9 +235,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             var ssubject = clientRegistryConfigService.CreateMergeFilter(subject);
 
             if (ssubject != null) // Minimum criteria was met
+            {
                 patientQuery.Add(ssubject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
-            pid = registrationService.QueryRecord(patientQuery);
+                pid = registrationService.QueryRecord(patientQuery);
+            }
+            else
+                pid = new VersionedDomainIdentifier[0];
+
             return pid;
         }
 
