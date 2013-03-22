@@ -39,6 +39,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
     {
         private string serviceName = null;
         private pnlConfigureDatabase m_configPanel = null;
+        private bool m_needSync = true;
 
         /// <summary>
         /// Allow duplicate records
@@ -325,6 +326,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                             break;
                     }
                 }
+            this.m_needSync = true;
         }
 
         /// <summary>
@@ -428,6 +430,9 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             // Set config options
             bool isConfigured = configSection != null && persistenceSection != null && addAssemblyNode != null &&
                 addProviderNode != null && crSection != null && crConfigSection != null;
+            if (!this.m_needSync)
+                return isConfigured;
+            this.m_needSync = false;
             if (isConfigured)
             {
                 this.m_configPanel.AllowDuplicates = this.AllowDuplicateRecords;

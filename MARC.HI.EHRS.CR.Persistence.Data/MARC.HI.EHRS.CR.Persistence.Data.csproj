@@ -35,6 +35,10 @@
     <Reference Include="MARC.HI.EHRS.SVC.ClientIdentity">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.ConfigurationApplciation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ConfigurationApplciation.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
     </Reference>
