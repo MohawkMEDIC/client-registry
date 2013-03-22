@@ -28,6 +28,10 @@ using System.Net;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
+using System.Security;
+using System.Security.Authentication;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.SVC.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -39,6 +43,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
         // Certificate
         private X509Certificate2 m_certificate;
+        private X509Certificate2 m_ca;
 
         // Client certs required
         private bool m_clientCertRequired;
@@ -77,7 +82,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             {
                 X509Store store = null;
                 if (handler.Definition.Attributes.Exists(o => o.Key == "x509.store"))
-                    store = new X509Store(handler.Definition.Attributes.Find(o => o.Key == "x509.store").Value);
+                    store = new X509Store(handler.Definition.Attributes.Find(o => o.Key == "x509.store").Value, StoreLocation.LocalMachine);
                 else
                     throw new InvalidOperationException("Must specify x509.store parameter!");
                 try
@@ -93,10 +98,31 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             }
 
             // Client cert config
-            if (handler.Definition.Attributes.Exists(o => o.Key == "client.cert" || o.Key == "client.castore"))
+            if (handler.Definition.Attributes.Exists(o => o.Key == "client.cacert" || o.Key == "client.castore"))
             {
                 this.m_clientCertRequired = true;
+                var caFile = handler.Definition.Attributes.Find(o => o.Key == "client.cacert").Value;
+                if (File.Exists(caFile))
+                    this.m_ca = new X509Certificate2(caFile);
+                else
+                {
+                    var caStore = handler.Definition.Attributes.Find(o => o.Key == "client.castore").Value;
+                    X509Store caStoreX = null;
+                    if (handler.Definition.Attributes.Exists(o => o.Key == "client.castore"))
+                        caStoreX = new X509Store(handler.Definition.Attributes.Find(o => o.Key == "client.castore").Value, StoreLocation.LocalMachine);
+                    else
+                        throw new InvalidOperationException("Must specify client.castore parameter!");
+                    try
+                    {
+                        caStoreX.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+                        this.m_ca = caStoreX.Certificates.Find(X509FindType.FindByThumbprint, caFile, true)[0];
 
+                    }
+                    finally
+                    {
+                        caStoreX.Close();
+                    }
+                }
             }
 
             while (m_run) // run the service
@@ -114,8 +140,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// </summary>
         private bool RemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            // TODO: Validate client certificates 
-            return false;
+
+            // First Validate the chain
+            bool isValid = false;
+            foreach (var cer in chain.ChainElements)
+                if (cer.Certificate.Thumbprint == this.m_ca.Thumbprint)
+                    isValid = true;
+            isValid &= chain.ChainStatus.Length == 0;
+            return isValid;
         }
 
         /// <summary>
@@ -131,51 +163,111 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
+
                 DateTime lastReceive = DateTime.Now;
 
                 while (DateTime.Now.Subtract(lastReceive) < this.m_timeout)
                 {
 
-                    // Standard stream stuff, read until the stream is exhausted
-                    StringBuilder messageData = new StringBuilder();
-                    byte[] buffer = new byte[1024];
-                    int br = 0; // bytes read
-                    do
-                    {
-                        br = stream.Read(buffer, 0, 1024);
-                        messageData.Append(Encoding.ASCII.GetString(buffer, 0, br));
-                    } while (br != 0);
-
+                    int llpByte = 0;
                     // Read LLP head byte
-                    int llpByte = messageData[0];
+                    try
+                    {
+                        llpByte = stream.ReadByte();
+                    }
+                    catch (SocketException)
+                    {
+                        break;
+                    }
+
                     if (llpByte != 0x0B) // first byte must be HT
                         throw new InvalidOperationException("Invalid LLP First Byte");
 
-                    // Use the nHAPI parser to process the data
-                    var message = parser.Parse(messageData.ToString());
+                    // Standard stream stuff, read until the stream is exhausted
+                    StringBuilder messageData = new StringBuilder();
+                    byte[] buffer = new byte[1024];
+                    bool receivedEOF = false;
 
-                    // Setup local and remote receive endpoint data for auditing
-                    var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                    var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
-                    Uri localEndpoint = new Uri(String.Format("sllp://{0}:{1}", localEp.Address, localEp.Port));
-                    Uri remoteEndpoint = new Uri(String.Format("sllp://{0}:{1}", remoteEp.Address, remoteEp.Port));
-                    var messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
-
-                    // Call any bound event handlers that there is a message available
-                    OnMessageReceived(messageArgs);
-
-                    // Send the response back
-                    stream.WriteByte(0xb); // header
-                    StreamWriter writer = new StreamWriter(stream);
-                    if (messageArgs.Response != null)
+                    while (!receivedEOF)
                     {
-                        // Since nHAPI only emits a string we just send that along the stream
-                        writer.Write(parser.Encode(messageArgs.Response));
-                        writer.Flush();
+                        int br = stream.Read(buffer, 0, 1024);
+                        messageData.Append(System.Text.Encoding.UTF8.GetString(buffer, 0, br));
+                        // HACK: should look for FSCR but ... meh
+                        receivedEOF = Array.Exists(buffer, o => o == 0x1c);
                     }
-                    stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
-                    lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
+
+                    // Use the nHAPI parser to process the data
+                    Hl7MessageReceivedEventArgs messageArgs = null;
+                    try
+                    {
+
+                        var message = parser.Parse(messageData.ToString());
+
+                        // Setup local and remote receive endpoint data for auditing
+                        var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                        var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
+                        Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
+                        Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+                        messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
+
+                        // Call any bound event handlers that there is a message available
+                        OnMessageReceived(messageArgs);
+                    }
+                    finally
+                    {
+                        // Send the response back
+                        StreamWriter writer = new StreamWriter(stream);
+                        stream.Write(new byte[] { 0xb }, 0, 1); // header
+                        if (messageArgs != null && messageArgs.Response != null)
+                        {
+                            // Since nHAPI only emits a string we just send that along the stream
+                            writer.Write(parser.Encode(messageArgs.Response));
+                            writer.Flush();
+                        }
+                        stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                        lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
+                    }
                 }
+            }
+            catch (AuthenticationException e)
+            {
+                // Trace authentication error
+                AuditData ad = new AuditData(
+                    DateTime.Now,
+                    ActionType.Execute,
+                    OutcomeIndicator.MinorFail,
+                    EventIdentifierType.ApplicationActivity,
+                    new CodeValue("110113", "DCM") { DisplayName = "Security Alert" }
+                );
+                ad.Actors = new List<AuditActorData>() {
+                    new AuditActorData()
+                    {
+                        NetworkAccessPointId = Dns.GetHostName(),
+                        NetworkAccessPointType = SVC.Core.DataTypes.NetworkAccessPointType.MachineName,
+                        UserName = Environment.UserName,
+                        UserIsRequestor = false
+                    },
+                    new AuditActorData()
+                    {   
+                        NetworkAccessPointId = String.Format("sllp://{0}", tcpClient.Client.RemoteEndPoint.ToString()),
+                        NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                        UserIsRequestor = true
+                    }
+                };
+                ad.AuditableObjects = new List<AuditableObject>()
+                {
+                    new AuditableObject() {
+                        Type = AuditableObjectType.SystemObject,
+                        Role = AuditableObjectRole.SecurityResource,
+                        IDTypeCode = AuditableObjectIdType.Uri,
+                        ObjectId = String.Format("sllp://{0}", this.m_listener.LocalEndpoint)
+                    }
+                };
+
+                var auditService = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditService != null)
+                    auditService.SendAudit(ad);
+                Trace.TraceError(e.Message);
             }
             catch (Exception e)
             {
