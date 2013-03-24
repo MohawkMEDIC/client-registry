@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tpl:everestRevisionTemplate xmlns:tpl="urn:marc-hi:ca/svc">
+  <tpl:name>IHE PDQ Version 3</tpl:name>
+  <tpl:binding>wsHttpBinding</tpl:binding>
+  <tpl:defaultUrl>https://127.0.0.1:8080/PDQSupplier</tpl:defaultUrl>
+  <tpl:installCheck>./*[local-name() = 'revision'][./*[local-name() = 'handler'][@type = 'MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.PdqSupplier, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0']]</tpl:installCheck>
+  <tpl:bindingConfiguration>
+    <binding closeTimeout="00:01:00" openTimeout="00:01:00" receiveTimeout="00:10:00" sendTimeout="00:01:00" bypassProxyOnLocal="false" transactionFlow="false" hostNameComparisonMode="WeakWildcard" maxBufferPoolSize="2147483647" maxReceivedMessageSize="2147483647" messageEncoding="Text" textEncoding="utf-8" useDefaultWebProxy="true" allowCookies="false">
+      <readerQuotas maxDepth="32" maxStringContentLength="2147483647" maxArrayLength="2147483647" maxBytesPerRead="4096" maxNameTableCharCount="2147483647"/>
+      <security mode="Transport">
+        <transport clientCredentialType="Certificate" proxyCredentialType="None"/>
+      </security>
+    </binding>
+  </tpl:bindingConfiguration>
+  <tpl:revisionConfiguration>
+    <revision messageIdFormat="{1}^^^&amp;{0}&amp;ISO" validate="true" name="IHE PDQ Version 3" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.DatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.UV.NE2008, Version=1.0.4432.17804, Culture=neutral, PublicKeyToken=null">
+      <listen type="MARC.Everest.Connectors.WCF.WcfServerConnector, MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd" mode="ListenWaitRespond"/>
+      <cacheTypes namespace="MARC.Everest.RMIM.UV.NE2008.Interactions">
+        <add name="PRPA_IN201305UV02"/>
+        <add name="QUQI_IN000003UV01"/>
+      </cacheTypes>
+      <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.NotSupportedMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+        <interactionId name="*"/>
+      </handler>
+      <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.PdqSupplier, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+        <interactionId name="PRPA_IN201305UV02" disclosure="true"/>
+      </handler>
+      <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.QueryManager, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+        <interactionId name="QUQI_IN000003UV01" disclosure="true"/>
+      </handler>
+    </revision>
+  </tpl:revisionConfiguration>
+</tpl:everestRevisionTemplate>

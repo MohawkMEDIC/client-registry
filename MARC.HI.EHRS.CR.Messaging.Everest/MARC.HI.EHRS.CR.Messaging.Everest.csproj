@@ -138,6 +138,15 @@
     <None Include="..\MARC.HI.EHRS.CR.licenseheader">
       <Link>MARC.HI.EHRS.CR.licenseheader</Link>
     </None>
+    <None Include="Config\Everest\PCS.etpl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\Everest\PDQ.etpl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\Everest\PIX.etpl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

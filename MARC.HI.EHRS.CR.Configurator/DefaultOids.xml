@@ -33,6 +33,7 @@
   </add>
   <add name="REG_EVT" oid="0.0.0.0.1" desc="Client Registry Registration Event Identifiers"/>
   <add name="CR_CID" oid="0.0.0.0.0" desc="Client Registry client internally assigned identifier">
+    <attribute name="IsUniqueIdentifier" value="true"/>
   </add>
   <add name="SNOMEDCT" ref="http://snomed.info" oid="2.16.840.1.113883.6.96" desc="SNOMED Clinical Terms">
     <attribute name="HL70396Name" value="SNM"/>
@@ -41,7 +42,9 @@
   <add name="CR_CID_VRSN" oid="0.0.0.0.9" desc="Client Registry client internally assigned version identifier"/>
   <add name="CR_PID" oid="0.0.0.0.8" desc="Client Registry provider internally assigned identifiers"/>
   <add name="CR_LID" oid="0.0.0.0.7" desc="Client Registry location internally assigned identifiers"/>
-  <add name="EVT_ID" oid="0.0.0.0.6" desc="Client Registry event identifiers"/>
+  <add name="EVT_ID" oid="0.0.0.0.6" desc="Client Registry event identifiers">
+    <attribute name="IsUniqueIdentifier" value="true"/>
+  </add>
   <add name="CR_REG_VRSN_ID" oid="0.0.0.0.5" desc="Registration event version identifier"/>
   <add name="CR_MSGID" oid="0.0.0.0.4" desc="Message identifiers root when not in token"/>
   <add name="DEV_CRID" oid="0.0.0.0.3" desc="Device identifier"/>

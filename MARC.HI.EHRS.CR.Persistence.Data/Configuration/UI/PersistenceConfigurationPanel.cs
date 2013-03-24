@@ -489,7 +489,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
         /// <returns></returns>
         public override string ToString()
         {
-            return this.Name;
+            return "Client Registry Persistence Services";
         }
 
         #endregion
