@@ -1316,8 +1316,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         candidateTel = oldPerson.TelecomAddresses.Find(o => o.Value == tel.Value);
                         if (candidateTel == null)
-                            tel.UpdateMode = UpdateModeType.Add;
-                        else if(!newerOnly || candidateTel.Key < tel.Key)
+                        {
+                            // Same scheme and use? Then it is an update
+                            candidateTel = oldPerson.TelecomAddresses.Find(o => o.Use == tel.Use && tel.Value.Contains(":") && o.Value.Contains(":") &&
+                                tel.Value.Substring(0, tel.Value.IndexOf(":")) == o.Value.Substring(0, o.Value.IndexOf(":")));
+                            if (candidateTel == null)
+                                tel.UpdateMode = UpdateModeType.Add; // add
+                            else
+                            {
+                                tel.UpdateMode = UpdateModeType.Update;
+                                tel.Key = candidateTel.Key;
+                            }
+                        }
+                        else if (!newerOnly || candidateTel.Key < tel.Key)
                         {
                             tel.UpdateMode = UpdateModeType.Update;
                             tel.Key = candidateTel.Key;

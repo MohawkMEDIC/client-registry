@@ -237,12 +237,35 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (ssubject != null) // Minimum criteria was met
             {
                 patientQuery.Add(ssubject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-
                 pid = registrationService.QueryRecord(patientQuery);
             }
             else
                 pid = new VersionedDomainIdentifier[0];
 
+
+            // Now, look for all with an assigning authority
+            if (pid.Length > 0)
+            {
+                // Load each match quickly and ensure that they don't already have a 
+                // different identifier from an assigning authority (not CR_CID) provided 
+                // in the registration method. For example, if John Smith, Male, 1984-05-22, 123 Main Street West is
+                // registered from system X with ID 102 , and a subsequent registration message for John Smith, Male, 1984-05-22, 123 Main Street West
+                // is received from system X with ID 104, it is pretty much assured they aren't the same person. If however the
+                // latter message came from system Y with ID 104, then the two should be considered a match.
+                ssubject.AlternateIdentifiers = new List<DomainIdentifier>();
+                foreach (var altId in subject.AlternateIdentifiers)
+                    if(altId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
+                        ssubject.AlternateIdentifiers.Add(new DomainIdentifier() { Domain = altId.Domain });
+                var excludePids = registrationService.QueryRecord(patientQuery);
+
+                if (excludePids.Length > 0) // Found exclusion PIDs
+                {
+                    List<VersionedDomainIdentifier> tPidCollection = new List<VersionedDomainIdentifier>(pid);
+                    foreach (var exp in excludePids)
+                        tPidCollection.RemoveAll(o => o.Identifier == exp.Identifier);
+                    pid = tPidCollection.ToArray();
+                }
+            }
             return pid;
         }
 
