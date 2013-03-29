@@ -26,6 +26,8 @@ using System.IO;
 using MARC.HI.EHRS.SVC.Core.Configuration;
 using ServiceConfigurator;
 using System.Threading;
+using System.Security.Principal;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Configurator
 {
@@ -41,10 +43,24 @@ namespace MARC.HI.EHRS.CR.Configurator
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
+            // Attempt to open a restricted resource (see if we're administrator)
+            
+
             frmSplash splash = new frmSplash();
             splash.Show();
             try
             {
+                WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo(Assembly.GetEntryAssembly().Location);
+                    psi.Verb = "runas";
+                    Process proc = Process.Start(psi);
+                    Application.Exit();
+                    return;
+                }
+
                 // Scan for configuration options
                 ScanAndLoadPluginFiles();
                 splash.Close();
