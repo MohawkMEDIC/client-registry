@@ -485,7 +485,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
 
                 // Read the record from the DB
-                var result = this.m_persistenceService.GetContainer(recordId, qd.IsSummary) as RegistrationEvent;
+                var result = this.m_persistenceService.GetContainer(recordId, true) as RegistrationEvent;
                     
                 // Does this result match what we're looking for?
                 if (result == null)

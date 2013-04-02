@@ -142,12 +142,18 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         {
 
             // First Validate the chain
-            bool isValid = false;
-            foreach (var cer in chain.ChainElements)
-                if (cer.Certificate.Thumbprint == this.m_ca.Thumbprint)
-                    isValid = true;
-            isValid &= chain.ChainStatus.Length == 0;
-            return isValid;
+            if (certificate == null || chain == null)
+                return !this.m_clientCertRequired;
+            else
+            {
+
+                bool isValid = false;
+                foreach (var cer in chain.ChainElements)
+                    if (cer.Certificate.Thumbprint == this.m_ca.Thumbprint)
+                        isValid = true;
+                isValid &= chain.ChainStatus.Length == 0;
+                return isValid;
+            }
         }
 
         /// <summary>
@@ -160,7 +166,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             try
             {
                 stream.AuthenticateAsServer(this.m_certificate, this.m_clientCertRequired, System.Security.Authentication.SslProtocols.Tls, true);
-
+                
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
 
@@ -283,7 +289,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 var auditService = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
                 if (auditService != null)
                     auditService.SendAudit(ad);
-                Trace.TraceError(e.Message);
+                Trace.TraceError(e.ToString());
             }
             catch (Exception e)
             {

@@ -742,7 +742,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
                             Use = "HP",
-                            Value = String.Format("tel:+1-{0}", tel.Get9999999X99999CAnyText)
+                            Value = MessageUtil.TelFromXTN(tel).Value
                         });
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
@@ -755,13 +755,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Business Home
             if (pid.PhoneNumberBusinessRepetitionsUsed > 0)
             {
-                subject.TelecomAddresses = new List<TelecommunicationsAddress>();
+                if(subject.TelecomAddresses == null)
+                    subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberBusiness())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
                             Use = "WP",
-                            Value = String.Format("tel:+1-{0}", tel.Get9999999X99999CAnyText)
+                            Value = MessageUtil.TelFromXTN(tel)
                         });
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()

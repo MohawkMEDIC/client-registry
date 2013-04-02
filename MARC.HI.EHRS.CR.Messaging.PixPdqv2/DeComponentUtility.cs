@@ -201,6 +201,17 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (psn.LegalName != null)
                         UpdateXPN(psn.LegalName, pid.GetMotherSMaidenName(0));
                 }
+
+            // Telecom addresses
+            foreach (var tel in subject.TelecomAddresses)
+                if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
+                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
+                else if (tel.Use == "HP")
+                    pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
+                else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
+                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
+                else if (tel.Use == "WP")
+                    pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
         }
 
         /// <summary>
@@ -285,9 +296,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             // Get oid data
             var oidData = this.m_config.OidRegistrar.FindData(altId.Domain);
-            cx.AssigningAuthority.UniversalID.Value = oidData.Oid;
+            cx.AssigningAuthority.UniversalID.Value = altId.Domain ?? oidData.Oid;
             cx.AssigningAuthority.UniversalIDType.Value = "ISO";
-            cx.AssigningAuthority.NamespaceID.Value = oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value;
+            cx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority ?? oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value;
             cx.IDNumber.Value = altId.Identifier;
         }
 

@@ -28,6 +28,7 @@ using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using NHapi.Base.validation.impl;
 using NHapi.Base.Parser;
+using System.Text.RegularExpressions;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -36,7 +37,89 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     /// </summary>
     public class MessageUtil
     {
-        
+
+        /// <summary>
+        /// Transform a telephone number
+        /// </summary>
+        public static MARC.Everest.DataTypes.TEL TelFromXTN(NHapi.Model.V231.Datatype.XTN v2XTN)
+        {
+            Regex re = new Regex(@"([+0-9A-Za-z]{1,4})?\((\d{3})\)?(\d{3})\-(\d{4})X?(\d{1,6})?");
+
+            var match = re.Match(v2XTN.Get9999999X99999CAnyText.Value);
+            StringBuilder sb = new StringBuilder("tel:");
+
+            for (int i = 1; i < 5; i++)
+                if (!String.IsNullOrEmpty(match.Groups[i].Value))
+                    sb.AppendFormat("{0}{1}", match.Groups[i].Value, i == 4 ? "" : "-");
+            if (!string.IsNullOrEmpty(match.Groups[5].Value))
+                sb.AppendFormat(";extension={0}", match.Groups[5].Value);
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// XTN from telephone number
+        /// </summary>
+        /// <param name="tel"></param>
+        /// <param name="instance"></param>
+        public static void XTNFromTel(MARC.Everest.DataTypes.TEL tel, NHapi.Model.V25.Datatype.XTN instance)
+        {
+            Regex re = new Regex(@"^(?<s1>(?<s0>[^:/\?#]+):)?(?<a1>//(?<a0>[^/\;#]*))?(?<p0>[^\;#]*)(?<q1>\;(?<q0>[^#]*))?(?<f1>#(?<f0>.*))?");
+
+            // Match 
+            var match = re.Match(tel.Value);
+            if (match.Groups[1].Value != "tel:")
+            {
+                instance.TelephoneNumber.Value = tel.Value;
+                return;
+            }
+
+            // Telephone
+            string[] comps = match.Groups[5].Value.Split('-');
+            StringBuilder sb = new StringBuilder(),
+                phone = new StringBuilder();
+            for (int i = 0; i < comps.Length; i++)
+                if (i == 0 && comps[i].Contains("+"))
+                {
+                    sb.Append(comps[i]);
+                    instance.CountryCode.Value = comps[i];
+                }
+                else if (sb.Length == 0 && comps.Length == 3 ||
+                    comps.Length == 4 && i == 1) // area code?
+                {
+                    sb.AppendFormat("({0})", comps[i]);
+                    instance.AreaCityCode.Value = comps[i];
+                }
+                else if (i != comps.Length - 1)
+                {
+                    sb.AppendFormat("{0}-", comps[i]);
+                    phone.AppendFormat("{0}-", comps[i]);
+                }
+                else
+                {
+                    sb.Append(comps[i]);
+                    phone.Append(comps[i]);
+                }
+
+            instance.LocalNumber.Value = phone.ToString();
+
+            // Extension?
+            string[] parms = match.Groups[7].Value.Split(';');
+            foreach (var parm in parms)
+            {
+                string[] pData = parm.Split('=');
+                if (pData[0] == "extension")
+                {
+                    sb.AppendFormat("X{0}", pData[1]);
+                    instance.Extension.Value = pData[1];
+                }
+            }
+
+            instance.TelephoneNumber.Value = sb.ToString();
+
+            
+        }
+
         /// <summary>
         /// Create an MSH in the specified terser
         /// </summary>
