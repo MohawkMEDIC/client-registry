@@ -186,15 +186,31 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     // Standard stream stuff, read until the stream is exhausted
                     StringBuilder messageData = new StringBuilder();
                     byte[] buffer = new byte[1024];
-                    bool receivedEOF = false;
+                    bool receivedEOF = false, scanForCr = false;
 
                     while (!receivedEOF)
                     {
                         int br = stream.Read(buffer, 0, 1024);
                         messageData.Append(System.Text.Encoding.UTF8.GetString(buffer, 0, br));
-                        // HACK: should look for FSCR but ... meh
-                        receivedEOF = Array.Exists(buffer, o => o == 0x1c);
+
+                        // Need to check for CR?
+                        if (scanForCr)
+                            receivedEOF = buffer[0] == '\r';
+                        else
+                        {
+                            // Look for FS
+                            int fsPos = Array.IndexOf(buffer, 0x1c);
+
+                            if (fsPos == -1) // not found
+                                continue;
+                            else if (fsPos < buffer.Length - 1) // more room to read
+                                receivedEOF = buffer[fsPos + 1] == '\r';
+                            else
+                                scanForCr = true; // Cannot check the end of message for CR because there is no more room in the message buffer
+                            // so need to check on the next loop
+                        }
                     }
+
 
                     // Use the nHAPI parser to process the data
                     Hl7MessageReceivedEventArgs messageArgs = null;
