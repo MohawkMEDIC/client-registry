@@ -142,6 +142,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         {
 
             // First Validate the chain
+            
             if (certificate == null || chain == null)
                 return !this.m_clientCertRequired;
             else
@@ -151,6 +152,10 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 foreach (var cer in chain.ChainElements)
                     if (cer.Certificate.Thumbprint == this.m_ca.Thumbprint)
                         isValid = true;
+                if (!isValid)
+                    Trace.TraceError("Certification authority from the supplied certificate doesn't match the expected thumbprint of the CA");
+                foreach (var stat in chain.ChainStatus)
+                    Trace.TraceWarning("Certificate chain validation error: {0}", stat.StatusInformation);
                 isValid &= chain.ChainStatus.Length == 0;
                 return isValid;
             }
@@ -205,7 +210,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         else
                         {
                             // Look for FS
-                            int fsPos = Array.IndexOf(buffer, 0x1c);
+                            int fsPos = Array.IndexOf(buffer, (byte)0x1c);
 
                             if (fsPos == -1) // not found
                                 continue;
@@ -215,6 +220,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                                 scanForCr = true; // Cannot check the end of message for CR because there is no more room in the message buffer
                             // so need to check on the next loop
                         }
+
+                        // TODO: Timeout for this
                     }
 
 
@@ -247,6 +254,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                             writer.Flush();
                         }
                         stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                        stream.Flush();
                         lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                     }
                 }

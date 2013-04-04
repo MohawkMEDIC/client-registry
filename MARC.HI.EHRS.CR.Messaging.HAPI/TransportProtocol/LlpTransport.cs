@@ -171,6 +171,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                             writer.Flush();
                         }
                         stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                        stream.Flush();
                         lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                     }
                 }
