@@ -96,5 +96,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// </summary>
         event EventHandler<Hl7MessageReceivedEventArgs> MessageReceived;
 
+        /// <summary>
+        /// Gets the extension attributes that are allowed on the receive endpoint
+        /// </summary>
+        Object ConfigurationObject { get; }
     }
 }

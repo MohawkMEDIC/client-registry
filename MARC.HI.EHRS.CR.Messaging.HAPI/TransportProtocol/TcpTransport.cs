@@ -28,15 +28,37 @@ using System.Diagnostics;
 using System.IO;
 using NHapi.Base.validation.impl;
 using NHapi.Base.Model;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
     /// <summary>
     /// Transport protocol for TCP
     /// </summary>
+    [Description("ER7 over TCP")]
     public class TcpTransport : ITransportProtocol
     {
         #region ITransportProtocol Members
+
+        /// <summary>
+        /// An enumeration of valid bytes
+        /// </summary>
+        public enum ByteType : byte
+        {
+            EOT = 0x04,
+            ENQ = 0x05,
+            ACK = 0x06,
+            BEL = 0x07,
+            BS = 0x08,
+            TAB = 0x09,
+            LF = 0x0a,
+            VTAB = 0x0b,
+            CR = (byte)'\r',
+            NACK = 0x15,
+            EOF = 0x1a,
+            ESC = 0x1b,
+            FS = 0x1c
+        }
 
         // The socket
         private TcpListener m_listener;
@@ -136,6 +158,18 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// Message has been received
         /// </summary>
         public event EventHandler<Hl7MessageReceivedEventArgs> MessageReceived;
+
+        #endregion
+
+        #region ITransportProtocol Members
+
+        /// <summary>
+        /// Configuration options
+        /// </summary>
+        public object ConfigurationObject
+        {
+            get { return null; }
+        }
 
         #endregion
     }

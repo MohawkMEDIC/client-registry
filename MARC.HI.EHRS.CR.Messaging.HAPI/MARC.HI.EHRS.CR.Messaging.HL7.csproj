@@ -53,6 +53,8 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -62,6 +64,14 @@
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
     <Compile Include="Configuration\HL7ConfigurationSection.cs" />
+    <Compile Include="Configuration\UI\HandlerConfigTemplate.cs" />
+    <Compile Include="Configuration\UI\HapiConfigurationPanel.cs" />
+    <Compile Include="Configuration\UI\pnlHapiConfiguration.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Configuration\UI\pnlHapiConfiguration.Designer.cs">
+      <DependentUpon>pnlHapiConfiguration.cs</DependentUpon>
+    </Compile>
     <Compile Include="HL7MessageHandler.cs" />
     <Compile Include="IHL7MessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,6 +95,11 @@
     <None Include="Configuration\marc.hi.ehrs.cr.messaging.hl7.xsd">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\UI\pnlHapiConfiguration.resx">
+      <DependentUpon>pnlHapiConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

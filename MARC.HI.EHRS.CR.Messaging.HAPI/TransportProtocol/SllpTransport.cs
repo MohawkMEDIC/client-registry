@@ -32,22 +32,70 @@ using System.Security;
 using System.Security.Authentication;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.Services;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
     /// <summary>
     /// Secure LLP transport
     /// </summary>
+    [Description("ER7 over Secure LLP")]
     public class SllpTransport : LlpTransport
     {
 
-        // Certificate
-        private X509Certificate2 m_certificate;
-        private X509Certificate2 m_ca;
+        /// <summary>
+        /// SLLP configuration object
+        /// </summary>
+        public class SllpConfigurationObject 
+        {
+            /// <summary>
+            /// Identifies the location of the server's certificate
+            /// </summary>
+            [Category("Server Certificate")]
+            [Description("Identifies the location of the server's certificate")]
+            public StoreLocation ServerCertificateLocation { get; set; }
+            /// <summary>
+            /// Identifies the store name of the server's certificate
+            /// </summary>
+            [Category("Server Certificate")]
+            [Description("Identifies the store name of the server's certificate")]
+            public StoreName ServerCertificateStore { get; set; }
+            /// <summary>
+            /// Identifies the certificate to be used
+            /// </summary>
+            [Category("Server Certificate")]
+            [Description("Identifies the certificate to be used by the server")]
+            public X509Certificate2 ServerCertificate { get; set; }
 
-        // Client certs required
-        private bool m_clientCertRequired;
+            /// <summary>
+            /// Identifies the location of the certificate which client certs should be issued from
+            /// </summary>
+            [Category("Trusted Client Certificate")]
+            [Description("Identifies the location of a certificate used for client authentication")]
+            public StoreLocation TrustedCaCertificateLocation { get; set; }
+            /// <summary>
+            /// Identifies the store name of the server's certificate
+            /// </summary>
+            [Category("Trusted Client Certificate")]
+            [Description("Identifies the store of a certificate used for client authentication")]
+            public StoreName TrustedCaCertificateStore { get; set; }
+            /// <summary>
+            /// Identifies the certificate to be used
+            /// </summary>
+            [Category("Trusted Client Certificate")]
+            [Description("Identifies the certificate of the CA which clients must carry to be authenticated")]
+            public X509Certificate2 TrustedCaCertificate { get; set; }
 
+
+            /// <summary>
+            /// Enabling of the client cert negotiate
+            /// </summary>
+            [Description("When enabled, enforces client certificate negotiation")]
+            public bool EnableClientCertNegotiation { get; set; }
+        }
+
+        // SLLP configuration object
+        private SllpConfigurationObject m_configuration = new SllpConfigurationObject();
         
         /// <summary>
         /// Protocol name
@@ -58,6 +106,67 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             {
                 return "sllp";
             }
+        }
+
+        /// <summary>
+        /// Setup configuration 
+        /// </summary>
+        public void SetupConfiguration(ServiceHandler handler)
+        {
+            this.m_configuration = new SllpConfigurationObject();
+            KeyValuePair<String, String> certThumb = handler.Definition.Attributes.Find(o => o.Key == "x509.cert"),
+                certLocation = handler.Definition.Attributes.Find(o => o.Key == "x509.location"),
+                certStore = handler.Definition.Attributes.Find(o => o.Key == "x509.store"),
+                caCertThumb = handler.Definition.Attributes.Find(o => o.Key == "client.cacert"),
+                caCertLocation = handler.Definition.Attributes.Find(o => o.Key == "client.calocation"),
+                caCertStore = handler.Definition.Attributes.Find(o => o.Key == "client.castore");
+
+            // Now setup the object 
+            this.m_configuration = new SllpConfigurationObject()
+            {
+                EnableClientCertNegotiation = caCertThumb.Value != null,
+                ServerCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), certLocation.Value),
+                ServerCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), certStore.Value),
+                TrustedCaCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), caCertLocation.Value),
+                TrustedCaCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), caCertStore.Value)
+            };
+
+            // Now get the certificates
+            if (!String.IsNullOrEmpty(certThumb.Value))
+                this.m_configuration.ServerCertificate = this.GetCertificateFromStore(certThumb.Value, this.m_configuration.ServerCertificateLocation, this.m_configuration.ServerCertificateStore);
+            else
+                throw new InvalidOperationException("Cannot start secure LLP node with no certificate");
+            if (this.m_configuration.EnableClientCertNegotiation)
+            {
+                if (!String.IsNullOrEmpty(caCertThumb.Value))
+                    this.m_configuration.TrustedCaCertificate = this.GetCertificateFromStore(caCertThumb.Value, this.m_configuration.TrustedCaCertificateLocation, this.m_configuration.TrustedCaCertificateStore);
+                else
+                    throw new InvalidOperationException("Cannot start secure LLP mode in client authentication mode with no trusted CA certificate specified");
+            }
+
+            
+        }
+
+        /// <summary>
+        /// Get certificate from store
+        /// </summary>
+        private X509Certificate2 GetCertificateFromStore(string certThumb, StoreLocation storeLocation, StoreName storeName)
+        {
+            X509Store store = new X509Store(storeName, storeLocation);
+            try
+            {
+                store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+                var cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, true);
+                if (cert.Count == 0)
+                    throw new InvalidOperationException("Could not find certificate");
+                return cert[0];
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError("Could get certificate {0} from store {1}. Error was: {2}", certThumb, storeName, e.ToString());
+                throw;
+            }
+
         }
 
         /// <summary>
@@ -72,58 +181,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             Trace.TraceInformation("SLLP Transport bound to {0}", bind);
 
             // Setup certificate
-            var certFile = handler.Definition.Attributes.Find(o => o.Key == "x509.cert").Value;
-            if (String.IsNullOrEmpty(certFile))
-                throw new InvalidOperationException("Cannot start secure LLP node with no certificate");
-
-            if (File.Exists(certFile))
-                this.m_certificate = new X509Certificate2(certFile);
-            else
-            {
-                X509Store store = null;
-                if (handler.Definition.Attributes.Exists(o => o.Key == "x509.store"))
-                    store = new X509Store(handler.Definition.Attributes.Find(o => o.Key == "x509.store").Value, StoreLocation.LocalMachine);
-                else
-                    throw new InvalidOperationException("Must specify x509.store parameter!");
-                try
-                {
-                    store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-                    this.m_certificate = store.Certificates.Find(X509FindType.FindByThumbprint, certFile, true)[0];
-
-                }
-                finally
-                {
-                    store.Close();
-                }
-            }
-
-            // Client cert config
-            if (handler.Definition.Attributes.Exists(o => o.Key == "client.cacert" || o.Key == "client.castore"))
-            {
-                this.m_clientCertRequired = true;
-                var caFile = handler.Definition.Attributes.Find(o => o.Key == "client.cacert").Value;
-                if (File.Exists(caFile))
-                    this.m_ca = new X509Certificate2(caFile);
-                else
-                {
-                    var caStore = handler.Definition.Attributes.Find(o => o.Key == "client.castore").Value;
-                    X509Store caStoreX = null;
-                    if (handler.Definition.Attributes.Exists(o => o.Key == "client.castore"))
-                        caStoreX = new X509Store(handler.Definition.Attributes.Find(o => o.Key == "client.castore").Value, StoreLocation.LocalMachine);
-                    else
-                        throw new InvalidOperationException("Must specify client.castore parameter!");
-                    try
-                    {
-                        caStoreX.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-                        this.m_ca = caStoreX.Certificates.Find(X509FindType.FindByThumbprint, caFile, true)[0];
-
-                    }
-                    finally
-                    {
-                        caStoreX.Close();
-                    }
-                }
-            }
+            this.SetupConfiguration(handler);
 
             while (m_run) // run the service
             {
@@ -144,13 +202,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             // First Validate the chain
             
             if (certificate == null || chain == null)
-                return !this.m_clientCertRequired;
+                return !this.m_configuration.EnableClientCertNegotiation;
             else
             {
 
                 bool isValid = false;
                 foreach (var cer in chain.ChainElements)
-                    if (cer.Certificate.Thumbprint == this.m_ca.Thumbprint)
+                    if (cer.Certificate.Thumbprint == this.m_configuration.TrustedCaCertificate.Thumbprint)
                         isValid = true;
                 if (!isValid)
                     Trace.TraceError("Certification authority from the supplied certificate doesn't match the expected thumbprint of the CA");
@@ -170,7 +228,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             SslStream stream = new SslStream(tcpClient.GetStream(), false, new RemoteCertificateValidationCallback(RemoteCertificateValidation));
             try
             {
-                stream.AuthenticateAsServer(this.m_certificate, this.m_clientCertRequired, System.Security.Authentication.SslProtocols.Tls, true);
+                stream.AuthenticateAsServer(this.m_configuration.ServerCertificate, this.m_configuration.EnableClientCertNegotiation, System.Security.Authentication.SslProtocols.Tls, true);
                 
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
@@ -191,7 +249,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         break;
                     }
 
-                    if (llpByte != 0x0B) // first byte must be HT
+                    if (llpByte != START_TX) // first byte must be HT
                         throw new InvalidOperationException("Invalid LLP First Byte");
 
                     // Standard stream stuff, read until the stream is exhausted
@@ -206,16 +264,16 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                         // Need to check for CR?
                         if (scanForCr)
-                            receivedEOF = buffer[0] == '\r';
+                            receivedEOF = buffer[0] == END_TXNL;
                         else
                         {
                             // Look for FS
-                            int fsPos = Array.IndexOf(buffer, (byte)0x1c);
+                            int fsPos = Array.IndexOf(buffer, END_TX);
 
                             if (fsPos == -1) // not found
                                 continue;
                             else if (fsPos < buffer.Length - 1) // more room to read
-                                receivedEOF = buffer[fsPos + 1] == '\r';
+                                receivedEOF = buffer[fsPos + 1] == END_TXNL;
                             else
                                 scanForCr = true; // Cannot check the end of message for CR because there is no more room in the message buffer
                             // so need to check on the next loop
@@ -246,14 +304,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     {
                         // Send the response back
                         StreamWriter writer = new StreamWriter(stream);
-                        stream.Write(new byte[] { 0xb }, 0, 1); // header
+                        stream.Write(new byte[] { START_TX }, 0, 1); // header
                         if (messageArgs != null && messageArgs.Response != null)
                         {
                             // Since nHAPI only emits a string we just send that along the stream
                             writer.Write(parser.Encode(messageArgs.Response));
                             writer.Flush();
                         }
-                        stream.Write(new byte[] { 0x1c, 0x0d }, 0, 2); // Finish the stream with FSCR
+                        stream.Write(new byte[] { END_TX, END_TXNL }, 0, 2); // Finish the stream with FSCR
                         stream.Flush();
                         lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                     }
@@ -308,6 +366,17 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             {
                 stream.Close();
                 tcpClient.Close();
+            }
+        }
+
+        /// <summary>
+        /// Configuration object override
+        /// </summary>
+        public override object ConfigurationObject
+        {
+            get
+            {
+                return this.m_configuration;
             }
         }
     }
