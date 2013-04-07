@@ -64,7 +64,11 @@ namespace MARC.HI.EHRS.CR.Configurator
                 // Scan for configuration options
                 ScanAndLoadPluginFiles();
                 splash.Close();
+#if DEBUG
                 ConfigurationApplicationContext.s_configFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe.config.test");
+#else
+                ConfigurationApplicationContext.s_configFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe.config");
+#endif
                 // Configuration File exists?
                 if (!File.Exists(ConfigurationApplicationContext.s_configFile))
                 {

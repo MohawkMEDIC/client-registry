@@ -154,6 +154,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Configurato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.Admin", "MARC.HI.EHRS.CR.Messaging.Admin\MARC.HI.EHRS.CR.Messaging.Admin.csproj", "{7DFEDAD4-A75C-4333-8237-CB8453C22643}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Installer.csproj", "{D1A5F200-1BBF-44CF-B405-274ADE252FCB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -276,6 +278,16 @@ Global
 		{7DFEDAD4-A75C-4333-8237-CB8453C22643}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7DFEDAD4-A75C-4333-8237-CB8453C22643}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7DFEDAD4-A75C-4333-8237-CB8453C22643}.Release|x86.ActiveCfg = Release|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -297,6 +309,7 @@ Global
 		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
+		{D1A5F200-1BBF-44CF-B405-274ADE252FCB} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .
