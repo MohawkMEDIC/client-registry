@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -45,12 +45,15 @@
   <ItemGroup>
     <Content Include="install-small.bmp" />
     <Content Include="install.bmp" />
-    <Content Include="Install.csproj" />
     <Content Include="installer.iss" />
     <Content Include="installsupp\dotNetFx40_Full_setup.exe" />
     <Content Include="installsupp\postgresql-9.2.4-1-windows-x64.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PostBuildEvent>"c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /dBUNDLED "/o$(TargetDir)\dist" "$(ProjectDir)\installer.iss"
+"c:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/o$(TargetDir)\dist" "$(ProjectDir)\installer.iss"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

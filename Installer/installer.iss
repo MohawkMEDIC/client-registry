@@ -1,6 +1,6 @@
 ; Setup script for the MARC-HI Client Registry
 
-#define BUNDLED
+
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = MEDIC Client Registry
@@ -17,7 +17,7 @@ AppUpdatesURL = http://te.marc-hi.ca
 DefaultDirName = {pf}\Mohawk College\Client Registry
 AllowNoIcons = true
 OutputDir = ..\dist
-Compression = none 
+Compression = lzma2 
 SolidCompression = false
 AppCopyright = Copyright (C) 2011-2013 Mohawk College of Applied Arts and Technology
 Uninstallable = true
@@ -74,9 +74,9 @@ Source: ..\bin\release\MARC.HI.EHRS.SVC.Terminology.dll; DestDir:{app}; Flags:ig
 Source: ..\bin\release\MohawkCollege.Util.Console.Parameters.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\Mono.Security.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\NauckIT.PostgreSQLProvider.dll; DestDir:{app}; Flags:ignoreversion; Components:core
-Source: ..\bin\release\NHapi.Base.dll; DestDir:{app}; Flags:ignoreversion; Components:core
-Source: ..\bin\release\NHapi.Model.V231.dll; DestDir:{app}; Flags:ignoreversion; Components:core
-Source: ..\bin\release\NHapi.Model.V25.dll; DestDir:{app}; Flags:ignoreversion; Components:core
+Source: ..\bin\release\NHapi.Base.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\NHapi.Model.V231.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\NHapi.Model.V25.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\Npgsql.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\policy.2.0.Npgsql.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\ClientRegistry.exe; DestDir:{app}; Flags:ignoreversion; Components:core
