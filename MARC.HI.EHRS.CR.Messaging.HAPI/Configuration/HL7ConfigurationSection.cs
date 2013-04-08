@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using System.ComponentModel;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
 {
@@ -29,6 +31,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
     /// <summary>
     /// Handler definition
     /// </summary>
+    [XmlRoot("handler")]
     public class HandlerDefinition
     {
 
@@ -41,14 +44,45 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         }
 
         /// <summary>
+        /// Type name of the handler
+        /// </summary>
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [XmlAttribute("type")]
+        public string HandlerType
+        {
+            get
+            {
+                return this.Handler.GetType().AssemblyQualifiedName;
+            }
+            set
+            {
+                this.Handler = Activator.CreateInstance(Type.GetType(value)) as IHL7MessageHandler;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the handler
         /// </summary>
+        [XmlIgnore]
         public IHL7MessageHandler Handler { get; set; }
 
         /// <summary>
         /// Message types that trigger this (MSH-9)
         /// </summary>
+        [XmlElement("message")]
         public List<MessageDefinition> Types { get; set; }
+
+        /// <summary>
+        /// Get the string representation
+        /// </summary>
+        public override string ToString()
+        {
+            var descAtts = this.Handler.GetType().GetCustomAttributes(typeof(DescriptionAttribute), false);
+            if (descAtts.Length > 0)
+                return (descAtts[0] as DescriptionAttribute).Description;
+            return this.Handler.GetType().Name;
+        }
     }
 
     /// <summary>
@@ -60,10 +94,12 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         /// <summary>
         /// Gets or sets the name
         /// </summary>
+        [XmlAttribute("name")]
         public string Name { get; set; }
         /// <summary>
         /// Gets or sets a value identifying whether this is a query
         /// </summary>
+        [XmlAttribute("isQuery")]
         public bool IsQuery { get; set; }
     }
 
@@ -79,6 +115,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration
         public ServiceDefinition()
         {
             this.Handlers = new List<HandlerDefinition>();
+            this.Attributes = new List<KeyValuePair<string, string>>();
         }
 
         /// <summary>

@@ -54,6 +54,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -64,6 +65,12 @@
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
     <Compile Include="Configuration\HL7ConfigurationSection.cs" />
+    <Compile Include="Configuration\UI\frmAddHandler.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Configuration\UI\frmAddHandler.Designer.cs">
+      <DependentUpon>frmAddHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Configuration\UI\HandlerConfigTemplate.cs" />
     <Compile Include="Configuration\UI\HapiConfigurationPanel.cs" />
     <Compile Include="Configuration\UI\pnlHapiConfiguration.cs">
@@ -81,6 +88,7 @@
     <Compile Include="TransportProtocol\LlpTransport.cs" />
     <Compile Include="TransportProtocol\TcpTransport.cs" />
     <Compile Include="TransportProtocol\TransportUtil.cs" />
+    <Compile Include="TransportProtocol\X509CertificateEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
@@ -97,6 +105,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Configuration\UI\frmAddHandler.resx">
+      <DependentUpon>frmAddHandler.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Configuration\UI\pnlHapiConfiguration.resx">
       <DependentUpon>pnlHapiConfiguration.cs</DependentUpon>
     </EmbeddedResource>

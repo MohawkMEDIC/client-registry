@@ -24,7 +24,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
         /// Revision section configuration
         /// </summary>
         [XmlElement("handlerConfiguration")]
-        public XmlElement HandlerConfiguration { get; set; }
+        public HandlerDefinition HandlerConfiguration { get; set; }
 
+        /// <summary>
+        /// Get as string
+        /// </summary>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 }

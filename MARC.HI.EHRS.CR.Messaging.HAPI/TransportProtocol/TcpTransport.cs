@@ -29,6 +29,7 @@ using System.IO;
 using NHapi.Base.validation.impl;
 using NHapi.Base.Model;
 using System.ComponentModel;
+using MARC.HI.EHRS.CR.Messaging.HL7.Configuration;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -58,6 +59,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             EOF = 0x1a,
             ESC = 0x1b,
             FS = 0x1c
+        }
+
+        /// <summary>
+        /// Setup configuration
+        /// </summary>
+        public void SetupConfiguration(ServiceDefinition definition)
+        {
         }
 
         // The socket
@@ -169,6 +177,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         public object ConfigurationObject
         {
             get { return null; }
+        }
+
+        /// <summary>
+        /// Serialize configuration
+        /// </summary>
+        public List<KeyValuePair<String, String>> SerializeConfiguration()
+        {
+            return new List<KeyValuePair<string, string>>();
         }
 
         #endregion

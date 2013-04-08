@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using NHapi.Base.Model;
 using System.Net;
+using MARC.HI.EHRS.CR.Messaging.HL7.Configuration;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -95,6 +96,16 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// Message has been received
         /// </summary>
         event EventHandler<Hl7MessageReceivedEventArgs> MessageReceived;
+
+        /// <summary>
+        /// Setup the configuration object
+        /// </summary>
+        void SetupConfiguration(ServiceDefinition definition);
+
+        /// <summary>
+        /// Serialize the configuration
+        /// </summary>
+        List<KeyValuePair<String, String>> SerializeConfiguration();
 
         /// <summary>
         /// Gets the extension attributes that are allowed on the receive endpoint

@@ -16,6 +16,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
         private HL7ConfigurationSection m_configuration;
 
         /// <summary>
+        /// Gets or sets the handlers
+        /// </summary>
+        public List<HandlerConfigTemplate> Handlers { get; set; }
+
+        /// <summary>
         /// Configuration options
         /// </summary>
         public HL7ConfigurationSection Configuration {
@@ -45,12 +50,39 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-           
+            if (lsvEp.SelectedItems.Count == 0) return;
+            var currentService = lsvEp.SelectedItems[0].Tag as ServiceDefinition;
+            frmAddHandler addHandler = new frmAddHandler()
+            {
+                HandlerTemplates = this.Handlers,
+                ServiceDefinition = currentService
+            };
+            if (addHandler.ShowDialog() == DialogResult.OK)
+            {
+                this.m_configuration.Services.Insert(this.m_configuration.Services.IndexOf(currentService), addHandler.ServiceDefinition);
+                this.m_configuration.Services.Remove(currentService);
+                this.Configuration = this.m_configuration;
+            }
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-           
+            frmAddHandler addHandler = new frmAddHandler()
+            {
+                ServiceDefinition = new ServiceDefinition()
+                {
+                    Address = new Uri("tcp://0.0.0.0:2100"),
+                    Name = Guid.NewGuid().ToString().Substring(0, 6),
+                    ReceiveTimeout = new TimeSpan(0, 0, 30)
+                },
+                HandlerTemplates = this.Handlers
+            };
+            if (addHandler.ShowDialog() == DialogResult.OK)
+            {
+                this.m_configuration.Services.Add(addHandler.ServiceDefinition);
+                this.Configuration = this.m_configuration;
+            }
+
         }
 
         private void btnDelete_Click(object sender, EventArgs e)

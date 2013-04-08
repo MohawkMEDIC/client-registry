@@ -75,6 +75,9 @@ Source: ..\bin\release\MohawkCollege.Util.Console.Parameters.dll; DestDir:{app};
 Source: ..\bin\release\Mono.Security.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\NauckIT.PostgreSQLProvider.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\NHapi.Base.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\Config\HAPI\PDQ.htpl; DestDir: {app}\config\hapi; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\Config\HAPI\PIX.htpl; DestDir: {app}\config\hapi; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\Config\HAPI\NSP.htpl; DestDir: {app}\config\hapi; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\NHapi.Model.V231.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\NHapi.Model.V25.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\Npgsql.dll; DestDir:{app}; Flags:ignoreversion; Components:core

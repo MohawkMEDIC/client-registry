@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tpl:hapiHandlerTemplate xmlns:tpl="urn:marc-hi:ca/svc">
+  <tpl:name>IHE PIX Messages</tpl:name>
+  <tpl:handlerConfiguration type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.PixHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
+    <tpl:message name="QBP^Q23" isQuery="true"/>
+    <tpl:message name="ADT^A01"/>
+    <tpl:message name="ADT^A04"/>
+    <tpl:message name="ADT^A05"/>
+    <tpl:message name="ADT^A08"/>
+  </tpl:handlerConfiguration>
+</tpl:hapiHandlerTemplate>

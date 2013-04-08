@@ -29,6 +29,7 @@ using System.Diagnostics;
 using System.Threading;
 using NHapi.Base.Model;
 using System.ComponentModel;
+using MARC.HI.EHRS.CR.Messaging.HL7.Configuration;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -69,6 +70,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         public virtual string ProtocolName
         {
             get { return "llp"; }
+        }
+        
+        /// <summary>
+        /// Setup configuration
+        /// </summary>
+        public virtual void SetupConfiguration(ServiceDefinition definition)
+        {
         }
 
         /// <summary>
@@ -240,6 +248,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         public virtual object ConfigurationObject
         {
             get { return null; }
+        }
+
+        /// <summary>
+        /// Serialize the configuration 
+        /// </summary>
+        public virtual List<KeyValuePair<string, string>> SerializeConfiguration()
+        {
+            return new List<KeyValuePair<string, string>>();
         }
 
         #endregion

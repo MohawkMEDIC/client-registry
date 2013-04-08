@@ -33,6 +33,8 @@ using System.Security.Authentication;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.Services;
 using System.ComponentModel;
+using MARC.HI.EHRS.CR.Messaging.HL7.Configuration;
+using System.Drawing.Design;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -65,6 +67,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             /// </summary>
             [Category("Server Certificate")]
             [Description("Identifies the certificate to be used by the server")]
+            [Editor(typeof(X509CertificateEditor), typeof(UITypeEditor))]
+            [TypeConverter(typeof(ExpandableObjectConverter))]
             public X509Certificate2 ServerCertificate { get; set; }
 
             /// <summary>
@@ -84,6 +88,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             /// </summary>
             [Category("Trusted Client Certificate")]
             [Description("Identifies the certificate of the CA which clients must carry to be authenticated")]
+            [Editor(typeof(X509CertificateEditor), typeof(UITypeEditor))]
+            [TypeConverter(typeof(ExpandableObjectConverter))]
             public X509Certificate2 TrustedCaCertificate { get; set; }
 
 
@@ -111,37 +117,33 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Setup configuration 
         /// </summary>
-        public void SetupConfiguration(ServiceHandler handler)
+        public override void SetupConfiguration(ServiceDefinition definition)
         {
             this.m_configuration = new SllpConfigurationObject();
-            KeyValuePair<String, String> certThumb = handler.Definition.Attributes.Find(o => o.Key == "x509.cert"),
-                certLocation = handler.Definition.Attributes.Find(o => o.Key == "x509.location"),
-                certStore = handler.Definition.Attributes.Find(o => o.Key == "x509.store"),
-                caCertThumb = handler.Definition.Attributes.Find(o => o.Key == "client.cacert"),
-                caCertLocation = handler.Definition.Attributes.Find(o => o.Key == "client.calocation"),
-                caCertStore = handler.Definition.Attributes.Find(o => o.Key == "client.castore");
+            KeyValuePair<String, String> certThumb = definition.Attributes.Find(o => o.Key == "x509.cert"),
+                certLocation = definition.Attributes.Find(o => o.Key == "x509.location"),
+                certStore = definition.Attributes.Find(o => o.Key == "x509.store"),
+                caCertThumb = definition.Attributes.Find(o => o.Key == "client.cacert"),
+                caCertLocation = definition.Attributes.Find(o => o.Key == "client.calocation"),
+                caCertStore = definition.Attributes.Find(o => o.Key == "client.castore");
 
             // Now setup the object 
             this.m_configuration = new SllpConfigurationObject()
             {
                 EnableClientCertNegotiation = caCertThumb.Value != null,
-                ServerCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), certLocation.Value),
-                ServerCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), certStore.Value),
-                TrustedCaCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), caCertLocation.Value),
-                TrustedCaCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), caCertStore.Value)
+                ServerCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), certLocation.Value ?? "LocalMachine"),
+                ServerCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), certStore.Value ?? "My"),
+                TrustedCaCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), caCertLocation.Value ?? "LocalMachine"),
+                TrustedCaCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), caCertStore.Value ?? "Root")
             };
 
             // Now get the certificates
             if (!String.IsNullOrEmpty(certThumb.Value))
                 this.m_configuration.ServerCertificate = this.GetCertificateFromStore(certThumb.Value, this.m_configuration.ServerCertificateLocation, this.m_configuration.ServerCertificateStore);
-            else
-                throw new InvalidOperationException("Cannot start secure LLP node with no certificate");
             if (this.m_configuration.EnableClientCertNegotiation)
             {
                 if (!String.IsNullOrEmpty(caCertThumb.Value))
                     this.m_configuration.TrustedCaCertificate = this.GetCertificateFromStore(caCertThumb.Value, this.m_configuration.TrustedCaCertificateLocation, this.m_configuration.TrustedCaCertificateStore);
-                else
-                    throw new InvalidOperationException("Cannot start secure LLP mode in client authentication mode with no trusted CA certificate specified");
             }
 
             
@@ -181,7 +183,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             Trace.TraceInformation("SLLP Transport bound to {0}", bind);
 
             // Setup certificate
-            this.SetupConfiguration(handler);
+            this.SetupConfiguration(handler.Definition);
+            if (this.m_configuration.ServerCertificate == null)
+                throw new InvalidOperationException("Cannot start the secure LLP listener without a server certificate");
 
             while (m_run) // run the service
             {
@@ -378,6 +382,25 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             {
                 return this.m_configuration;
             }
+        }
+
+        public override List<KeyValuePair<string, string>> SerializeConfiguration()
+        {
+            // REturn value setup
+            var retVal = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<String,String>("x509.cert", this.m_configuration.ServerCertificate.Thumbprint),
+                new KeyValuePair<String,String>("x509.store", this.m_configuration.ServerCertificateStore.ToString()),
+                new KeyValuePair<String,String>("x509.location", this.m_configuration.ServerCertificateLocation.ToString())
+            };
+
+            if (this.m_configuration.EnableClientCertNegotiation)
+                retVal.AddRange(new KeyValuePair<String, String>[] {
+                    new KeyValuePair<String,String>("client.cacert", this.m_configuration.TrustedCaCertificate.Thumbprint),
+                    new KeyValuePair<String,String>("client.castore", this.m_configuration.TrustedCaCertificateStore.ToString()),
+                    new KeyValuePair<String,String>("client.calocation", this.m_configuration.TrustedCaCertificateLocation.ToString())
+                });
+            return retVal;
         }
     }
 }

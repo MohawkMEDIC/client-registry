@@ -112,6 +112,18 @@
     <None Include="..\MARC.HI.EHRS.CR.licenseheader">
       <Link>MARC.HI.EHRS.CR.licenseheader</Link>
     </None>
+    <None Include="Config\HAPI\NSP.htpl">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\HAPI\PDQ.htpl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Config\HAPI\PIX.htpl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

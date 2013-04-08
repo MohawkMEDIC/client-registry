@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tpl:hapiHandlerTemplate xmlns:tpl="urn:marc-hi:ca/svc">
+  <tpl:name>IHE PDQ Messages</tpl:name>
+  <tpl:handlerConfiguration type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.PdqHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
+    <tpl:message name="QBP^Q22" isQuery="true"/>
+  </tpl:handlerConfiguration>
+</tpl:hapiHandlerTemplate>
