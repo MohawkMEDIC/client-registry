@@ -26,8 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Solution Items\Mono.Security.dll = Solution Items\Mono.Security.dll
 		Solution Items\NauckIT.PostgreSQLProvider.dll = Solution Items\NauckIT.PostgreSQLProvider.dll
 		Solution Items\Npgsql.dll = Solution Items\Npgsql.dll
-		Solution Items\policy.2.0.Npgsql.config = Solution Items\policy.2.0.Npgsql.config
-		Solution Items\policy.2.0.Npgsql.dll = Solution Items\policy.2.0.Npgsql.dll
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Messaging", "Messaging", "{3F8F83E2-E927-4FB2-9047-CBEEA5854E29}"
@@ -146,10 +144,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Notificatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration", "Configuration", "{CCF09759-32BC-4B44-9C1E-97CDA021356D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Configurator.Core", "MARC.HI.EHRS.CR.Configurator.SharedHealthCore\MARC.HI.EHRS.CR.Configurator.Core.csproj", "{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Configurator.Database.Postgresql9", "MARC.HI.EHRS.CR.Configurator.Database.Postgresql9\MARC.HI.EHRS.CR.Configurator.Database.Postgresql9.csproj", "{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Configurator", "MARC.HI.EHRS.CR.Configurator\MARC.HI.EHRS.CR.Configurator.csproj", "{08FF2D4C-924C-4CED-9DA2-EC72C14C3538}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.Admin", "MARC.HI.EHRS.CR.Messaging.Admin\MARC.HI.EHRS.CR.Messaging.Admin.csproj", "{7DFEDAD4-A75C-4333-8237-CB8453C22643}"
@@ -249,26 +243,6 @@ Global
 		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E}.Release|x86.ActiveCfg = Release|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85}.Release|x86.ActiveCfg = Release|Any CPU
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -317,8 +291,6 @@ Global
 		{7529517E-C4D2-43A0-824F-1F3295108B73} = {82164D14-10B4-437D-BD40-562E0B691BAA}
 		{64644FD8-5C26-43F4-81A6-510F915B74B3} = {82164D14-10B4-437D-BD40-562E0B691BAA}
 		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E} = {330196EE-CA01-4513-84C3-F2991AC7A061}
-		{A5FAC462-3EE0-4B5F-9BBE-E99C08A57D42} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
-		{6E2E2FF8-C5A7-46A3-8EFF-06CAF18F8E85} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 		{D1A5F200-1BBF-44CF-B405-274ADE252FCB} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 	EndGlobalSection

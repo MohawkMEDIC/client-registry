@@ -32,6 +32,7 @@ using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core;
 using MARC.HI.EHRS.CR.Core.Configuration;
+using MARC.HI.EHRS.CR.Core;
 
 namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
 {
@@ -259,7 +260,27 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 addServiceProvNode.Attributes["type"].Value = serviceName;
                 serviceProviderNode.AppendChild(addServiceProvNode);
             }
-            
+
+            // Service node for configuration
+            addServiceProvNode = serviceProviderNode.SelectSingleNode(String.Format("./*[local-name() = 'add'][@type = '{0}']", typeof(ClientRegistryConfigurationProvider).AssemblyQualifiedName)) as XmlElement;
+            if (addServiceProvNode == null)
+            {
+                addServiceProvNode = configurationDom.CreateElement("add");
+                addServiceProvNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                addServiceProvNode.Attributes["type"].Value = typeof(ClientRegistryConfigurationProvider).AssemblyQualifiedName;
+                serviceProviderNode.AppendChild(addServiceProvNode);
+            }
+
+            // Service node for merging
+            addServiceProvNode = serviceProviderNode.SelectSingleNode(String.Format("./*[local-name() = 'add'][@type = '{0}']", typeof(DatabaseMergeService).AssemblyQualifiedName)) as XmlElement;
+            if (addServiceProvNode == null)
+            {
+                addServiceProvNode = configurationDom.CreateElement("add");
+                addServiceProvNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                addServiceProvNode.Attributes["type"].Value = typeof(DatabaseMergeService).AssemblyQualifiedName;
+                serviceProviderNode.AppendChild(addServiceProvNode);
+            }
+
             // Add the core config section
             if (crNode == null)
             {

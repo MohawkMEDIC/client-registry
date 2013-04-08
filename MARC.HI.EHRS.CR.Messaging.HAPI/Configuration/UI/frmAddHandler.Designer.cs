@@ -57,7 +57,7 @@
             this.btnCancel.Location = new System.Drawing.Point(380, 367);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 18;
+            this.btnCancel.TabIndex = 9;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -68,7 +68,7 @@
             this.btnOk.Location = new System.Drawing.Point(299, 367);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 17;
+            this.btnOk.TabIndex = 8;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
@@ -91,7 +91,7 @@
             this.cbxTransport.Location = new System.Drawing.Point(110, 32);
             this.cbxTransport.Name = "cbxTransport";
             this.cbxTransport.Size = new System.Drawing.Size(345, 21);
-            this.cbxTransport.TabIndex = 20;
+            this.cbxTransport.TabIndex = 2;
             this.cbxTransport.SelectedIndexChanged += new System.EventHandler(this.cbxTransport_SelectedIndexChanged);
             // 
             // label2
@@ -109,7 +109,7 @@
             this.txtIp.Mask = "000.000.000.000";
             this.txtIp.Name = "txtIp";
             this.txtIp.Size = new System.Drawing.Size(109, 20);
-            this.txtIp.TabIndex = 22;
+            this.txtIp.TabIndex = 3;
             this.txtIp.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtIp_KeyDown);
             this.txtIp.Validated += new System.EventHandler(this.txtIp_Validated);
             // 
@@ -137,7 +137,7 @@
             0});
             this.txtPort.Name = "txtPort";
             this.txtPort.Size = new System.Drawing.Size(88, 20);
-            this.txtPort.TabIndex = 24;
+            this.txtPort.TabIndex = 4;
             this.txtPort.Value = new decimal(new int[] {
             2100,
             0,
@@ -161,14 +161,14 @@
             this.lstHandlers.Location = new System.Drawing.Point(110, 108);
             this.lstHandlers.Name = "lstHandlers";
             this.lstHandlers.Size = new System.Drawing.Size(345, 64);
-            this.lstHandlers.TabIndex = 26;
+            this.lstHandlers.TabIndex = 6;
             // 
             // pgSettings
             // 
             this.pgSettings.Location = new System.Drawing.Point(110, 178);
             this.pgSettings.Name = "pgSettings";
             this.pgSettings.Size = new System.Drawing.Size(345, 181);
-            this.pgSettings.TabIndex = 0;
+            this.pgSettings.TabIndex = 7;
             this.pgSettings.ToolbarVisible = false;
             // 
             // label5
@@ -194,7 +194,7 @@
             this.txtName.Location = new System.Drawing.Point(110, 6);
             this.txtName.Name = "txtName";
             this.txtName.Size = new System.Drawing.Size(345, 20);
-            this.txtName.TabIndex = 29;
+            this.txtName.TabIndex = 1;
             // 
             // label7
             // 
@@ -211,7 +211,7 @@
             this.txtTimeout.Mask = "00:00:00";
             this.txtTimeout.Name = "txtTimeout";
             this.txtTimeout.Size = new System.Drawing.Size(109, 20);
-            this.txtTimeout.TabIndex = 31;
+            this.txtTimeout.TabIndex = 5;
             this.txtTimeout.Text = "000100";
             // 
             // errProvider

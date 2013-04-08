@@ -50,6 +50,10 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
         /// <param name="configurationDom"></param>
         public void Configure(System.Xml.XmlDocument configurationDom)
         {
+
+            if (this.m_configuration.Services.Count == 0)
+                return; // No active configurations
+
             XmlElement configSectionsNode = configurationDom.SelectSingleNode("//*[local-name() = 'configSections']") as XmlElement,
                 hapiNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.cr.messaging.hl7']") as XmlElement,
                 multiNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.svc.messaging.multi']") as XmlElement,
@@ -57,6 +61,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
 
             Type mmhType = Type.GetType("MARC.HI.EHRS.SVC.Messaging.Multi.MultiMessageHandler, MARC.HI.EHRS.SVC.Messaging.Multi"),
                 mmhConfigType = Type.GetType("MARC.HI.EHRS.SVC.Messaging.Multi.Configuration.ConfigurationSectionHandler, MARC.HI.EHRS.SVC.Messaging.Multi");
+
+            // Ensure the assembly is loaded and the provider registered
+            if (coreNode == null)
+            {
+                coreNode = configurationDom.CreateElement("marc.hi.ehrs.svc.core");
+                configurationDom.DocumentElement.AppendChild(coreNode);
+            }
 
             // Config sections node
             if (configSectionsNode == null)
@@ -110,13 +121,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
             }
 
             // Add service provider (Multi if available, Everest if otherwise)
-            XmlElement addServiceAsmNode = serviceAssemblyNode.SelectSingleNode("./*[local-name() = 'add'][@assembly = 'MARC.HI.EHRS.SVC.Messaging.HL7.dll']") as XmlElement,
+            XmlElement addServiceAsmNode = serviceAssemblyNode.SelectSingleNode("./*[local-name() = 'add'][@assembly = 'MARC.HI.EHRS.CR.Messaging.HL7.dll']") as XmlElement,
                 addServiceProvNode = serviceProviderNode.SelectSingleNode(String.Format("./*[local-name() = 'add'][@type = '{0}']", (mmhType ?? typeof(HL7MessageHandler)).AssemblyQualifiedName)) as XmlElement;
             if (addServiceAsmNode == null)
             {
                 addServiceAsmNode = configurationDom.CreateElement("add");
                 addServiceAsmNode.Attributes.Append(configurationDom.CreateAttribute("assembly"));
-                addServiceAsmNode.Attributes["assembly"].Value = "MARC.HI.EHRS.SVC.Messaging.HL7.dll";
+                addServiceAsmNode.Attributes["assembly"].Value = "MARC.HI.EHRS.CR.Messaging.HL7.dll";
                 serviceAssemblyNode.AppendChild(addServiceAsmNode);
             }
             if (addServiceProvNode == null)

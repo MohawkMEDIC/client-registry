@@ -1,6 +1,7 @@
 ; Setup script for the MARC-HI Client Registry
 
 
+
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = MEDIC Client Registry
@@ -17,7 +18,11 @@ AppUpdatesURL = http://te.marc-hi.ca
 DefaultDirName = {pf}\Mohawk College\Client Registry
 AllowNoIcons = true
 OutputDir = ..\dist
+#ifdef DEBUG
+Compression = none
+#else
 Compression = lzma2 
+#endif
 SolidCompression = false
 AppCopyright = Copyright (C) 2011-2013 Mohawk College of Applied Arts and Technology
 Uninstallable = true
@@ -73,7 +78,6 @@ Source: ..\bin\release\MARC.HI.EHRS.SVC.Subscription.Data.dll; DestDir:{app}; Fl
 Source: ..\bin\release\MARC.HI.EHRS.SVC.Terminology.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\MohawkCollege.Util.Console.Parameters.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\Mono.Security.dll; DestDir:{app}; Flags:ignoreversion; Components:core
-Source: ..\bin\release\NauckIT.PostgreSQLProvider.dll; DestDir:{app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\NHapi.Base.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\Config\HAPI\PDQ.htpl; DestDir: {app}\config\hapi; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\Config\HAPI\PIX.htpl; DestDir: {app}\config\hapi; Flags:ignoreversion; Components:msg\hl7
@@ -90,7 +94,7 @@ Source: ..\bin\release\DefaultOids.xml; DestDir: {app}; Flags:ignoreversion; Com
 Source: ..\bin\release\ClientRegistry.en.xml; DestDir: {app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
 Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
-Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items; Components: src
+Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
 
 [Types]
@@ -118,6 +122,7 @@ Name: {group}\MARC-HI Wiki; FileName: http://wiki.marc-hi.ca/
 Name: {group}\{cm:UninstallProgram,Client Registry}; Filename: {uninstallexe}
 
 [UninstallRun]
+#ifndef DEBUG
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.Everest.RMIM.UV.NE2008.dll"" /nologo /silent" ; Components:msg\pixv3 notif; StatusMsg: "Removing Native Assembly : MARC.Everest.RMIM.UV.NE2008"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.Everest.RMIM.CA.R020402.dll"" /nologo /silent" ; Components:msg\ca; StatusMsg: "Removing Native Assembly : MARC.Everest.RMIM.CA.R020402"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3 notif; StatusMsg: "Removing Native Assembly : MARC.Everest"; Flags:runhidden
@@ -151,8 +156,10 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Subscription.Core.dll"" /nologo /silent" ; Components:msg\rss; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Subscription.Core"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Subscription.Data.dll"" /nologo /silent" ; Components:msg\rss; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Subscription.Data"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Terminology.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Terminology"; Flags:runhidden
+#endif
 
 [Run]
+#ifndef DEBUG
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.Everest.RMIM.UV.NE2008.dll"" /nologo /silent" ; Components:msg\pixv3 notif; StatusMsg: "Generating Native Assembly : MARC.Everest.RMIM.UV.NE2008"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.Everest.RMIM.CA.R020402.dll"" /nologo /silent" ; Components:msg\ca; StatusMsg: "Generating Native Assembly : MARC.Everest.RMIM.CA.R020402"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3 notif; StatusMsg: "Generating Native Assembly : MARC.Everest"; Flags:runhidden
@@ -186,13 +193,8 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.P
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Subscription.Core.dll"" /nologo /silent" ; Components:msg\rss; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Subscription.Core"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Subscription.Data.dll"" /nologo /silent" ; Components:msg\rss; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Subscription.Data"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Terminology.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Terminology"; Flags:runhidden
-Filename: "{app}\configurator.exe"; Description: "Configure the Client Registry"; Flags: postinstall nowait skipifsilent unchecked
-
-
-
-
-
-
+#endif
+Filename: "{app}\configurator.exe"; Description: "Configure the Client Registry"; Flags: postinstall nowait skipifsilent
 
 ; Components
 [Code]
