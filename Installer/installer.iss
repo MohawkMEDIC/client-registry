@@ -255,6 +255,7 @@ begin
       end;
     #endif
     if (Result = '') and (dotNetNeeded = true) then begin
+      ExtractTemporaryFile('dotNetFx40_Full_setup.exe');
       if Exec(ExpandConstant(dotnetRedistURL), '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
           // handle success if necessary; ResultCode contains the exit code
           if not (ResultCode = 0) then begin

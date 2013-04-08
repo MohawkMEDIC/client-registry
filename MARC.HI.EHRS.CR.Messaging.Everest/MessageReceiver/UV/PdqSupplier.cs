@@ -65,6 +65,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// </summary>
         private IGraphable HandleQueryPatientDemographics(MARC.Everest.Connectors.UnsolicitedDataEventArgs e, MARC.Everest.Connectors.IReceiveResult receivedMessage)
         {
+            
             // Setup the lists of details and issues
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
             List<DetectedIssue> issues = new List<DetectedIssue>();
