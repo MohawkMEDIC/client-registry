@@ -50,8 +50,11 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -63,6 +66,14 @@
     <Compile Include="ClientRegistryAdminInterface.cs" />
     <Compile Include="Configuration\ClientRegistryInterfaceConfiguration.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
+    <Compile Include="Configuration\UI\AdminIfaceControlPanel.cs" />
+    <Compile Include="Configuration\UI\HttpSslTool.cs" />
+    <Compile Include="Configuration\UI\pnlAdminIface.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Configuration\UI\pnlAdminIface.Designer.cs">
+      <DependentUpon>pnlAdminIface.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConflictCollection.cs" />
     <Compile Include="Conflict.cs" />
     <Compile Include="IClientRegistryAdminInterface.cs" />
@@ -77,6 +88,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MARC.HI.EHRS.CR.Messaging.Rest.licenseheader" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\UI\pnlAdminIface.resx">
+      <DependentUpon>pnlAdminIface.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
