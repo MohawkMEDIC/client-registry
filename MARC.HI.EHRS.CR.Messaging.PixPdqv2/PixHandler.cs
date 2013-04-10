@@ -139,11 +139,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
                 var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
-                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
 
                 if (vid == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
-                
+
+                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
                 // Now process the result
                 response = MessageUtil.CreateNack(request, dtls, this.Context);
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
