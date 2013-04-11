@@ -220,13 +220,16 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         private void UpdateAD(AddressSet addr, NHapi.Model.V25.Datatype.XAD ad)
         {
             ad.AddressType.Value = ReverseLookup(ComponentUtility.AD_USE_MAP, addr.Use);
-
+            
             foreach (var cmp in addr.Parts)
             {
                 string cmpStr = ReverseLookup(ComponentUtility.AD_MAP, cmp.PartType);
                 if (String.IsNullOrEmpty(cmpStr)) continue;
                 int cmpNo = int.Parse(cmpStr);
-                (ad.Components[cmpNo-1] as AbstractPrimitive).Value = cmp.AddressValue;
+                if (ad.Components[cmpNo - 1] is AbstractPrimitive)
+                    (ad.Components[cmpNo - 1] as AbstractPrimitive).Value = cmp.AddressValue;
+                else if (ad.Components[cmpNo - 1] is NHapi.Model.V25.Datatype.SAD)
+                    (ad.Components[cmpNo - 1] as NHapi.Model.V25.Datatype.SAD).StreetOrMailingAddress.Value = cmp.AddressValue;
             }
         }
 

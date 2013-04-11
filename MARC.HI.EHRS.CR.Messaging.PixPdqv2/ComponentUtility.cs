@@ -845,7 +845,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             AddressSet retVal = new AddressSet();
             AddressSet.AddressSetUse? use = null;
-            if (!AD_USE_MAP.TryGetValue(xad.AddressType.Value, out use))
+            if (String.IsNullOrEmpty(xad.AddressType.Value) || !AD_USE_MAP.TryGetValue(xad.AddressType.Value, out use))
                 retVal.Use = AddressSet.AddressSetUse.Search;
             
             // Components 
