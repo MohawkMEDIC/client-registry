@@ -728,18 +728,20 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     cmpTypeString = new StringBuilder();
                 foreach (var cmp in nm.Parts)
                 {
-                    filterString.AppendFormat("{0}{1}", cmp.Value, cmp == nm.Parts.Last() ? "" : ",");
+                    filterString.AppendFormat("{0}{1}", cmp.Value.Replace("%","").Replace("*","%"), cmp == nm.Parts.Last() ? "" : ",");
                     cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
                 }
 
                 // Match strength & algorithms
-                int desiredMatchLevel = 5;
+                int desiredMatchLevel = 6;
                 bool useVariant = false;
                 if (nm.Use == NameSet.NameSetUse.Search)
                 {
                     useVariant = (parameters.MatchingAlgorithm & MatchAlgorithm.Variant) != 0;
                     if ((parameters.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0) // no soundex is allowed so exact only
                         desiredMatchLevel = 4;
+                    else
+                        desiredMatchLevel = 5;
                 }
 
                 retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {3}, {4}, {2})",
