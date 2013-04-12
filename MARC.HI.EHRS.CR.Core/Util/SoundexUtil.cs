@@ -52,10 +52,11 @@ namespace MARC.HI.EHRS.CR.Core.Util
             // Matches
             int nExact = other.Parts.Count(o => ns.Parts.Exists(p => p.Value.ToLower() == o.Value.ToLower() && p.Type == o.Type)),
                 nSoundex = other.Parts.Count(o => ns.Parts.Exists(p => p.CalculateSoundexCode() == o.CalculateSoundexCode() && o.Type == p.Type)) - nExact,
-                nOthers = other.Parts.Count - nExact - nSoundex,
+                nPattern = other.Parts.Count(o=>ns.Parts.Exists(p=>o.Value.Contains("*") && p.Value.ToLower() != o.Value.ToLower() && p.Value.ToLower().StartsWith(o.Value.ToLower().Substring(0, o.Value.IndexOf("*"))) && o.Type == p.Type)),
+                nOthers = other.Parts.Count - nExact - nSoundex - nPattern,
                 nParts = other.Parts.Count;
 
-            return nExact / (float)nParts + nSoundex / (float)(nParts * 1.5f) + nOthers / ((float)nParts * 2);
+            return nExact / (float)nParts + nPattern / (float)(nParts * 1.25) + nSoundex / (float)(nParts * 1.5f) + nOthers / ((float)nParts * 2);
 
         }
 

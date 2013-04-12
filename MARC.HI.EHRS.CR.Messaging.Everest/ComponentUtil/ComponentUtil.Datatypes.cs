@@ -306,11 +306,16 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             retVal.Use = internalNameUse;
             // Create the parts
             foreach (ADXP namePart in address.Part)
-                retVal.Parts.Add(new AddressPart()
-                { 
+            {
+                var pt = new AddressPart()
+                {
                     AddressValue = namePart.Value,
                     PartType = (AddressPart.AddressPartType)Enum.Parse(typeof(AddressPart.AddressPartType), namePart.Type.ToString())
-                });
+                };
+                if (pt.PartType == AddressPart.AddressPartType.AddressLine) // R1 doesn't use AL but SAL and the formatter 
+                    pt.PartType = AddressPart.AddressPartType.StreetAddressLine;
+                retVal.Parts.Add(pt);
+            }
 
             return retVal;
         }
