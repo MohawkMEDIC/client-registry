@@ -552,6 +552,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                 case "PID.18":
                                     throw new ArgumentException();
                                     break;
+                                default:
+                                    throw new ArgumentException("Could not understand query parameter");
                             }
                         }
                         else
@@ -847,7 +849,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             AddressSet.AddressSetUse? use = null;
             if (String.IsNullOrEmpty(xad.AddressType.Value) || !AD_USE_MAP.TryGetValue(xad.AddressType.Value, out use))
                 retVal.Use = AddressSet.AddressSetUse.Search;
-            
+            else
+                retVal.Use = use.Value;
             // Components 
             if (!String.IsNullOrEmpty(xad.City.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.City.Value, PartType = AddressPart.AddressPartType.City });

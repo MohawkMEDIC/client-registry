@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Configuration;
 using System.Xml;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 {
@@ -46,6 +47,50 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         #region IConfigurationSectionHandler Members
 
         /// <summary>
+        /// Choose a certificate
+        /// </summary>
+        public static X509Certificate2 ChooseCertificate(StoreName storeName, StoreLocation storeLocation, bool server)
+        {
+            X509Store store = new X509Store(storeName, storeLocation);
+            try
+            {
+                store.Open(OpenFlags.ReadOnly);
+                var certs = store.Certificates.Find(X509FindType.FindByApplicationPolicy, server ? "1.3.6.1.5.5.7.3.1" : "1.3.6.1.5.5.7.3.2", true);
+                var selected = X509Certificate2UI.SelectFromCollection(certs, "Select Certificate", server ? "Select a trusted issuer or server certificate. Server certificate chains must have this certificate present in the chain to be considered valid" : "Select a client certificate for this endpoint", X509SelectionFlag.SingleSelection);
+
+                if (selected.Count > 0)
+                    return selected[0];
+                return null;
+            }
+            finally
+            {
+                store.Close();
+            }
+        }
+
+        /// <summary>
+        /// Find a certificate
+        /// </summary>
+        public static X509Certificate2 FindCertificate(StoreName storeName, StoreLocation storeLocation, X509FindType findType, string findValue)
+        {
+            X509Store store = new X509Store(storeName, storeLocation);
+            try
+            {
+                store.Open(OpenFlags.ReadOnly);
+                var certs = store.Certificates.Find(findType, findValue, false);
+                if (certs.Count > 0)
+                    return certs[0];
+                else
+                    throw new InvalidOperationException("Cannot locate certificate");
+
+            }
+            finally
+            {
+                store.Close();
+            }
+
+        }
+        /// <summary>
         /// Create the configuration section
         /// </summary>
         public object Create(object parent, object configContext, System.Xml.XmlNode section)
@@ -60,6 +105,22 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 
             if (section.Attributes["concurrencyLevel"] != null)
                 retVal = new NotificationConfiguration(Int32.Parse(section.Attributes["concurrencyLevel"].Value));
+
+            // Parse certificate data
+            var certificateNode = section.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']");
+            if (certificateNode != null)
+            {
+                XmlAttribute storeLocationAtt = certificateNode.Attributes["storeLocation"],
+                            storeNameAtt = certificateNode.Attributes["storeName"],
+                            findTypeAtt = certificateNode.Attributes["x509FindType"],
+                            findValueAtt = certificateNode.Attributes["findValue"];
+
+                if (findTypeAtt == null || findValueAtt == null) throw new ConfigurationErrorsException("Must supply x509FindType and findValue"); // can't find if nothing to find...
+
+                retVal.TrustedIssuerCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
+                retVal.TrustedIssuerCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
+                retVal.TrustedIssuerCertificate = ConfigurationSectionHandler.FindCertificate(retVal.TrustedIssuerCertStore, retVal.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
+            }
 
             // Iterate through the <targets><add> elements and add them to the configuration
             foreach (XmlElement targ in targetsElement)
@@ -86,7 +147,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 
                 // Now create the target
                 TargetConfiguration targetConfig = new TargetConfiguration(targetName, connectionString, type, deviceId);
-                
+
+               
                 // Get the notification domains and add them to the configuration
                 var notificationElements = targ.SelectNodes("./*[local-name() = 'notify']");
                 foreach (XmlElement ne in notificationElements)
@@ -99,7 +161,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                         notificationDomain = ne.Attributes["domain"].Value;
 
                     NotificationDomainConfiguration notificationConfig = new NotificationDomainConfiguration(notificationDomain);
-
+                    
                     // Parse the actions
                     var actionsElements = ne.SelectNodes("./*[local-name() = 'action']");
                     foreach (XmlElement ae in actionsElements)

@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
     /// <summary>
     /// Client registry interface contract
     /// </summary>
-    [ServiceContract(ConfigurationName = "CrAdmin")]
+    [ServiceContract()]
     [XmlSerializerFormat]
     public interface IClientRegistryAdminInterface
     {

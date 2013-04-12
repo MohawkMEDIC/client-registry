@@ -216,7 +216,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 retVal.Use = null;
 
             foreach(var pt in addressSet.Parts)
-                retVal.Part.Add(new ADXP(pt.AddressValue, (AddressPartType)Enum.Parse(typeof(AddressPart.AddressPartType), pt.PartType.ToString())));
+                retVal.Part.Add(new ADXP(pt.AddressValue, (AddressPartType)((int)pt.PartType - 1)));
             return retVal;
         }
 

@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 {
@@ -49,5 +50,21 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// Gets the concurrency level
         /// </summary>
         public int ConcurrencyLevel { get; private set; }
+
+
+        /// <summary>
+        /// Identifies the location to scan fo the server certificate
+        /// </summary>
+        public StoreLocation TrustedIssuerCertLocation { get; internal set; }
+
+        /// <summary>
+        /// Identifies the name of the server certificate store
+        /// </summary>
+        public StoreName TrustedIssuerCertStore { get; internal set; }
+
+        /// <summary>
+        /// Gets the server certificate
+        /// </summary>
+        public X509Certificate2 TrustedIssuerCertificate { get; internal set; }
     }
 }

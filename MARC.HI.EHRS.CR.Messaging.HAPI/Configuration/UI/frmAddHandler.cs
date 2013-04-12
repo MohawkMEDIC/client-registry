@@ -146,7 +146,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
                 if (Byte.TryParse(strP, out b))
                     fullIp.AppendFormat("{0:000}.", b);
             }
-            fullIp.Remove(fullIp.Length - 1, 1);
+            if (fullIp.Length > 0)
+                fullIp.Remove(fullIp.Length - 1, 1);
             txtIp.Text = fullIp.ToString();
 
         }

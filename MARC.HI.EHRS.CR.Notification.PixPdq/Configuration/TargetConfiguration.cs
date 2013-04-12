@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 {
@@ -68,7 +69,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// <summary>
         /// Gets or sets the WcfServiceConnector connection string
         /// </summary>
-        public string ConnectionString { get; private set; }
+        public string ConnectionString { get; internal set; }
 
         /// <summary>
         /// Gets or sets the notification domains to be sent when an action is 
@@ -80,5 +81,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// Configuration device identifier
         /// </summary>
         public string DeviceIdentifier { get; private set; }
+
     }
 }

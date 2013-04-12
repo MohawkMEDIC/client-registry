@@ -49,18 +49,26 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         private WaitThreadPool m_threadPool ;
 
         // Sync lock
-        private Object m_syncLock = new object();
+        private static Object s_syncLock = new object();
 
         // Notification configuration data
-        private NotificationConfiguration m_configuration;
+        public static NotificationConfiguration s_configuration;
+
+        /// <summary>
+        /// Static ctor
+        /// </summary>
+        static PixNotifier()
+        {
+            s_configuration = ConfigurationManager.GetSection("marc.hi.ehrs.cr.notification.pixpdq") as NotificationConfiguration;
+
+        }
 
         /// <summary>
         /// Create the PIX notifier
         /// </summary>
         public PixNotifier()
         {
-            this.m_configuration = ConfigurationManager.GetSection("marc.hi.ehrs.cr.notification.pixpdq") as NotificationConfiguration;
-            this.m_threadPool = new WaitThreadPool(this.m_configuration.ConcurrencyLevel);
+            this.m_threadPool = new WaitThreadPool(s_configuration.ConcurrencyLevel);
         }
 
         /// <summary>
@@ -83,10 +91,10 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 
                 // Now determine who will receive updates
                 List<TargetConfiguration> targets = null;
-                lock (this.m_syncLock)
+                lock (s_syncLock)
                 {
 
-                    targets = this.m_configuration.Targets.FindAll(o => o.NotificationDomain.Exists(delegate(NotificationDomainConfiguration dc)
+                    targets = s_configuration.Targets.FindAll(o => o.NotificationDomain.Exists(delegate(NotificationDomainConfiguration dc)
                         {
                             bool action = dc.Actions.Exists(act => (act.Action & workItem.Action) == workItem.Action);
                             bool domain = subject.AlternateIdentifiers.Exists(id => id.Domain == dc.Domain);

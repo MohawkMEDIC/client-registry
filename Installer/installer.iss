@@ -4,8 +4,8 @@
 
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
-AppName = MEDIC Client Registry
-AppVerName = 0.0.4
+AppName = Client Registry
+AppVerName = MEDIC Client Registry 0.4
 #ifdef BUNDLED
 OutputBaseFilename = cr-setup-bundled-x64
 #else
@@ -96,6 +96,7 @@ Source: ..\bin\release\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignorev
 Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
 Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
+Source: ..\License.rtf; DestDir: {app};
 
 [Types]
 Name: full; Description: Complete Installation
