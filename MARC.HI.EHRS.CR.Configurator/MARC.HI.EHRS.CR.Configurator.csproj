@@ -133,7 +133,6 @@
       <Link>MARC.HI.EHRS.CR.licenseheader</Link>
     </None>
     <None Include="app.config" />
-    <EmbeddedResource Include="License.rtf" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

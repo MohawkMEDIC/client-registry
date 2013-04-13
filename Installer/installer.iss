@@ -9,7 +9,7 @@ OutputBaseFilename = cr-setup-bundled-x64
 #else
 OutputBaseFilename = cr-setup-standalone-x64
 #endif
-LicenseFile = ..\License.rtf
+LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
 AppPublisherURL = http://te.marc-hi.ca
 AppUpdatesURL = http://te.marc-hi.ca
@@ -97,7 +97,7 @@ Source: ..\bin\release\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignorev
 Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
 Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
-Source: ..\License.rtf; DestDir: {app};
+Source: ..\MARC.HI.EHRS.CR.Presentation\License.rtf; DestDir: {app};
 
 [Types]
 Name: full; Description: Complete Installation
