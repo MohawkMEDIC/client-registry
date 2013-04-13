@@ -143,7 +143,10 @@ namespace MARC.HI.EHRS.CR.Configurator
                     {
                         ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
                         if (ci != null)
-                            ConfigurationApplicationContext.s_configurationPanels.Add(ci.Invoke(null) as IConfigurationPanel);
+                        {
+                            var config = ci.Invoke(null);
+                            ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
+                        }
                     }
                 }
                 catch { }
