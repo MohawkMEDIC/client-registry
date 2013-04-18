@@ -143,7 +143,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 );
                 if (retRec.RegistrationEvent == null)
                     retRec = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient, object>(
-                        true,
+                        false,
                         new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.RegistrationEvent<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient,object>()
                         {
                             NullFlavor = NullFlavor.NoInformation
@@ -166,7 +166,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             (
                 Guid.NewGuid(),
                 DateTime.Now,
-                PRPA_IN201310UV02.GetInteractionId(),
+                PRPA_IN201306UV02.GetInteractionId(),
                 ProcessingID.Production,
                 "T",
                 AcknowledgementCondition.Never,
@@ -177,7 +177,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             {
                 Acknowledgement = new List<MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement>() {
                     new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement(
-                        details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
+                        details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.AcceptAcknowledgementCommitAccept : AcknowledgementType.AcceptAcknowledgementCommitError,
                         new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
                     )
                 }

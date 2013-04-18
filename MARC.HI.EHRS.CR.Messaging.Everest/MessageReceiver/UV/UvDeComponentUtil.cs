@@ -232,6 +232,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             var queryParameter = patient.FindComponent(HealthServiceRecordSiteRoleType.CommentOn | HealthServiceRecordSiteRoleType.ComponentOf) as QueryParameters;
             var mask = patient.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as MaskingIndicator;
 
+            var myOidData = this.m_configService.OidRegistrar.GetOid("CR_CID");
+
             // Return status
             var retVal = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.RegistrationEvent<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient, object>(
                 ActStatus.Active,
@@ -241,17 +243,30 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         ConvertStatus(patient.Status, details),
                         null,
                         new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization(
-                            SET<II>.CreateSET(new II(this.m_configService.OidRegistrar.GetOid("CR_CID").Oid, null)),
+                            SET<II>.CreateSET(new II(myOidData.Oid, null)),
                             null,
-                            BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(this.m_configService.Custodianship.Name))),
-                            new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NotApplicable }
+                            BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(myOidData.Attributes.Find(o=>o.Key == "CustodialOrgName").Value ?? myOidData.Description))),
+                            new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
                         ),
                         null
                     )
                 )
             );
 
-            
+            // Custodian
+            retVal.Custodian = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Custodian(
+                new MARC.Everest.RMIM.UV.NE2008.COCT_MT090003UV01.AssignedEntity(
+                    SET<II>.CreateSET(new II(this.m_configService.Custodianship.Id.Domain))
+                    )
+                    {
+                        RepresentedOrganization = new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization(
+                            SET<II>.CreateSET(new II(this.m_configService.Custodianship.Id.Domain, null)),
+                            null,
+                            BAG<ON>.CreateBAG(ON.CreateON(null, new ENXP(this.m_configService.Custodianship.Name))),
+                            new MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.ContactParty() { NullFlavor = NullFlavor.NoInformation }
+                        )
+                    }
+                );
             retVal.Subject1.registeredRole.SetPatientEntityChoiceSubject(CreatePersonDetail(patient, details));
             
             
