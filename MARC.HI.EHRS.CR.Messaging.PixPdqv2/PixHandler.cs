@@ -276,6 +276,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 // Now process the result
                 response = dcu.CreateRSP_K23(result, dtls);
+                // Copy QPD
+                MessageUtil.CopyQPD((response as NHapi.Model.V25.Message.RSP_K23).QPD, request.QPD);
+                
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
             }
             catch (Exception e)

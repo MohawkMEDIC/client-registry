@@ -1593,11 +1593,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             {
                 if (filterPerson.TelecomAddresses == null) filterPerson.TelecomAddresses = new List<TelecommunicationsAddress>();
                 if (tel.NullFlavor == null && tel.Value != null && tel.Value.Count == 1)
-                    filterPerson.TelecomAddresses.Add(new TelecommunicationsAddress()
-                    {
-                        Use = Util.ToWireFormat(tel.Value[0].Use),
-                        Value = tel.Value[0].Value
-                    });
+                {
+                    if (!tel.Value[0].IsNull)
+                        filterPerson.TelecomAddresses.Add(new TelecommunicationsAddress()
+                        {
+                            Use = Util.ToWireFormat(tel.Value[0].Use),
+                            Value = tel.Value[0].Value
+                        });
+                }
                 else
                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientTelecom"));
             }

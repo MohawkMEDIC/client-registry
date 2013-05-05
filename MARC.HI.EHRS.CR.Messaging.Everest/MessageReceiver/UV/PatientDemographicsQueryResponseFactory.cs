@@ -177,7 +177,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             {
                 Acknowledgement = new List<MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement>() {
                     new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement(
-                        details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.AcceptAcknowledgementCommitAccept : AcknowledgementType.AcceptAcknowledgementCommitError,
+                        details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
                         new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
                     )
                 }

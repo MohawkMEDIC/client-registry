@@ -134,7 +134,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             terser.Set("/MSH-6", inboundTerser.Get("/MSH-4"));
             terser.Set("/MSH-7", DateTime.Now.ToString("yyyyMMddHHmm"));
             terser.Set("/MSA-2", inboundTerser.Get("/MSH-10"));
-            
+            if(String.IsNullOrEmpty(terser.Get("/MSH-9-2")))
+                terser.Set("/MSH-9-2", inboundTerser.Get("/MSH-9-2"));
+            terser.Set("/MSH-11", inboundTerser.Get("/MSH-11"));
         }
 
         /// <summary>
@@ -398,5 +400,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
         }
 
+        /// <summary>
+        /// Copy QPD segment
+        /// </summary>
+        internal static void CopyQPD(NHapi.Model.V25.Segment.QPD dest, NHapi.Model.V25.Segment.QPD source)
+        {
+            dest.MessageQueryName.Identifier.Value = source.MessageQueryName.Identifier.Value;
+            dest.MessageQueryName.Text.Value = source.MessageQueryName.Text.Value;
+            dest.QueryTag.Value = source.QueryTag.Value;
+            dest.UserParametersInsuccessivefields.Data = source.UserParametersInsuccessivefields.Data;
+        }
     }
 }

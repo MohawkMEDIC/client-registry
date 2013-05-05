@@ -29,6 +29,7 @@ using NHapi.Base.Util;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.IO;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7
 {
@@ -91,8 +92,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
 
                     if (messagePersister != null)
                         messagePersister.PersistMessage(messageId, CreateMessageStream(e.Message));
-
-                    
+                                        
                     if (handler == null && defaultHandler == null)
                         throw new InvalidOperationException(String.Format("Cannot find message handler for '{0}'", messageType));
 
@@ -101,7 +101,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
                         throw new InvalidOperationException("Couldn't process message");
 
                     msgTerser = new Terser(e.Response);
-
                     if (messagePersister != null)
                         messagePersister.PersistResultMessage(msgTerser.Get("/MSH-10"), messageId, CreateMessageStream(e.Response));
                     break;

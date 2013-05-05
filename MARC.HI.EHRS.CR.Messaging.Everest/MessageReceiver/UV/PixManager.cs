@@ -118,7 +118,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             AuditData audit = null;
 
             IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
-
+            
             // Try to execute the record
             try
             {
@@ -247,7 +247,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store 
-                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
                 if(vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
@@ -386,7 +386,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store 
-                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
                 if (vid == null)
                     throw new Exception(locale.GetString("DTPE001"));
@@ -507,7 +507,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
 
                 // Store 
-                var vid = dataUtil.Register(data, dtls, issues, request.ProcessingCode == ProcessingID.Debugging ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var vid = dataUtil.Register(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
 
                 if (vid == null)

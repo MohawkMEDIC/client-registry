@@ -223,9 +223,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // Check response mode
             if (rspMode != "I")
                 dtls.Add(new UnsupportedResponseModeResultDetail(rspMode));
-            // Check processing id
-            if (procMode != "P" && procMode != "D")
-                dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
+            //// Check processing id
+            //if (procMode != "P" && procMode != "D")
+            //    dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
 
             // Check version identifier
             if (!interaction.VersionCode.CodeValue.Equals("V3-2008N"))

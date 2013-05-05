@@ -168,6 +168,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                     // Use the nHAPI parser to process the data
                     Hl7MessageReceivedEventArgs messageArgs = null;
+                    
                     try
                     {
                      
@@ -190,6 +191,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         stream.Write(new byte[] { START_TX }, 0, 1); // header
                         if (messageArgs != null && messageArgs.Response != null)
                         {
+
                             // Since nHAPI only emits a string we just send that along the stream
                             writer.Write(parser.Encode(messageArgs.Response));
                             writer.Flush();

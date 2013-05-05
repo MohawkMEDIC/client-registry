@@ -71,6 +71,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K23();
 
+            retVal.MSH.MessageType.MessageStructure.Value = "RSP_K23";
+
             var qak = retVal.QAK;
             var msa = retVal.MSA;
             
@@ -312,6 +314,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K21();
+
+            retVal.MSH.MessageType.MessageStructure.Value = "RSP_K21";
 
             var qak = retVal.QAK;
             var msa = retVal.MSA;

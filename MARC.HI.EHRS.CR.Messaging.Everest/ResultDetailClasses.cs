@@ -93,7 +93,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
     /// </summary>
     public class PatientNotFoundResultDetail : ResultDetail
     {
-        public PatientNotFoundResultDetail(ILocalizationService locale) : base(ResultDetailType.Error, locale.GetString("DTPE006"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value", null) { }
+        public PatientNotFoundResultDetail(ILocalizationService locale) : base(ResultDetailType.Warning, locale.GetString("DTPE006"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value", null) { }
     }
 
     /// <summary>

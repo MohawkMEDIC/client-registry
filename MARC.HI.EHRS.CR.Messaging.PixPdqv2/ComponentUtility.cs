@@ -437,7 +437,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             qip2 = ((qpcomp.Components[1] as Varies).Data).ToString();
                         
                         // Get the name of the components to be queried
-                        Regex paramSeg = new Regex(@"@(P[ID][D1]\.?\d+)\.?(\d+)\.?(\d+)");
+                        Regex paramSeg = new Regex(@"@(P[IV][D1]\.?\d+)\.?(\d+)\.?(\d+)?");
                         var match = paramSeg.Match(qip1);
                         if (match.Success)
                         {

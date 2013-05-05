@@ -765,14 +765,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             {
                 if (id.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
                 {
-                    if(!String.IsNullOrEmpty(id.Identifier))
+                    if (!String.IsNullOrEmpty(id.Identifier))
                         retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
                     else
                         retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_EXTERN('{0}')", id.Domain.Replace("'", "''"));
 
                 }
                 else
-                    retVal.AppendFormat("SELECT {0}", id.Identifier);
+                {
+                    if (!String.IsNullOrEmpty(id.Identifier))
+                        retVal.AppendFormat("SELECT {0}", id.Identifier); // look for one id
+                    else
+                        retVal.AppendFormat("SELECT PSN_ID FROM PSN_TBL");
+                }
                 if (id != identifiers.Last())
                     retVal.AppendFormat(" UNION ");
             }

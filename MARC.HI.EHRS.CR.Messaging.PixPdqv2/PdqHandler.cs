@@ -30,6 +30,7 @@ using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using System.Diagnostics;
+using NHapi.Base.Util;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -115,7 +116,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 // Now process the result
                 response = dcu.CreateRSP_K21(result, dtls);
+                MessageUtil.CopyQPD((response as RSP_K21).QPD, request.QPD);
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+                Terser ters = new Terser(response);
+                ters.Set("/MSH-9-2", "K22");
 
             }
             catch (Exception e)

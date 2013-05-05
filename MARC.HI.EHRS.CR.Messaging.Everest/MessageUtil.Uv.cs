@@ -209,8 +209,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             var profile = interaction as IImplementsProfileId;
 
             // Check processing id
-            if (procMode != "P" && procMode != "D")
-                dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
+            //if (procMode != "P" && procMode != "D")
+            //    dtls.Add(new UnsupportedProcessingModeResultDetail(procMode));
 
             // Check version identifier
             if (interaction.VersionCode != null && !interaction.VersionCode.CodeValue.Equals(HL7StandardVersionCode.Version3_Prerelease1))

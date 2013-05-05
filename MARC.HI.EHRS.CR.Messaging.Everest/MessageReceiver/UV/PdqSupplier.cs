@@ -159,6 +159,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     AcknowledgementType.AcceptAcknowledgementCommitError,
                     new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
                 ));
+                // Add AE for query response
+                response.controlActProcess = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.ControlActProcess<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.QueryByParameter, MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient, object>(
+                    "EVN",
+                    new MARC.Everest.RMIM.UV.NE2008.QUQI_MT120001UV01.QueryAck(
+                        QueryResponse.ApplicationError
+                    )
+                );
             }
             finally
             {
