@@ -64,18 +64,16 @@ namespace MARC.HI.EHRS.CR.Configurator {
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///
         ///&lt;!--
+        ///  This file was automatically generated using the MARC-HI Client Registry Configuration Tool Version 1.0.0.0
+        ///  Copyright (C) 2012-2013 Mohawk College of Applied Arts and Technology
+        ///  
+        ///  Some hand-edited configuration options not supported by the configuration may be removed upon configuration. It is recommended
+        ///  that you back this file up prior to running the configuration tool if you have made modifications.
+        ///--&gt;
         ///
-        ///  Copyright 2012-2013 Mohawk College of Applied Arts and Technology
-        ///  
-        ///  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you 
-        ///  may not use this file except in compliance with the License. You may 
-        ///  obtain a copy of the License at 
-        ///  
-        ///  http://www.apache.org/licenses/LICENSE-2.0 
-        ///  
-        ///  Unless required by applicable law or agreed to in writing, software
-        ///  distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
-        ///  WAR [rest of string was truncated]&quot;;.
+        ///&lt;configuration&gt;
+        ///
+        ///&lt;/configuration&gt;.
         /// </summary>
         internal static string empty {
             get {
