@@ -3,7 +3,7 @@
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
-AppVerName = MEDIC Client Registry 0.4
+AppVerName = MEDIC Client Registry 0.5
 #ifdef BUNDLED
 OutputBaseFilename = cr-setup-bundled-x64
 #else
