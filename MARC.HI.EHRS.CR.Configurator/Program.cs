@@ -28,6 +28,8 @@ using ServiceConfigurator;
 using System.Threading;
 using System.Security.Principal;
 using System.Diagnostics;
+using MohawkCollege.Util.Console.Parameters;
+using System.Text;
 
 namespace MARC.HI.EHRS.CR.Configurator
 {
@@ -37,24 +39,26 @@ namespace MARC.HI.EHRS.CR.Configurator
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(String[] args)
         {
             
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
             // Attempt to open a restricted resource (see if we're administrator)
-            
-
             frmSplash splash = new frmSplash();
             splash.Show();
             try
             {
+
+                StringBuilder argString = new StringBuilder();
+
                 WindowsIdentity identity = WindowsIdentity.GetCurrent();
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
                 {
-                    ProcessStartInfo psi = new ProcessStartInfo(Assembly.GetEntryAssembly().Location);
+
+                    ProcessStartInfo psi = new ProcessStartInfo(Assembly.GetEntryAssembly().Location, Environment.CommandLine.Contains(' ') ? Environment.CommandLine.Substring(Environment.CommandLine.IndexOf(" ")) : null);
                     psi.Verb = "runas";
                     Process proc = Process.Start(psi);
                     Application.Exit();
@@ -69,17 +73,44 @@ namespace MARC.HI.EHRS.CR.Configurator
 #else
                 ConfigurationApplicationContext.s_configFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe.config");
 #endif
-                // Configuration File exists?
-                if (!File.Exists(ConfigurationApplicationContext.s_configFile))
-                {
-                    frmStartScreen start = new frmStartScreen();
-                    if (start.ShowDialog() == DialogResult.Cancel)
-                        return;
-                }
 
-                ConfigurationApplicationContext.s_configurationPanels.Sort((a, b) => a.Name.CompareTo(b.Name));
-                ConfigurationApplicationContext.ConfigurationApplied += new EventHandler(ConfigurationApplicationContext_ConfigurationApplied);
-                Application.Run(new frmMain());
+                ParameterParser<ConsoleParameters> parser = new ParameterParser<ConsoleParameters>();
+
+                var consoleParms = parser.Parse(args);
+
+                if (consoleParms.ListDeploy)
+                {
+                    StringBuilder options = new StringBuilder("Available deployment modules: \r\n");
+                    foreach (var pnl in ConfigurationApplicationContext.s_configurationPanels.FindAll(o=>o is IAutoDeployConfigurationPanel))
+                        options.AppendFormat("{0}\r\n", pnl.Name);
+                    MessageBox.Show(options.ToString());
+                }
+                else if (consoleParms.Deploy != null && consoleParms.Deploy.Count > 0)
+                    try
+                    {
+                        DeployUtil.Deploy(consoleParms.Deploy, consoleParms.Options);
+                        ConfigurationApplicationContext_ConfigurationApplied(null, EventArgs.Empty);
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(String.Format("Could not deploy requested component : {0}", e), "Error Deploying");
+                    }
+                else
+                {
+                    ConfigurationApplicationContext.s_configurationPanels.Sort((a, b) => a.Name.CompareTo(b.Name));
+                    ConfigurationApplicationContext.ConfigurationApplied += new EventHandler(ConfigurationApplicationContext_ConfigurationApplied);
+
+
+                    // Configuration File exists?
+                    if (!File.Exists(ConfigurationApplicationContext.s_configFile))
+                    {
+                        frmStartScreen start = new frmStartScreen();
+                        if (start.ShowDialog() == DialogResult.Cancel)
+                            return;
+                    }
+
+                    Application.Run(new frmMain());
+                }
             }
             finally
             {

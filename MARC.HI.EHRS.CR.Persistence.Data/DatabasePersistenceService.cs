@@ -142,6 +142,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             // Persistence helpers
             foreach (var t in persistenceTypes)
             {
+
                 ConstructorInfo ci = t.GetConstructor(Type.EmptyTypes);
                 IComponentPersister instance = ci.Invoke(null) as IComponentPersister;
                 m_persisters.Add(instance.HandlesComponent, instance);
@@ -453,7 +454,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         public IContainer GetContainer(MARC.HI.EHRS.SVC.Core.DataTypes.VersionedDomainIdentifier containerId, bool loadFast)
         {
             // Get the persister that will handle the HealthServiceRecord type
-            IComponentPersister persister = GetPersister(typeof(RegistrationEvent));
+
+            var persister = m_persisters.Values.FirstOrDefault(o => o is IQueryComponentPersister && (o as IQueryComponentPersister).ComponentTypeOid == containerId.Domain);
+            if(persister == null)
+                persister = GetPersister(typeof(RegistrationEvent));
+
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             
             DbUtil.ClearPersistedCache();
@@ -485,7 +490,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
             else
             {
-                Trace.TraceError("Can't find a persistence handler for type 'HealthServiceRecordEvent'");
+                Trace.TraceError("Can't find a persistence handler for type '{0}'", containerId.Domain);
                 throw new DataException("Can't persist type HealthServiceRecordEvent");
             }
         }
@@ -534,14 +539,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             List<VersionedDomainIdentifier> retVal = new List<VersionedDomainIdentifier>(10);
             ISystemConfigurationService configService = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
-            if (!(queryParameters is RegistrationEvent))
-                throw new ArgumentException("Must inherit from HealthServiceRecordEvent", "queryParameters");
-
             // Get the subject of the query
-            var subjectOfQuery = (queryParameters as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
             var queryFilter = (queryParameters as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
-            if (subjectOfQuery == null)
-                throw new InvalidOperationException();
 
             // Query Filter
             if (queryFilter == null || queryFilter.MatchingAlgorithm == MatchAlgorithm.Unspecified)
@@ -562,54 +561,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     for (int i = 0; i < 2; i++)
                     {
 
-                        // Matching?
-                        StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND STATUS NOT IN ('Obsolete','Nullified') AND PSN_ID IN (");
+                        string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, i == 0));
 
-                        // Identifiers
-                        if (subjectOfQuery.AlternateIdentifiers != null && subjectOfQuery.AlternateIdentifiers.Count > 0)
-                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.AlternateIdentifiers));
-
-                        #region Match Parameters
-                        // Match names
-                        if (subjectOfQuery.Names != null && subjectOfQuery.Names.Count > 0)
-                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterNames(subjectOfQuery.Names, i == 1 ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
-                        else
-                            i = 2;
-
-                        // Match birth time
-                        if (subjectOfQuery.BirthTime != null)
-                        {
-                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_BRTH_TS('{0:MM/dd/yyyy HH:mm:ss z}','{1}')) INTERSECT ", subjectOfQuery.BirthTime.Value, subjectOfQuery.BirthTime.Precision);
-                        }
-
-                        // Other Identifiers
-                        if (subjectOfQuery.OtherIdentifiers != null && subjectOfQuery.OtherIdentifiers.Count > 0)
-                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterIdentifiers(subjectOfQuery.OtherIdentifiers));
-
-                        // Addresses
-                        if (subjectOfQuery.Addresses != null && subjectOfQuery.Addresses.Count > 0)
-                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterAddress(subjectOfQuery.Addresses));
-
-                        // Telecom Addresses
-                        if (subjectOfQuery.TelecomAddresses != null && subjectOfQuery.TelecomAddresses.Count > 0)
-                            sb.AppendFormat("({0}) INTERSECT ", BuildFilterTelecom(subjectOfQuery.TelecomAddresses));
-
-                        // Gender
-                        if (!String.IsNullOrEmpty(subjectOfQuery.GenderCode))
-                            sb.AppendFormat("(SELECT * FROM FIND_PSN_BY_GNDR_CS('{0}')) INTERSECT ", subjectOfQuery.GenderCode);
-
-                        // TRIM INTERSECT
-                        if (sb.ToString().EndsWith("INTERSECT "))
-                            sb.Remove(sb.Length - 10, 10);
-                        
-                        sb.Append(")");
-
-                        if (sb.ToString().EndsWith("AND PSN_ID IN ()")) // complete dump? ok
-                            sb.Remove(sb.Length - 16, 16);
-
-                        #endregion
-
-                        cmd.CommandText = sb.ToString();
+                        cmd.CommandText = queryFilterString;
 
                         cmd.CommandType = CommandType.Text;
                         using (IDataReader rdr = cmd.ExecuteReader())
@@ -621,8 +575,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                                 // Id
                                 var id = new VersionedResultIdentifier()
                                 {
-                                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid,
-                                    Identifier = Convert.ToString(rdr["hsr_id"])
+                                    Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
+                                    Identifier = Convert.ToString(rdr[0])
 
                                 };
                                 // Add the ID
@@ -650,141 +604,23 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             //retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
             return retVal.ToArray();
         }
-
-        /// <summary>
-        /// Filter telecommunications address
-        /// </summary>
-        private string BuildFilterTelecom(List<TelecommunicationsAddress> telecoms)
-        {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var tel in telecoms)
-            {
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_TEL('{0}','{1}')", tel.Value, tel.Use);
-                if (!tel.Equals(telecoms.Last()))
-                    retVal.AppendFormat(" UNION ");
-            }
-            return retVal.ToString();
-        }
-
-        /// <summary>
-        /// Build a filter for addresses
-        /// </summary>
-        private string BuildFilterAddress(List<AddressSet> addresses)
-        {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var addr in addresses)
-            {
-                if (addr == null)
-                    continue;
-                // Build the filter
-                StringBuilder filterString = new StringBuilder(),
-                    cmpTypeString = new StringBuilder();
-                foreach (var cmp in addr.Parts)
-                {
-                    filterString.AppendFormat("{0}{1}", cmp.AddressValue, cmp == addr.Parts.Last() ? "" : ",");
-                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : ",");
-                }
-
-                // Match strength & algorithms
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_ADDR_SET('{{{0}}}','{{{1}}}', {2})",
-                    filterString, cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
-
-                if (addr != addresses.Last())
-                    retVal.AppendFormat(" UNION ");
-            }
-            return retVal.ToString();
-        }
-
-        /// <summary>
-        /// Build filter identifiers
-        /// </summary>
-        private object BuildFilterIdentifiers(List<KeyValuePair<CodeValue, DomainIdentifier>> identifiers)
-        {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var id in identifiers)
-            {
-                if(!String.IsNullOrEmpty(id.Value.Identifier))
-                    retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Value.Domain.Replace("'", "''"), id.Value.Identifier.Replace("'", "''"), identifiers.Count * 4);
-                else
-                    retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_EXTERN('{0}')", id.Value.Domain.Replace("'", "''"), identifiers.Count * 4);
-                if (!id.Equals(identifiers.Last()))
-                    retVal.AppendFormat(" UNION ");
-            }
-            return retVal.ToString();
-        }
-
-        /// <summary>
-        /// Build filter for names
-        /// </summary>
-        private string BuildFilterNames(List<NameSet> names, QueryParameters parameters)
-        {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var nm in names)
-            {
-                if (nm == null)
-                    continue;
-                // Build the filter
-                StringBuilder filterString = new StringBuilder(),
-                    cmpTypeString = new StringBuilder();
-                foreach (var cmp in nm.Parts)
-                {
-                    filterString.AppendFormat("{0}{1}", cmp.Value.Replace("%","").Replace("*","%"), cmp == nm.Parts.Last() ? "" : ",");
-                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
-                }
-
-                // Match strength & algorithms
-                int desiredMatchLevel = 6;
-                bool useVariant = false;
-                if (nm.Use == NameSet.NameSetUse.Search)
-                {
-                    useVariant = (parameters.MatchingAlgorithm & MatchAlgorithm.Variant) != 0;
-                    if ((parameters.MatchingAlgorithm & MatchAlgorithm.Soundex) != 0) // no soundex is allowed so exact only
-                        desiredMatchLevel = 4;
-                    else
-                        desiredMatchLevel = 5;
-                }
-
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {3}, {4}, {2})",
-                    filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use, desiredMatchLevel, useVariant);
-
-                if (nm != names.Last())
-                    retVal.AppendFormat(" UNION ");
-            }
-            return retVal.ToString();
-        }
-
-
-
-        /// <summary>
-        /// Build filter on identifiers
-        /// </summary>
-        private string BuildFilterIdentifiers(List<DomainIdentifier> identifiers)
-        {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var id in identifiers)
-            {
-                if (id.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
-                {
-                    if (!String.IsNullOrEmpty(id.Identifier))
-                        retVal.AppendFormat("SELECT PSN_ID FROM GET_PSN_EXTERN('{0}','{1}')", id.Domain.Replace("'", "''"), id.Identifier.Replace("'", "''"), identifiers.Count * 4);
-                    else
-                        retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_EXTERN('{0}')", id.Domain.Replace("'", "''"));
-
-                }
-                else
-                {
-                    if (!String.IsNullOrEmpty(id.Identifier))
-                        retVal.AppendFormat("SELECT {0}", id.Identifier); // look for one id
-                    else
-                        retVal.AppendFormat("SELECT PSN_ID FROM PSN_TBL");
-                }
-                if (id != identifiers.Last())
-                    retVal.AppendFormat(" UNION ");
-            }
-            return retVal.ToString();
-        }
-
+        
         #endregion
 
+
+        /// <summary>
+        /// Get the register
+        /// </summary>
+        internal static IQueryComponentPersister GetQueryPersister(Type forType)
+        {
+            IComponentPersister pPersister = null;
+
+            if (m_persisters.TryGetValue(forType, out pPersister))
+                return pPersister as IQueryComponentPersister;
+#if DEBUG
+            Trace.TraceError("Can't find register for '{0}'", forType);
+#endif
+            return null;
+        }
     }
 }

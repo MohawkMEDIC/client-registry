@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BDC2FCB8-E319-41FC-BA1A-40108E86D550}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MARC.HI.EHRS.CR.Messaging.FHIR</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Messaging.FHIR</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MARC.Everest, Version=1.5.0.0, Culture=neutral, PublicKeyToken=ba5b2480018546af, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationContext.cs" />
+    <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
+    <Compile Include="Configuration\FhirServiceConfiguration.cs" />
+    <Compile Include="DataTypes\Attachment.cs" />
+    <Compile Include="DataTypes\Choice.cs" />
+    <Compile Include="DataTypes\CodeableConcept.cs" />
+    <Compile Include="DataTypes\Coding.cs" />
+    <Compile Include="DataTypes\Date.cs" />
+    <Compile Include="DataTypes\Extension.cs" />
+    <Compile Include="DataTypes\IdRef.cs" />
+    <Compile Include="DataTypes\Instant.cs" />
+    <Compile Include="DataTypes\Period.cs" />
+    <Compile Include="DataTypes\PrimitiveCode.cs" />
+    <Compile Include="DataTypes\Quantity.cs" />
+    <Compile Include="DataTypes\Range.cs" />
+    <Compile Include="DataTypes\Ratio.cs" />
+    <Compile Include="DataTypes\Schedule.cs" />
+    <Compile Include="DataTypes\ScheduleRepeat.cs" />
+    <Compile Include="DataTypes\Shareable.cs" />
+    <Compile Include="FhirMessageHandler.cs" />
+    <Compile Include="Processors\IFhirMessageProcessor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DataTypes\Address.cs" />
+    <Compile Include="Resources\Accreditation.cs" />
+    <Compile Include="Resources\Animal.cs" />
+    <Compile Include="Resources\Contact.cs" />
+    <Compile Include="DataTypes\Identifier.cs" />
+    <Compile Include="DataTypes\HumanName.cs" />
+    <Compile Include="Resources\ContactEntity.cs" />
+    <Compile Include="Resources\Language.cs" />
+    <Compile Include="Resources\Organization.cs" />
+    <Compile Include="Resources\Patient.cs" />
+    <Compile Include="DataTypes\Primitive.cs" />
+    <Compile Include="Resources\Demographics.cs" />
+    <Compile Include="Resources\Picture.cs" />
+    <Compile Include="Resources\Practictioner.cs" />
+    <Compile Include="Resources\Qualification.cs" />
+    <Compile Include="Resources\ResourceBase.cs" />
+    <Compile Include="Resources\Resource.cs" />
+    <Compile Include="DataTypes\Telecom.cs" />
+    <Compile Include="WcfCore\FhirServiceBehavior.cs" />
+    <Compile Include="WcfCore\IFhirServiceContract.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

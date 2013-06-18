@@ -39,7 +39,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
     /// <summary>
     /// A record persister that handles the HealthServiceRecord component
     /// </summary>
-    public class RegistrationEventPersister : IComponentPersister
+    public class RegistrationEventPersister : IComponentPersister, IQueryComponentPersister
     {
         #region IComponentPersister Members
 
@@ -459,6 +459,36 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             return retVal;
         }
 
+
+        #endregion
+
+        #region IComponentPersister Members
+
+        /// <summary>
+        /// Gets the content-type oid
+        /// </summary>
+        public string ComponentTypeOid
+        {
+            get { return ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid; ; }
+        }
+
+        /// <summary>
+        /// Build the filter
+        /// </summary>
+        public string BuildFilter(IComponent data, bool forceExact)
+        {
+            // HACK: Come back and fix this ... Should build other filter parameters such as author, etc based on the 
+            // content of the registration event rather than hard-coding to the 
+
+            // Get the subject of the query
+            //var subjectOfQuery = (data as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            
+            // Matching?
+            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified')");
+            
+            return sb.ToString();
+
+        }
 
         #endregion
     }

@@ -68,6 +68,9 @@
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MARC.HI.EHRS.SVC.ConfigurationApplciation">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ConfigurationApplciation.dll</HintPath>
@@ -75,6 +78,10 @@
     <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MohawkCollege.Util.Console.Parameters, Version=0.2.4765.527, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MohawkCollege.Util.Console.Parameters.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -95,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientRegistryAboutPanel.cs" />
+    <Compile Include="ConsoleParameters.cs" />
     <Compile Include="frmSplash.cs">
       <SubType>Form</SubType>
     </Compile>

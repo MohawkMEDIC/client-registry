@@ -57,13 +57,28 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <param name="role">The role that the component is expected to take within the containerff</param>
         IComponent DePersist(IDbConnection conn, decimal identifier, IContainer container, HealthServiceRecordSiteRoleType? role, bool loadFast);
 
+    }
 
+    /// <summary>
+    /// Represents a component persister that is also a querier
+    /// </summary>
+    public interface IQueryComponentPersister
+    {
+        /// <summary>
+        /// Build a query filter for the type
+        /// </summary>
+        string BuildFilter(IComponent data, bool forceExact);
+
+        /// <summary>
+        /// Gets the OID of the component type
+        /// </summary>
+        String ComponentTypeOid { get; }
     }
 
     /// <summary>
     /// Versioned component persister
     /// </summary>
-    public interface IVersionComponentPersister
+    public interface IVersionComponentPersister 
     {
         /// <summary>
         /// Depersist with version

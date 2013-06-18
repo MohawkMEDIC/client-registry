@@ -35,7 +35,7 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
     /// <summary>
     /// Service configuration panel
     /// </summary>
-    public class ServiceConfigurationPanel : IConfigurationPanel
+    public class ServiceConfigurationPanel : IAutoDeployConfigurationPanel
     {
         #region IConfigurationPanel Members
 
@@ -77,7 +77,6 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
             try
             {
                 ServiceTools.ServiceInstaller.Install("Client Registry", "Client Registry", Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ClientRegistry.exe"), this.AccountName, this.AccountPassword == null ? null : this.AccountPassword.ToString(), this.Mode);
-                
             }
             catch (Exception e)
             {
@@ -205,6 +204,18 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         {
             return this.Name;
         }
+        #endregion
+
+        #region IAutoDeployConfigurationPanel Members
+
+        /// <summary>
+        /// Prepare configuration
+        /// </summary>
+        public void PrepareConfigure(System.Xml.XmlDocument configurationDom, Dictionary<string, System.Collections.Specialized.StringCollection> deploymentOptions)
+        {
+            this.EnableConfiguration = true;
+        }
+
         #endregion
     }
 }
