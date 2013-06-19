@@ -716,7 +716,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), rdr["status"].ToString());
                         retVal.GenderCode = Convert.ToString(rdr["gndr_cs"]);
                         retVal.BirthOrder = (int?)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
-
+                        retVal.Timestamp = Convert.ToDateTime(rdr["crt_utc"]);
                         // Other fetched data
                         decimal? birthTs = null,
                             deceasedTs = null,
@@ -1471,12 +1471,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Person filter
             var personFilter = data as Person;
             var registrationEvent = DbUtil.GetRegistrationEvent(data);
-            QueryParameters queryFilter = null;
+            QueryParameters queryFilter = personFilter.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
 
             // Get the registration event's filter parameters (master filter specificity)
-            if(registrationEvent != null)
+            if(registrationEvent != null && queryFilter == null)
                 queryFilter = (registrationEvent as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;                
-
+            
             // Query Filter
             if (queryFilter == null || queryFilter.MatchingAlgorithm == MatchAlgorithm.Unspecified)
                 queryFilter = new QueryParameters()
@@ -1489,10 +1489,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Matching?
             StringBuilder sb = new StringBuilder();
             if(registrationEvent != null)
-                sb.Append("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND STATUS NOT IN ('Obsolete','Nullified')");
+                sb.Append("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
             else
-                sb.Append("SELECT DISTINCT PSN_ID FROM PSN_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS NOT IN ('Obsolete','Nullified')");
-           
+                sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL WHERE OBSLT_UTC IS NULL ");
+
+            if (personFilter.Status == StatusType.Unknown)
+                sb.Append("AND STATUS NOT IN ('Obsolete','Nullified') ");
+            else
+            {
+                sb.Append("AND STATUS IN (");
+                foreach (var fi in Enum.GetValues(typeof(StatusType)))
+                    if ((personFilter.Status & (StatusType)fi) != 0)
+                        sb.AppendFormat("'{0}',", fi.ToString());
+                sb.Remove(sb.Length - 1, 1);
+                sb.Append(") ");
+            }
+
             // Identifiers
             if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
                 sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.AlternateIdentifiers));
@@ -1525,6 +1537,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 sb.AppendFormat("AND PSN_ID IN (SELECT PSN_ID FROM FIND_PSN_BY_GNDR_CS('{0}')) ", personFilter.GenderCode);
             #endregion 
 
+            if(registrationEvent == null)
+                sb.Append(" ORDER BY PSN_VRSN_ID DESC");
 
             return sb.ToString();
         }

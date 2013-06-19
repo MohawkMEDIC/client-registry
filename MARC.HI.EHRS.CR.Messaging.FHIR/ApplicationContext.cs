@@ -43,6 +43,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR
         /// System configuration service
         /// </summary>
         private static ISystemConfigurationService s_sysConfigService = null;
+        /// <summary>
+        /// Localization service
+        /// </summary>
+        private static ILocalizationService s_localeService = null;
 
         /// <summary>
         /// Gets the configuration service
@@ -50,6 +54,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR
         public static ISystemConfigurationService ConfigurationService
         {
             get { return s_sysConfigService; }
+        }
+
+        /// <summary>
+        /// gets the localization service
+        /// </summary>
+        public static ILocalizationService LocalizationService
+        {
+            get { return s_localeService; }
         }
 
         /// <summary>
@@ -68,6 +80,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR
                     {
                         s_hostContext = value;
                         s_sysConfigService = s_hostContext.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+                        s_localeService = s_hostContext.GetService(typeof(ILocalizationService)) as ILocalizationService;
                     }
             }
         }

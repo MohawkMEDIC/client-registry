@@ -10,7 +10,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     /// <summary>
     /// Primitive values
     /// </summary>
-    public abstract class Primitive<T>
+    public abstract class Primitive<T> : Shareable
     {
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
                 if (typeof(T) == typeof(byte[]))
                     this.Value = (T)(object)Convert.FromBase64String(value);
                 else
-                    this.Value = Util.Convert<T>(value);
+                    this.Value = MARC.Everest.Connectors.Util.Convert<T>(value);
             }
         }
 

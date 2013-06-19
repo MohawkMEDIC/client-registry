@@ -40,6 +40,7 @@ using MARC.Everest.Xml;
 using System.Xml;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using System.Diagnostics;
+using System.ServiceModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -85,6 +86,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             var wcfReceiveResult = msgReceiveResult as WcfReceiveResult;
             var msgReplyTo = wcfReceiveResult == null || wcfReceiveResult.Headers == null || wcfReceiveResult.Headers.ReplyTo == null ? msgEvent.SolicitorEndpoint.ToString() : wcfReceiveResult.Headers.ReplyTo.Uri.ToString();
 
+            string userId = String.Empty;
+            if (OperationContext.Current.Channel.RemoteAddress != null && OperationContext.Current.Channel.RemoteAddress.Uri != null)
+                userId = OperationContext.Current.Channel.RemoteAddress.Uri.OriginalString;
+            else if (OperationContext.Current.ServiceSecurityContext != null && OperationContext.Current.ServiceSecurityContext.PrimaryIdentity != null)
+                userId = OperationContext.Current.ServiceSecurityContext.PrimaryIdentity.Name;
+
+
             switch (itiName)
             {
                 case "PRPA_TE101103CA":
@@ -100,7 +108,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
                             NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
                         });
                         // Audit actor for PIX manager
                         retVal.Actors.Add(new AuditActorData()
@@ -138,7 +147,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
                             NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
                         });
                         // Audit actor for PIX manager
                         retVal.Actors.Add(new AuditActorData()
@@ -177,7 +187,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
                             NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
                         });
                         // Audit actor for PIX manager
                         retVal.Actors.Add(new AuditActorData()
@@ -215,7 +226,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         }, 
                         NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                        NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                        NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                        UserName = userId
                     });
                     // Audit actor for PIX manager
                     retVal.Actors.Add(new AuditActorData()
@@ -239,7 +251,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
                             NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
                         });
                         // Audit actor for PIX manager
                         retVal.Actors.Add(new AuditActorData()
@@ -278,7 +291,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
                             NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
-                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
                         });
                         // Audit actor for PIX manager
                         retVal.Actors.Add(new AuditActorData()

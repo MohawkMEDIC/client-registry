@@ -20,6 +20,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.WcfCore
     [ServiceKnownType(typeof(Organization))]
     [ServiceKnownType(typeof(Picture))]
     [ServiceKnownType(typeof(Practictioner))]
+    [ServiceKnownType(typeof(OperationOutcome))]
     public interface IFhirServiceContract
     {
 

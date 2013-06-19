@@ -26,7 +26,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// Represents the ID of the object
         /// </summary>
         [XmlAttribute("id")]
-        public string Id { get; set; }
+        public string XmlId { get; set; }
 
         /// <summary>
         /// Identifier reference
@@ -45,10 +45,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// </summary>
         public Shareable MakeReference()
         {
-            this.Id = this.GetHashCode().ToString();
+            this.XmlId = this.GetHashCode().ToString();
             return new Shareable()
             {
-                IdRef = this.Id
+                IdRef = this.XmlId
             };
         }
 
@@ -61,7 +61,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
             // Check "this"
             if(context == null)
                 return null;
-            else if(context.Id == this.IdRef)
+            else if(context.XmlId == this.IdRef)
                 return context;
 
             // Check each property
@@ -71,7 +71,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
                 if (value is Shareable) // Referencable
                 {
                     var refValue = value as Shareable;
-                    if (refValue.Id == this.IdRef)
+                    if (refValue.XmlId == this.IdRef)
                         return refValue;
                     else
                     {
@@ -89,6 +89,5 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
             return null;
         }
 
-        public System.Reflection.BindingFlags BindingFlag { get; set; }
     }
 }

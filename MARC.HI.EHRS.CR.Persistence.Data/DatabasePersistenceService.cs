@@ -471,10 +471,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     conn = DatabasePersistenceService.ReadOnlyConnectionManager.GetConnection();
 
                     // Is the record something that we have access to?
-                    if (containerId.Domain != null && !containerId.Domain.Equals(configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid))
-                        throw new ArgumentException(String.Format("The record OID '{0}' cannot be retrieved by this repository, expecting OID '{1}'",
-                            containerId.Domain, configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid));
-
+                    //if (containerId.Domain != null && !containerId.Domain.Equals(configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid))
+                    //    throw new ArgumentException(String.Format("The record OID '{0}' cannot be retrieved by this repository, expecting OID '{1}'",
+                    //        containerId.Domain, configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid));
+                    if(persister == null)
+                        throw new ArgumentException(String.Format("The record type OID '{0}' cannot be retrieved by this repository",
+                            containerId.Domain));
                     decimal tryDec = default(decimal);
 
                     if (Decimal.TryParse(containerId.Identifier, out tryDec))

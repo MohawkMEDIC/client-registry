@@ -9,7 +9,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     /// <summary>
     /// Identity reference type
     /// </summary>
-    [XmlType("IdRef", Namespace = "http://hl7.org")]
+    [XmlType("IdRef", Namespace = "http://hl7.org/fhir")]
     public class IdRef 
     {
 

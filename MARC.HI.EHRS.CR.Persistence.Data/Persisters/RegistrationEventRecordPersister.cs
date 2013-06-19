@@ -484,7 +484,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             //var subjectOfQuery = (data as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
             
             // Matching?
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified')");
+            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM (SELECT * FROM HSR_VRSN_TBL ORDER BY HSR_VRSN_ID DESC) AS HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified')");
             
             return sb.ToString();
 

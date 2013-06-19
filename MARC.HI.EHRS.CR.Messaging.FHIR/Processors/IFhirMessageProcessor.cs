@@ -5,6 +5,8 @@ using System.Text;
 using System.ComponentModel;
 using System.Collections.Specialized;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Resources;
+using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
+using MARC.Everest.Connectors;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -20,18 +22,28 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         string ResourceName { get; }
 
         /// <summary>
+        /// Get the resource type
+        /// </summary>
+        Type ResourceType { get; }
+
+        /// <summary>
+        /// Get the component type
+        /// </summary>
+        Type ComponentType { get; }
+
+        /// <summary>
         /// Parse a query
         /// </summary>
-        IComponent ParseQuery(NameValueCollection parameters);
+        DataUtil.FhirQuery ParseQuery(NameValueCollection parameters, List<IResultDetail> dtls);
 
         /// <summary>
         /// Process a resource
         /// </summary>
-        IComponent ProcessResource(ResourceBase resource);
+        IComponent ProcessResource(ResourceBase resource, List<IResultDetail> dtls);
 
         /// <summary>
         /// Creates a resource from a component
         /// </summary>
-        ResourceBase ProcessComponent(IComponent component);
+        ResourceBase ProcessComponent(IComponent component, List<IResultDetail> dtls);
     }
 }

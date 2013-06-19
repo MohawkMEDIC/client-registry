@@ -78,7 +78,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
         /// The deceased date of the resource
         /// </summary>
         [XmlElement("deceasedDate")]
-        public Primitive<DateTime> DeceasedDate { get; set; }
+        public Date DeceasedDate { get; set; }
 
     }
 }

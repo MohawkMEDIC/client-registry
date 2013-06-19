@@ -12,6 +12,22 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     [XmlType("Coding", Namespace = "http://hl7.org/fhir")]
     public class Coding : Shareable
     {
+        /// <summary>
+        /// Coding
+        /// </summary>
+        public Coding()
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new coding variable
+        /// </summary>
+        public Coding(Uri system, string code)
+        {
+            this.System = new FhirUri(system);
+            this.Code = new PrimitiveCode<string>(code);
+        }
 
         /// <summary>
         /// The codification system

@@ -1546,6 +1546,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectAdministrativeGender"));
                 break;
             }
+            if(parameterList.LivingSubjectAdministrativeGender.Count > 1)
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE075"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectAdministrativeGender"));
+
 
             // Living Subject Birth Time
             foreach (var birth in parameterList.LivingSubjectBirthTime)
@@ -1556,6 +1559,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE073"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectBirthTime"));
                 break;
             }
+            if (parameterList.LivingSubjectBirthTime.Count > 1)
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE075"), "//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParmaeter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#livingSubjectBirthTime"));
 
             // Living Subject Id
             foreach (var id in parameterList.LivingSubjectId)
