@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// Value choice
         /// </summary>
         [XmlElement("valueInteger", typeof(FhirInt))]
-        [XmlElement("valueDecimal", typeof(Primitive<decimal>))]
+        [XmlElement("valueDecimal", typeof(FhirDecimal))]
         [XmlElement("valueDateTime", typeof(Date))]
         [XmlElement("valueDate", typeof(DateOnly))]
         [XmlElement("valueInstant", typeof(Primitive<DateTime>))]
@@ -37,7 +37,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         [XmlElement("valueUri", typeof(FhirUri))]
         [XmlElement("valueBoolean", typeof(FhirBoolean))]
         [XmlElement("valueCode", typeof(PrimitiveCode<String>))]
-        [XmlElement("valueBase64Binary", typeof(Primitive<byte[]>))]
+        [XmlElement("valueBase64Binary", typeof(FhirBinary))]
         [XmlElement("valueCoding", typeof(Coding))]
         [XmlElement("valueCodeableConcept", typeof(CodeableConcept))]
         [XmlElement("valueAttachment", typeof(Attachment))]
@@ -54,10 +54,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         [XmlElement("valueResource", typeof(Resource<Shareable>))]
         public Shareable Value { get; set; }
 
-        /// <summary>
-        /// Extensions
-        /// </summary>
-        [XmlElement("extension")]
-        public List<Extension> Extensions { get; set; }
+
     }
 }

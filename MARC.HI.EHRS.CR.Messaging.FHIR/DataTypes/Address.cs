@@ -14,6 +14,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     {
 
         /// <summary>
+        /// Create new address
+        /// </summary>
+        public Address()
+        {
+            this.Line = new List<FhirString>();
+        }
+
+        /// <summary>
         /// The use of the value
         /// </summary>
         [XmlElement("use")]
@@ -60,6 +68,41 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// </summary>
         [XmlElement("period")]
         public Period Period { get; set; }
+
+        /// <summary>
+        /// Represent as text
+        /// </summary>
+        internal override void WriteText(System.Xml.XmlWriter w)
+        {
+
+            List<String> output = new List<string>();
+            foreach (var l in this.Line)
+                output.Add(l);
+            output.Add(String.Format("{0}, {1}", this.City, this.State));
+            output.Add(this.Country);
+            output.Add(this.Zip);
+
+            w.WriteStartElement("table", NS_XHTML);
+            w.WriteStartElement("tbody", NS_XHTML);
+            w.WriteStartElement("tr", NS_XHTML);
+            base.WriteTableCell(w, this.Use, 0, 0);
+            base.WriteTableCell(w, output.First(), 0, 0);
+            w.WriteEndElement();// tr
+
+            for(int i = 1; i < output.Count; i++)
+            {
+                if(output[i] == null)
+                    continue;
+
+                w.WriteStartElement("tr", NS_XHTML);
+                base.WriteTableCell(w, String.Empty, 0, 0);
+                base.WriteTableCell(w, output[i], 0, 0);
+                w.WriteEndElement();
+            }
+            w.WriteEndElement();//tbody
+            w.WriteEndElement();//table
+
+        }
 
     }
 }

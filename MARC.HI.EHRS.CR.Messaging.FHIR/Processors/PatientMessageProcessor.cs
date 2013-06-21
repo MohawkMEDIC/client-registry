@@ -9,6 +9,8 @@ using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -62,9 +64,34 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     switch (parameters.GetKey(i))
                     {
                         case "_id":
-                            queryFilter.Id = Decimal.Parse(parameters.GetValues(i)[0]);
-                            retVal.ActualParameters.Add("_id", queryFilter.Id.ToString());
-                            break;
+                            {
+                                if (queryFilter.AlternateIdentifiers == null)
+                                    queryFilter.AlternateIdentifiers = new List<DomainIdentifier>();
+
+                                if (parameters.GetValues(i).Length > 1)
+                                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on identifier", null));
+
+                                var appDomain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid;
+                                StringBuilder actualIdParm = new StringBuilder();
+                                foreach (var itm in parameters.GetValues(i)[0].Split(','))
+                                {
+                                    var domainId = FhirMessageProcessorUtil.IdentifierFromToken(itm);
+                                    if (domainId.Domain == null)
+                                        domainId.Domain = appDomain;
+                                    else if (!domainId.Domain.Equals(appDomain))
+                                    {
+                                        var dtl = new UnrecognizedPatientDomainResultDetail(ApplicationContext.LocalizationService, domainId.Domain);
+                                        dtl.Location = "_id";
+                                        dtls.Add(dtl);
+                                        continue;
+                                    }
+                                    queryFilter.AlternateIdentifiers.Add(domainId);
+                                    actualIdParm.AppendFormat("{0},", itm);
+                                }
+
+                                retVal.ActualParameters.Add("_id", actualIdParm.ToString());
+                                break;
+                            }
                         case "active":
                             queryFilter.Status = Boolean.Parse(parameters.GetValues(i)[0]) ? StatusType.Active | StatusType.Completed : StatusType.Obsolete | StatusType.Nullified | StatusType.Cancelled | StatusType.Aborted;
                             retVal.ActualParameters.Add("active", (queryFilter.Status == (StatusType.Active | StatusType.Completed)).ToString());
@@ -106,6 +133,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 if (parameters.GetValues(i).Length > 1)
                                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on address", null));
 
+                                var actualAdParm = new StringBuilder();
                                 // Now values
                                 foreach (var adpn in parameters.GetValues(i)[0].Split(','))
                                 {
@@ -120,8 +148,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                                 }
                                             }
                                         });
-                                    retVal.ActualParameters.Add("address", adpn);
+                                    actualAdParm.AppendFormat("{0},", adpn);
                                 }
+
+                                retVal.ActualParameters.Add("address", actualAdParm.ToString());
                                 break;
                             }
                         case "birthdate":
@@ -204,11 +234,20 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                 if (queryFilter.AlternateIdentifiers == null)
                                     queryFilter.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
+                                StringBuilder actualIdParm = new StringBuilder();
                                 foreach (var val in parameters.GetValues(i)[0].Split(','))
                                 {
-                                    queryFilter.AlternateIdentifiers.Add(FhirMessageProcessorUtil.IdentifierFromToken(val));
-                                    retVal.ActualParameters.Add("identifier", val);
+                                    var domainId = FhirMessageProcessorUtil.IdentifierFromToken(val);
+                                    if (String.IsNullOrEmpty(domainId.Domain))
+                                    {
+                                        dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, "'identifier' must carry system, cannot perform generic query on identifiers", null, null));
+                                        continue;
+                                    }
+                                    queryFilter.AlternateIdentifiers.Add(domainId);
+                                    actualIdParm.AppendFormat("{0},", val);
                                 }
+
+                                retVal.ActualParameters.Add("identifier", actualIdParm.ToString()); 
                                 break;
                             }
                         case "provider.identifier": // maps to the target domains ? 
@@ -230,7 +269,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                             }
                         default:
-                            dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, String.Format("{0} is not a supported query parameter", parameters.GetKey(i)), null));
+                            if(retVal.ActualParameters.Get(parameters.GetKey(i)) == null)
+                                dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, String.Format("{0} is not a supported query parameter", parameters.GetKey(i)), null));
                             break;
                     }
                 }
@@ -268,26 +308,48 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             retVal.Id = person.Id;
             retVal.VersionId = person.VersionId;
-            retVal.Active = new FhirBoolean((person.Status & (StatusType.Active | StatusType.Completed)) != null);
+            retVal.Active = (person.Status & (StatusType.Active | StatusType.Completed)) != null;
 
             // Deceased time
             if (person.DeceasedTime != null)
             {
-                retVal.DeceasedDate = new Date(person.DeceasedTime.Value);
+                retVal.DeceasedDate = person.DeceasedTime.Value;
                 retVal.DeceasedDate.Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.DeceasedTime.Precision);
             }
 
             // Identifiers
             foreach(var itm in person.AlternateIdentifiers)
-                retVal.Identifier.Add(new Identifier() {
-                    System = new FhirUri(new Uri(FhirMessageProcessorUtil.TranslateCrDomain(itm.Domain))),
-                    Key = new FhirString(itm.Identifier)
-                });
+                retVal.Identifier.Add(base.ConvertDomainIdentifier(itm));
 
             // Birth order
             if (person.BirthOrder.HasValue)
-                retVal.MultipleBirth = new FhirInt(person.BirthOrder.Value);
+                retVal.MultipleBirth = (FhirInt)person.BirthOrder.Value;
 
+            retVal.Details = new Demographics();
+
+            // Names
+            if(person.Names != null)
+                foreach (var name in person.Names)
+                    retVal.Details.Name.Add(base.ConvertNameSet(name));
+            // Addresses
+            if (person.Addresses != null)
+                foreach (var addr in person.Addresses)
+                    retVal.Details.Address.AddRange(base.ConvertAddressSet(addr));
+            // Telecom
+            if (person.TelecomAddresses != null)
+                foreach (var tel in person.TelecomAddresses)
+                    retVal.Details.Telecom.AddRange(base.ConvertTelecom(tel));
+            // Gender
+            if (person.GenderCode != null)
+                retVal.Details.Gender = new CodeableConcept(new Uri("http://hl7.org/fhir/v3/AdministrativeGender"), person.GenderCode);
+            // DOB
+            retVal.Details.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
+
+            // Confidence?
+            var confidence = person.FindComponent(HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
+            if (confidence != null)
+                retVal.Extension.Add(ExtensionUtil.CreateConfidenceExtension(confidence));
+                        
             return retVal;
         }
 

@@ -9,6 +9,7 @@ using MARC.Everest.Connectors;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Resources;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using System.Xml;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -18,9 +19,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     public static class FhirMessageProcessorUtil
     {
 
-        // XHTML
-        public const string NS_XHTML = "http://www.w3.org/1999/xhtml";
-
+      
         // Message processors
         private static List<IFhirMessageProcessor> s_messageProcessors = new List<IFhirMessageProcessor>();
 
@@ -173,7 +172,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         var resource = processor.ProcessComponent(itm, details);
                         Uri resourceUrl = new Uri(String.Format("{0}/{1}", WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri, String.Format("{0}/@{1}/history/@{2}", processor.ResourceName, resource.Id, resource.VersionId)));
                         SyndicationItem feedResult = new SyndicationItem(String.Format("{0} id {1} version {2}", processor.ResourceName, resource.Id, resource.VersionId), null, resourceUrl);
-                        feedResult.Summary = new TextSyndicationContent(resource.Text.Div.OuterXml, TextSyndicationContentKind.Html);
+
+                        feedResult.Summary = new TextSyndicationContent(resource.Text.ToString(), TextSyndicationContentKind.Html);
                         feedResult.Content = new XmlSyndicationContent("application/fhir+xml", new SyndicationElementExtension(resource, new XmlSerializer(resource.GetType())));
                         feedResult.LastUpdatedTime = itm.Timestamp;
                         feedResult.PublishDate = DateTime.Now;
@@ -189,7 +189,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             {
                 var outcome = CreateOutcomeResource(result, details);
                 retVal.ElementExtensions.Add(outcome, new XmlSerializer(typeof(OperationOutcome)));
-                retVal.Description = new TextSyndicationContent(outcome.Text.Div.OuterXml, TextSyndicationContentKind.Html);
+                retVal.Description = new TextSyndicationContent(outcome.Text.ToString(), TextSyndicationContentKind.Html);
             }
             return retVal;
 

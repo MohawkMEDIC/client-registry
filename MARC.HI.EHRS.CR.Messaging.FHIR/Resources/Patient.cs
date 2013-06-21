@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes;
+using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
+using System.IO;
+using System.Xml;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
 {
@@ -79,6 +82,25 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
         /// </summary>
         [XmlElement("deceasedDate")]
         public Date DeceasedDate { get; set; }
+
+        /// <summary>
+        /// Generate the narrative
+        /// </summary>
+        internal override void WriteText(XmlWriter xw)
+        {
+
+            // Now output
+            xw.WriteStartElement("table", NS_XHTML);
+            xw.WriteElementString("caption", NS_XHTML, "Identifiers");
+            xw.WriteStartElement("tbody", NS_XHTML);
+            base.WriteTableRows(xw, "Identifiers", this.Identifier.ToArray());
+            xw.WriteEndElement(); // tbody
+            xw.WriteEndElement(); // table
+
+            if (this.Details != null)
+                this.Details.WriteText(xw);
+
+        }
 
     }
 }

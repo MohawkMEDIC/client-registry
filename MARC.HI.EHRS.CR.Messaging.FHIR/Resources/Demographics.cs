@@ -13,6 +13,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
     [XmlType("Demographics", Namespace = "http://hl7.org/fhir")]
     public class Demographics : Shareable
     {
+        public Demographics()
+        {
+            this.Identifier = new List<Identifier>();
+            this.Name = new List<HumanName>();
+            this.Telecom = new List<Telecom>();
+            this.Address = new List<Address>();
+            this.Language = new List<Language>();
+        }
 
         /// <summary>
         /// An identifier for the individual
@@ -65,6 +73,24 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
         [XmlElement("language")]
         public List<Language> Language { get; set; }
 
+        /// <summary>
+        /// Write text
+        /// </summary>
+        /// <param name="w"></param>
+        internal override void WriteText(System.Xml.XmlWriter xw)
+        {
+            // Now output
+            xw.WriteStartElement("table", NS_XHTML);
+            xw.WriteElementString("caption", NS_XHTML, "Demographic Information");
+            xw.WriteStartElement("tbody", NS_XHTML);
+            base.WriteTableRows(xw, "Name", this.Name.ToArray());
+            base.WriteTableRows(xw, "DOB", this.BirthDate);
+            base.WriteTableRows(xw, "Gender", this.Gender); 
+            base.WriteTableRows(xw, "Address", this.Address.ToArray());
+            base.WriteTableRows(xw, "Contacts", this.Telecom.ToArray());
+            xw.WriteEndElement(); // tbody
+            xw.WriteEndElement(); // table
+        }
 
     }
 }

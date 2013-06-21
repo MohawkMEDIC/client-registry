@@ -14,6 +14,17 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     {
 
         /// <summary>
+        /// Suffix
+        /// </summary>
+        public HumanName()
+        {
+            this.Family = new List<FhirString>();
+            this.Given = new List<FhirString>();
+            this.Prefix = new List<FhirString>();
+            this.Suffix = new List<FhirString>();
+        }
+
+        /// <summary>
         /// Get or sets the use
         /// </summary>
         [XmlElement("use")]
@@ -54,5 +65,38 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// </summary>
         [XmlElement("period")]
         public Period Period { get; set; }
+
+
+        /// <summary>
+        /// Write Text
+        /// </summary>
+        internal override void WriteText(System.Xml.XmlWriter w)
+        {
+            w.WriteStartElement("strong");
+            foreach (var n in this.Family)
+                w.WriteString(n + " ");
+            w.WriteEndElement(); //strong
+
+            w.WriteString(",");
+            if (this.Prefix.Count > 0)
+            {
+                w.WriteStartElement("em");
+                foreach (var n in this.Prefix)
+                    w.WriteString(n + " ");
+                w.WriteEndElement(); //strong
+            }
+
+            foreach (var n in this.Given)
+                w.WriteString(n + " ");
+
+            if (this.Suffix.Count > 0)
+            {
+                w.WriteStartElement("em");
+                foreach (var n in this.Suffix)
+                    w.WriteString(n + " ");
+                w.WriteEndElement(); //strong
+            }
+            w.WriteString(String.Format("({0})", this.Use));
+        }
     }
 }

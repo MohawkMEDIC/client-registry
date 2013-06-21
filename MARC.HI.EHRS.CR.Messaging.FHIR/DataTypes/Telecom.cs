@@ -33,5 +33,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         [XmlElement("period")]
         public Period Period { get; set; }
 
+        /// <summary>
+        /// Write text
+        /// </summary>
+        internal override void WriteText(System.Xml.XmlWriter w)
+        {
+            w.WriteStartElement("a", NS_XHTML);
+            w.WriteAttributeString("href", this.Value);
+            w.WriteString(this.Value.ToString());
+            w.WriteEndElement(); // a
+            w.WriteString(String.Format("({0})", this.Use));
+        }
     }
 }

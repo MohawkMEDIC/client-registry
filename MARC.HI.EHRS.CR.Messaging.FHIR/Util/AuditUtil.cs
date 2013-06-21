@@ -7,6 +7,9 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.ServiceModel.Channels;
 using System.Net;
+using System.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -19,7 +22,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create audit data
         /// </summary>
-        public static AuditData CreateAuditData(IEnumerable<VersionedDomainIdentifier> patientRecord)
+        public static AuditData CreateAuditData(IEnumerable<IComponent> patientRecord)
         {
             // Audit data
             AuditData retVal = null;
@@ -32,6 +35,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 userId = OperationContext.Current.Channel.RemoteAddress.Uri.OriginalString;
             else if (OperationContext.Current.ServiceSecurityContext != null && OperationContext.Current.ServiceSecurityContext.PrimaryIdentity != null)
                 userId = OperationContext.Current.ServiceSecurityContext.PrimaryIdentity.Name;
+            
 
             MessageProperties properties = OperationContext.Current.IncomingMessageProperties;
             RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
@@ -44,13 +48,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 case "GET":
                     {
                         retVal = new AuditData(DateTime.Now, ActionType.Read, OutcomeIndicator.Success, EventIdentifierType.Query, new CodeValue(
-                            String.Format("GET {0}", WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri.OriginalString), "http://marc-hi.ca/fhir/actions"));
+                            "GET", "urn:ietf:rfc:2616"));
 
                         // Audit actor for Patient Identity Source
                         retVal.Actors.Add(new AuditActorData()
                         {
                             UserIsRequestor = true,
-                            UserIdentifier = remoteEndpoint,
+                            UserIdentifier = userId,
                             ActorRoleCode = new List<CodeValue>() {
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         },
@@ -61,11 +65,21 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                         // Audit actor for FHIR service
                         retVal.Actors.Add(new AuditActorData()
                         {
-                            UserIdentifier = WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri.ToString(),
+                            UserIdentifier = WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri.ToString(),
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            UserName = Environment.UserName
+                        });
+
+                        // Serialize the query
+                        retVal.AuditableObjects.Add(new AuditableObject()
+                        {
+                            Type = AuditableObjectType.SystemObject,
+                            Role = AuditableObjectRole.Query,
+                            IDTypeCode = AuditableObjectIdType.SearchCritereon,
+                            QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri.Query))
                         });
 
                         break;
@@ -79,9 +93,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                     }
             }
 
+
             if(patientRecord != null)
-                foreach (var pat in patientRecord)
+                foreach (HealthServiceRecordContainer pat in patientRecord)
                 {
+                    if (!(pat is Person))
+                        continue;
+
                     // Construct the audit object
                     AuditableObject aud = new AuditableObject()
                     {
@@ -110,7 +128,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                             break;
                     }
 
-                    aud.ObjectId = String.Format("{1}^^^&{0}&ISO", pat.Domain, pat.Identifier);
+                    string domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid;
+
+                    aud.ObjectId = String.Format("{1}^^^&{0}&ISO", domain, pat.Id);
                     retVal.AuditableObjects.Add(aud);
 
                 }

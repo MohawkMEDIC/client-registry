@@ -102,6 +102,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.WcfCore
                 else
                     ; // todo: 
 
+                audit = AuditUtil.CreateAuditData(result.Results);
                 // Create the Atom feed
                 return new Atom10FeedFormatter(FhirMessageProcessorUtil.CreateFeed(result, details));
 

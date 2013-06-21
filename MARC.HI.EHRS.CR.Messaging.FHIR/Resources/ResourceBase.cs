@@ -6,6 +6,7 @@ using MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes;
 using System.Xml.Serialization;
 using System.Xml;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
+using System.IO;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
 {
@@ -51,19 +52,40 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Resources
         /// <summary>
         /// Generate a narrative
         /// </summary>
-        protected virtual Narrative GenerateNarrative()
+        protected Narrative GenerateNarrative()
         {
             // Create a new narrative
             Narrative retVal = new Narrative();
 
             XmlDocument narrativeContext = new XmlDocument();
             retVal.Status = new PrimitiveCode<string>("generated");
-            retVal.Div = narrativeContext.CreateElement("p", FhirMessageProcessorUtil.NS_XHTML);
-            retVal.Div.InnerText = String.Format("{0} - - No human readable text provided for this resource", this.GetType().Name);
+            StringWriter writer = new StringWriter();
+
+            using (XmlWriter xw = XmlWriter.Create(writer, new XmlWriterSettings() { ConformanceLevel = ConformanceLevel.Fragment }))
+            {
+                xw.WriteStartElement("body", NS_XHTML);
+                this.WriteText(xw);
+                xw.WriteEndElement();
+            }
+
+            narrativeContext.LoadXml(writer.ToString());
+
+            retVal.Div = new XmlElement[narrativeContext.DocumentElement.ChildNodes.Count];
+            for (int i = 0; i < retVal.Div.Elements.Length; i++)
+                retVal.Div.Elements[i] = narrativeContext.DocumentElement.ChildNodes[i] as XmlElement;
             return retVal;
         }
 
+        /// <summary>
+        /// Write text fragement
+        /// </summary>
+        internal override void WriteText(XmlWriter w)
+        {
+            w.WriteStartElement("p", NS_XHTML);
+            w.WriteString(this.GetType().Name + " - No text defined for resource");
+            w.WriteEndElement();
+        }
 
-
+       
     }
 }

@@ -99,6 +99,7 @@
     <Compile Include="DataTypes\Identifier.cs" />
     <Compile Include="DataTypes\HumanName.cs" />
     <Compile Include="Resources\ContactEntity.cs" />
+    <Compile Include="Resources\RawXmlWrapper.cs" />
     <Compile Include="Resources\Issue.cs" />
     <Compile Include="Resources\Language.cs" />
     <Compile Include="Resources\Narrative.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="ResultDetailClasses.cs" />
     <Compile Include="Util\AuditUtil.cs" />
     <Compile Include="Util\DataUtil.cs" />
+    <Compile Include="Util\ExtensionUtil.cs" />
     <Compile Include="WcfCore\FhirServiceBehavior.cs" />
     <Compile Include="WcfCore\IFhirServiceContract.cs" />
   </ItemGroup>

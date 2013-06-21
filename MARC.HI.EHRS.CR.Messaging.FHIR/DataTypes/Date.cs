@@ -56,6 +56,22 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         }
 
         /// <summary>
+        /// Convert this date to a date
+        /// </summary>
+        public static implicit operator DateTime(Date v)
+        {
+            return v.DateValue.Value;
+        }
+
+        /// <summary>
+        /// Convert this date to a date
+        /// </summary>
+        public static implicit operator Date(DateTime v)
+        {
+            return new Date(v) ;
+        }
+
+        /// <summary>
         /// Gets or sets the value
         /// </summary>
         public override string Value
@@ -88,6 +104,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
                 else
                     this.DateValue = DateTime.Parse(value);
             }
+        }
+
+        /// <summary>
+        /// Date string
+        /// </summary>
+        public override string ToString()
+        {
+            return this.XmlValue;
         }
     }
 

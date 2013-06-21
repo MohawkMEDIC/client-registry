@@ -47,5 +47,19 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         [XmlElement("display")]
         public FhirString Display { get; set; }
 
+        /// <summary>
+        /// Write text
+        /// </summary>
+        /// <param name="w"></param>
+        internal override void WriteText(System.Xml.XmlWriter w)
+        {
+            w.WriteString(this.Code);
+            if (this.System != null)
+            {
+                w.WriteString(" (");
+                this.System.WriteText(w);
+                w.WriteString(")");
+            }
+        }
     }
 }

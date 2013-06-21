@@ -50,6 +50,45 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         [XmlElement("assigner")]
         public Resource<Organization> Assigner { get; set; }
 
+        /// <summary>
+        /// Identifier
+        /// </summary>
+        internal override void WriteText(System.Xml.XmlWriter w)
+        {
+
+                w.WriteStartElement("strong", NS_XHTML);
+                if (this.Label == null)
+                    w.WriteString("UNKNOWN");
+                else
+                    this.Label.WriteText(w);
+                w.WriteString(":");
+                w.WriteEndElement();//strong
+
+
+
+            this.Key.WriteText(w);
+
+            // System in brackets
+            if (this.System != null)
+            {
+                w.WriteString("(");
+                this.System.WriteText(w);
+                w.WriteString(")");
+            }
+
+            // Italic (the name of the maintainer
+            if (this.Assigner != null)
+            {
+                w.WriteStartElement("br", NS_XHTML);
+                w.WriteEndElement();
+                w.WriteStartElement("em", NS_XHTML);
+                this.Assigner.Display.WriteText(w);
+                w.WriteEndElement();
+            }
+
+            
+            
+        }
 
     }
 }
