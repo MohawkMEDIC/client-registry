@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Globalization;
+using System.Xml;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
 {
@@ -95,14 +96,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
                         this.Precision = DatePrecision.Full;
 
                     // Correct parse
+                    
                     if (this.Precision == DatePrecision.Year)
-                        this.DateValue = DateTime.ParseExact(value, "yyyy", CultureInfo.InvariantCulture);
+                        this.DateValue = XmlConvert.ToDateTime(value, "yyyy");
                     else
-                        this.DateValue = DateTime.Parse(value);
+                        this.DateValue = XmlConvert.ToDateTime(value);
 
                 }
                 else
-                    this.DateValue = DateTime.Parse(value);
+                    this.DateValue = XmlConvert.ToDateTime(value);
             }
         }
 

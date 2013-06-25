@@ -147,11 +147,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 IComponentPersister instance = ci.Invoke(null) as IComponentPersister;
                 m_persisters.Add(instance.HandlesComponent, instance);
             }
-
             
         }
-
-
+        
         #region IDataPersistenceService Members
 
         /// <summary>
@@ -608,8 +606,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         }
         
         #endregion
-
-
+        
         /// <summary>
         /// Get the register
         /// </summary>

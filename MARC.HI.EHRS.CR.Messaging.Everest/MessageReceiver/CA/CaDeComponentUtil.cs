@@ -137,7 +137,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// </summary>
         internal MARC.Everest.RMIM.CA.R020402.PRPA_MT101102CA.IdentifiedEntity CreateIdentifiedEntity(RegistrationEvent verified, List<IResultDetail> dtls)
         {
-
+            
             // Get localization service
             ILocalizationService locale = m_context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using MARC.Everest.Connectors;
+using System.Xml;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
 {
@@ -38,23 +39,18 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         /// Gets or sets the XML Value of the data
         /// </summary>
         [XmlAttribute("value")]
-        public String XmlValue
+        public virtual String XmlValue
         {
             get {
 
-                if (this.Value is byte[])
-                    return Convert.ToBase64String((byte[])(object)this.Value);
-                else if (this.Value != null)
+                if (this.Value != null)
                     return this.Value.ToString();
                 else
                     return null;
             
             }
             set {
-                if (typeof(T) == typeof(byte[]))
-                    this.Value = (T)(object)Convert.FromBase64String(value);
-                else
-                    this.Value = MARC.Everest.Connectors.Util.Convert<T>(value);
+                this.Value = MARC.Everest.Connectors.Util.Convert<T>(value);
             }
         }
 
@@ -81,21 +77,53 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
     /// Represents a Uri
     /// </summary>
     [XmlType("decimal", Namespace = "http://hl7.org/fhir")]
-    public class FhirDecimal : Primitive<Decimal>
+    public class FhirDecimal : Primitive<Decimal?>
     {
         public FhirDecimal() : base() { }
         public FhirDecimal(Decimal value) : base(value) { }
         public static implicit operator FhirDecimal(Decimal v) { return new FhirDecimal(v); }
+        public override string XmlValue
+        {
+            get
+            {
+                if (this.Value != null)
+                    return XmlConvert.ToString(this.Value.Value);
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                    base.Value = XmlConvert.ToDecimal(value);
+                else
+                    this.Value = default(decimal);
+            }
+        }
     }
 
     /// <summary>
     /// Represents a boolean
     /// </summary>
     [XmlType("boolean", Namespace = "http://hl7.org/fhir")]
-    public class FhirBoolean : Primitive<Boolean> {
+    public class FhirBoolean : Primitive<Boolean?> {
         public FhirBoolean() : base() { }
         public FhirBoolean(Boolean value) : base(value) { }
         public static implicit operator FhirBoolean(bool v) { return new FhirBoolean(v); }
+        public override string XmlValue
+        {
+            get
+            {
+                if(this.Value != null)
+                    return XmlConvert.ToString(this.Value.Value);
+                return null;
+            }
+            set
+            {
+                if(value != null)
+                    base.Value = XmlConvert.ToBoolean(value);
+                else
+                    base.Value = null;
+            }
+        }
     }
     /// <summary>
     /// Represents a Uri
@@ -115,12 +143,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
             w.WriteString(this.Value.ToString());
             w.WriteEndElement(); // a
         }
+
     }
     /// <summary>
     /// Represents an int
     /// </summary>
     [XmlType("integer")]
-    public class FhirInt : Primitive<Int32> {
+    public class FhirInt : Primitive<Int32?> {
         public FhirInt() : base() { }
         public FhirInt(Int32 value) : base(value) { }
         public static implicit operator FhirInt(int v) { return new FhirInt(v); }
@@ -145,6 +174,21 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         public FhirBinary() : base() { }
         public FhirBinary(byte[] value) : base(value) { }
         public static implicit operator FhirBinary(byte[] v) { return new FhirBinary(v); }
-
+        public override string XmlValue
+        {
+            get
+            {
+                if (this.Value != null)
+                    return Convert.ToBase64String(this.Value);
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                    this.Value = Convert.FromBase64String(value);
+                else
+                    this.Value = null;
+            }
+        }
     }
 }
