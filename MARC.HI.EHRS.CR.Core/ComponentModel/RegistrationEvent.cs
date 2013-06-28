@@ -22,6 +22,7 @@ using System.Xml.Serialization;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using System.Collections.Generic;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
@@ -83,6 +84,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// </summary>
         [XmlElement("efft")]
         public TimestampSet EffectiveTime { get; set; }
+
 
         /// <summary>
         /// Identifies the status of the object

@@ -30,6 +30,7 @@ using NHapi.Base.Model;
 using NHapi.Base.Util;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Text.RegularExpressions;
+using MARC.HI.EHRS.CR.Core;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -288,7 +289,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             });
 
             // Filter data
-            RegistrationEvent filter = new RegistrationEvent(){ EventClassifier = RegistrationEventType.Register };
+            RegistrationEvent filter = new RegistrationEvent(){ EventClassifier = RegistrationEventType.Query };
             retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
@@ -404,7 +405,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             });
 
             // Filter data
-            RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Register };
+            RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Query };
             retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
@@ -658,7 +659,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
-            var aaut = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
+            var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
+            var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
 
             if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
@@ -674,8 +676,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PatientID.ID.Value))
                 subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.PatientID, aaut, dtls));
             if (pid.PatientIdentifierListRepetitionsUsed > 0)
+            {
+                // TODO: If the aaut matches a PID auth here then it is the primary
+                // and can be the only one that results in a create.
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
                     subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+            }
             else
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE063"), "PID^3"));
             // Alt patient identifiers
@@ -831,6 +837,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PatientDeathDateAndTime.TimeOfAnEvent.Value))
                 subject.DeceasedTime = CreateTimestampPart(pid.PatientDeathDateAndTime, dtls);
 
+            this.MarkScopedId(subject, aaut, dtls);
+
             // Add to subject
             retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
@@ -839,6 +847,38 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             return retVal;
 
         }
+
+        /// <summary>
+        /// Marks identifiers for which the sender has assigning authority
+        /// </summary>
+        private void MarkScopedId(Person subject, OidRegistrar.OidData aaut, List<IResultDetail> dtls)
+        {
+            // Scoper
+            if (aaut != null)
+            {
+                List<DomainIdentifier> scopedIds = subject.AlternateIdentifiers.FindAll(o => aaut.Oid == o.Domain);
+                if (scopedIds == null || scopedIds.Count == 0)
+                    dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE078"), null, null));
+                else
+                {
+                    foreach (var scopedId in scopedIds)
+                    {
+                        var scopedIdIndex = subject.AlternateIdentifiers.IndexOf(scopedId);
+                        subject.AlternateIdentifiers[scopedIdIndex] = new AuthorityAssignedDomainIdentifier()
+                        {
+                            Assigner = new RepositoryDevice() { AlternateIdentifier = new DomainIdentifier() { Domain = aaut.Oid }, Name = aaut.Name },
+                            Domain = scopedId.Domain,
+                            Identifier = scopedId.Identifier,
+                            AssigningAuthority = scopedId.AssigningAuthority
+                        };
+                    }
+                }
+            }
+            else
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE078"), null));
+
+        }
+
 
         /// <summary>
         /// Create address set
@@ -935,19 +975,18 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Creates a domain identifier using the specified assigning authority name if present
         /// </summary>
-        private DomainIdentifier CreateDomainIdentifier(NHapi.Model.V231.Datatype.CX id, string aaut, List<IResultDetail> dtls)
+        private DomainIdentifier CreateDomainIdentifier(NHapi.Model.V231.Datatype.CX id, OidRegistrar.OidData aaut, List<IResultDetail> dtls)
         {
             var retVal = CreateDomainIdentifier(id, dtls);
             // Assigning authority validation
             if (String.IsNullOrEmpty(retVal.AssigningAuthority) || String.IsNullOrEmpty(retVal.Domain)) // No aaut, so populate from config
             {
-                var oidData = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aaut));
-                if (oidData == null)
+                if (aaut == null)
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                 else
                 {
-                    retVal.AssigningAuthority = oidData.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
-                    retVal.Domain = oidData.Oid;
+                    retVal.AssigningAuthority = aaut.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
+                    retVal.Domain = aaut.Oid;
                 }
             }
             return retVal;

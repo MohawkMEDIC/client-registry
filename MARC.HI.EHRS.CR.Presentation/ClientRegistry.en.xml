@@ -135,6 +135,7 @@
   <string name="MSGE075">MSGE075 : Too many repetitions of query parameter</string>
   <string name="MSGE076">MSGE076 : Referenced identifier '{0}' has no known OID or assigning authority</string>
   <string name="MSGE077">MSGE077 : Unable to process any query parameters</string>
+  <string name="MSGE078">MSGE078 : Patient must carry at least one identifier from the registered provider organization</string>
   <!-- DATA PERSISTENCE ERRORS & WARNINGS -->
   <string name="DTPE000">General Data Translation / Persistence Error</string>
   <string name="DTPE001">DTPE001 : Persistence of event failed</string>

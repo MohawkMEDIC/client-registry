@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthorityAssignedDomainIdentifier.cs" />
     <Compile Include="ClientRegistryConfigurationProvider.cs" />
     <Compile Include="ComponentModel\Citizenship.cs" />
     <Compile Include="ComponentModel\Employment.cs" />

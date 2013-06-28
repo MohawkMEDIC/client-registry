@@ -59,7 +59,11 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// Replacement 
         /// </summary>
-        Replace = 0x20
+        Replace = 0x20,
+        /// <summary>
+        /// Query
+        /// </summary>
+        Query = 0x40
 
     }
 }

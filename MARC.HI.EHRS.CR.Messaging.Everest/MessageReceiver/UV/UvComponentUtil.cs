@@ -31,6 +31,7 @@ using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using System.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
+using MARC.HI.EHRS.CR.Core;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -812,8 +813,28 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             {
                 var scoper = CreateProviderOrganization(patient.ProviderOrganization, dtls);
                 retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry | HealthServiceRecordSiteRoleType.InformantTo, null);
-
+                // Verify that scoper matches at least one identifier present
+                var scopedIds = retVal.AlternateIdentifiers.FindAll(o => scoper.AlternateIdentifiers != null && scoper.AlternateIdentifiers.Exists(p => p.Domain == o.Domain));
+                if (scopedIds == null || scopedIds.Count == 0)
+                    dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE078"), null, null));
+                else
+                {
+                    foreach (var scopedId in scopedIds)
+                    {
+                        var scopedIdIndex = retVal.AlternateIdentifiers.IndexOf(scopedId);
+                        retVal.AlternateIdentifiers[scopedIdIndex] = new AuthorityAssignedDomainIdentifier()
+                        {
+                            Assigner = scoper,
+                            Domain = scopedId.Domain,
+                            Identifier = scopedId.Identifier,
+                            AssigningAuthority = scopedId.AssigningAuthority
+                        };
+                    }
+                }
             }
+            else
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE05A"), null));
+
 
             return retVal;
         }
@@ -821,7 +842,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Create a provider organization
         /// </summary>
-        private IComponent CreateProviderOrganization(MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization organization, List<IResultDetail> dtls)
+        private HealthcareParticipant CreateProviderOrganization(MARC.Everest.RMIM.UV.NE2008.COCT_MT150003UV03.Organization organization, List<IResultDetail> dtls)
         {
             HealthcareParticipant retVal = new HealthcareParticipant() { Classifier = HealthcareParticipant.HealthcareParticipantType.Organization };
 
@@ -1450,7 +1471,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201307UV02.QueryByParameter>(controlActProcess, dtls);
 
             // Filter
-            RegistrationEvent filter = new RegistrationEvent();
+            RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Query };
             retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
 
             // Parameter list validation
@@ -1510,7 +1531,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201306UV02.QueryByParameter>(controlActProcess, dtls);
 
             // Filter
-            RegistrationEvent filter = new RegistrationEvent();
+            RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Query };
             retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
 
             // Parameter list validation

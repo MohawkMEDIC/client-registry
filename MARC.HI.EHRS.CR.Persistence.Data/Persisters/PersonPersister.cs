@@ -29,6 +29,7 @@ using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -468,7 +469,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.ExecuteNonQuery(); // obsolete
                 }
 
-            // Add telecom
+            // Adding only permitted for authorized ids
+            if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
+                throw new ConstraintException("Cannot register an ID without appropriate assigning authority!");
+
+            // Add id
             if (altId.UpdateMode != UpdateModeType.Remove)
                 try
                 {
@@ -1507,7 +1512,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Identifiers
             if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.AlternateIdentifiers));
+                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.AlternateIdentifiers, registrationEvent == null || registrationEvent.EventClassifier == RegistrationEventType.Query ? "UNION" : "INTERSECT"));
 
             #region Match Parameters
             // Match names
@@ -1662,7 +1667,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Build filter on identifiers
         /// </summary>
-        private string BuildFilterIdentifiers(List<DomainIdentifier> identifiers)
+        private string BuildFilterIdentifiers(List<DomainIdentifier> identifiers, String mode)
         {
             StringBuilder retVal = new StringBuilder();
             foreach (var id in identifiers)
@@ -1683,7 +1688,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.AppendFormat("SELECT PSN_ID FROM PSN_TBL");
                 }
                 if (id != identifiers.Last())
-                    retVal.AppendFormat(" UNION ");
+                {
+                    retVal.AppendFormat(" {0} ", mode);
+                }
             }
             return retVal.ToString();
         }

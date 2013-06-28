@@ -82,6 +82,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         public FhirDecimal() : base() { }
         public FhirDecimal(Decimal value) : base(value) { }
         public static implicit operator FhirDecimal(Decimal v) { return new FhirDecimal(v); }
+        [XmlAttribute("value")]
         public override string XmlValue
         {
             get
@@ -108,6 +109,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         public FhirBoolean() : base() { }
         public FhirBoolean(Boolean value) : base(value) { }
         public static implicit operator FhirBoolean(bool v) { return new FhirBoolean(v); }
+        [XmlAttribute("value")]
         public override string XmlValue
         {
             get
@@ -174,6 +176,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes
         public FhirBinary() : base() { }
         public FhirBinary(byte[] value) : base(value) { }
         public static implicit operator FhirBinary(byte[] v) { return new FhirBinary(v); }
+        [XmlAttribute("value")]
         public override string XmlValue
         {
             get

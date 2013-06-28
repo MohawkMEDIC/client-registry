@@ -784,6 +784,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     //retVal.Append(" AND HSR_ID IN (");
                     int ccomp = 0;
                     queryContainer.SortComponentsByRole();
+                    bool needsClose = false;
                     foreach (HealthServiceRecordComponent comp in queryContainer.Components)
                     {
                         string verb = " AND HSR_ID IN (";
@@ -793,7 +794,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         if (ccomp++ < queryContainer.Components.Count)
                         {
                             string subFilter = BuildQueryFilter(comp, context, forceExact);
-                            if (!String.IsNullOrEmpty(subFilter)) retVal.AppendFormat(" {0} {1} ", verb, subFilter);
+                            if (!String.IsNullOrEmpty(subFilter))
+                            {
+                                retVal.AppendFormat(" {0} {1} ", verb, subFilter);
+                                needsClose = true;
+                            }
                         }
                         else
                         {
@@ -806,7 +811,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     if (retVal.ToString().EndsWith(" AND HSR_ID IN ( "))
                         retVal.Remove(retVal.Length - 11, 11);
 
-                    retVal.Append(")");
+                    if(needsClose)
+                        retVal.Append(")");
 
                     // Clean Up
                     if (retVal.ToString().EndsWith("INTERSECT ()"))
