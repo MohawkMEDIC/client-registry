@@ -14,6 +14,7 @@ using MARC.HI.EHRS.SVC.DecisionSupport;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.PolicyEnforcement;
+using MARC.HI.EHRS.SVC.Messaging.FHIR;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -26,93 +27,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Internal query structure
         /// </summary>
-        public class FhirQuery
+        public class ClientRegistryFhirQuery : FhirQuery
         {
-            /// <summary>
-            /// FHIR query
-            /// </summary>
-            public FhirQuery()
-            {
-                this.ActualParameters = new NameValueCollection();
-                this.Filter = null;
-                this.QueryId = Guid.Empty;
-                this.IncludeHistory = false;
-                this.MinimumDegreeMatch = 1.0f;
-                this.TargetDomains = new List<DomainIdentifier>();
-                this.Start = 0;
-                this.Quantity = 25;
-            }
-
-            /// <summary>
-            /// Get the actual parameters that could be serviced
-            /// </summary>
-            public NameValueCollection ActualParameters;
-
             /// <summary>
             /// The filter
             /// </summary>
             public HealthServiceRecordContainer Filter;
 
-            /// <summary>
-            /// Identifies the query identifier
-            /// </summary>
-            public Guid QueryId;
-
-            /// <summary>
-            /// True if the query is merely a sumary
-            /// </summary>
-            public bool IncludeHistory;
-
-            /// <summary>
-            /// Gets or sets the target domains
-            /// </summary>
-            public List<DomainIdentifier> TargetDomains;
-
-            /// <summary>
-            /// Minimum degree natcg
-            /// </summary>
-            public float MinimumDegreeMatch;
-
-            /// <summary>
-            /// Start result
-            /// </summary>
-            public int Start;
-
-            /// <summary>
-            /// The Quantity
-            /// </summary>
-            public int Quantity;
-
         }
 
-        /// <summary>
-        /// Query results
-        /// </summary>
-        public class FhirQueryResult
-        {
-            /// <summary>
-            /// The query the result is servicing
-            /// </summary>
-            public FhirQuery Query;
-
-            /// <summary>
-            /// Gets the results
-            /// </summary>
-            public List<IComponent> Results;
-
-            /// <summary>
-            /// Business violations
-            /// </summary>
-            public List<DetectedIssue> Issues;
-
-            /// <summary>
-            /// Gets the total results
-            /// </summary>
-            public int TotalResults;
-
-
-
-        }
+       
 
         /// <summary>
         /// Query the data store

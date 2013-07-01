@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MARC.Everest.DataTypes.Interfaces;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -50,11 +51,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Date precisions
         /// </summary>
-        public static readonly Dictionary<String, MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes.DatePrecision> DATE_PRECISION = new Dictionary<string, DataTypes.DatePrecision>()
+        public static readonly Dictionary<String, DatePrecision> DATE_PRECISION = new Dictionary<string, DatePrecision>()
         {
-            { "D", MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes.DatePrecision.Day },
-            { "M", MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes.DatePrecision.Month },
-            { "Y", MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes.DatePrecision.Year }
+            { "D", DatePrecision.Day },
+            { "M", DatePrecision.Month },
+            { "Y", DatePrecision.Year }
         };
 
         

@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MARC.HI.EHRS.CR.Messaging.FHIR.Resources;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.Services;
-using MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
+using MARC.HI.EHRS.SVC.Messaging.FHIR;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -48,11 +50,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse parameters
         /// </summary>
-        public override Util.DataUtil.FhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
+        public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
 
-            Util.DataUtil.FhirQuery retVal = base.ParseQuery(parameters, dtls);
+            Util.DataUtil.ClientRegistryFhirQuery retVal = base.ParseQuery(parameters, dtls);
 
             var queryFilter = new Person();
             //MARC.HI.EHRS.SVC.Core.DataTypes.AddressSet addressFilter = null;
@@ -75,7 +77,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 StringBuilder actualIdParm = new StringBuilder();
                                 foreach (var itm in parameters.GetValues(i)[0].Split(','))
                                 {
-                                    var domainId = FhirMessageProcessorUtil.IdentifierFromToken(itm);
+                                    var domainId = MessageUtil.IdentifierFromToken(itm);
                                     if (domainId.Domain == null)
                                         domainId.Domain = appDomain;
                                     else if (!domainId.Domain.Equals(appDomain))
@@ -214,7 +216,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 if (value.Contains(",") || parameters.GetValues(i).Length > 1)
                                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform OR or AND on gender", null));
 
-                                var gCode = FhirMessageProcessorUtil.CodeFromToken(value);
+                                var gCode = MessageUtil.CodeFromToken(value);
                                 if (gCode.Code == "UNK") // Null Flavor
                                     retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/NullFlavor!UNK"));
                                 else if (!new List<String>() { "M", "F", "UN" }.Contains(gCode.Code))
@@ -237,7 +239,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 StringBuilder actualIdParm = new StringBuilder();
                                 foreach (var val in parameters.GetValues(i)[0].Split(','))
                                 {
-                                    var domainId = FhirMessageProcessorUtil.IdentifierFromToken(val);
+                                    var domainId = MessageUtil.IdentifierFromToken(val);
                                     if (String.IsNullOrEmpty(domainId.Domain))
                                     {
                                         dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, "'identifier' must carry system, cannot perform generic query on identifiers", null, null));
@@ -255,7 +257,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                 foreach (var val in parameters.GetValues(i)[0].Split(','))
                                 {
-                                    var did = new DomainIdentifier() { Domain = FhirMessageProcessorUtil.IdentifierFromToken(val).Domain };
+                                    var did = new DomainIdentifier() { Domain = MessageUtil.IdentifierFromToken(val).Domain };
                                     if (String.IsNullOrEmpty(did.Domain))
                                     {
                                         dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, "Provider organization identifier unknown", null));
@@ -263,7 +265,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     }
 
                                     queryFilter.AlternateIdentifiers.Add(did);
-                                    retVal.ActualParameters.Add("provider.identifier", String.Format("{0}!", FhirMessageProcessorUtil.TranslateCrDomain(did.Domain)));
+                                    retVal.ActualParameters.Add("provider.identifier", String.Format("{0}!", MessageUtil.TranslateDomain(did.Domain)));
                                 }
                                 break;
 
@@ -291,7 +293,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Process resource
         /// </summary>
-        public override System.ComponentModel.IComponent ProcessResource(Resources.ResourceBase resource, List<IResultDetail> dtls)
+        public override System.ComponentModel.IComponent ProcessResource(ResourceBase resource, List<IResultDetail> dtls)
         {
             throw new NotImplementedException();
         }
@@ -300,7 +302,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// Process components
         /// </summary>
         /// TODO: make this more robust
-        public override Resources.ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
+        public override ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
         {
             // Setup references
             Patient retVal = new Patient();

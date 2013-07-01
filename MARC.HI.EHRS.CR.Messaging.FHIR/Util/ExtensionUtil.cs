@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MARC.HI.EHRS.CR.Messaging.FHIR.DataTypes;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.DataTypes;
 using MARC.Everest.Attributes;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {

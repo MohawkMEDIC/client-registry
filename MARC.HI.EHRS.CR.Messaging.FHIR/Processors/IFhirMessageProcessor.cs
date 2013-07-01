@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Collections.Specialized;
-using MARC.HI.EHRS.CR.Messaging.FHIR.Resources;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
 using MARC.Everest.Connectors;
+using MARC.HI.EHRS.SVC.Messaging.FHIR;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -34,7 +35,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse a query
         /// </summary>
-        DataUtil.FhirQuery ParseQuery(NameValueCollection parameters, List<IResultDetail> dtls);
+        DataUtil.ClientRegistryFhirQuery ParseQuery(NameValueCollection parameters, List<IResultDetail> dtls);
 
         /// <summary>
         /// Process a resource

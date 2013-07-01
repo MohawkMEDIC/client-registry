@@ -47,6 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.FHIR">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.FHIR.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll</HintPath>
@@ -65,61 +68,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationContext.cs" />
-    <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
-    <Compile Include="Configuration\FhirServiceConfiguration.cs" />
-    <Compile Include="DataTypes\Attachment.cs" />
-    <Compile Include="DataTypes\Choice.cs" />
-    <Compile Include="DataTypes\CodeableConcept.cs" />
-    <Compile Include="DataTypes\Coding.cs" />
-    <Compile Include="DataTypes\Date.cs" />
-    <Compile Include="DataTypes\Extension.cs" />
-    <Compile Include="DataTypes\IdRef.cs" />
-    <Compile Include="DataTypes\Instant.cs" />
-    <Compile Include="DataTypes\Period.cs" />
-    <Compile Include="DataTypes\PrimitiveCode.cs" />
-    <Compile Include="DataTypes\Quantity.cs" />
-    <Compile Include="DataTypes\Range.cs" />
-    <Compile Include="DataTypes\Ratio.cs" />
-    <Compile Include="DataTypes\Schedule.cs" />
-    <Compile Include="DataTypes\ScheduleRepeat.cs" />
-    <Compile Include="DataTypes\Shareable.cs" />
-    <Compile Include="FhirMessageHandler.cs" />
-    <Compile Include="PersistenceResultDetail.cs" />
     <Compile Include="Processors\FhirMessageProcessorUtil.cs" />
     <Compile Include="Processors\HackishCodeMapping.cs" />
     <Compile Include="Processors\IFhirMessageProcessor.cs" />
-    <Compile Include="Processors\MessageProcessorBase.cs" />
+    <Compile Include="Processors\ResourceHandlerBase.cs" />
     <Compile Include="Processors\PatientMessageProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DataTypes\Address.cs" />
-    <Compile Include="Resources\Accreditation.cs" />
-    <Compile Include="Resources\Animal.cs" />
-    <Compile Include="Resources\Contact.cs" />
-    <Compile Include="DataTypes\Identifier.cs" />
-    <Compile Include="DataTypes\HumanName.cs" />
-    <Compile Include="Resources\ContactEntity.cs" />
-    <Compile Include="Resources\RawXmlWrapper.cs" />
-    <Compile Include="Resources\Issue.cs" />
-    <Compile Include="Resources\Language.cs" />
-    <Compile Include="Resources\Narrative.cs" />
-    <Compile Include="Resources\OperationOutcome.cs" />
-    <Compile Include="Resources\Organization.cs" />
-    <Compile Include="Resources\Patient.cs" />
-    <Compile Include="DataTypes\Primitive.cs" />
-    <Compile Include="Resources\Demographics.cs" />
-    <Compile Include="Resources\Picture.cs" />
-    <Compile Include="Resources\Practictioner.cs" />
-    <Compile Include="Resources\Qualification.cs" />
-    <Compile Include="Resources\ResourceBase.cs" />
-    <Compile Include="Resources\Resource.cs" />
-    <Compile Include="DataTypes\Telecom.cs" />
-    <Compile Include="ResultDetailClasses.cs" />
-    <Compile Include="Util\AuditUtil.cs" />
     <Compile Include="Util\DataUtil.cs" />
     <Compile Include="Util\ExtensionUtil.cs" />
-    <Compile Include="WcfCore\FhirServiceBehavior.cs" />
-    <Compile Include="WcfCore\IFhirServiceContract.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
