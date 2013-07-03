@@ -12,6 +12,7 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR.Handlers;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -41,6 +42,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse query
         /// </summary>
+        [SearchParameterProfile(Name = "stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
+        [SearchParameterProfile(Name = "_count", Type = "integer", Description = "The number of results to return in one page")]
+        [SearchParameterProfile(Name = "page", Type = "integer", Description = "The page number of results to return")]
+        [SearchParameterProfile(Name = "confidence", Type = "integer", Description = "The confidence of the returned results (0..100)")]
         public virtual MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
 
@@ -65,7 +70,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                              retVal.ActualParameters.Add("page", (retVal.Start / retVal.Quantity).ToString());
                              break;
                          case "confidence":
-                             retVal.MinimumDegreeMatch = (float)Decimal.Parse(parameters.GetValues(i)[0]);
+                             retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
                              retVal.ActualParameters.Add("confidence", retVal.MinimumDegreeMatch.ToString());
                              break;
                      }
@@ -272,7 +277,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Delete a resource
         /// </summary>
-        public SVC.Messaging.FHIR.FhirOperationResult Delete(decimal id, SVC.Core.Services.DataPersistenceMode mode)
+        public SVC.Messaging.FHIR.FhirOperationResult Delete(string id, SVC.Core.Services.DataPersistenceMode mode)
         {
             throw new NotImplementedException();
         }
@@ -294,6 +299,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Process incoming request
                 var queryObject = resourceProcessor.ParseQuery(parameters, result.Details);
                 result.Query = queryObject;
+                result.Details = new List<IResultDetail>();
 
                 // sanity check
                 if (result.Query.ActualParameters.Count == 0)
@@ -314,7 +320,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 if (result.Query.QueryId == Guid.Empty)
                 {
                     result.Query.QueryId = Guid.NewGuid();
-                    result = DataUtil.Query(result.Query, result.Details);
+                    result = DataUtil.Query(queryObject, result.Details);
                 }
                 else
                     ; // todo: 
@@ -336,17 +342,17 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             return result;
         }
 
-        public SVC.Messaging.FHIR.FhirOperationResult Read(decimal id, decimal versionId)
+        public SVC.Messaging.FHIR.FhirOperationResult Read(string id, string versionId)
         {
             throw new NotImplementedException();
         }
 
-        public SVC.Messaging.FHIR.FhirOperationResult Update(decimal id, SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
+        public SVC.Messaging.FHIR.FhirOperationResult Update(string id, SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
         {
             throw new NotImplementedException();
         }
 
-        public SVC.Messaging.FHIR.FhirOperationResult Validate(decimal id, SVC.Messaging.FHIR.Resources.ResourceBase target)
+        public SVC.Messaging.FHIR.FhirOperationResult Validate(string id, SVC.Messaging.FHIR.Resources.ResourceBase target)
         {
             throw new NotImplementedException();
         }

@@ -15,6 +15,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.PolicyEnforcement;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
+using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -41,7 +42,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Query the data store
         /// </summary>
-        public static FhirQueryResult Query(FhirQuery querySpec, List<IResultDetail> details)
+        public static FhirQueryResult Query(ClientRegistryFhirQuery querySpec, List<IResultDetail> details)
         {
             // Get the services
             IDataPersistenceService persistence = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
@@ -58,14 +59,22 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 FhirQueryResult result = new FhirQueryResult();
                 result.Query = querySpec;
                 result.Issues = new List<DetectedIssue>();
-
+                result.Details = details;
+                result.Results = new List<SVC.Messaging.FHIR.Resources.ResourceBase>(querySpec.Quantity);
+                
                 // Perform the query
                 var identifiers = registration.QueryRecord(querySpec.Filter);
 
-                // Fetch the records async
+                // Fetch the records async and convert
                 List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
-
-                result.Results = GetRecordsAsync(identifiers, retRecordId, result.Issues, details, querySpec);
+                foreach (HealthServiceRecordContainer res in GetRecordsAsync(identifiers, retRecordId, result.Issues, details, querySpec))
+                {
+                    var processor = FhirMessageProcessorUtil.GetComponentProcessor(res.GetType());
+                    if (processor == null)
+                        result.Details.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format("Will not include {1}^^^&{2}&ISO in result set, cannot find converter for {0}", res.GetType().Name, res.Id, identifiers[0].Domain), null, null));
+                    else
+                        result.Results.Add(processor.ProcessComponent(res, details));
+                }
 
                 // Sort control?
                 // TODO: Support sort control
@@ -91,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// </summary>
         /// <param name="recordIds">Record identifiers to retrieve</param>
         /// <param name="retRecordId">An array of record identiifers actually returned</param>
-        internal static List<IComponent> GetRecordsAsync(VersionedDomainIdentifier[] recordIds, List<VersionedDomainIdentifier> retRecordId, List<DetectedIssue> issues, List<IResultDetail> dtls, FhirQuery qd)
+        internal static List<IComponent> GetRecordsAsync(VersionedDomainIdentifier[] recordIds, List<VersionedDomainIdentifier> retRecordId, List<DetectedIssue> issues, List<IResultDetail> dtls, ClientRegistryFhirQuery qd)
         {
 
             IDecisionSupportService decisionSupport = ApplicationContext.CurrentContext.GetService(typeof(IDecisionSupportService)) as IDecisionSupportService;
@@ -188,7 +197,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Get record
         /// </summary>
-        internal static HealthServiceRecordComponent GetRecord(VersionedDomainIdentifier recordId, List<IResultDetail> dtls, List<DetectedIssue> issues, FhirQuery qd)
+        internal static HealthServiceRecordComponent GetRecord(VersionedDomainIdentifier recordId, List<IResultDetail> dtls, List<DetectedIssue> issues, ClientRegistryFhirQuery qd)
         {
             try
             {

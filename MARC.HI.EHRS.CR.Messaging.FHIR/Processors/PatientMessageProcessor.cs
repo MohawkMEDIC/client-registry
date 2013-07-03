@@ -13,12 +13,15 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
     /// <summary>
     /// Message processor for patients
     /// </summary>
+    [Profile(ProfileId = "pix-fhir")]
+    [ResourceProfile(Resource = typeof(Patient), Name = "Client registry patient profile")]
     public class PatientMessageProcessor : MessageProcessorBase, IFhirMessageProcessor
     {
         #region IFhirMessageProcessor Members
@@ -50,6 +53,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse parameters
         /// </summary>
+        [SearchParameterProfile(Name = "_id", Type = "token", Description = "Client registry assigned id for the patient (one repetition only)")]
+        [SearchParameterProfile(Name = "active", Type = "token", Description = "Whether the patient record is active (one repetition only)")]
+        [SearchParameterProfile(Name = "address", Type = "string", Description = "An address in any kind of address part (only supports OR see documentation)")]
+        [SearchParameterProfile(Name = "birthdate", Type = "date", Description = "The patient's date of birth (only supports OR)")]
+        [SearchParameterProfile(Name = "family", Type = "string", Description = "One of the patient's family names (only supports AND)")]
+        [SearchParameterProfile(Name = "given", Type = "string", Description = "One of the patient's given names (only supports AND)")]
+        [SearchParameterProfile(Name = "gender", Type = "token", Description = "Gender of the patient (one repetition only)")]
+        [SearchParameterProfile(Name = "identifier", Type = "token", Description = "A patient identifier (only supports OR)")]
+        [SearchParameterProfile(Name = "provider.identifier", Type = "token", Description = "One of the organizations to which this person is a patient (only supports OR)")]
         public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -135,22 +147,25 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 if (parameters.GetValues(i).Length > 1)
                                     dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on address", null));
 
+
                                 var actualAdParm = new StringBuilder();
-                                // Now values
-                                foreach (var adpn in parameters.GetValues(i)[0].Split(','))
+                                foreach(var ad in parameters.GetValues(i))
                                 {
-                                    foreach (var kv in HackishCodeMapping.ADDRESS_PART)
-                                        queryFilter.Addresses.Add(new SVC.Core.DataTypes.AddressSet()
-                                        {
-                                            Use = SVC.Core.DataTypes.AddressSet.AddressSetUse.Search,
-                                            Parts = new List<SVC.Core.DataTypes.AddressPart>() {
-                                                new MARC.HI.EHRS.SVC.Core.DataTypes.AddressPart() {
-                                                    PartType = kv.Value,
-                                                    AddressValue = adpn
+                                    foreach (var adpn in parameters.GetValues(i)[0].Split(','))
+                                    {
+                                        foreach (var kv in HackishCodeMapping.ADDRESS_PART)
+                                            queryFilter.Addresses.Add(new SVC.Core.DataTypes.AddressSet()
+                                            {
+                                                Use = SVC.Core.DataTypes.AddressSet.AddressSetUse.Search,
+                                                Parts = new List<SVC.Core.DataTypes.AddressPart>() {
+                                                    new MARC.HI.EHRS.SVC.Core.DataTypes.AddressPart() {
+                                                        PartType = kv.Value,
+                                                        AddressValue = adpn
+                                                    }
                                                 }
-                                            }
-                                        });
-                                    actualAdParm.AppendFormat("{0},", adpn);
+                                            });
+                                        actualAdParm.AppendFormat("{0},", adpn);
+                                    }
                                 }
 
                                 retVal.ActualParameters.Add("address", actualAdParm.ToString());
@@ -302,6 +317,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// Process components
         /// </summary>
         /// TODO: make this more robust
+        [ElementProfile(Property = "Link", MaxOccurs = 0, ShortDescription = "This registry only supports links through 'contact' relationships")]
+        [ElementProfile(Property = "Animal", MaxOccurs = 0, ShortDescription = "This registry only supports human patients")]
+        [ElementProfile(HostType = typeof(Contact), Property = "Organization", MaxOccurs = 0, ShortDescription = "This registry only supports relationships with 'Person' objects")]
+        [ElementProfile(HostType = typeof(Demographics), Property = "Photo", MaxOccurs = 0, ShortDescription = "This registry does not support the storage of photographs directly")]
         public override ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
         {
             // Setup references
