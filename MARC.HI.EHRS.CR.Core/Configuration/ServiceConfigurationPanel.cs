@@ -29,6 +29,7 @@ using System.IO;
 using System.Reflection;
 using MARC.HI.EHRS.CR.Core.Configuration;
 using System.DirectoryServices.AccountManagement;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.SVC.Presentation.Configuration
 {
@@ -48,7 +49,7 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         public ServiceConfigurationPanel()
         {
             this.Mode = ServiceTools.ServiceBootFlag.AutoStart;
-            
+            OidRegistrar.ExtendedAttributes.Add("GloballyAssignable", typeof(bool));
         }
 
         /// <summary>

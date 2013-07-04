@@ -96,6 +96,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             ValueData = (byte[])rdr["ext_data"]
                         };
                           
+
                         // Sanity check
                         if (ext.Value.GetType().AssemblyQualifiedName != Convert.ToString(rdr["ext_typ"]))
                             throw new ConstraintException();

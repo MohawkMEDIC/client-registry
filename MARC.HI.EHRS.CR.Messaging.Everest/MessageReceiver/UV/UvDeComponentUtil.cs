@@ -506,7 +506,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         {
             var retVal = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.PersonalRelationship();
 
-            
+          
             // Identifier
             retVal.Id = new SET<II>(new II(this.m_configService.OidRegistrar.GetOid("CR_PRID").Oid, rel.Id.ToString()));
             if (!String.IsNullOrEmpty(rel.RelationshipKind))
@@ -519,31 +519,41 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Relationship holder
             var holder = new MARC.Everest.RMIM.UV.NE2008.COCT_MT030007UV.Person();
-            if (rel.GenderCode != null)
-                holder.AdministrativeGenderCode = Util.Convert<AdministrativeGender>(rel.GenderCode);
 
-            // Birth
-            if (rel.BirthTime != null)
-                holder.BirthTime = CreateTS(rel.BirthTime, details);
-
-            holder.Id = CreateIISet(rel.AlternateIdentifiers, details);
-            // Name
-            if (rel.LegalName != null)
-                holder.Name = new BAG<EN>() { CreatePN(rel.LegalName, details) };
-            // Address
-            if (rel.PerminantAddress != null)
-                retVal.Addr = new BAG<AD>() { CreateAD(rel.PerminantAddress, details) };
-
-            // Telecom
-            if (rel.TelecomAddresses != null)
+            // Subject identifier
+            var person = rel.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            if (person == null)
+                holder.NullFlavor = NullFlavor.NoInformation;
+            else
             {
-                retVal.Telecom = new BAG<TEL>();
-                foreach (var tel in rel.TelecomAddresses)
-                    retVal.Telecom.Add(CreateTEL(tel, details));
+                if (person.GenderCode != null)
+                    holder.AdministrativeGenderCode = Util.Convert<AdministrativeGender>(person.GenderCode);
+
+                // Birth
+                if (person.BirthTime != null)
+                    holder.BirthTime = CreateTS(person.BirthTime, details);
+
+                holder.Id = CreateIISet(person.AlternateIdentifiers, details);
+                // Names 
+                holder.Name = new BAG<EN>();
+                foreach (var name in person.Names)
+                    holder.Name.Add(CreatePN(rel.LegalName, details));
+
+                // Address
+                retVal.Addr = new BAG<AD>();
+                foreach (var addr in person.Addresses)
+                    retVal.Addr.Add(CreateAD(rel.PerminantAddress, details));
+
+                // Telecom
+                if (person.TelecomAddresses != null)
+                {
+                    retVal.Telecom = new BAG<TEL>();
+                    foreach (var tel in person.TelecomAddresses)
+                        retVal.Telecom.Add(CreateTEL(tel, details));
+                }
+
+                retVal.SetRelationshipHolder1(holder);
             }
-
-            retVal.SetRelationshipHolder1(holder);
-
             return retVal;
         }
     }

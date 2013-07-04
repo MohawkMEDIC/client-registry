@@ -33,6 +33,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         Type ComponentType { get; }
 
         /// <summary>
+        /// Gets the name of the oid in the configuration for the root (used by the dpl)
+        /// </summary>
+        String DataDomain { get; }
+
+        /// <summary>
         /// Parse a query
         /// </summary>
         DataUtil.ClientRegistryFhirQuery ParseQuery(NameValueCollection parameters, List<IResultDetail> dtls);

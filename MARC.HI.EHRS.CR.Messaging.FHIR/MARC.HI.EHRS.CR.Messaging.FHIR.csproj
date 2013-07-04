@@ -35,6 +35,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.Everest.RMIM.CA.R020402, Version=1.0.4685.37452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.UV.NE2008, Version=1.0.4685.37872, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.UV.NE2008.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
@@ -73,10 +81,12 @@
     <Compile Include="Processors\IFhirMessageProcessor.cs" />
     <Compile Include="Processors\MessageProcessorBase.cs" />
     <Compile Include="Processors\PatientMessageProcessor.cs" />
-    <Compile Include="Processors\ValueSetMessageProcessor.cs" />
+    <Compile Include="Processors\ProfileResourceHandler.cs" />
+    <Compile Include="Processors\ValueSetResourceHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\DataUtil.cs" />
     <Compile Include="Util\ExtensionUtil.cs" />
+    <Compile Include="Util\ProfileUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">

@@ -470,7 +470,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
 
             // Adding only permitted for authorized ids
-            if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
+            var oidData = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(altId.Domain);
+            if (oidData == null || !oidData.Attributes.Exists(a => a.Key == "GloballyAssignable" && Boolean.Parse(a.Value)))
+                Trace.TraceInformation("Registering new globally assignable identifier from domain {0}", oidData.Name);
+            else if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
                 throw new ConstraintException("Cannot register an ID without appropriate assigning authority!");
 
             // Add id
@@ -725,7 +728,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         // Other fetched data
                         decimal? birthTs = null,
                             deceasedTs = null,
-                            religionCode = null;
+                            religionCode = null,
+                            replacesVersion = null;
                         
                         if (rdr["brth_ts"] != DBNull.Value)
                             birthTs = Convert.ToDecimal(rdr["brth_ts"]);
@@ -733,7 +737,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             deceasedTs = Convert.ToDecimal(rdr["dcsd_ts"]);
                         if (rdr["rlgn_cd_id"] != DBNull.Value)
                             religionCode = Convert.ToDecimal(rdr["rlgn_cd_id"]);
-
+                        if (rdr["rplc_vrsn_id"] != DBNull.Value)
+                            replacesVersion = Convert.ToDecimal(rdr["rplc_vrsn_id"]);
                         // Close the reader and read dependent values
                         rdr.Close();
 
@@ -761,6 +766,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         if(!retVal.AlternateIdentifiers.Exists(o=>o.Domain == domainIdentifier.Domain && o.Identifier == domainIdentifier.Identifier))
                             retVal.AlternateIdentifiers.Add(domainIdentifier);
 
+                        // Person is replaced?
+                        if (replacesVersion.HasValue && !loadFast)
+                        {
+                            // Older version of the person
+                            var olderVersionPerson = this.GetPerson(conn, tx, new VersionedDomainIdentifier()
+                            {
+                                Domain = domainIdentifier.Domain,
+                                Identifier = domainIdentifier.Identifier,
+                                Version = replacesVersion.ToString()
+                            }, loadFast);
+                            if(olderVersionPerson != null)
+                                retVal.Add(olderVersionPerson, "RPLC", HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                        }
                         return retVal;
                     }
                     else

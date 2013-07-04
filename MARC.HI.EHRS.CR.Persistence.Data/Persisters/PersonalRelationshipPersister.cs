@@ -170,6 +170,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers);
             if (clientDataRetVal.Names != null)
                 retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
+            retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             //if (!loadFast)
             //{
             //    retVal.BirthTime = clientDataRetVal.BirthTime;
@@ -203,8 +204,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         rltdId = Convert.ToDecimal(rdr["trg_psn_id"]);
                     }
                 }
-
-        
+                
                 // Append to the container
                 if (container is Person)
                     (container as Person).Add(retVal, Guid.NewGuid().ToString(), MARC.HI.EHRS.SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf, null);

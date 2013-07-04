@@ -14,6 +14,7 @@ using MARC.HI.EHRS.CR.Messaging.FHIR.Util;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
+using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -48,6 +49,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         public override Type ComponentType
         {
             get { return typeof(Person); }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override string DataDomain
+        {
+            get { return ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid; }
         }
 
         /// <summary>
@@ -264,7 +273,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     actualIdParm.AppendFormat("{0},", val);
                                 }
 
-                                retVal.ActualParameters.Add("identifier", actualIdParm.ToString()); 
+                                if(actualIdParm.Length > 0)
+                                    retVal.ActualParameters.Add("identifier", actualIdParm.ToString()); 
                                 break;
                             }
                         case "provider.identifier": // maps to the target domains ? 
@@ -317,27 +327,23 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// Process components
         /// </summary>
         /// TODO: make this more robust
-        [ElementProfile(Property = "Link", MaxOccurs = 0, ShortDescription = "This registry only supports links through 'contact' relationships")]
-        [ElementProfile(Property = "Animal", MaxOccurs = 0, ShortDescription = "This registry only supports human patients")]
-        [ElementProfile(HostType = typeof(Contact), Property = "Organization", MaxOccurs = 0, ShortDescription = "This registry only supports relationships with 'Person' objects")]
-        [ElementProfile(HostType = typeof(Demographics), Property = "Photo", MaxOccurs = 0, ShortDescription = "This registry does not support the storage of photographs directly")]
+        [ElementProfile(Property = "Link", MaxOccurs = 0, Comment = "This registry only supports links through 'contact' relationships")]
+        [ElementProfile(Property = "Animal", MaxOccurs = 0, Comment = "This registry only supports human patients")]
+        [ElementProfile(Property = "Contact.Organization", MaxOccurs = 0, Comment = "This registry only supports relationships with 'Person' objects")]
+        [ElementProfile(Property = "Details.Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
+        [ElementProfile(Property = "Details.Gender", Binding = typeof(AdministrativeGender), Comment = "Since this FHIR registry is also a PIX manager and HL7v3 client registry the v3 AdministrativeGender code set used internally has been referenced")]
         public override ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
         {
             // Setup references
             Patient retVal = new Patient();
             Person person = component as Person;
 
-            retVal.Id = person.Id;
-            retVal.VersionId = person.VersionId;
+            retVal.Id = person.Id.ToString();
+            retVal.VersionId = person.VersionId.ToString();
             retVal.Active = (person.Status & (StatusType.Active | StatusType.Completed)) != null;
+            retVal.Timestamp = person.Timestamp;
 
-            // Deceased time
-            if (person.DeceasedTime != null)
-            {
-                retVal.DeceasedDate = person.DeceasedTime.Value;
-                retVal.DeceasedDate.Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.DeceasedTime.Precision);
-            }
-
+           
             // Identifiers
             foreach(var itm in person.AlternateIdentifiers)
                 retVal.Identifier.Add(base.ConvertDomainIdentifier(itm));
@@ -365,6 +371,41 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.Details.Gender = new CodeableConcept(new Uri("http://hl7.org/fhir/v3/AdministrativeGender"), person.GenderCode);
             // DOB
             retVal.Details.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
+
+            // Deceased time
+            if (person.DeceasedTime != null)
+            {
+                retVal.DeceasedDate = new Date(person.DeceasedTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.DeceasedTime.Precision) };
+                retVal.Details.Deceased = true;
+            }
+            
+            // Marital status
+            if (person.MaritalStatus != null)
+                retVal.Details.MaritalStatus = base.ConvertCode(person.MaritalStatus);
+
+            // Photograph?
+            var photoExtensions = person.FindAllExtensions(o=>o.Name == "FhirPhotographResourceAttachment" && o.PropertyPath == "Photo");
+            if(photoExtensions != null && photoExtensions.Count() != 0)
+                foreach(var pext in photoExtensions)
+                    retVal.Details.Photo.Add(pext.Value as Attachment);
+             
+            // Contacts
+            var relationships = person.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
+            if(relationships != null && relationships.Count > 0)
+                foreach (PersonalRelationship rel in relationships)
+                {
+                    Contact contactInfo = new Contact();
+                    // Is there a person component here
+                    Person relatedTarget = rel.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    if (relatedTarget != null)
+                        contactInfo.Details = (this.ProcessComponent(relatedTarget, dtls) as Patient).Details;
+                    
+                    contactInfo.Relationship = new List<CodeableConcept>() {
+                        new CodeableConcept(new Uri("http://hl7.org/fhir/vs/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
+                    };
+                    // Now add an extension as the relationship kind is more detailed in our expression
+                    contactInfo.Extension.Add(ExtensionUtil.CreateRelationshipExtension(rel.RelationshipKind));
+                }
 
             // Confidence?
             var confidence = person.FindComponent(HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;

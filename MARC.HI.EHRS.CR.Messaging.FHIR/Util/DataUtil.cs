@@ -36,9 +36,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             public HealthServiceRecordContainer Filter;
 
         }
-
-       
-
+        
         /// <summary>
         /// Query the data store
         /// </summary>

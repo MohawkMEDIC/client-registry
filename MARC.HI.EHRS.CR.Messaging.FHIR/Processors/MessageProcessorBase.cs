@@ -13,6 +13,11 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
+using MARC.HI.EHRS.SVC.Core.Services;
+using System.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.Issues;
+using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -38,6 +43,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// Type of component
         /// </summary>
         public abstract Type ComponentType { get; }
+
+        /// <summary>
+        /// Gets the name of the Oid for data persistence load operation
+        /// </summary>
+        public abstract String DataDomain { get; }
 
         /// <summary>
         /// Parse query
@@ -127,6 +137,39 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         }
 
         #endregion
+
+        /// <summary>
+        /// Convert a code
+        /// </summary>
+        internal CodeableConcept ConvertCode(CodeValue codeValue)
+        {
+            ITerminologyService itermSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            if(itermSvc != null)
+                codeValue = itermSvc.FillInDetails(codeValue);
+
+            // Attempt to lookup the OID
+            var oid = ApplicationContext.ConfigurationService.OidRegistrar.FindData(codeValue.CodeSystem);
+            var retVal = new CodeableConcept() ;
+            var coding = new Coding();
+
+            // Code system
+            if (oid == null)
+                coding.System = new Uri(String.Format("urn:oid:{0}", codeValue.CodeSystem));
+            else if (codeValue.CodeSystem == "urn:ietf:rfc:3986")
+                coding.System = new Uri(codeValue.CodeSystem);
+            else
+                coding.System = new Uri(oid.Ref != null ? oid.Ref.ToString() : string.Format("urn:oid:{0}", codeValue.CodeSystem));
+            
+            // Display name
+            coding.Display = codeValue.DisplayName;
+
+            // Mnemonic
+            coding.Code = new PrimitiveCode<string>(codeValue.Code);
+
+            return retVal;
+            
+        }
+
 
         /// <summary>
         /// Convert domain identifier
@@ -264,6 +307,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             return retVal;
         }
 
+
+
         #region IFhirResourceHandler Members
 
         /// <summary>
@@ -287,64 +332,109 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public SVC.Messaging.FHIR.FhirQueryResult Query(System.Collections.Specialized.NameValueCollection parameters)
         {
-
             FhirQueryResult result = new FhirQueryResult();
+            result.Details = new List<IResultDetail>();
 
-            try
+            // Get query parameters
+            var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
+
+            // Process incoming request
+            var queryObject = resourceProcessor.ParseQuery(parameters, result.Details);
+            result.Query = queryObject;
+
+            // sanity check
+            if (result.Query.ActualParameters.Count == 0)
             {
-
-                // Get query parameters
-                var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
-
-                // Process incoming request
-                var queryObject = resourceProcessor.ParseQuery(parameters, result.Details);
-                result.Query = queryObject;
-                result.Details = new List<IResultDetail>();
-
-                // sanity check
-                if (result.Query.ActualParameters.Count == 0)
-                {
-                    result.Outcome = ResultCode.Rejected;
-                    result.Details.Add(new ValidationResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE077"), null, null));
-                }
-                else if (result.Details.Exists(o => o.Type == ResultDetailType.Error))
-                {
-                    result.Outcome = ResultCode.Error;
-                    result.Details.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE00A"), null, null));
-                }
-                // Filter
-                if (queryObject.Filter == null)
-                    throw new InvalidOperationException("Could not process query parameters!");
-
-                // Query?
-                if (result.Query.QueryId == Guid.Empty)
-                {
-                    result.Query.QueryId = Guid.NewGuid();
-                    result = DataUtil.Query(queryObject, result.Details);
-                }
-                else
-                    ; // todo: 
-
-
-            }
-            catch (InvalidOperationException e)
-            {
-                Trace.TraceError(e.ToString());
-                result.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 result.Outcome = ResultCode.Rejected;
+                result.Details.Add(new ValidationResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE077"), null, null));
             }
-            catch (Exception e)
+            else if (result.Details.Exists(o => o.Type == ResultDetailType.Error))
             {
-                Trace.TraceError(e.ToString());
-                result.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 result.Outcome = ResultCode.Error;
+                result.Details.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE00A"), null, null));
             }
+            else if (queryObject.Filter == null || result.Outcome != ResultCode.Accepted)
+                throw new InvalidOperationException("Could not process query parameters!");
+            else if (result.Query.QueryId == Guid.Empty)
+            {
+                result.Query.QueryId = Guid.NewGuid();
+                result = DataUtil.Query(queryObject, result.Details);
+            }
+            else
+                ; // todo: 
+
             return result;
         }
 
+        /// <summary>
+        /// Read a patint resource
+        /// </summary>
         public SVC.Messaging.FHIR.FhirOperationResult Read(string id, string versionId)
         {
-            throw new NotImplementedException();
+            FhirOperationResult result = new FhirOperationResult();
+            result.Details = new List<IResultDetail>();
+            result.Results = new List<ResourceBase>();
+
+            // Data persistence service
+            IDataPersistenceService dataPersistence = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+            var container = dataPersistence.GetContainer(new VersionedDomainIdentifier()
+            {
+                Domain = this.DataDomain,
+                Identifier = id,
+                Version = String.IsNullOrEmpty(versionId) ? null : versionId
+            }, String.IsNullOrEmpty(versionId));
+
+            // Container was not found
+            if (container == null)
+                result.Outcome = ResultCode.NotAvailable;
+            else
+            { 
+
+                var processor = FhirMessageProcessorUtil.GetComponentProcessor(container.GetType());
+
+                // Was there a history? 
+                if (versionId == null)
+                    result.Results.Add(processor.ProcessComponent(container as IComponent, result.Details));
+                else if (versionId == String.Empty) // Get all versions
+                    while (container != null)
+                    {
+                        var hsrc = container as HealthServiceRecordContainer;
+                        var resource = processor.ProcessComponent(container as IComponent, result.Details);
+
+                        if(hsrc.IsMasked) // record is masked so add a detected issue
+                            result.Issues.Add(new SVC.Core.Issues.DetectedIssue() {
+                                MitigatedBy = ManagementType.OtherActionTaken,
+                                Severity = IssueSeverityType.Moderate,
+                                Text = String.Format("{0}/history/@{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
+                                Type = IssueType.DetectedIssue
+                            });
+                        else
+                            result.Results.Add(resource);
+                        container = hsrc.FindComponent(HealthServiceRecordSiteRoleType.ReplacementOf) as IContainer;
+                    }
+                else // Some version
+                    while (container != null)
+                    {
+                        var hsrc = container as HealthServiceRecordContainer;
+                        var resource = processor.ProcessComponent(container as IComponent, result.Details);
+                        container = hsrc.FindComponent(HealthServiceRecordSiteRoleType.ReplacementOf) as IContainer;
+
+                        if (resource.VersionId.ToString() != versionId) continue;
+
+                        if (hsrc.IsMasked) // record is masked so add a detected issue
+                            result.Issues.Add(new SVC.Core.Issues.DetectedIssue()
+                            {
+                                MitigatedBy = ManagementType.OtherActionTaken,
+                                Severity = IssueSeverityType.Moderate,
+                                Text = String.Format("{0}/history/@{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
+                                Type = IssueType.DetectedIssue
+                            });
+                        else
+                            result.Results.Add(resource);
+                    }
+                result.Outcome = ResultCode.Accepted;
+            }
+            return result;
         }
 
         public SVC.Messaging.FHIR.FhirOperationResult Update(string id, SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
@@ -358,5 +448,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         }
 
         #endregion
+
     }
 }

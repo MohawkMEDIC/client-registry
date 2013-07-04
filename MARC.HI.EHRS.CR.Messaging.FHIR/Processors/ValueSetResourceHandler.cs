@@ -13,59 +13,18 @@ using System.Reflection;
 using System.IO;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
 
-    /// <summary>
-    /// Extension methods
-    /// </summary>
-    public static class ValueSetProcessorExtensionMethods
-    {
-        /// <summary>
-        /// Get a custom attribute of type T
-        /// </summary>
-        public static T GetCustomAttribute<T>(this MemberInfo me) where T : System.Attribute
-        {
-            object[] tAtts = me.GetCustomAttributes(typeof(T), false);
-            if (tAtts.Length == 0)
-                return null;
-            else
-                return tAtts[0] as T;
-        }
-
-
-        /// <summary>
-        /// Get a custom attribute of type T
-        /// </summary>
-        public static T GetCustomAttribute<T>(this Type me) where T : System.Attribute
-        {
-            object[] tAtts = me.GetCustomAttributes(typeof(T), false);
-            if (tAtts.Length == 0)
-                return null;
-            else
-                return tAtts[0] as T;
-        }
-
-        /// <summary>
-        /// Get a custom attribute of type T
-        /// </summary>
-        public static T GetCustomAttribute<T>(this Assembly me) where T : System.Attribute
-        {
-            object[] tAtts = me.GetCustomAttributes(typeof(T), false);
-            if (tAtts.Length == 0)
-                return null;
-            else
-                return tAtts[0] as T;
-        }
-    }
-
+   
     /// <summary>
     /// FHIR Message processor for a value set
     /// </summary>
     [Profile(ProfileId = "pix-fhir")]
     [ResourceProfile(Resource = typeof(ValueSet), Name = "Client registry value-set profile")]
-    public class ValueSetMessageProcessor : IFhirResourceHandler
+    public class ValueSetResourceHandler : IFhirResourceHandler
     {
 
         #region IFhirResourceHandler Members
@@ -92,6 +51,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         public SVC.Messaging.FHIR.FhirQueryResult Query(System.Collections.Specialized.NameValueCollection parameters)
         {
             // Get all value sets referenced in the profile
+
             return null;
         }
 
@@ -101,11 +61,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         public SVC.Messaging.FHIR.FhirOperationResult Read(string id, string versionId)
         {
             // Determine where to fetch the code system from
-            Type codeSystemType = null;
+            List<Type> codeSystemType = new List<Type>();
             if (id.StartsWith("v3-")) // Everest
             {
                 id = id.Substring(3);
-                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                foreach (var asm in new Assembly[] { typeof(MARC.Everest.DataTypes.II).Assembly, typeof(MARC.Everest.RMIM.UV.NE2008.Vocabulary.AdministrativeGender).Assembly, typeof(MARC.Everest.RMIM.CA.R020402.Vocabulary.AdministrativeGender).Assembly })
                 {
                    if (!String.IsNullOrEmpty(versionId))
                     {
@@ -114,9 +74,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                             continue;
                     } 
                     
-                    codeSystemType = Array.Find(asm.GetTypes(), t => t.GetCustomAttribute<StructureAttribute>() != null && t.GetCustomAttribute<StructureAttribute>().Name == id);
+                    var tcodesys = Array.Find(asm.GetTypes(), t => t.IsEnum && t.GetCustomAttribute<StructureAttribute>() != null && t.GetCustomAttribute<StructureAttribute>().Name == id);
 
-                    if (codeSystemType != null) break;
+                    if (tcodesys != null)
+                        codeSystemType.Add(tcodesys);
                 }
             }
             else
@@ -126,7 +87,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     if (!String.IsNullOrEmpty(versionId) && asm.GetName().Version.ToString() != versionId)
                         continue;
 
-                    codeSystemType = Array.Find(asm.GetTypes(), t => t.FullName.Equals(id));
+                    codeSystemType.Add(Array.Find(asm.GetTypes(), t => t.FullName.Equals(id)));
                     if (codeSystemType != null) break;
                 }
             }
@@ -135,14 +96,19 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if (codeSystemType == null)
                 return new FhirOperationResult()
                 {
-                    Outcome = ResultCode.TypeNotAvailable
+                    Outcome = ResultCode.TypeNotAvailable,
                 };
             else
-                return new FhirOperationResult()
+            {
+                var retVal = new FhirOperationResult()
                 {
                     Outcome = ResultCode.Accepted,
-                    Results = new List<ResourceBase>() { this.CreateValueSetFromEnum(codeSystemType) }
+                    Results = new List<ResourceBase>()
                 };
+                foreach (var cs in codeSystemType)
+                    retVal.Results.Add(this.CreateValueSetFromEnum(cs));
+                return retVal;
+            }
             
             
         }
@@ -193,6 +159,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.Name = enumType.Name;
                 retVal.Identifier = String.Format("{0}/ValueSet/@{1}", baseUri, enumType.FullName);
                 retVal.Version = enumType.Assembly.GetName().Version.ToString();
+                retVal.Id = retVal.Identifier;
+                retVal.VersionId = retVal.Version;
 
                 // Description
                 if (descriptionAtt != null)
@@ -206,7 +174,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Date of the assembly file
                 if (!String.IsNullOrEmpty(enumType.Assembly.Location) && File.Exists(enumType.Assembly.Location))
                     retVal.Date = new SVC.Messaging.FHIR.DataTypes.DateOnly() { DateValue = new FileInfo(enumType.Assembly.Location).LastWriteTime };
-
+                retVal.Timestamp = retVal.Date.DateValue.Value;
                 retVal.Status = new SVC.Messaging.FHIR.DataTypes.PrimitiveCode<string>("testing");
 
                 // Definition
@@ -246,6 +214,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             ValueSet retVal = new ValueSet();
             retVal.Name = structAtt.Name;
             retVal.Identifier = structAtt.CodeSystem;
+            retVal.Id = retVal.Identifier;
             // Use the company attribute
             var companyAtt = enumType.Assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
             if (companyAtt != null)
@@ -253,11 +222,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var versionAtt = enumType.Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             if (versionAtt != null)
                 retVal.Version = versionAtt.InformationalVersion;
+            retVal.VersionId = retVal.Version;
 
             // Date of the assembly file
             if (!String.IsNullOrEmpty(enumType.Assembly.Location) && File.Exists(enumType.Assembly.Location))
                 retVal.Date = new SVC.Messaging.FHIR.DataTypes.DateOnly() { DateValue = new FileInfo(enumType.Assembly.Location).LastWriteTime };
-
+            retVal.Timestamp = retVal.Date.DateValue.Value;
             retVal.Status = new SVC.Messaging.FHIR.DataTypes.PrimitiveCode<string>("published");
 
             // Compose the codes if it has codes from a known code system
@@ -300,6 +270,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         bAtt = b.GetCustomAttribute<EnumerationAttribute>();
                     if ((aAtt == null) ^ (bAtt == null))
                         return aAtt == null ? -1 : 1;
+                    else if (aAtt == bAtt)
+                        return 0;
                     return aAtt.SupplierDomain.CompareTo(bAtt.SupplierDomain);
 
                 });
@@ -346,7 +318,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                 }
             }
-
+            
             return retVal;
         }
 
