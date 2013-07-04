@@ -18,6 +18,7 @@ using System.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using System.Collections.Specialized;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -81,7 +82,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                              break;
                          case "confidence":
                              retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
-                             retVal.ActualParameters.Add("confidence", retVal.MinimumDegreeMatch.ToString());
+                             retVal.ActualParameters.Add("confidence", parameters.GetValues(i)[0]);
                              break;
                      }
                  }
@@ -339,7 +340,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
 
             // Process incoming request
-            var queryObject = resourceProcessor.ParseQuery(parameters, result.Details);
+
+            NameValueCollection goodParameters = new NameValueCollection();
+            for (int i = 0; i < parameters.Count; i++)
+                for (int v = 0; v < parameters.GetValues(i).Length; v++)
+                    if (!String.IsNullOrEmpty(parameters.GetValues(i)[v]))
+                        goodParameters.Add(parameters.GetKey(i), parameters.GetValues(i)[v]);
+            parameters = goodParameters;
+
+            var queryObject = resourceProcessor.ParseQuery(goodParameters, result.Details);
             result.Query = queryObject;
 
             // sanity check
@@ -449,5 +458,20 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
         #endregion
 
+        /// <summary>
+        /// Convert a gender code
+        /// </summary>
+        internal CodeableConcept ConvertPrimitiveCode<T>(string code)
+        {
+
+            var hl7Code = MARC.Everest.Connectors.Util.Convert<T>(code);
+            CV<T> csInstance = new CV<T>(hl7Code);
+            
+            // Lookup description
+            var retVal = new CodeableConcept(typeof(T).GetValueSetDefinition(), code) { Text = (String)csInstance.DisplayName };
+            retVal.Coding[0].Display = (String)csInstance.DisplayName;
+            return retVal;
+
+        }
     }
 }

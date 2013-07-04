@@ -314,7 +314,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
                     retVal.IdentifiedPerson.LanguageCommunication.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.LanguageCommunication(
                         CreateCV<String>(langCode, details),
-                        lang.Type == LanguageType.Fluency
+                        (lang.Type & LanguageType.Preferred) != 0
                         ));
                 }
 
@@ -556,7 +556,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
                     retVal.IdentifiedPerson.LanguageCommunication.Add(new MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.LanguageCommunication(
                         CreateCV<String>(langCode, details),
-                        lang.Type == LanguageType.Fluency
+                        (lang.Type & LanguageType.Preferred) != 0
                         ));
                 }
 

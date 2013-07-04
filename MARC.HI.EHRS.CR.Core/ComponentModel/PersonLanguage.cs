@@ -33,7 +33,8 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     {
         Written = 1,
         Spoken = 2,
-        Fluency = 4,
+        Preferred = 4,
+        Fluency = 8,
         WrittenAndSpoken = Written | Spoken
     }
 

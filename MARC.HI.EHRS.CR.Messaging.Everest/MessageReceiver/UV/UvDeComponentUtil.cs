@@ -463,7 +463,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     else
                         langRole.LanguageCode = new CE<string>() { NullFlavor = NullFlavor.NoInformation };
 
-                    langRole.PreferenceInd = lang.Type == LanguageType.Fluency;
+                    langRole.PreferenceInd = (lang.Type & LanguageType.Preferred) != 0;
+
+                    if((lang.Type & LanguageType.Fluency) != 0)
+                        langRole.ProficiencyLevelCode = new CE<LanguageAbilityProficiency>(LanguageAbilityProficiency.Excellent);
+
+                    if ((lang.Type & LanguageType.WrittenAndSpoken) != 0)
+                        ; // No combination here :(
+                    else if ((lang.Type & LanguageType.Written) != 0) // written only
+                        langRole.ModeCode = new CE<LanguageAbilityMode>(LanguageAbilityMode.ExpressedWritten);
+                    else if ((lang.Type & LanguageType.Spoken) != 0) // spoken only
+                        langRole.ModeCode = new CE<LanguageAbilityMode>(LanguageAbilityMode.ExpressedSpoken);
 
                     retVal.LanguageCommunication.Add(langRole);
                         

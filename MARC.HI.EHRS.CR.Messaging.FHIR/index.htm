@@ -1,0 +1,87 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>MEDIC Client Registry FHIR Implementation</title>
+        <style>
+            body 
+            {
+            	margin:0px;
+            	padding:0px;
+            }
+            h1 
+            {
+            	width:100%;
+            	background-color:#8899FF;
+            	border-bottom:3px solid black;
+            	color:white;
+            }
+        </style>
+	</head>
+	<body>
+	    <h1 style="clear:both"><img width="48" height="48" style="float:left" src="http://te.marc-hi.ca/projects/CR/logo.png" /> MEDIC Client Registry FHIR Reference Implementation</h1>
+        <p>This is the landing page for the MARC-HI Client Registry reference implementation FHIR service. This registry "speaks" a variety of standards including:</p>
+        <ul>
+            <li>HL7 Version 2.5 - PIX & PDQ Version 2</li>
+            <li>HL7 Version 3 - pan-Canadian Standards Client Registry Messages R02.04.02</li>
+            <li>HL7 Version 3 - IHE PIX & PDQ Version 3</li>
+            <li>FHIR - This resource</li>
+        </ul>
+        <p>In order to use the FHIR service you will have to communicate with one of the implemented FHIR resources using the specification found <a href="http://hl7.org/fhir">here</a>:</p>
+        <ul>
+            <li><a href="./Profile">Profile Resource</a> - Describes the profiles used on this client registry</li>
+            <li><a href="./ValueSet">ValueSet Resource</a> - Contains a list of custom codes used on this registry</li>
+            <li><a href="./Patient">Patient Resource</a> - Patients contained in the client registry</li>
+        </ul>
+        <h2>Search for a Patient</h2>
+        <p>You can test this registry by using the form below to search for patients:</p>
+        <form method="get" action="./Patient">
+            <table>
+                <tr>
+                    <td>Patient Given Name(s):</td>
+                    <td><input type="text" name="given" /></td>
+                    <td>Patient Family Name(s):</td>
+                    <td><input type="text" name="family" /></td>
+                </tr>
+                <tr>
+                    <td>Gender:</td>
+                    <td>
+                        <select name="gender">
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </td>
+                    <td>Confidence</td>
+                    <td>
+                        <select name="confidence">
+                            <option value="100">Exact Match</option>
+                            <option value="80">Strong Matches</option>
+                            <option value="60">Weak Matches</option>
+                            <option value="0">Anything</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">With an Identifier Assigned by:</td>
+                    <td colspan="2">
+                        <select name="identifier">
+                            <option value="">Not Set</option>
+                            <optgroup label="Regional Authorities">
+                                <option value="1.3.6.1.4.1.33349.3.1.3.12!">Government of Northen Elbonia</option>
+                                <option value="2.16.840.1.113883.4.59!">Ontario PHN</option>
+                                <option value="1.2.840.114350.1.13.99998.8734!">Good Health Hospital System</option>
+                            </optgroup>
+                            <optgroup label="EMR Instances">
+                                <option value="1.3.6.1.4.1.33349.3.1.3.201303.0.0.0!">OSCAR EMR Clinic A</option>
+                                <option value="1.3.6.1.4.1.33349.3.1.3.201303.0.0.1!">OSCAR EMR Clinic B</option>
+                            </optgroup>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" align="right"><input type="submit" /></td>
+                </tr>
+            </table>
+        </form>
+	</body>
+</html>

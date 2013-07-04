@@ -11,6 +11,7 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
 using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
+using MARC.Everest.DataTypes.Interfaces;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -33,11 +34,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#addressPart"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressPart"),
                 Value = new FhirString(part.AddressValue),
                 Extension = new List<Extension>() {
                                         new Extension() {
-                                            Url =  new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#v3-addressPartTypes"),
+                                            Url =  new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#v3-addressPartTypes"),
                                             Value = new Coding(typeof(AddressPartType).GetValueSetDefinition(), wireCode)
                                         }
                                     }
@@ -53,8 +54,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             if(use == AddressSet.AddressSetUse.Search)
                 return new Extension()
                 {
-                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#addressUse"),
-                    Value = new Coding(new Uri("http://hl7.org/fhir/v3/NullFlavor"), "OTH")
+                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressUse"),
+                    Value = new Coding(typeof(NullFlavor).GetValueSetDefinition(), "OTH")
                 };
 
             PostalAddressUse v3Use = (PostalAddressUse)Enum.Parse(typeof(PostalAddressUse), use.ToString());
@@ -62,8 +63,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/profile/@iso-21090#addressUse"),
-                Value = new Coding(new Uri("http://hl7.org/fhir/v3/PostalAddressUse"), wireCode)
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressUse"),
+                Value = new Coding(typeof(PostalAddressUse).GetValueSetDefinition(), wireCode)
             };
         }
 
@@ -75,8 +76,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#telecommunicationAddressUse"),
-                Value = new Coding(new Uri("http://hl7.org/fhir/v3/AddressUse"), MARC.Everest.Connectors.Util.ToWireFormat(telecommunicationAddressUse))
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#telecommunicationAddressUse"),
+                Value = new Coding(typeof(TelecommunicationAddressUse).GetValueSetDefinition(), MARC.Everest.Connectors.Util.ToWireFormat(telecommunicationAddressUse))
             };
         }
 
@@ -89,7 +90,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#subjectObservation"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#subjectObservation"),
                 Value = new FhirDecimal((decimal)confidence.Confidence)
             };
         }
@@ -97,15 +98,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create a match algorithm extension
         /// </summary>
-        [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "Identifies the confidence of the returned match")]
+        [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "Identifies the algorithm used to perform the match")]
         public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
         {
             return new Extension() { 
-                        Url = new Uri("http://cr.marc-hi.ca:8080/fhir/profile/@pix-fhir#subjectObservationMatchAlgorithm"),
+                        Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#subjectObservationMatchAlgorithm"),
                         Value = 
                             (confidence.MatchingAlgorithm & Core.ComponentModel.MatchAlgorithm.Soundex) != 0 ?
-                                new Coding(new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/ValueSet/@v3-ObservationQueryMatchType"), "PHCM") { Display = "phonetic match" } :
-                                new Coding(new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/ValueSet/@v3-ObservationQueryMatchType"), "PTNM") { Display = "pattern match" }
+                                new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PHCM") { Display = "phonetic match" } :
+                                new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PTNM") { Display = "pattern match" }
                     };
         }
 
@@ -118,7 +119,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.9/profile/@pix-fhir#personalRelationshipRoleType"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#personalRelationshipRoleType"),
                 Value = new Coding(
                     typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
                     relationshipKind

@@ -669,11 +669,35 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     else
                         pl.Language = languageCode.Code;
 
+                    pl.Type = 0;
                     // Preferred? 
                     if ((bool)lang.PreferenceInd)
-                        pl.Type = LanguageType.Fluency;
-                    else
-                        pl.Type = LanguageType.WrittenAndSpoken;
+                        pl.Type |= LanguageType.Preferred;
+                    
+                    if(lang.ProficiencyLevelCode != null && !lang.ProficiencyLevelCode.IsNull)
+                        switch ((LanguageAbilityProficiency)lang.ProficiencyLevelCode)
+                        {
+                            case LanguageAbilityProficiency.Excellent:
+                                pl.Type |= LanguageType.Fluency;
+                                break;
+                                // TODO: Rest
+                        }
+
+                    // Fluency
+                    if (lang.ModeCode != null && !lang.ModeCode.IsNull)
+                    {
+                        switch ((LanguageAbilityMode)lang.ModeCode)
+                        {
+                            case LanguageAbilityMode.ExpressedSpoken:
+                            case LanguageAbilityMode.ReceivedSpoken:
+                                pl.Type |= LanguageType.Spoken;
+                                break;
+                            case LanguageAbilityMode.ExpressedWritten:
+                            case LanguageAbilityMode.ReceivedWritten:
+                                pl.Type |= LanguageType.Written;
+                                break;
+                        }
+                    }
 
                     // Add
                     retVal.Language.Add(pl);

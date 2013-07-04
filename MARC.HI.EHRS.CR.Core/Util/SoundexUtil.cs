@@ -56,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Core.Util
                 nOthers = other.Parts.Count - nExact - nSoundex - nPattern,
                 nParts = other.Parts.Count;
 
-            return nExact / (float)nParts + nPattern / (float)(nParts * 1.25) + nOthers / (float)(nParts * 1.5f) + nSoundex / ((float)nParts * 2);
+            return nExact / (float)nParts + nPattern / (float)(nParts * 1.1) + nOthers / (float)(nParts * 1.25f) + nSoundex / ((float)nParts * 2);
 
         }
 

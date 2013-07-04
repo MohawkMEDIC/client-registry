@@ -268,13 +268,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04C"), null, null));
                     else
                         pl.Language = languageCode.Code;
-                    
+
+                    pl.Type = 0;
                     // Preferred? 
                     if ((bool)lang.PreferenceInd)
-                        pl.Type = LanguageType.Fluency;
-                    else
-                        pl.Type = LanguageType.WrittenAndSpoken;
-
+                        pl.Type = LanguageType.Preferred;
+                    
                     // Add
                     subjectOf.Language.Add(pl);
                 }
@@ -530,13 +529,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                         dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04C"), null, null));
                     else
                         pl.Language = languageCode.Code;
-
+                    
                     // Preferred? 
                     if ((bool)lang.PreferenceInd)
-                        pl.Type = LanguageType.Fluency;
-                    else
-                        pl.Type = LanguageType.WrittenAndSpoken;
+                        pl.Type = LanguageType.Preferred;
 
+                    
                     // Add
                     subjectOf.Language.Add(pl);
                 }
