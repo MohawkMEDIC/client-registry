@@ -16,6 +16,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.PolicyEnforcement;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
+using System.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -49,6 +50,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             try
             {
+
+                if(querySpec.Quantity > 100)
+                    throw new ConstraintException("Query limit must not exceed 100");
+
                 if (persistence == null)
                     throw new InvalidOperationException("No persistence service has been configured, queries cannot continue without this service");
                 else if (registration == null)
@@ -75,7 +80,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 }
 
                 // Sort control?
-                // TODO: Support sort control
+                // TODO: Support sort control but for now just sort according to confidence then date
                 //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
 
                 // Persist the query
@@ -175,7 +180,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                     }, id
                         );
                 // for
-                bool didReturn = wtp.WaitOne(20000, true);
+                bool didReturn = wtp.WaitOne(new TimeSpan(0,0,1,0), true);
 
                 if (!didReturn)
                     throw new TimeoutException("The query could not complete in the specified amount of time");

@@ -71,7 +71,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Telecommunications use extension
         /// </summary>
-        [ExtensionDefinition(Name = "telecommunicationAddressUse", HostType = typeof(Patient), Property = "Details.Telecom.Use", ValueType = typeof(Coding), Binding = typeof(MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse), MustSupport = false, MustUnderstand = false, ShortDescription = "Used when telecommunications is not defied in FHIR vocabulary")]
+        [ExtensionDefinition(Name = "telecommunicationAddressUse", HostType = typeof(Patient), Property = "Details.Telecom.Use", ValueType = typeof(Coding), Binding = typeof(MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse), MustSupport = false, MustUnderstand = false, ShortDescription = "Used when the resource's telecommunications use cannot be mapped to FHIR vocabulary")]
         public static Extension CreateTELUseExtension(Everest.DataTypes.Interfaces.TelecommunicationAddressUse telecommunicationAddressUse)
         {
             return new Extension()
@@ -84,7 +84,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Confidence of the match
         /// </summary>
-        [ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirDecimal), MustUnderstand = false, MustSupport = false, ShortDescription = "Identifies the confidence of the returned match")]
+        [ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirDecimal), MustUnderstand = false, MustSupport = false, ShortDescription = "In a query: Identifies the confidence of the returned match")]
         public static Extension CreateConfidenceExtension(Core.ComponentModel.QueryParameters confidence)
         {
 
@@ -98,7 +98,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create a match algorithm extension
         /// </summary>
-        [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "Identifies the algorithm used to perform the match")]
+        [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "In a query: Identifies the algorithm used to perform the match")]
         public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
         {
             return new Extension() { 

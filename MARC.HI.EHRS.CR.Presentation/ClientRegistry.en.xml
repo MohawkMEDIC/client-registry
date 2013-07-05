@@ -191,7 +191,7 @@
   
   <!-- FHIR -->
   <string name="FHIR001">First Page</string>
-  <string name="FHIR002">Next</string>
-  <string name="FHIR003">Previous</string>
+  <string name="FHIR002">Previous</string>
+  <string name="FHIR003">Next</string>
   <string name="FHIR004">Last Page</string>  
 </locale>
