@@ -112,7 +112,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         {
             HumanName retVal = new HumanName();
             retVal.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.NAME_USE, name.Use));
-
+            if (String.IsNullOrEmpty(retVal.Use.Value))
+                retVal.Use.Extension.Add(ExtensionUtil.CreatePNUseExtension(name.Use));
             foreach (var pt in name.Parts)
             {
                 switch (pt.Type)
@@ -463,14 +464,20 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         internal CodeableConcept ConvertPrimitiveCode<T>(string code)
         {
+            try
+            {
+                var hl7Code = MARC.Everest.Connectors.Util.Convert<T>(code);
+                CV<T> csInstance = new CV<T>(hl7Code);
 
-            var hl7Code = MARC.Everest.Connectors.Util.Convert<T>(code);
-            CV<T> csInstance = new CV<T>(hl7Code);
-            
-            // Lookup description
-            var retVal = new CodeableConcept(typeof(T).GetValueSetDefinition(), code) { Text = (String)csInstance.DisplayName };
-            retVal.Coding[0].Display = (String)csInstance.DisplayName;
-            return retVal;
+                // Lookup description
+                var retVal = new CodeableConcept(typeof(T).GetValueSetDefinition(), code) { Text = (String)csInstance.DisplayName };
+                retVal.Coding[0].Display = (String)csInstance.DisplayName;
+                return retVal;
+            }
+            catch (Exception e)
+            {
+                return new CodeableConcept(typeof(NullFlavor).GetValueSetDefinition(), "UNK");
+            }
 
         }
     }

@@ -472,7 +472,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Adding only permitted for authorized ids
             var oidData = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(altId.Domain);
             if (oidData == null || !oidData.Attributes.Exists(a => a.Key == "GloballyAssignable" && Boolean.Parse(a.Value)))
-                Trace.TraceInformation("Registering new globally assignable identifier from domain {0}", oidData.Name);
+                Trace.TraceInformation("Registering new globally assignable identifier from domain {0}", altId.Domain);
             else if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
                 throw new ConstraintException("Cannot register an ID without appropriate assigning authority!");
 

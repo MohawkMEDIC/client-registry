@@ -379,7 +379,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if (person.GenderCode != null)
                 retVal.Gender = base.ConvertPrimitiveCode<AdministrativeGender>(person.GenderCode);
             // DOB
-            retVal.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
+            if(person.BirthTime != null)
+                retVal.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
 
             // Deceased time
             if (person.DeceasedTime != null)
@@ -417,6 +418,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     };
                     // Now add an extension as the relationship kind is more detailed in our expression
                     contactInfo.Extension.Add(ExtensionUtil.CreateRelationshipExtension(rel.RelationshipKind));
+                    retVal.Contact.Add(contactInfo);
                 }
 
             // Confidence?

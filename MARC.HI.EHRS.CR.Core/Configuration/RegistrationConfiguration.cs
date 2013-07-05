@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Core.Configuration
 {
@@ -38,6 +39,8 @@ namespace MARC.HI.EHRS.CR.Core.Configuration
         public RegistrationConfiguration()
         {
             this.MergeCriteria = new List<MergeCriterion>();
+            OidRegistrar.ExtendedAttributes.Add("IsUniqueIdentifier", typeof(Boolean));
+            OidRegistrar.ExtendedAttributes.Add("GloballyAssignable", typeof(bool));
         }
 
         /// <summary>

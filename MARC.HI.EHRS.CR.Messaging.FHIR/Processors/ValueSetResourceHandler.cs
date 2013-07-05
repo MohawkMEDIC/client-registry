@@ -87,13 +87,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     if (!String.IsNullOrEmpty(versionId) && asm.GetName().Version.ToString() != versionId)
                         continue;
 
-                    codeSystemType.Add(Array.Find(asm.GetTypes(), t => t.FullName.Equals(id)));
-                    if (codeSystemType != null) break;
+                    var tcodesys = Array.Find(asm.GetTypes(), t => t.Name.Equals(id));
+                    if (tcodesys != null) 
+                        codeSystemType.Add(tcodesys);
                 }
             }
 
             // Code system type
-            if (codeSystemType == null)
+            if (codeSystemType == null || codeSystemType.Count == 0)
                 return new FhirOperationResult()
                 {
                     Outcome = ResultCode.TypeNotAvailable,
@@ -157,7 +158,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 DescriptionAttribute descriptionAtt = enumType.GetCustomAttribute<DescriptionAttribute>();
 
                 retVal.Name = enumType.Name;
-                retVal.Identifier = String.Format("{0}/ValueSet/@{1}", baseUri, enumType.FullName);
+                retVal.Identifier = String.Format("{0}/ValueSet/@{1}", baseUri, enumType.Name);
                 retVal.Version = enumType.Assembly.GetName().Version.ToString();
                 retVal.Id = retVal.Identifier;
                 retVal.VersionId = retVal.Version;
@@ -182,7 +183,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 if (xTypeAtt != null)
                     retVal.Define.System = new Uri(String.Format("{0}#{1}", xTypeAtt.Namespace, xTypeAtt.TypeName));
                 else
-                    retVal.Define.System = new Uri(String.Format("{0}/ValueSet/@{1}", baseUri, enumType.FullName));
+                    retVal.Define.System = new Uri(String.Format("{0}/ValueSet/@{1}", baseUri, enumType.Name));
 
                 // Now populate
                 foreach (var value in enumType.GetFields(BindingFlags.Static | BindingFlags.Public))

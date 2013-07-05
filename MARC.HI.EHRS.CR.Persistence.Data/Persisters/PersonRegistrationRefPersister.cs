@@ -70,7 +70,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = cntrPsn.Id.ToString()
-            }, false);
+            }, true);
+            pp.MergePersons(dbCntrPsn, cntrPsn);
 
             // Load the components for the person
             DbUtil.DePersistComponents(conn, psn, this, true);
@@ -98,9 +99,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
 
                     // Now to copy the components of the current version down
-                    foreach (IComponent cmp in refr.Site.Container.Components)
-                        if (cmp != refr)
-                            dbCntrPsn.Add((cmp as HealthServiceRecordComponent).Clone() as IComponent);
+                    //foreach (IComponent cmp in refr.Site.Container.Components)
+                    //    if (cmp != refr)
+                    //        dbCntrPsn.Add((cmp as HealthServiceRecordComponent).Clone() as IComponent);
 
                     // Merge the two records in memory taking the newer data
                     // This is a merge from old to new in order to capture any data elements 

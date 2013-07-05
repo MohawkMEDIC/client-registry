@@ -25,8 +25,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create an AD extension
         /// </summary>
-        [ExtensionDefinition(Name = "addressPart", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Details.Address", MustSupport = false, MustUnderstand = false, ShortDescription = "Additional address information not classified by FHIR parts")]
-        [ExtensionDefinition(Name = "v3-addressPartTypes", HostType = typeof(Patient), ValueType = typeof(Coding), Property = "Details.Address.Extension", Binding = typeof(AddressPartType), MustSupport = false, MustUnderstand = false, ShortDescription = "Qualifies the unclassified address parts")]
+        [ExtensionDefinition(Name = "addressPart", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Address", MustSupport = false, MustUnderstand = false, ShortDescription = "Additional address information not classified by FHIR parts")]
+        [ExtensionDefinition(Name = "v3-addressPartTypes", HostType = typeof(Patient), ValueType = typeof(Coding), Property = "Address.Extension", Binding = typeof(AddressPartType), MustSupport = false, MustUnderstand = false, ShortDescription = "Qualifies the unclassified address parts")]
         public static Extension CreateADExtension(AddressPart part)
         {
             AddressPartType v3PartType = (AddressPartType)Enum.Parse(typeof(AddressPartType), part.PartType.ToString());
@@ -48,15 +48,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create an AD extension
         /// </summary>
-        [ExtensionDefinition(Name = "addressUse", HostType = typeof(Patient), Property = "Details.Address.Use", ValueType = typeof(Coding), Binding = typeof(PostalAddressUse), MustUnderstand = false, MustSupport = false, ShortDescription = "Used when the address use is not defined in FHIR vocabulary")]
+        [ExtensionDefinition(Name = "addressUse", HostType = typeof(Patient), Property = "Address.Use", ValueType = typeof(Coding), Binding = typeof(PostalAddressUse), MustUnderstand = false, MustSupport = false, ShortDescription = "Used when the address use is not defined in FHIR vocabulary")]
         public static Extension CreateADUseExtension(AddressSet.AddressSetUse use)
         {
-            if(use == AddressSet.AddressSetUse.Search)
-                return new Extension()
-                {
-                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressUse"),
-                    Value = new Coding(typeof(NullFlavor).GetValueSetDefinition(), "OTH")
-                };
+            if (use == AddressSet.AddressSetUse.Search)
+                return CreateNullElementExtension(NullFlavor.Other);
 
             PostalAddressUse v3Use = (PostalAddressUse)Enum.Parse(typeof(PostalAddressUse), use.ToString());
             string wireCode = MARC.Everest.Connectors.Util.ToWireFormat(v3Use);
@@ -71,7 +67,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Telecommunications use extension
         /// </summary>
-        [ExtensionDefinition(Name = "telecommunicationAddressUse", HostType = typeof(Patient), Property = "Details.Telecom.Use", ValueType = typeof(Coding), Binding = typeof(MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse), MustSupport = false, MustUnderstand = false, ShortDescription = "Used when the resource's telecommunications use cannot be mapped to FHIR vocabulary")]
+        [ExtensionDefinition(Name = "telecommunicationAddressUse", HostType = typeof(Patient), Property = "Telecom.Use", ValueType = typeof(Coding), Binding = typeof(MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse), MustSupport = false, MustUnderstand = false, ShortDescription = "Used when the resource's telecommunications use cannot be mapped to FHIR vocabulary")]
         public static Extension CreateTELUseExtension(Everest.DataTypes.Interfaces.TelecommunicationAddressUse telecommunicationAddressUse)
         {
             return new Extension()
@@ -123,6 +119,46 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 Value = new Coding(
                     typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
                     relationshipKind
+                )
+            };
+        }
+
+        /// <summary>
+        /// Create an entity name use extension
+        /// </summary>
+        [ExtensionDefinition(Name = "nameUse", HostType = typeof(Patient), ValueType = typeof(Coding), Binding=typeof(EntityNameUse), Property = "Name", MustSupport = false, MustUnderstand = false, ShortDescription = "The original entityNameUse of the name when no FHIR code mapping is available")]
+        public static Extension CreatePNUseExtension(NameSet.NameSetUse nameSetUse)
+        {
+            EntityNameUse entityNameUse = EntityNameUse.Alphabetic;
+            if (Enum.TryParse<EntityNameUse>(nameSetUse.ToString(), out entityNameUse))
+                return new Extension()
+                {
+                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#nameUse"),
+                    Value = new Coding(
+                        typeof(EntityNameUse).GetValueSetDefinition(),
+                        MARC.Everest.Connectors.Util.ToWireFormat(entityNameUse)
+                    )
+                };
+            else
+                return CreateNullElementExtension(NullFlavor.Other);
+                    
+        }
+
+        /// <summary>
+        /// Represents a null element 
+        /// </summary>
+        /// <param name="nullFlavor"></param>
+        /// <returns></returns>
+        [ExtensionDefinition(Name = "nullElementReason", HostType = typeof(Patient), ValueType = typeof(Coding), Binding = typeof(NullFlavor), Property = "Name", MustSupport = false, MustUnderstand = false, ShortDescription = "Used when an element value is not mappable to FHIR")]
+        [ExtensionDefinition(Name = "nullElementReason", HostType = typeof(Patient), ValueType = typeof(Coding), Binding = typeof(NullFlavor), Property = "Address", MustSupport = false, MustUnderstand = false)]
+        public static Extension CreateNullElementExtension(NullFlavor nullFlavor)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#nullElementReason"),
+                Value = new Coding(
+                    typeof(NullFlavor).GetValueSetDefinition(),
+                    MARC.Everest.Connectors.Util.ToWireFormat(nullFlavor)
                 )
             };
         }

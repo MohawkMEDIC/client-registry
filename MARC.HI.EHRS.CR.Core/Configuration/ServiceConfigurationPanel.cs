@@ -49,7 +49,6 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
         public ServiceConfigurationPanel()
         {
             this.Mode = ServiceTools.ServiceBootFlag.AutoStart;
-            OidRegistrar.ExtendedAttributes.Add("GloballyAssignable", typeof(bool));
         }
 
         /// <summary>
