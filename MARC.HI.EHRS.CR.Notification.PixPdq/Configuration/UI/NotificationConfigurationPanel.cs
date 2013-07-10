@@ -11,6 +11,7 @@ using MARC.Everest.Connectors.WCF.Core;
 using System.Configuration;
 using System.IO;
 using System.Reflection;
+using MARC.Everest.RMIM.UV.NE2008.Interactions;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 {
@@ -41,7 +42,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 
             XmlElement configSectionsNode = configurationDom.SelectSingleNode("//*[local-name() = 'configSections']") as XmlElement,
                 notificationNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.cr.notification.pixpdq']") as XmlElement,
-                coreNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.svc.core']") as XmlElement;
+                coreNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.hi.ehrs.svc.core']") as XmlElement,
+                everestNode = configurationDom.SelectSingleNode("//*[local-name() = 'marc.everest.connectors.wcf']") as XmlElement;
 
             // Config sections node
             if (configSectionsNode == null)
@@ -59,6 +61,18 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 configSectionNode.Attributes["type"].Value = typeof(ConfigurationSectionHandler).AssemblyQualifiedName;
                 configSectionsNode.AppendChild(configSectionNode);
             }
+            configSectionNode = configSectionsNode.SelectSingleNode("./*[local-name() = 'section'][@name = 'marc.everest.connectors.wcf']") as XmlElement;
+            if (configSectionNode == null)
+            {
+                configSectionNode = configurationDom.CreateElement("section");
+                configSectionNode.Attributes.Append(configurationDom.CreateAttribute("name"));
+                configSectionNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                configSectionNode.Attributes["name"].Value = "marc.everest.connectors.wcf";
+                configSectionNode.Attributes["type"].Value = typeof(MARC.Everest.Connectors.WCF.Configuration.ConfigurationSection).AssemblyQualifiedName;
+                configSectionsNode.AppendChild(configSectionNode);
+            }
+
+
 
             // Persistence section node
             if (notificationNode == null)
@@ -170,6 +184,18 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 
 
             }
+
+            // Everest configuration
+            if (everestNode == null)
+                everestNode = configurationDom.DocumentElement.AppendChild(configurationDom.CreateElement("marc.everest.connectors.wcf")) as XmlElement;
+
+            // Load and import
+            XmlDocument tEverestConfig = new XmlDocument();
+            tEverestConfig.LoadXml("<marc.everest.connectors.wcf><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201301UV02\" action=\"urn:hl7-org:v3:PRPA_IN201301UV02\"/><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201302UV02\" action=\"urn:hl7-org:v3:PRPA_IN201301UV02\"/><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201304UV02\" action=\"urn:hl7-org:v3:PRPA_IN201304UV02\"/></marc.everest.connectors.wcf>");
+            everestNode = configurationDom.ImportNode(tEverestConfig.DocumentElement, true) as XmlElement;
+            foreach (XmlElement child in everestNode.ChildNodes)
+                if(everestNode.SelectSingleNode(String.Format("./*[local-name() = 'action'][@type='{0}']", child.Attributes["type"].Value)) == null)
+                    everestNode.AppendChild(child);
 
             this.m_needSync = true;
         }
