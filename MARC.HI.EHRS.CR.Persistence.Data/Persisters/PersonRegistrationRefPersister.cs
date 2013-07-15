@@ -274,7 +274,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 regEvtId = 0;
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
-                cmd.CommandText = "get_psn_hsr_EVT";
+                cmd.CommandText = "get_psn_hsr_evt";
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id", DbType.Decimal, psn.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id", DbType.Decimal, psn.VersionId));
 

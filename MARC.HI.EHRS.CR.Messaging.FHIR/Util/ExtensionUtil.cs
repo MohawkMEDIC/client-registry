@@ -12,6 +12,7 @@ using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.Everest.DataTypes.Interfaces;
+using System.ServiceModel.Web;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -80,14 +81,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Confidence of the match
         /// </summary>
-        [ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirDecimal), MustUnderstand = false, MustSupport = false, ShortDescription = "In a query: Identifies the confidence of the returned match")]
+        [ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirInt), MustUnderstand = false, MustSupport = false, ShortDescription = "In a query: Identifies the confidence of the returned match")]
         public static Extension CreateConfidenceExtension(Core.ComponentModel.QueryParameters confidence)
         {
 
             return new Extension()
             {
                 Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#subjectObservation"),
-                Value = new FhirDecimal((decimal)confidence.Confidence)
+                Value = new FhirInt((int)(confidence.Confidence * 100))
             };
         }
 
@@ -150,7 +151,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <param name="nullFlavor"></param>
         /// <returns></returns>
         [ExtensionDefinition(Name = "nullElementReason", HostType = typeof(Patient), ValueType = typeof(Coding), Binding = typeof(NullFlavor), Property = "Name", MustSupport = false, MustUnderstand = false, ShortDescription = "Used when an element value is not mappable to FHIR")]
-        [ExtensionDefinition(Name = "nullElementReason", HostType = typeof(Patient), ValueType = typeof(Coding), Binding = typeof(NullFlavor), Property = "Address", MustSupport = false, MustUnderstand = false)]
+        [ExtensionDefinition(Name = "nullElementReason", HostType = typeof(Patient), ValueType = typeof(Coding), Binding = typeof(NullFlavor), Property = "Address", MustSupport = false, MustUnderstand = false, ShortDescription = "Used when an element value is not mappable to FHIR")]
         public static Extension CreateNullElementExtension(NullFlavor nullFlavor)
         {
             return new Extension()
@@ -162,5 +163,103 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 )
             };
         }
+
+        /// <summary>
+        /// Create an original text extension
+        /// </summary>
+        [ExtensionDefinition(Name = "originalText", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Text", MustSupport = false, MustUnderstand = false, ShortDescription = "Stores the original text entry for a resource")]
+        [ExtensionDefinition(Name = "originalText", HostType = typeof(Organization), ValueType = typeof(FhirString), Property = "Text", MustSupport = false, MustUnderstand = false, ShortDescription = "Stores the original text entry for a resource")] 
+        public static Extension CreateOriginalTextExtension(FhirString value)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#originalText"),
+                Value = value
+            };
+        }
+
+        /// <summary>
+        /// Create an "otherId" extension
+        /// </summary>
+        [ExtensionDefinition(Name = "otherId", HostType = typeof(Patient), ValueType = typeof(Identifier), MustSupport = false, MustUnderstand = false, ShortDescription = "Used to convey other, non-medical identifiers related to the patient")]
+        public static Extension CreateOtherIdExtension(KeyValuePair<CodeValue, DomainIdentifier> id)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId"),
+                Value = new PatientMessageProcessor().ConvertDomainIdentifier(id.Value)
+            };
+        }
+
+        /// <summary>
+        /// OtherId Scoping org id
+        /// </summary>
+        [ExtensionDefinition(Name = "otherId-scopingOrganizationId", HostType = typeof(Patient), ValueType = typeof(Identifier), Property = "Extension", MustSupport = false, MustUnderstand = false, ShortDescription = "Used to convey the scoping organization's identifier for the non-medical identifier")]
+        public static Extension CreateOtherIdScopingOrganizationIdExtension(Core.ComponentModel.ExtendedAttribute extId)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationId"),
+                Value = new PatientMessageProcessor().ConvertDomainIdentifier(extId.Value as DomainIdentifier)
+            };
+        }
+
+        /// <summary>
+        /// OtherId Scoping organization name
+        /// </summary>
+        [ExtensionDefinition(Name = "otherId-scopingOrganizationName", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Extension", MustSupport = false, MustUnderstand = false, ShortDescription = "Used to convey the scoping organization's name for the non-medical identifier")]
+        public static Extension CreateOtherIdScopingOrganizationNameExtension(Core.ComponentModel.ExtendedAttribute extName)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationName"),
+                Value = (FhirString)(extName.Value as String)
+            };
+        }
+
+        /// <summary>
+        /// OtherId Scoping organization type
+        /// </summary>
+        [ExtensionDefinition(Name = "otherId-scopingOrganizationType", HostType = typeof(Patient), ValueType = typeof(CodeableConcept), Property = "Extension", MustSupport = false, MustUnderstand = false, ShortDescription = "Used to convey the scoping organization type for the non-medical identifier")]
+        public static Extension CreateOtherIdScopingOrganizationCodeExtension(Core.ComponentModel.ExtendedAttribute extCode)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationType"),
+                Value = new PatientMessageProcessor().ConvertCode(extCode.Value as CodeValue)
+            };
+        }
+
+        /// <summary>
+        /// Contact identifier
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [ExtensionDefinition(Name = "identification", HostType = typeof(Organization), ValueType = typeof(Identifier), MustSupport = false, MustUnderstand = false, ShortDescription = "Stores the identifiers for the contact person")]
+        public static Extension CreateIdentificationExtension(DomainIdentifier id)
+        {
+            return new Extension()
+            {
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#identification"),
+                Value = new PatientMessageProcessor().ConvertDomainIdentifier(id)
+            };
+        }
+
+        /// <summary>
+        /// Create patient resource link extension
+        /// </summary>
+        [ExtensionDefinition(Name = "relatedPatient", HostType = typeof(Patient), ValueType = typeof(Resource<Patient>), Property = "Contact", MustSupport = false, MustUnderstand = false, ShortDescription = "A link to the full demographic of the patient if the relationship holder is another patient")]
+        [ExtensionDefinition(Name = "relatedPractitioner", HostType = typeof(Patient), ValueType = typeof(Resource<Practictioner>), Property = "Contact", MustSupport = false, MustUnderstand = false, ShortDescription = "A link to the full demographic of the patient if the relationship holder is a practitioner")]
+        [ExtensionDefinition(Name = "relatedPractitioner", HostType = typeof(Organization), ValueType = typeof(Resource<Practictioner>), Property = "ContactEntity", MustSupport = false, MustUnderstand = false, ShortDescription = "A link to the full demographic of the patient if the relationship holder is a practitioner")]
+        public static Extension CreateResourceLinkExtension(ResourceBase relatedTarget)
+        {
+            return new Extension()
+            {
+                Url = new Uri(String.Format("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#related{0}", relatedTarget.GetType().Name)),
+                Value = Resource.CreateResourceReference(relatedTarget, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri)
+            };
+        }
+
+
     }
 }

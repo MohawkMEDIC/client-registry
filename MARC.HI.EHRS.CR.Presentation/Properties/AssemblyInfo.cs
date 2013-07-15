@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MARC.HI.EHRS.SVC.Presentation.Console")]
+[assembly: AssemblyTitle("Client Registry")]
 [assembly: AssemblyDescription("Client Registry Host (Test Version)")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Mohawk College")]

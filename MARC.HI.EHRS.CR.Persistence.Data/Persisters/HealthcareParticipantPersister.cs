@@ -34,7 +34,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
     /// <summary>
     /// Healthcare participant registration
     /// </summary>
-    public class HealthcareParticipantPersister : IComponentPersister
+    public class HealthcareParticipantPersister : IQueryComponentPersister, IComponentPersister
     {
         #region IComponentPersister Members
 
@@ -512,7 +512,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     // Add to parent
                     hsrParent.Add(retVal, Guid.NewGuid().ToString(), roleType.Value, originalIds);
                 }
-                else
+                else if(container != null)
                     container.Add(retVal);
 
             }
@@ -528,5 +528,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
         #endregion
 
+
+        #region IQueryComponentPersister Members
+        /// <summary>
+        /// Build a filter operation
+        /// </summary>
+        public string BuildFilter(IComponent data, bool forceExact)
+        {
+            // TODO:
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Get the component type oid
+        /// </summary>
+        public string ComponentTypeOid
+        {
+            get { return ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.PROVIDER_CRID).Oid; }
+        }
+
+        #endregion
     }
 }

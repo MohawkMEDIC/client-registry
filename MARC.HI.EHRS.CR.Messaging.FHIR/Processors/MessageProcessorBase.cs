@@ -53,10 +53,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse query
         /// </summary>
-        [SearchParameterProfile(Name = "stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
+        [SearchParameterProfile(Name = "_stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
         [SearchParameterProfile(Name = "_count", Type = "integer", Description = "The number of results to return in one page")]
-        [SearchParameterProfile(Name = "page", Type = "integer", Description = "The page number of results to return")]
-        [SearchParameterProfile(Name = "confidence", Type = "integer", Description = "The confidence of the returned results (0..100)")]
+        [SearchParameterProfile(Name = "_page", Type = "integer", Description = "The page number of results to return")]
+        [SearchParameterProfile(Name = "_confidence", Type = "integer", Description = "The confidence of the returned results (0..100)")]
         public virtual MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
 
@@ -68,21 +68,21 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                  {
                      switch (parameters.GetKey(i))
                      {
-                         case "stateid":
+                         case "_stateid":
                              retVal.QueryId = Guid.Parse(parameters.GetValues(i)[0]);
-                             retVal.ActualParameters.Add("stateid", retVal.QueryId.ToString());
+                             retVal.ActualParameters.Add("_stateid", retVal.QueryId.ToString());
                              break;
                          case "_count":
                              retVal.Quantity = Int32.Parse(parameters.GetValues(i)[0]);
                              retVal.ActualParameters.Add("_count", retVal.Quantity.ToString());
                              break;
-                         case "page":
+                         case "_page":
                              retVal.Start = retVal.Quantity * Int32.Parse(parameters.GetValues(i)[0]);
-                             retVal.ActualParameters.Add("page", (retVal.Start / retVal.Quantity).ToString());
+                             retVal.ActualParameters.Add("_page", (retVal.Start / retVal.Quantity).ToString());
                              break;
-                         case "confidence":
+                         case "_confidence":
                              retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
-                             retVal.ActualParameters.Add("confidence", parameters.GetValues(i)[0]);
+                             retVal.ActualParameters.Add("_confidence", parameters.GetValues(i)[0]);
                              break;
                      }
                  }
@@ -365,13 +365,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
             else if (queryObject.Filter == null || result.Outcome != ResultCode.Accepted)
                 throw new InvalidOperationException("Could not process query parameters!");
-            else if (result.Query.QueryId == Guid.Empty)
-            {
-                result.Query.QueryId = Guid.NewGuid();
+            else 
                 result = DataUtil.Query(queryObject, result.Details);
-            }
-            else
-                ; // todo: 
 
             return result;
         }
@@ -447,9 +442,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             return result;
         }
 
+        /// <summary>
+        /// Update a patient
+        /// </summary>
         public SVC.Messaging.FHIR.FhirOperationResult Update(string id, SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            throw new DllNotFoundException();
         }
 
         public SVC.Messaging.FHIR.FhirOperationResult Validate(string id, SVC.Messaging.FHIR.Resources.ResourceBase target)

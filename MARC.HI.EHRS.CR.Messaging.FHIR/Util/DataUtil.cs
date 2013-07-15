@@ -58,25 +58,37 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                     throw new InvalidOperationException("No persistence service has been configured, queries cannot continue without this service");
                 else if (registration == null)
                     throw new InvalidOperationException("No registration service has been configured, queries cannot continue without this service");
-
+                
                 FhirQueryResult result = new FhirQueryResult();
                 result.Query = querySpec;
                 result.Issues = new List<DetectedIssue>();
                 result.Details = details;
                 result.Results = new List<SVC.Messaging.FHIR.Resources.ResourceBase>(querySpec.Quantity);
                 
-                // Perform the query
-                var identifiers = registration.QueryRecord(querySpec.Filter);
+                VersionedDomainIdentifier[] identifiers;
+
+                if (result.Query.QueryId != Guid.Empty) // continue a query
+                {
+                    if (queryPersistence == null)
+                        throw new InvalidOperationException("Cannot continue a query when no query persistence engine is registered");
+                    identifiers = queryPersistence.GetQueryResults(result.Query.QueryId.ToString(), result.Query.Start, result.Query.Quantity);
+                }
+                else
+                {
+                    result.Query.QueryId = Guid.NewGuid();
+                    identifiers = registration.QueryRecord(querySpec.Filter);
+                }
 
                 // Fetch the records async and convert
                 List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
                 foreach (HealthServiceRecordContainer res in GetRecordsAsync(identifiers, retRecordId, result.Issues, details, querySpec))
                 {
-                    var processor = FhirMessageProcessorUtil.GetComponentProcessor(res.GetType());
+                    var resultSubject = res.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as HealthServiceRecordContainer ?? res;
+                    var processor = FhirMessageProcessorUtil.GetComponentProcessor(resultSubject.GetType());
                     if (processor == null)
-                        result.Details.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format("Will not include {1}^^^&{2}&ISO in result set, cannot find converter for {0}", res.GetType().Name, res.Id, identifiers[0].Domain), null, null));
+                        result.Details.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format("Will not include {1}^^^&{2}&ISO in result set, cannot find converter for {0}", resultSubject.GetType().Name, resultSubject.Id, identifiers[0].Domain), null, null));
                     else
-                        result.Results.Add(processor.ProcessComponent(res, details));
+                        result.Results.Add(processor.ProcessComponent(resultSubject, details));
                 }
 
                 // Sort control?
@@ -84,10 +96,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
 
                 // Persist the query
-                if (queryPersistence != null)
+                if (queryPersistence != null && !queryPersistence.IsRegistered(querySpec.QueryId.ToString()))
                     queryPersistence.RegisterQuerySet(querySpec.QueryId.ToString(), identifiers, querySpec.QueryId);
-                // Return query data
-                result.TotalResults = retRecordId.Count(o => o != null);
+
+                if (queryPersistence != null)
+                    result.TotalResults = (int)queryPersistence.QueryResultTotalQuantity(querySpec.QueryId.ToString());
+                else
+                    result.TotalResults = retRecordId.Count(o => o != null);
+
                 return result;
             }
             catch (Exception ex)
@@ -241,6 +257,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
                 // Filter data for confidence
                 var filter = qd.Filter;
+                if (filter is RegistrationEvent)
+                    filter = filter.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as HealthServiceRecordContainer;
 
                 QueryParameters confidence = new QueryParameters() { Confidence = 1.0f };
                 if(subject != null)// We're fetching a patient?
@@ -262,5 +280,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 return null;
             }
         }
+
+       
     }
 }

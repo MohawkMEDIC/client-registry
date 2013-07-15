@@ -16,6 +16,9 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Attributes;
 using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 using System.Collections.Specialized;
+using System.ServiceModel.Web;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -53,7 +56,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         }
 
         /// <summary>
-        /// 
+        /// The domain in which data belongs
         /// </summary>
         public override string DataDomain
         {
@@ -78,7 +81,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             Util.DataUtil.ClientRegistryFhirQuery retVal = base.ParseQuery(parameters, dtls);
 
-            var queryFilter = new Person();
+            var subjectFilter = new Person();
+            RegistrationEvent queryFilter = new RegistrationEvent();
+
             //MARC.HI.EHRS.SVC.Core.DataTypes.AddressSet addressFilter = null;
             MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameFilter = null;
 
@@ -89,8 +94,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         {
                             case "_id":
                                 {
-                                    if (queryFilter.AlternateIdentifiers == null)
-                                        queryFilter.AlternateIdentifiers = new List<DomainIdentifier>();
+                                    if (subjectFilter.AlternateIdentifiers == null)
+                                        subjectFilter.AlternateIdentifiers = new List<DomainIdentifier>();
 
                                     if (parameters.GetValues(i).Length > 1)
                                         dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on identifier", null));
@@ -109,7 +114,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                             dtls.Add(dtl);
                                             continue;
                                         }
-                                        queryFilter.AlternateIdentifiers.Add(domainId);
+                                        subjectFilter.AlternateIdentifiers.Add(domainId);
                                         actualIdParm.AppendFormat("{0},", itm);
                                     }
 
@@ -117,8 +122,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     break;
                                 }
                             case "active":
-                                queryFilter.Status = Boolean.Parse(parameters.GetValues(i)[0]) ? StatusType.Active | StatusType.Completed : StatusType.Obsolete | StatusType.Nullified | StatusType.Cancelled | StatusType.Aborted;
-                                retVal.ActualParameters.Add("active", (queryFilter.Status == (StatusType.Active | StatusType.Completed)).ToString());
+                                subjectFilter.Status = Boolean.Parse(parameters.GetValues(i)[0]) ? StatusType.Active | StatusType.Completed : StatusType.Obsolete | StatusType.Nullified | StatusType.Cancelled | StatusType.Aborted;
+                                retVal.ActualParameters.Add("active", (subjectFilter.Status == (StatusType.Active | StatusType.Completed)).ToString());
                                 break;
                             //case "address.use":
                             //case "address.line":
@@ -152,7 +157,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                             //    }
                             case "address": // Address is really messy ... 
                                 {
-                                    queryFilter.Addresses = new List<SVC.Core.DataTypes.AddressSet>();
+                                    subjectFilter.Addresses = new List<SVC.Core.DataTypes.AddressSet>();
                                     // OR is only supported for this
                                     if (parameters.GetValues(i).Length > 1)
                                         dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on address", null));
@@ -164,7 +169,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                         foreach (var adpn in parameters.GetValues(i)[0].Split(','))
                                         {
                                             foreach (var kv in HackishCodeMapping.ADDRESS_PART)
-                                                queryFilter.Addresses.Add(new SVC.Core.DataTypes.AddressSet()
+                                                subjectFilter.Addresses.Add(new SVC.Core.DataTypes.AddressSet()
                                                 {
                                                     Use = SVC.Core.DataTypes.AddressSet.AddressSetUse.Search,
                                                     Parts = new List<SVC.Core.DataTypes.AddressPart>() {
@@ -190,7 +195,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                         dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on birthdate", null));
 
                                     var dValue = new DateOnly() { Value = value };
-                                    queryFilter.BirthTime = new SVC.Core.DataTypes.TimestampPart()
+                                    subjectFilter.BirthTime = new SVC.Core.DataTypes.TimestampPart()
                                     {
                                         Value = dValue.DateValue.Value,
                                         Precision = HackishCodeMapping.ReverseLookup(HackishCodeMapping.DATE_PRECISION, dValue.Precision)
@@ -249,7 +254,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                     else
                                     {
-                                        queryFilter.GenderCode = gCode.Code;
+                                        subjectFilter.GenderCode = gCode.Code;
                                         retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/AdministrativeGender!{0}", gCode.Code));
                                     }
                                     break;
@@ -259,8 +264,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     if (parameters.GetValues(i).Length > 1)
                                         dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on identifiers", null));
 
-                                    if (queryFilter.AlternateIdentifiers == null)
-                                        queryFilter.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
+                                    if (subjectFilter.AlternateIdentifiers == null)
+                                        subjectFilter.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
                                     StringBuilder actualIdParm = new StringBuilder();
                                     foreach (var val in parameters.GetValues(i)[0].Split(','))
                                     {
@@ -270,7 +275,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                             dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, "'identifier' must carry system, cannot perform generic query on identifiers", null, null));
                                             continue;
                                         }
-                                        queryFilter.AlternateIdentifiers.Add(domainId);
+                                        subjectFilter.AlternateIdentifiers.Add(domainId);
                                         actualIdParm.AppendFormat("{0},", val);
                                     }
 
@@ -290,7 +295,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                             continue;
                                         }
 
-                                        queryFilter.AlternateIdentifiers.Add(did);
+                                        subjectFilter.AlternateIdentifiers.Add(did);
                                         retVal.ActualParameters.Add("provider.identifier", String.Format("{0}!", MessageUtil.TranslateDomain(did.Domain)));
                                     }
                                     break;
@@ -309,8 +314,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             // Add a name filter?
             if(nameFilter != null)
-                queryFilter.Names = new List<SVC.Core.DataTypes.NameSet>() { nameFilter };
+                subjectFilter.Names = new List<SVC.Core.DataTypes.NameSet>() { nameFilter };
 
+            queryFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             retVal.Filter = queryFilter;
 
             return retVal;
@@ -348,6 +354,25 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // Setup references
             Patient retVal = new Patient();
             Person person = component as Person;
+            RegistrationEvent regEvt = component.Site != null ? component.Site.Container as RegistrationEvent: null;
+
+            // Load registration event
+            if (regEvt == null)
+            {
+                IDataPersistenceService idp = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+                IDataRegistrationService idq = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService))as IDataRegistrationService;
+
+                var queryFilter = new RegistrationEvent();
+                queryFilter.Add(component, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                var regEvts = idq.QueryRecord(queryFilter);
+                if (regEvts.Length == 1)
+                {
+                    regEvt = idp.GetContainer(regEvts[0], true) as RegistrationEvent;
+                    person = regEvt.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                }
+                else
+                    dtls.Add(new ResultDetail(ResultDetailType.Warning, "Could not load related registration event. Data may be incomplete", null, null));
+            }
 
             retVal.Id = person.Id.ToString();
             retVal.VersionId = person.VersionId.ToString();
@@ -391,7 +416,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.MaritalStatus = base.ConvertCode(person.MaritalStatus);
 
             // Photograph?
-            var photoExtensions = person.FindAllExtensions(o=>o.Name == "FhirPhotographResourceAttachment" && o.PropertyPath == "Photo");
+            var photoExtensions = person.FindAllExtensions(o=>o.Name == "FhirPhotographResourceAttachment" && o.PropertyPath == "Patient.Photo");
             if(photoExtensions != null && photoExtensions.Count() != 0)
                 foreach(var pext in photoExtensions)
                     retVal.Photo.Add(pext.Value as Attachment);
@@ -403,23 +428,91 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 {
                     Contact contactInfo = new Contact();
                     // Is there a person component here
-                    Person relatedTarget = rel.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    IComponent relatedTarget = rel.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as IComponent;
                     if (relatedTarget != null)
                     {
-                        var processing = (this.ProcessComponent(relatedTarget, dtls) as Patient);
-                        contactInfo.Name = processing.Name;
-                        contactInfo.Address = processing.Address;
-                        contactInfo.Gender = processing.Gender;
-                        contactInfo.Telecom = processing.Telecom;
+                        var processor = FhirMessageProcessorUtil.GetComponentProcessor(relatedTarget.GetType());
+                        var processResult = processor.ProcessComponent(relatedTarget, dtls);
+
+                        if (processResult is Patient)
+                        {
+                            var pat = processResult as Patient;
+                            contactInfo.Name = pat.Name;
+                            contactInfo.Address = pat.Address;
+                            contactInfo.Gender = pat.Gender;
+                            contactInfo.Telecom = pat.Telecom;
+                        }
+                        else if (processResult is Practictioner)
+                        {
+                            var prac = processResult as Practictioner;
+                            contactInfo.Name = prac.Name;
+                            contactInfo.Address = prac.Address;
+                            contactInfo.Gender = prac.Gender;
+                            contactInfo.Telecom = prac.Telecom;
+                        }
+                        contactInfo.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
                     }
                     
                     contactInfo.Relationship = new List<CodeableConcept>() {
                         new CodeableConcept(new Uri("http://hl7.org/fhir/vs/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
                     };
                     // Now add an extension as the relationship kind is more detailed in our expression
-                    contactInfo.Extension.Add(ExtensionUtil.CreateRelationshipExtension(rel.RelationshipKind));
+                    contactInfo.Relationship[0].Extension.Add(ExtensionUtil.CreateRelationshipExtension(rel.RelationshipKind));
                     retVal.Contact.Add(contactInfo);
                 }
+
+          
+            // Original text?
+            var originalTextExtension = person.FindAllExtensions(o => o.Name == "OriginalText" && o.PropertyPath == "Patient.Text");
+            if (originalTextExtension != null && originalTextExtension.Count() > 0)
+                foreach (var oext in originalTextExtension)
+                    retVal.Text.Extension.Add(ExtensionUtil.CreateOriginalTextExtension(oext.Value as FhirString));
+            
+            // Organizations that have registered this user
+            var handler = MARC.HI.EHRS.SVC.Messaging.FHIR.Handlers.FhirResourceHandlerUtil.GetResourceHandler("Organization");
+            if (handler != null && regEvt != null)
+            {
+                var org = regEvt.FindComponent(HealthServiceRecordSiteRoleType.ResponsibleFor | HealthServiceRecordSiteRoleType.PlaceOfRecord);
+                
+                if(org is RepositoryDevice)
+                {
+                    var repDevice = org as RepositoryDevice;
+                    // todo:
+                }
+                else if (org is HealthcareParticipant)
+                {
+                    var repHealthcare = org as HealthcareParticipant;
+                    var result = handler.Read(repHealthcare.Id.ToString(), null);
+                    if (result == null || result.Results.Count == 0)
+                        ;
+                    else
+                        retVal.Provider = Resource<Organization>.CreateResourceReference(result.Results[0] as Organization, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri);
+                }
+            }
+
+            // other ids?
+            if (person.OtherIdentifiers != null)
+            {
+                foreach (var id in person.OtherIdentifiers)
+                {
+                    // Create the "otherId" extension
+                    var ext = ExtensionUtil.CreateOtherIdExtension(id);
+                    var propertyPath = String.Format("OtherIdentifiers[{0}{1}]", id.Value.Domain, id.Value.Identifier);
+                    var extId = person.FindExtension(o => o.Name == "AssigningIdOrganizationId" && o.PropertyPath == propertyPath);
+                    var extName = person.FindExtension(o => o.Name == "AssigningIdOrganizationName" && o.PropertyPath == propertyPath);
+                    var extCode = person.FindExtension(o => o.Name == "AssigningIdOrganizationCode" && o.PropertyPath == propertyPath);
+
+                    if (extId != null)
+                        ext.Extension.Add(ExtensionUtil.CreateOtherIdScopingOrganizationIdExtension(extId));
+                    if (extName != null)
+                        ext.Extension.Add(ExtensionUtil.CreateOtherIdScopingOrganizationNameExtension(extName));
+                    if (extCode != null)
+                        ext.Extension.Add(ExtensionUtil.CreateOtherIdScopingOrganizationCodeExtension(extCode));
+
+                    retVal.Extension.Add(ext);
+                }
+            }
+
 
             // Confidence?
             var confidence = person.FindComponent(HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
@@ -428,6 +521,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.Extension.Add(ExtensionUtil.CreateConfidenceExtension(confidence));
                 retVal.Extension.Add(ExtensionUtil.CreateMatchAlgorithmExtension(confidence));
             }
+
             return retVal;
         }
 

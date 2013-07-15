@@ -28,10 +28,12 @@
         </ul>
         <p>In order to use the FHIR service you will have to communicate with one of the implemented FHIR resources using the specification found <a href="http://hl7.org/fhir">here</a>:</p>
         <ul>
+            <li><a href="./MetaData">Conformance</a> - Conformance statement for this client registry</li>
             <li><a href="./Profile">Profile Resource</a> - Describes the profiles used on this client registry</li>
             <li><a href="./ValueSet">ValueSet Resource</a> - Contains a list of custom codes used on this registry</li>
             <li><a href="./Patient">Patient Resource</a> - Patients contained in the client registry</li>
         </ul>
+        <p><a href="./?xsd=0">You may also retrieve a schema file describing the resources implemented in this service here</a></p>
         <h2>Search for a Patient</h2>
         <p>You can test this registry by using the form below to search for patients:</p>
         <form method="get" action="./Patient">
@@ -53,7 +55,7 @@
                     </td>
                     <td>Confidence</td>
                     <td>
-                        <select name="confidence">
+                        <select name="_confidence">
                             <option value="100">Exact Match</option>
                             <option value="80">Strong Matches</option>
                             <option value="60">Weak Matches</option>

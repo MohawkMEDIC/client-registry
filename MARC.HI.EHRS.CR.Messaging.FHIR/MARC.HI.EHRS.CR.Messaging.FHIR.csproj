@@ -80,6 +80,7 @@
     <Compile Include="Processors\HackishCodeMapping.cs" />
     <Compile Include="Processors\IFhirMessageProcessor.cs" />
     <Compile Include="Processors\MessageProcessorBase.cs" />
+    <Compile Include="Processors\OrganizationMessageProcessor.cs" />
     <Compile Include="Processors\PatientMessageProcessor.cs" />
     <Compile Include="Processors\ValueSetResourceHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

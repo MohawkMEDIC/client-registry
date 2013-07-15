@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using System.Xml;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -36,6 +37,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     continue; // cannot construct
                 var processor = ctor.Invoke(null) as IFhirMessageProcessor;
                 s_messageProcessors.Add(processor);
+                Trace.TraceInformation("Added processor {0} for type {1}({2})", t.FullName, processor.ComponentType.FullName, processor.ResourceName);
             }
 
         }
@@ -63,7 +65,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public static IFhirMessageProcessor GetComponentProcessor(Type componentType)
         {
-            return s_messageProcessors.Find(o => o.ComponentType == componentType);
+            var retVal = s_messageProcessors.Find(o => o.ComponentType == componentType);
+            if (retVal == null)
+                Trace.TraceWarning("Could not find processor for {0}", componentType);
+            return retVal;
         }
 
     }
