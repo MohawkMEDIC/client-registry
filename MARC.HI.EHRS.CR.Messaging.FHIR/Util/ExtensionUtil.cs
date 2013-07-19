@@ -35,11 +35,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressPart"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressPart"),
                 Value = new FhirString(part.AddressValue),
                 Extension = new List<Extension>() {
                                         new Extension() {
-                                            Url =  new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#v3-addressPartTypes"),
+                                            Url =  new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#v3-addressPartTypes"),
                                             Value = new Coding(typeof(AddressPartType).GetValueSetDefinition(), wireCode)
                                         }
                                     }
@@ -60,7 +60,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#addressUse"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressUse"),
                 Value = new Coding(typeof(PostalAddressUse).GetValueSetDefinition(), wireCode)
             };
         }
@@ -73,7 +73,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#telecommunicationAddressUse"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#telecommunicationAddressUse"),
                 Value = new Coding(typeof(TelecommunicationAddressUse).GetValueSetDefinition(), MARC.Everest.Connectors.Util.ToWireFormat(telecommunicationAddressUse))
             };
         }
@@ -87,7 +87,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#subjectObservation"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#subjectObservation"),
                 Value = new FhirInt((int)(confidence.Confidence * 100))
             };
         }
@@ -99,7 +99,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
         {
             return new Extension() { 
-                        Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#subjectObservationMatchAlgorithm"),
+                        Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#subjectObservationMatchAlgorithm"),
                         Value = 
                             (confidence.MatchingAlgorithm & Core.ComponentModel.MatchAlgorithm.Soundex) != 0 ?
                                 new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PHCM") { Display = "phonetic match" } :
@@ -116,7 +116,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#personalRelationshipRoleType"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#personalRelationshipRoleType"),
                 Value = new Coding(
                     typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
                     relationshipKind
@@ -134,7 +134,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             if (Enum.TryParse<EntityNameUse>(nameSetUse.ToString(), out entityNameUse))
                 return new Extension()
                 {
-                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#nameUse"),
+                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nameUse"),
                     Value = new Coding(
                         typeof(EntityNameUse).GetValueSetDefinition(),
                         MARC.Everest.Connectors.Util.ToWireFormat(entityNameUse)
@@ -156,7 +156,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#nullElementReason"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nullElementReason"),
                 Value = new Coding(
                     typeof(NullFlavor).GetValueSetDefinition(),
                     MARC.Everest.Connectors.Util.ToWireFormat(nullFlavor)
@@ -173,7 +173,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#originalText"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#originalText"),
                 Value = value
             };
         }
@@ -186,7 +186,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(id.Value)
             };
         }
@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationId"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationId"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(extId.Value as DomainIdentifier)
             };
         }
@@ -212,7 +212,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationName"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationName"),
                 Value = (FhirString)(extName.Value as String)
             };
         }
@@ -225,7 +225,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#otherId-scopingOrganizationType"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationType"),
                 Value = new PatientMessageProcessor().ConvertCode(extCode.Value as CodeValue)
             };
         }
@@ -240,7 +240,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#identification"),
+                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#identification"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(id)
             };
         }
@@ -255,7 +255,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri(String.Format("http://cr.marc-hi.ca:8080/fhir/0.09/profile/@pix-fhir#related{0}", relatedTarget.GetType().Name)),
+                Url = new Uri(String.Format("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#related{0}", relatedTarget.GetType().Name)),
                 Value = Resource.CreateResourceReference(relatedTarget, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri)
             };
         }

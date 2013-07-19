@@ -334,7 +334,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// Process components
         /// </summary>
         /// TODO: make this more robust
-        [ElementProfile(Property = "Link", MaxOccurs = 0, Comment = "This registry only supports links through 'contact' relationships")]
         [ElementProfile(Property = "Animal", MaxOccurs = 0, Comment = "This registry only supports human patients")]
         [ElementProfile(Property = "Contact.Organization", MaxOccurs = 0, Comment = "This registry only supports relationships with 'Person' objects")]
         [ElementProfile(Property = "Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
@@ -344,10 +343,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [ElementProfile(Property = "MultipleBirth", ValueType = typeof(FhirInt), Comment = "Only multiple birth number is supported. Boolean will be translated to a non-zero value")]
         [ElementProfile(Property = "MaritalStatus", RemoteBinding = null, Comment = "Marital status can be drawn from any code system")]
         [ElementProfile(Property = "Extension", Comment = "Additional attributes which could not be mapped to FHIR will be placed in the \"Extension\" element")]
-        [ElementProfile(Property = "Language.Value", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
-        [ElementProfile(Property = "Language.Mode", Binding = typeof(LanguageAbilityMode), Comment = "Language mode is restricted to ESP and EWR")]
-        [ElementProfile(Property = "Language.ProficiencyLevel", Binding = typeof(LanguageAbilityProficiency), Comment = "Language proficiency will be either E or not provided")]
-        [ElementProfile(Property = "Language.Preference", Comment = "Treated as indicator. Will only appear if set to 'true'")]
+        [ElementProfile(Property = "Language", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
+        //[ElementProfile(Property = "Language.Mode", Binding = typeof(LanguageAbilityMode), Comment = "Language mode is restricted to ESP and EWR")]
+        //[ElementProfile(Property = "Language.ProficiencyLevel", Binding = typeof(LanguageAbilityProficiency), Comment = "Language proficiency will be either E or not provided")]
+        //[ElementProfile(Property = "Language.Preference", Comment = "Treated as indicator. Will only appear if set to 'true'")]
         [ElementProfile(Property = "Text", Comment = "Will be auto-generated, any provided will be stored and represented as an extension \"originalText\"")]
         public override ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
         {
@@ -513,6 +512,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 }
             }
 
+            if (person.Language != null)
+                foreach (var p in person.Language)
+                    retVal.Language.Add(new CodeableConcept(new Uri("http://hl7.org/fhir/sid/iso-639-1"), p.Language));
+                        
 
             // Confidence?
             var confidence = person.FindComponent(HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
