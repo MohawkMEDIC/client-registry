@@ -172,7 +172,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     try
                     {
                      
-                        var message = parser.Parse(messageData.ToString());
+                        // HACK: nHAPI doesn't like URLs ... Will fix this later
+                        string messageString = messageData.ToString().Replace("|URL|", "|ST|");
+                        var message = parser.Parse(messageString);
 
                         // Setup local and remote receive endpoint data for auditing
                         var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;

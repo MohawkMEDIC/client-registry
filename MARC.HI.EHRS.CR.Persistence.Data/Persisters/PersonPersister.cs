@@ -1700,10 +1700,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
                 else
                 {
-                    if (!String.IsNullOrEmpty(id.Identifier))
-                        retVal.AppendFormat("SELECT {0}", id.Identifier); // look for one id
-                    else
+                    decimal localId = 0;
+                    if (String.IsNullOrEmpty(id.Identifier))
                         retVal.AppendFormat("SELECT PSN_ID FROM PSN_TBL");
+                    else if (Decimal.TryParse(id.Identifier, out localId))
+                        retVal.AppendFormat("SELECT {0}", localId); // look for one id
+                    else
+                        throw new InvalidOperationException("Invalid CR_CID domain identifier");
                 }
                 if (id != identifiers.Last())
                 {
