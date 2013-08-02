@@ -19,6 +19,7 @@ using System.Collections.Specialized;
 using System.ServiceModel.Web;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -327,7 +328,69 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public override System.ComponentModel.IComponent ProcessResource(ResourceBase resource, List<IResultDetail> dtls)
         {
-            throw new NotImplementedException();
+
+            var resPatient = resource as Patient;
+
+            if (resPatient == null)
+                throw new ArgumentNullException("resource", "Resource invalid");
+
+
+            // Process a resource
+            RegistrationEvent regEvent = new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Register,
+                EventType = new CodeValue("GET"),
+                Mode = RegistrationEventType.Register,
+                Status = StatusType.Completed,
+                Timestamp = DateTime.Now
+            };
+
+            // Person component
+            Person psn = new Person();
+            psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Obsolete;
+            psn.BirthTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, resPatient.BirthDate, "D");
+
+            // Deceased time
+            if (resPatient.Deceased is FhirBoolean)
+            {
+                dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, "This registry only supports dates for deceased range. Value was converted to current date and no precision", null, null));
+                psn.DeceasedTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, DateTime.Now, "N");
+            }
+            else
+            {
+                var dtPrec = HackishCodeMapping.ReverseLookup(HackishCodeMapping.DATE_PRECISION, (resPatient.Deceased as Date).Precision);
+                psn.DeceasedTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, (resPatient.Deceased as Date).DateValue.Value, dtPrec);
+            }
+
+            // Gender code
+            psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
+
+            // Multiple birth
+            if (resPatient.MultipleBirth is FhirInt)
+                psn.BirthOrder = (resPatient.MultipleBirth as FhirInt);
+            else if(resPatient.MultipleBirth is FhirBoolean)
+                psn.BirthOrder= 1;
+            
+
+            // Marital status
+            psn.MaritalStatus = base.ConvertCode(resPatient.MaritalStatus, dtls);
+
+            // Photograph?
+            if (resPatient.Photo != null)
+                foreach(var photo in resPatient.Photo)
+                    psn.Add(new ExtendedAttribute()
+                    {
+                        Name = "FhirPhotographResourceAttachment",
+                        PropertyPath = "Patient.Photo",
+                        Value = photo
+                    });
+
+            // Add subject
+            regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            if(dtls.Exists(o=>o.Type == ResultDetailType.Error))
+                return null;
+            return regEvent;
+
         }
 
         /// <summary>

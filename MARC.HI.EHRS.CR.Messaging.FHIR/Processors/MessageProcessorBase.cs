@@ -19,6 +19,8 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Collections.Specialized;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
+using System.IO;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -318,7 +320,24 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public SVC.Messaging.FHIR.FhirOperationResult Create(SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            // Create a registration event ... subject
+            FhirOperationResult retVal = new FhirOperationResult();
+            retVal.Details = new List<IResultDetail>();
+
+            // Get query parameters
+            var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
+
+            // Parse the incoming request
+            var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
+
+            if (storeContainer == null)
+                throw new InvalidDataException("Could not process resource");
+            // Now store the container
+            storeContainer = DataUtil.Register(storeContainer, DataPersistenceMode.Debugging, retVal.Details);
+
+            retVal.Outcome = ResultCode.Accepted;
+            retVal.Results.Add(resourceProcessor.ProcessComponent(storeContainer, retVal.Details));
+            return retVal;
         }
 
         /// <summary>
@@ -477,6 +496,27 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 return new CodeableConcept(typeof(NullFlavor).GetValueSetDefinition(), "UNK");
             }
 
+        }
+
+        /// <summary>
+        /// Convert a code from FHIR to internal
+        /// </summary>
+        internal CodeValue ConvertCode(CodeableConcept codeableConcept, List<IResultDetail> dtls)
+        {
+            var coding = codeableConcept.GetPrimaryCode();
+            // Get the oid
+            CodeValue retVal = new CodeValue(coding.Code, MessageUtil.TranslateFhirDomain(coding.System.ToString()));
+            retVal.DisplayName = coding.Display;
+
+            ITerminologyService termSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            if (termSvc != null)
+            {
+                var validationDtls = termSvc.Validate(retVal);
+                if (validationDtls.Outcome != SVC.Core.Terminology.ValidationOutcome.Valid)
+                    foreach (var dtl in validationDtls.Details)
+                        dtls.Add(new VocabularyIssueResultDetail(dtl.IsError ? ResultDetailType.Error : ResultDetailType.Warning, dtl.Message, null));
+            }
+            return retVal;
         }
     }
 }

@@ -55,7 +55,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         {
             { "D", DatePrecision.Day },
             { "M", DatePrecision.Month },
-            { "Y", DatePrecision.Year }
+            { "Y", DatePrecision.Year },
+            { "F", DatePrecision.Full }
         };
 
         

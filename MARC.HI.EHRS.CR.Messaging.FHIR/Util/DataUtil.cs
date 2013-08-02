@@ -37,7 +37,43 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             public HealthServiceRecordContainer Filter;
 
         }
-        
+
+        /// <summary>
+        /// Query the data store
+        /// </summary>
+        public static IComponent Register(IComponent storeContainer, DataPersistenceMode mode, List<IResultDetail> details)
+        {
+            // Get the services
+            IDataPersistenceService persistence = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+            IDataRegistrationService registration = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
+
+            try
+            {
+
+                // Sanity check
+                if (persistence == null)
+                    throw new InvalidOperationException("No persistence service has been configured, registrations cannot continue without this service");
+                else if (registration == null)
+                    throw new InvalidOperationException("No registration service has been configured, registrations cannot continue without this service");
+
+                // Store
+                var storedData = persistence.StoreContainer(storeContainer as IContainer, mode);
+                if (storeContainer != null)
+                    registration.RegisterRecord((IComponent)storeContainer, mode);
+
+                // Now read and return
+                //return persistence.GetContainer(storedData, true);
+                return null;
+                
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                details.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+                throw;
+            }
+        }
+
         /// <summary>
         /// Query the data store
         /// </summary>
