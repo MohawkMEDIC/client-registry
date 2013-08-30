@@ -65,7 +65,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         internal static readonly Dictionary<String, AddressPart.AddressPartType?> AD_MAP = new Dictionary<string, AddressPart.AddressPartType?>()
         {
             { "1", AddressPart.AddressPartType.StreetAddressLine },
-            { "2", AddressPart.AddressPartType.AddressLine },
+            { "2", AddressPart.AddressPartType.AdditionalLocator },
             { "3", AddressPart.AddressPartType.City },
             { "4", AddressPart.AddressPartType.State },
             { "5", AddressPart.AddressPartType.PostalCode },

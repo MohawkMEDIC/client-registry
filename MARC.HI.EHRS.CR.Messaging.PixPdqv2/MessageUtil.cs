@@ -52,8 +52,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!String.IsNullOrEmpty(match.Groups[i].Value))
                     sb.AppendFormat("{0}{1}", match.Groups[i].Value, i == 4 ? "" : "-");
             if (!string.IsNullOrEmpty(match.Groups[5].Value))
-                sb.AppendFormat(";extension={0}", match.Groups[5].Value);
-
+                sb.AppendFormat(";ext={0}", match.Groups[5].Value);
+            
             return sb.ToString();
         }
 
@@ -108,7 +108,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             foreach (var parm in parms)
             {
                 string[] pData = parm.Split('=');
-                if (pData[0] == "extension")
+                if (pData[0] == "extension" || pData[0] == "ext")
                 {
                     sb.AppendFormat("X{0}", pData[1]);
                     instance.Extension.Value = pData[1];
