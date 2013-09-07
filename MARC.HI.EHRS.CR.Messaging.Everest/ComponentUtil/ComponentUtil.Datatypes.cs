@@ -162,7 +162,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         protected TimestampPart CreateTimestamp(TS timestamp, List<IResultDetail> dtls)
         {
-            return new TimestampPart(TimestampPart.TimestampPartType.Standlone, timestamp.DateValue, m_precisionMap[timestamp.DateValuePrecision.Value]);
+            if (timestamp.IsInvalidDate)
+            {
+                dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, String.Format("Date string {0} cannot be converted to a Timestamp", timestamp.Value), null, null));
+                return null;
+            }
+            else
+                return new TimestampPart(TimestampPart.TimestampPartType.Standlone, timestamp.DateValue, m_precisionMap[timestamp.DateValuePrecision.Value]);
         }
 
         /// <summary>
@@ -181,7 +187,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 {
                     //dtls.Add(new ResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW00D"), null, null));
                     //ivl_ts = ivl_ts.Value.ToIVL();
-                    tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.Standlone, ivl_ts.Value.DateValue, m_precisionMap[ivl_ts.Value.DateValuePrecision.Value]));
+                    if (ivl_ts.Value.IsInvalidDate)
+                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, String.Format("Date string {0} cannot be converted to a Timestamp", ivl_ts.Value.Value), null, null));
+                    else
+                        tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.Standlone, ivl_ts.Value.DateValue, m_precisionMap[ivl_ts.Value.DateValuePrecision.Value]));
                 }
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE027"), null, null));
@@ -194,7 +203,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     if (!HasTimezone(ivl_ts.Low))
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, String.Format(ERR_NOTZ, ivl_ts.Low), null));
                     else
-                        tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.LowBound, ivl_ts.Low.DateValue, m_precisionMap[ivl_ts.Low.DateValuePrecision.Value]));
+                    {
+                        if (ivl_ts.Low.IsInvalidDate)
+                            dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, String.Format("Date string {0} cannot be converted to a Timestamp", ivl_ts.Low.Value), null, null));
+                        else
+                            tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.LowBound, ivl_ts.Low.DateValue, m_precisionMap[ivl_ts.Low.DateValuePrecision.Value]));
+                    }
                 }
                 // high
                 if (ivl_ts.High != null && !ivl_ts.High.IsNull)
@@ -202,7 +216,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     if (!HasTimezone(ivl_ts.High))
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, String.Format(ERR_NOTZ, ivl_ts.High), null));
                     else
-                        tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.HighBound, ivl_ts.High.DateValue, m_precisionMap[ivl_ts.High.DateValuePrecision.Value]));
+                    {
+                        if (ivl_ts.High.IsInvalidDate)
+                            dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, String.Format("Date string {0} cannot be converted to a Timestamp", ivl_ts.High.Value), null, null));
+                        else
+                            tss.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.HighBound, ivl_ts.High.DateValue, m_precisionMap[ivl_ts.High.DateValuePrecision.Value]));
+                    }
                 }
             }
 
