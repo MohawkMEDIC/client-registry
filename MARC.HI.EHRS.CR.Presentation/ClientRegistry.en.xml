@@ -159,7 +159,7 @@
   <string name="DBCF009">DBCF009 : Repository device must have an identifier</string>
   <string name="DBCF00A">DBCF00A : Data consistency issue, the supplied name does not seem to match the name registered with the client. Linking of records aborted</string>
   <string name="DBCF00B">DBCF00B : Data consistency issue, cannot create a link with a non-existant record</string>
-  <string name="DBCF00C">DBCF00C : Unrecognized patient domain</string>
+  <string name="DBCF00C">DBCF00C : Unrecognized patient identity domain</string>
   <string name="DBCF00D">DBCF00D : Record cannot reference itself</string>
   <!-- PRIVACY AND SECURITY ISSUES -->
   <string name="PBCF000">PBCF000 : General Privacy / security Business Constraint Failure</string>

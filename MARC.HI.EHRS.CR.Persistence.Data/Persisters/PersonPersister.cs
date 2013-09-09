@@ -92,6 +92,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Next we'll load the alternate identifiers from the database into this client person
                 // this is done because higher level functions may need access to the complete list of 
                 // identifiers for things like notifications, etc.
+                if (psn.AlternateIdentifiers == null)
+                    psn.AlternateIdentifiers = new List<DomainIdentifier>();
                 psn.AlternateIdentifiers.Clear();
                 GetPersonAlternateIdentifiers(conn, tx, psn);
                 

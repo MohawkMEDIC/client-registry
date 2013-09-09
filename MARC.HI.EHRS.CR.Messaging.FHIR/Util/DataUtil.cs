@@ -62,8 +62,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                     registration.RegisterRecord((IComponent)storeContainer, mode);
 
                 // Now read and return
-                //return persistence.GetContainer(storedData, true);
-                return null;
+                return persistence.GetContainer(storedData, true) as IComponent;
+                //return null;
                 
             }
             catch (Exception ex)

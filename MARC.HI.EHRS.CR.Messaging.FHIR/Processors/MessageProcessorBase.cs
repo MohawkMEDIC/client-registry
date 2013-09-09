@@ -21,6 +21,8 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Collections.Specialized;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
 using System.IO;
+using System.ServiceModel.Web;
+using System.ServiceModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -331,12 +333,25 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
 
             if (storeContainer == null)
-                throw new InvalidDataException("Could not process resource");
-            // Now store the container
-            storeContainer = DataUtil.Register(storeContainer, DataPersistenceMode.Debugging, retVal.Details);
+                retVal.Outcome = ResultCode.Rejected;
+            else
+            {
+                // Now store the container
+                try
+                {
+                    // HACK: Store the container
+                    storeContainer = DataUtil.Register(storeContainer, DataPersistenceMode.Production, retVal.Details);
 
-            retVal.Outcome = ResultCode.Accepted;
-            retVal.Results.Add(resourceProcessor.ProcessComponent(storeContainer, retVal.Details));
+                    retVal.Outcome = ResultCode.Accepted;
+                    retVal.Results = new List<ResourceBase>();
+                    retVal.Results.Add(resourceProcessor.ProcessComponent(storeContainer, retVal.Details));
+                }
+                catch (Exception e)
+                {
+                    retVal.Details.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("DTPE001"), e));
+                    retVal.Outcome = ResultCode.Error;
+                }
+            }
             return retVal;
         }
 
@@ -529,8 +544,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             AddressSet retVal = new AddressSet();
             if (address.Use != null) // convert use
+            {
                 retVal.Use = HackishCodeMapping.Lookup(HackishCodeMapping.ADDRESS_USE, address.Use);
-            retVal.Use |= ExtensionUtil.ParseADUseExtension(address.Extension, dtls);
+                retVal.Use |= ExtensionUtil.ParseADUseExtension(address.Use.Extension, dtls);
+            }
 
             if (address.Text != null) // Convert text? this is discarded
             {
@@ -570,8 +587,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             NameSet retVal = new NameSet();
 
             if (name.Use != null)
+            {
                 retVal.Use = HackishCodeMapping.Lookup(HackishCodeMapping.NAME_USE, name.Use);
-            retVal.Use |= ExtensionUtil.ParsePNUseExtension(name.Extension, dtls);
+                retVal.Use |= ExtensionUtil.ParsePNUseExtension(name.Use.Extension, dtls);
+            }
 
             // Name text
             if (name.Text != null)
@@ -598,6 +617,35 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             return retVal;
 
+        }
+
+        /// <summary>
+        /// Convert an identifier
+        /// </summary>
+        internal DomainIdentifier ConvertIdentifier(Identifier id, List<IResultDetail> dtls)
+        {
+            // Attempt to lookup the OID
+            var oid = MessageUtil.TranslateFhirDomain(id.System.ToString());
+            var lookup = ApplicationContext.ConfigurationService.OidRegistrar.FindData(oid);
+            var retVal = new DomainIdentifier()
+            {
+                Domain = oid,
+                Identifier = id.Key,
+                AssigningAuthority = id.Label
+            };
+
+            // Assigning auth?
+            if (lookup == null)
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("DBCF00C"), null, null));
+            else
+            {
+                var asn = lookup.Attributes.Find(o => o.Key == "AssigningAuthorityName");
+                if (asn.Value == null)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("MSGE06A"), oid), null, null));
+                else if (asn.Value != retVal.AssigningAuthority)
+                    dtls.Add(new FixedValueMisMatchedResultDetail(retVal.AssigningAuthority, asn.Value, "Identifier"));
+            }
+            return retVal;
         }
     }
 }

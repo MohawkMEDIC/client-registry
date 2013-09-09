@@ -342,12 +342,29 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 EventType = new CodeValue("GET"),
                 Mode = RegistrationEventType.Register,
                 Status = StatusType.Completed,
-                Timestamp = DateTime.Now
+                Timestamp = DateTime.Now,
+                EffectiveTime = new TimestampSet()
+                {
+                    Parts = new List<TimestampPart>() {
+                        new TimestampPart(TimestampPart.TimestampPartType.Standlone, DateTime.Now, "F")
+                    }
+                }
             };
 
             // Person component
             Person psn = new Person();
             psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Obsolete;
+
+            // Person identifier
+            if(resPatient.Identifier.Count > 0)
+            {
+                psn.AlternateIdentifiers = new List<DomainIdentifier>();
+                foreach (var id in resPatient.Identifier)
+                    psn.AlternateIdentifiers.Add(base.ConvertIdentifier(id, dtls));
+            }
+            if (resPatient.Identifier.Count == 0)
+                dtls.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE078"), null, null));
+
 
             // Birth date
             if(resPatient.BirthDate != null)
@@ -359,7 +376,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, "This registry only supports dates for deceased range. Value was converted to current date and no precision", null, null));
                 psn.DeceasedTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, DateTime.Now, "N");
             }
-            else
+            else if(resPatient.Deceased is Date)
             {
                 var dtPrec = HackishCodeMapping.ReverseLookup(HackishCodeMapping.DATE_PRECISION, (resPatient.Deceased as Date).Precision);
                 psn.DeceasedTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, (resPatient.Deceased as Date).DateValue.Value, dtPrec);
@@ -376,11 +393,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 psn.BirthOrder= 1;
             
             // Address 
+            psn.Addresses = new List<AddressSet>();
             foreach (var fhirAd in resPatient.Address)
                 psn.Addresses.Add(base.ConvertAddress(fhirAd, dtls));
 
-            // Marital status
-            psn.MaritalStatus = base.ConvertCode(resPatient.MaritalStatus, dtls);
+            // Marital status\
+            if(resPatient.MaritalStatus != null)
+                psn.MaritalStatus = base.ConvertCode(resPatient.MaritalStatus, dtls);
 
             // Photograph?
             if (resPatient.Photo != null)
@@ -399,6 +418,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // TODO: 
 
             // Names
+            psn.Names = new List<NameSet>();
             foreach (var name in resPatient.Name)
                 psn.Names.Add(base.ConvertName(name, dtls));
 
@@ -431,6 +451,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         public override ResourceBase ProcessComponent(System.ComponentModel.IComponent component, List<IResultDetail> dtls)
         {
             // Setup references
+            if (component is RegistrationEvent)
+                component = (component as RegistrationEvent).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+
             Patient retVal = new Patient();
             Person person = component as Person;
             RegistrationEvent regEvt = component.Site != null ? component.Site.Container as RegistrationEvent: null;
