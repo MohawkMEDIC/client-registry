@@ -348,7 +348,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // Person component
             Person psn = new Person();
             psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Obsolete;
-            psn.BirthTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, resPatient.BirthDate, "D");
+
+            // Birth date
+            if(resPatient.BirthDate != null)
+                psn.BirthTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, resPatient.BirthDate, "D");
 
             // Deceased time
             if (resPatient.Deceased is FhirBoolean)
@@ -363,7 +366,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
 
             // Gender code
-            psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
+            if(resPatient.Gender != null)
+                psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
 
             // Multiple birth
             if (resPatient.MultipleBirth is FhirInt)
@@ -371,6 +375,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             else if(resPatient.MultipleBirth is FhirBoolean)
                 psn.BirthOrder= 1;
             
+            // Address 
+            foreach (var fhirAd in resPatient.Address)
+                psn.Addresses.Add(base.ConvertAddress(fhirAd, dtls));
 
             // Marital status
             psn.MaritalStatus = base.ConvertCode(resPatient.MaritalStatus, dtls);
@@ -384,6 +391,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         PropertyPath = "Patient.Photo",
                         Value = photo
                     });
+
+            // Contact persons
+            // TODO:
+
+            // Communication lanugage
+            // TODO: 
+
+            // Names
+            foreach (var name in resPatient.Name)
+                psn.Names.Add(base.ConvertName(name, dtls));
 
             // Add subject
             regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
@@ -399,7 +416,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// TODO: make this more robust
         [ElementProfile(Property = "Animal", MaxOccurs = 0, Comment = "This registry only supports human patients")]
         [ElementProfile(Property = "Contact.Organization", MaxOccurs = 0, Comment = "This registry only supports relationships with 'Person' objects")]
-        [ElementProfile(Property = "Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
+        //[ElementProfile(Property = "Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
         [ElementProfile(Property = "Gender", Binding = typeof(AdministrativeGender), Comment = "Since this FHIR registry is also a PIX manager and HL7v3 client registry the v3 AdministrativeGender code set used internally has been referenced")]
         [ElementProfile(Property = "Identifier", MinOccurs = 1, MaxOccurs = -1, Comment = "PIX Manager logic requires at least one identifier. When submitting a resource the @system attribute must match the referenced provider identifier's @system attribute (i.e. you may only register new identifiers for systems which you are the registered creator)")]
         [ElementProfile(Property = "Deceased", ValueType = typeof(Date), Comment = "Only date values are supported for deceased indication. Boolean will be translated to a non-zero date")]
@@ -552,6 +569,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 }
             }
 
+            // replacements are links
+            var rplc = person.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
+            if(rplc != null)
+                foreach (var rpl in rplc)
+                    retVal.Link.Add(Resource.CreateResourceReference(this.ProcessComponent(rpl as Person, dtls) as Patient, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri));
             // other ids?
             if (person.OtherIdentifiers != null)
             {

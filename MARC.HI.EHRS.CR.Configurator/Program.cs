@@ -57,9 +57,11 @@ namespace MARC.HI.EHRS.CR.Configurator
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
                 {
-
-                    ProcessStartInfo psi = new ProcessStartInfo(Assembly.GetEntryAssembly().Location, Environment.CommandLine.Contains(' ') ? Environment.CommandLine.Substring(Environment.CommandLine.IndexOf(" ")) : null);
+                    string cmdLine = Environment.CommandLine.Substring(Environment.CommandLine.IndexOf(".exe") + 4);
+                    cmdLine = cmdLine.Contains(' ') ? cmdLine.Substring(cmdLine.IndexOf(" ")) : null;
+                    ProcessStartInfo psi = new ProcessStartInfo(Assembly.GetEntryAssembly().Location, cmdLine);
                     psi.Verb = "runas";
+                    Trace.TraceInformation("Not administrator!");
                     Process proc = Process.Start(psi);
                     Application.Exit();
                     return;
@@ -81,7 +83,7 @@ namespace MARC.HI.EHRS.CR.Configurator
                 if (consoleParms.ListDeploy)
                 {
                     StringBuilder options = new StringBuilder("Available deployment modules: \r\n");
-                    foreach (var pnl in ConfigurationApplicationContext.s_configurationPanels.FindAll(o=>o is IAutoDeployConfigurationPanel))
+                    foreach (var pnl in ConfigurationApplicationContext.s_configurationPanels.FindAll(o => o is IAutoDeployConfigurationPanel))
                         options.AppendFormat("{0}\r\n", pnl.Name);
                     MessageBox.Show(options.ToString());
                 }
@@ -111,6 +113,10 @@ namespace MARC.HI.EHRS.CR.Configurator
 
                     Application.Run(new frmMain());
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
             finally
             {

@@ -84,6 +84,7 @@
     <Compile Include="Processors\PatientMessageProcessor.cs" />
     <Compile Include="Processors\ValueSetResourceHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnsupportedFhirDatatypePropertyResultDetail.cs" />
     <Compile Include="Util\DataUtil.cs" />
     <Compile Include="Util\ExtensionUtil.cs" />
   </ItemGroup>

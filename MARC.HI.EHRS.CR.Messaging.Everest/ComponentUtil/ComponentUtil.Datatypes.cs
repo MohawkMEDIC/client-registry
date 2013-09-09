@@ -336,6 +336,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 retVal.Parts.Add(pt);
             }
 
+            if (address.UseablePeriod != null && !address.UseablePeriod.IsNull)
+                dtls.Add(new NotImplementedElementResultDetail("useablePeriod", "urn:hl7-org:v3"));
             return retVal;
         }
 

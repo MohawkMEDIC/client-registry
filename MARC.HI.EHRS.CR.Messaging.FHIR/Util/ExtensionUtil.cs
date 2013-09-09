@@ -13,6 +13,7 @@ using MARC.HI.EHRS.CR.Messaging.FHIR.Processors;
 using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.Everest.DataTypes.Interfaces;
 using System.ServiceModel.Web;
+using MARC.Everest.Connectors;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -47,6 +48,28 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         }
 
         /// <summary>
+        /// Parse an AD extension
+        /// </summary>
+        public static List<AddressPart> ParseADExtension(List<Extension> extension, List<IResultDetail> dtls)
+        {
+            List<AddressPart> retVal = new List<AddressPart>();
+            foreach (var adext in extension.FindAll(o => o.Url.Value == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressPart")))
+            {
+                AddressPart ap = new AddressPart();
+                ap.AddressValue = (adext.Value as FhirString);
+                
+                // Find the extension identifying the type
+                var typeExt = adext.Extension.Find(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#v3-addressPartTypes"));
+                var typeCode = typeExt != null ? typeExt.Value as Coding : null as Coding;
+                if (typeCode != null && typeCode.System == typeof(AddressPartType).GetValueSetDefinition())
+                    ap.PartType = (AddressPart.AddressPartType)MARC.Everest.Connectors.Util.Convert<AddressPartType>(typeCode.Code);
+                else
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Extended address parts must carry a classification from code system {0}", typeof(AddressPartType).GetValueSetDefinition()), null, null));
+            }
+            return retVal;
+        }
+
+        /// <summary>
         /// Create an AD extension
         /// </summary>
         [ExtensionDefinition(Name = "addressUse", HostType = typeof(Patient), Property = "Address.Use", ValueType = typeof(Coding), Binding = typeof(PostalAddressUse), MustUnderstand = false, MustSupport = false, ShortDescription = "Used when the address use is not defined in FHIR vocabulary")]
@@ -63,6 +86,24 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressUse"),
                 Value = new Coding(typeof(PostalAddressUse).GetValueSetDefinition(), wireCode)
             };
+        }
+
+        /// <summary>
+        /// Parse an AD Use extension
+        /// </summary>
+        public static AddressSet.AddressSetUse ParseADUseExtension(List<Extension> extension, List<IResultDetail> dtls)
+        {
+            // Now fun part parse
+            AddressSet.AddressSetUse value = 0;
+            foreach (var ext in extension.FindAll(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressUse")))
+            {
+                var coding = ext.Value as Coding;
+                if (coding == null)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Address use extension must carry a coding from system {0}", typeof(PostalAddressUse).GetValueSetDefinition()), null, null));
+                else
+                    value |= (AddressSet.AddressSetUse)Enum.Parse(typeof(AddressSet.AddressSetUse), MARC.Everest.Connectors.Util.Convert<PostalAddressUse>(coding.Code).ToString());
+            }
+            return value;
         }
 
         /// <summary>
@@ -140,9 +181,29 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                         MARC.Everest.Connectors.Util.ToWireFormat(entityNameUse)
                     )
                 };
-            else
-                return CreateNullElementExtension(NullFlavor.Other);
+            return null;
                     
+        }
+
+
+        /// <summary>
+        /// Parse an PN Use extension
+        /// </summary>
+        public static NameSet.NameSetUse ParsePNUseExtension(List<Extension> extension, List<IResultDetail> dtls)
+        {
+            // Now fun part parse
+            NameSet.NameSetUse value = 0;
+            foreach (var ext in extension.FindAll(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nameUse")))
+            {
+                var coding = ext.Value as Coding;
+                if (coding == null)
+                    dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, "Name use extension must carry a value of type coding", null));
+                else if(coding.System != typeof(EntityNameUse).GetValueSetDefinition())
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Name use extension must carry a value drawn from system {0}", typeof(EntityNameUse).GetValueSetDefinition()), null, null));
+                else
+                    value |= (NameSet.NameSetUse)Enum.Parse(typeof(NameSet.NameSetUse), MARC.Everest.Connectors.Util.Convert<EntityNameUse>(coding.Code).ToString());
+            }
+            return value;
         }
 
         /// <summary>

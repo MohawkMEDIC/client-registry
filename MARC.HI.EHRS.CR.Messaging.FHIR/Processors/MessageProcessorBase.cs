@@ -518,5 +518,86 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
             return retVal;
         }
+
+        /// <summary>
+        /// Convert an address to a address set
+        /// </summary>
+        internal AddressSet ConvertAddress(Address address, List<IResultDetail> dtls)
+        {
+            if(address == null)
+                return null;
+
+            AddressSet retVal = new AddressSet();
+            if (address.Use != null) // convert use
+                retVal.Use = HackishCodeMapping.Lookup(HackishCodeMapping.ADDRESS_USE, address.Use);
+            retVal.Use |= ExtensionUtil.ParseADUseExtension(address.Extension, dtls);
+
+            if (address.Text != null) // Convert text? this is discarded
+            {
+                dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Text", "Address"));
+                address.Text = null;
+            }
+
+            foreach (var itm in address.Line)
+                retVal.Parts.Add(new AddressPart() { AddressValue = itm.Value, PartType = AddressPart.AddressPartType.StreetAddressLine });
+            if (address.City != null)
+                retVal.Parts.Add(new AddressPart() { AddressValue = address.City, PartType = AddressPart.AddressPartType.City });
+            if (address.State != null)
+                retVal.Parts.Add(new AddressPart() { AddressValue = address.State, PartType = AddressPart.AddressPartType.State });
+            if (address.Zip != null)
+                retVal.Parts.Add(new AddressPart() { AddressValue = address.Zip, PartType = AddressPart.AddressPartType.PostalCode });
+            if (address.Country != null)
+                retVal.Parts.Add(new AddressPart() { AddressValue = address.Country, PartType = AddressPart.AddressPartType.Country });
+
+            retVal.Parts.AddRange(ExtensionUtil.ParseADExtension(address.Extension, dtls));
+
+            // Period of operation
+            if (address.Period != null)
+            {
+                dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Period", "Address"));
+                address.Period = null;
+            }
+
+            
+            return retVal;
+        }
+
+        /// <summary>
+        /// Convert a name
+        /// </summary>
+        internal NameSet ConvertName(HumanName name, List<IResultDetail> dtls)
+        {
+            NameSet retVal = new NameSet();
+
+            if (name.Use != null)
+                retVal.Use = HackishCodeMapping.Lookup(HackishCodeMapping.NAME_USE, name.Use);
+            retVal.Use |= ExtensionUtil.ParsePNUseExtension(name.Extension, dtls);
+
+            // Name text
+            if (name.Text != null)
+            {
+                dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Text", "Name"));
+                name.Text = null;
+            }
+            
+            foreach (var fn in name.Family)
+                retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Family, Value = fn });
+            foreach(var sfx in name.Suffix)
+                retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Suffix, Value = sfx });
+            foreach (var gn in name.Given)
+                retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Given, Value = gn });
+            foreach (var pfx in name.Prefix)
+                retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Prefix, Value = pfx });
+            
+            // Use period
+            if(name.Period != null)
+            {
+                dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Period", "Name"));
+                name.Period = null;
+            }
+
+            return retVal;
+
+        }
     }
 }
