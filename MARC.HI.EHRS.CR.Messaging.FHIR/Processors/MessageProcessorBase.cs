@@ -333,7 +333,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
 
             if (storeContainer == null)
-                retVal.Outcome = ResultCode.Rejected;
+                retVal.Outcome = ResultCode.AcceptedNonConformant;
             else
             {
                 // Now store the container
@@ -492,14 +492,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
 
             if (storeContainer == null)
-                retVal.Outcome = ResultCode.Rejected;
+                retVal.Outcome = ResultCode.AcceptedNonConformant;
             else
             {
                 // Now store the container
                 try
                 {
                     // HACK: Store the container
-                    storeContainer = DataUtil.Update(storeContainer, id, DataPersistenceMode.Production, retVal.Details);
+                    storeContainer = DataUtil.Update(storeContainer, id, mode, retVal.Details);
 
                     retVal.Outcome = ResultCode.Accepted;
                     retVal.Results = new List<ResourceBase>();
@@ -514,10 +514,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             return retVal;
         }
 
-        public SVC.Messaging.FHIR.FhirOperationResult Validate(string id, SVC.Messaging.FHIR.Resources.ResourceBase target)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
 

@@ -16,6 +16,7 @@ using System.ServiceModel.Web;
 using MARC.Everest.Connectors;
 using System.Xml.Serialization;
 using System.Collections;
+using MARC.Everest.Exceptions;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
@@ -65,21 +66,30 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// </summary>
         public static List<AddressPart> ParseADExtension(List<Extension> extension, List<IResultDetail> dtls)
         {
-            List<AddressPart> retVal = new List<AddressPart>();
-            foreach (var adext in extension.FindAll(o => o.Url.Value == GetExtensionNameUrl("addressPart")))
+            try
             {
-                AddressPart ap = new AddressPart();
-                ap.AddressValue = (adext.Value as FhirString);
-                
-                // Find the extension identifying the type
-                var typeExt = adext.Extension.Find(o => o.Url == GetExtensionNameUrl("v3-addressPartTypes"));
-                var typeCode = typeExt != null ? typeExt.Value as Coding : null as Coding;
-                if (typeCode != null && typeCode.System == typeof(AddressPartType).GetValueSetDefinition())
-                    ap.PartType = (AddressPart.AddressPartType)MARC.Everest.Connectors.Util.Convert<AddressPartType>(typeCode.Code);
-                else
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Extended address parts must carry a classification from code system {0}", typeof(AddressPartType).GetValueSetDefinition()), null, null));
+                List<AddressPart> retVal = new List<AddressPart>();
+                foreach (var adext in extension.FindAll(o => o.Url.Value == GetExtensionNameUrl("addressPart")))
+                {
+                    AddressPart ap = new AddressPart();
+                    ap.AddressValue = (adext.Value as FhirString);
+
+                    // Find the extension identifying the type
+                    var typeExt = adext.Extension.Find(o => o.Url == GetExtensionNameUrl("v3-addressPartTypes"));
+                    var typeCode = typeExt != null ? typeExt.Value as Coding : null as Coding;
+                    if (typeCode != null && typeCode.System == typeof(AddressPartType).GetValueSetDefinition())
+                        ap.PartType = (AddressPart.AddressPartType)MARC.Everest.Connectors.Util.Convert<AddressPartType>(typeCode.Code);
+                    else
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Extended address parts must carry a classification from code system {0}", typeof(AddressPartType).GetValueSetDefinition()), null, null));
+                }
+                return retVal;
             }
-            return retVal;
+            catch (VocabularyException e)
+            {
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR007"), GetExtensionNameUrl("v3-addressPartTypes"), e.Message), e));
+                return new List<AddressPart>();
+            }
+            
         }
 
         /// <summary>
@@ -106,17 +116,26 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// </summary>
         public static AddressSet.AddressSetUse ParseADUseExtension(List<Extension> extension, List<IResultDetail> dtls)
         {
-            // Now fun part parse
-            AddressSet.AddressSetUse value = 0;
-            foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("addressUse")))
+            try
             {
-                var coding = ext.Value as Coding;
-                if (coding == null)
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Address use extension must carry a coding from system {0}", typeof(PostalAddressUse).GetValueSetDefinition()), null, null));
-                else
-                    value |= (AddressSet.AddressSetUse)Enum.Parse(typeof(AddressSet.AddressSetUse), MARC.Everest.Connectors.Util.Convert<PostalAddressUse>(coding.Code).ToString());
+                // Now fun part parse
+                AddressSet.AddressSetUse value = 0;
+                foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("addressUse")))
+                {
+                    var coding = ext.Value as Coding;
+                    if (coding == null)
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Address use extension must carry a coding from system {0}", typeof(PostalAddressUse).GetValueSetDefinition()), null, null));
+                    else
+                        value |= (AddressSet.AddressSetUse)Enum.Parse(typeof(AddressSet.AddressSetUse), MARC.Everest.Connectors.Util.Convert<PostalAddressUse>(coding.Code).ToString());
+                }
+                return value;
             }
-            return value;
+            catch (VocabularyException e)
+            {
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR007"), GetExtensionNameUrl("addressUse"), e.Message), e));
+                return 0;
+            }
+
         }
 
         /// <summary>
@@ -140,16 +159,25 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <returns></returns>
         internal static string ParseTELUseExtension(List<Extension> extensions, List<IResultDetail> dtls)
         {
-            StringBuilder retVal = new StringBuilder();
-            foreach (var ext in extensions.FindAll(o => o.Url == GetExtensionNameUrl("telecommunicationAddressUse")))
+            try
             {
-                var codeValue = ext.Value as Coding;
-                if (codeValue != null || codeValue.System != typeof(TelecommunicationAddressUse).GetValueSetDefinition())
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Telecom use extension must carry a coding from system {0}", typeof(TelecommunicationAddressUse).GetValueSetDefinition()), null, null));
-                else
-                    retVal.AppendFormat(" {0}", codeValue.Code);
+                StringBuilder retVal = new StringBuilder();
+                foreach (var ext in extensions.FindAll(o => o.Url == GetExtensionNameUrl("telecommunicationAddressUse")))
+                {
+                    var codeValue = ext.Value as Coding;
+                    if (codeValue != null || codeValue.System != typeof(TelecommunicationAddressUse).GetValueSetDefinition())
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Telecom use extension must carry a coding from system {0}", typeof(TelecommunicationAddressUse).GetValueSetDefinition()), null, null));
+                    else
+                        retVal.AppendFormat(" {0}", codeValue.Code);
+                }
+                return retVal.ToString();
             }
-            return retVal.ToString();
+            catch (VocabularyException e)
+            {
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR007"),  GetExtensionNameUrl("telecommunicationAddressUse"), e.Message), e));
+                return String.Empty;
+            }
+
         }
 
 
@@ -204,16 +232,26 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// </summary>
         internal static string ParseRelationshipExtension(List<Extension> extensions, List<IResultDetail> dtls)
         {
-            var rolExt = extensions.Find(o => o.Url.Value == GetExtensionNameUrl("personalRelationshipRoleType"));
-            if (rolExt != null)
+            try
             {
-                var codeValue = rolExt.Value as Coding;
-                if (codeValue == null || codeValue.System != typeof(PersonalRelationshipRoleType).GetValueSetDefinition())
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Personal relationship role type extension must carry a coding from system {0}", typeof(PersonalRelationshipRoleType).GetValueSetDefinition()), null, null));
-                else
-                    return codeValue.Code;
+                var rolExt = extensions.Find(o => o.Url.Value == GetExtensionNameUrl("personalRelationshipRoleType"));
+                if (rolExt != null)
+                {
+                    var codeValue = rolExt.Value as Coding;
+                    if (codeValue == null || codeValue.System != typeof(PersonalRelationshipRoleType).GetValueSetDefinition())
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Personal relationship role type extension must carry a coding from system {0}", typeof(PersonalRelationshipRoleType).GetValueSetDefinition()), null, null));
+                    else
+                    {
+                        return MARC.Everest.Connectors.Util.ToWireFormat(MARC.Everest.Connectors.Util.Convert<PersonalRelationshipRoleType>(codeValue.Code));
+                    }
+                }
+                return string.Empty;
             }
-            return string.Empty;
+            catch (VocabularyException e)
+            {
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR007"), GetExtensionNameUrl("personalRelationshipRoleType"), e.Message), e));
+                return String.Empty;
+            }
         }
 
         /// <summary>
@@ -243,18 +281,26 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         public static NameSet.NameSetUse ParsePNUseExtension(List<Extension> extension, List<IResultDetail> dtls)
         {
             // Now fun part parse
-            NameSet.NameSetUse value = 0;
-            foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("nameUse")))
+            try
             {
-                var coding = ext.Value as Coding;
-                if (coding == null)
-                    dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, "Name use extension must carry a value of type coding", null));
-                else if(coding.System != typeof(EntityNameUse).GetValueSetDefinition())
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Name use extension must carry a value drawn from system {0}", typeof(EntityNameUse).GetValueSetDefinition()), null, null));
-                else
-                    value |= (NameSet.NameSetUse)Enum.Parse(typeof(NameSet.NameSetUse), MARC.Everest.Connectors.Util.Convert<EntityNameUse>(coding.Code).ToString());
+                NameSet.NameSetUse value = 0;
+                foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("nameUse")))
+                {
+                    var coding = ext.Value as Coding;
+                    if (coding == null)
+                        dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, "Name use extension must carry a value of type coding", null));
+                    else if (coding.System != typeof(EntityNameUse).GetValueSetDefinition())
+                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Name use extension must carry a value drawn from system {0}", typeof(EntityNameUse).GetValueSetDefinition()), null, null));
+                    else
+                        value |= (NameSet.NameSetUse)Enum.Parse(typeof(NameSet.NameSetUse), MARC.Everest.Connectors.Util.Convert<EntityNameUse>(coding.Code).ToString());
+                }
+                return value;
             }
-            return value;
+            catch (VocabularyException e)
+            {
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR007"), GetExtensionNameUrl("personalRelationshipRoleType"), e.Message), e));
+                return 0;
+            }
         }
 
         /// <summary>
@@ -385,7 +431,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             {
                 bool supported = MARC.HI.EHRS.SVC.Messaging.FHIR.Util.ProfileUtil.GetProfiles().Exists(p => p.ExtensionDefinition.Exists(e => e.Code.Value == ext.Url.Value.Fragment.Replace("#","") && ext.Url.ToString().StartsWith(GetExtensionNameUrl(String.Empty).ToString())));
                 if (!supported)
-                    dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format("Extension {0} at {1} is not supported!", ext.Url, path), path));
+                    dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("FHIR006"), ext.Url, path), path));
             }
             foreach (var prop in Array.FindAll(resource.GetType().GetProperties(), p => p.GetCustomAttribute<XmlElementAttribute>() != null))
             {

@@ -193,5 +193,7 @@
   <string name="FHIR001">First Page</string>
   <string name="FHIR002">Previous</string>
   <string name="FHIR003">Next</string>
-  <string name="FHIR004">Last Page</string>  
+  <string name="FHIR004">Last Page</string>
+  <string name="FHIR006">FHIR006 : Extension '{0}' is not supported for this operation</string>
+  <string name="FHIR007">FHIR007 : Error processing extension '{0}' : {1}</string>
 </locale>
