@@ -329,6 +329,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         public override System.ComponentModel.IComponent ProcessResource(ResourceBase resource, List<IResultDetail> dtls)
         {
 
+            // Verify extensions
+            ExtensionUtil.VerifyExtensions(resource, dtls);
+
             var resPatient = resource as Patient;
 
             if (resPatient == null)
@@ -348,7 +351,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     Parts = new List<TimestampPart>() {
                         new TimestampPart(TimestampPart.TimestampPartType.Standlone, DateTime.Now, "F")
                     }
-                }
+                },
+                LanguageCode = ApplicationContext.ConfigurationService.JurisdictionData.DefaultLanguageCode
             };
 
             // Person component
@@ -383,8 +387,18 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
 
             // Gender code
-            if(resPatient.Gender != null)
-                psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
+            if (resPatient.Gender != null)
+            {
+                if (resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
+                    resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/vs/administrative-gender")
+                    psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
+                else if (resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
+                    resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
+                    psn.GenderCode = null;
+                else
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.gender", null));
+
+            }
 
             // Multiple birth
             if (resPatient.MultipleBirth is FhirInt)
@@ -412,11 +426,69 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     });
 
             // Contact persons
-            // TODO:
+            foreach (var resCont in resPatient.Contact)
+                if(resCont.Relationship.Count == 0)
+                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, "Expected 1..* contact relationship kinds", null));
+                else
+                    foreach (var rkind in resCont.Relationship)
+                    {
+                        // Now we need to create a personal relationship out of this mess.
+                        PersonalRelationship relationship = new PersonalRelationship();
+                        // Name
+                        if (resCont.Name.Count > 0)
+                        {
+                            var legalName = resCont.Name.Find(o => o.Use == "official") ?? resCont.Name.Find(o => o.Use == "usual") ?? resCont.Name[0];
+                            if (legalName != null)
+                                relationship.LegalName = base.ConvertName(legalName, dtls);
+                        }
+
+                        // Telecom
+                        if (resCont.Telecom.Count > 0)
+                        {
+                            relationship.TelecomAddresses = new List<TelecommunicationsAddress>();
+                            foreach (var tel in resCont.Telecom)
+                                relationship.TelecomAddresses.Add(base.ConvertTelecom(tel, dtls));
+                        }
+                        // Address
+                        if (resCont.Address.Count > 0)
+                        {
+                            var permAddr = resCont.Address.Find(o => o.Use == "home") ?? resCont.Address.Find(o => o.Use == "work") ?? resCont.Address[0];
+                            if (permAddr != null)
+                                relationship.PerminantAddress = base.ConvertAddress(permAddr, dtls);
+                        }
+
+                        // Gender
+                        if (resCont.Gender != null)
+                        {
+                            if (resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
+                                    resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/vs/administrative-gender")
+                                psn.GenderCode = resCont.Gender.GetPrimaryCode().Code;
+                            else if (resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
+                                resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
+                                psn.GenderCode = null;
+                            else
+                                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.contact.gender", null));
+                        }
+
+                        // Now add as a personal relationship
+                        relationship.RelationshipKind = ExtensionUtil.ParseRelationshipExtension(rkind.Extension, dtls);
+                        if (String.IsNullOrEmpty(relationship.RelationshipKind))
+                            relationship.RelationshipKind = HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rkind.GetPrimaryCode().Code);
+                        relationship.Status = StatusType.Active;
+
+                        // Add the relationship
+                        psn.Add(relationship, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                    }
 
             // Communication lanugage
-            // TODO: 
 
+            // Telecoms
+            if (resPatient.Telecom.Count > 0)
+            {
+                psn.TelecomAddresses = new List<TelecommunicationsAddress>();
+                foreach (var tel in resPatient.Telecom)
+                    psn.TelecomAddresses.Add(base.ConvertTelecom(tel, dtls));
+            }
             // Names
             psn.Names = new List<NameSet>();
             foreach (var name in resPatient.Name)
@@ -444,6 +516,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [ElementProfile(Property = "MaritalStatus", RemoteBinding = null, Comment = "Marital status can be drawn from any code system")]
         [ElementProfile(Property = "Extension", Comment = "Additional attributes which could not be mapped to FHIR will be placed in the \"Extension\" element")]
         [ElementProfile(Property = "Language", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
+        [ElementProfile(Property = "Contact.Relationship", MinOccurs = 1, MaxOccurs = 1, Comment = "This registry only supports one type of relationship per contact. Multiple entries will result in the creation of multiple contacts with each type of relationship")]
         //[ElementProfile(Property = "Language.Mode", Binding = typeof(LanguageAbilityMode), Comment = "Language mode is restricted to ESP and EWR")]
         //[ElementProfile(Property = "Language.ProficiencyLevel", Binding = typeof(LanguageAbilityProficiency), Comment = "Language proficiency will be either E or not provided")]
         //[ElementProfile(Property = "Language.Preference", Comment = "Treated as indicator. Will only appear if set to 'true'")]
@@ -552,9 +625,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                             contactInfo.Gender = prac.Gender;
                             contactInfo.Telecom = prac.Telecom;
                         }
-                        contactInfo.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
+                        //contactInfo.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
                     }
-                    
+                                        
                     contactInfo.Relationship = new List<CodeableConcept>() {
                         new CodeableConcept(new Uri("http://hl7.org/fhir/vs/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
                     };
@@ -593,10 +666,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
 
             // replacements are links
-            var rplc = person.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
-            if(rplc != null)
-                foreach (var rpl in rplc)
-                    retVal.Link.Add(Resource.CreateResourceReference(this.ProcessComponent(rpl as Person, dtls) as Patient, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri));
+            //var rplc = person.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf);
+            //if(rplc != null)
+            //    foreach (var rpl in rplc)
+            //        retVal.Link.Add(Resource.CreateResourceReference(this.ProcessComponent(rpl as Person, dtls) as Patient, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri));
             // other ids?
             if (person.OtherIdentifiers != null)
             {

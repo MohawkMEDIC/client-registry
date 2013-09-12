@@ -30,6 +30,7 @@ using MARC.HI.EHRS.SVC.Core;
 using MARC.HI.EHRS.SVC.Core.Exceptions;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -100,7 +101,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                 registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
-                // Persist
+
+                // Persist or merge?
                 new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
                 //var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
             }

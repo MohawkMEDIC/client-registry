@@ -14,15 +14,28 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR;
 using MARC.Everest.DataTypes.Interfaces;
 using System.ServiceModel.Web;
 using MARC.Everest.Connectors;
+using System.Xml.Serialization;
+using System.Collections;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 {
+
     /// <summary>
     /// FHIR Extensions utility
     /// </summary>
     [Profile(ProfileId = "pix-fhir", Name = "PIX Manager FHIR Profile", Import = "svccore")]    
     public static class ExtensionUtil
     {
+
+        public static Uri GetExtensionNameUrl(String extension)
+        {
+            return new Uri(String.Format("{0}/Profile/@pix-fhir#{1}", WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri, extension));
+        }
+
+        public static Uri GetValueSetUrl(String valueSet)
+        {
+            return new Uri(String.Format("{0}/ValueSet/@{1}", WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri, valueSet));
+        }
 
         /// <summary>
         /// Create an AD extension
@@ -36,11 +49,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressPart"),
+                Url = GetExtensionNameUrl("addressPart"),
                 Value = new FhirString(part.AddressValue),
                 Extension = new List<Extension>() {
                                         new Extension() {
-                                            Url =  new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#v3-addressPartTypes"),
+                                            Url =  GetExtensionNameUrl("v3-addressPartTypes"),
                                             Value = new Coding(typeof(AddressPartType).GetValueSetDefinition(), wireCode)
                                         }
                                     }
@@ -53,13 +66,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         public static List<AddressPart> ParseADExtension(List<Extension> extension, List<IResultDetail> dtls)
         {
             List<AddressPart> retVal = new List<AddressPart>();
-            foreach (var adext in extension.FindAll(o => o.Url.Value == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressPart")))
+            foreach (var adext in extension.FindAll(o => o.Url.Value == GetExtensionNameUrl("addressPart")))
             {
                 AddressPart ap = new AddressPart();
                 ap.AddressValue = (adext.Value as FhirString);
                 
                 // Find the extension identifying the type
-                var typeExt = adext.Extension.Find(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#v3-addressPartTypes"));
+                var typeExt = adext.Extension.Find(o => o.Url == GetExtensionNameUrl("v3-addressPartTypes"));
                 var typeCode = typeExt != null ? typeExt.Value as Coding : null as Coding;
                 if (typeCode != null && typeCode.System == typeof(AddressPartType).GetValueSetDefinition())
                     ap.PartType = (AddressPart.AddressPartType)MARC.Everest.Connectors.Util.Convert<AddressPartType>(typeCode.Code);
@@ -83,7 +96,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressUse"),
+                Url = GetExtensionNameUrl("addressUse"),
                 Value = new Coding(typeof(PostalAddressUse).GetValueSetDefinition(), wireCode)
             };
         }
@@ -95,7 +108,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             // Now fun part parse
             AddressSet.AddressSetUse value = 0;
-            foreach (var ext in extension.FindAll(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#addressUse")))
+            foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("addressUse")))
             {
                 var coding = ext.Value as Coding;
                 if (coding == null)
@@ -114,10 +127,31 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#telecommunicationAddressUse"),
+                Url = GetExtensionNameUrl("telecommunicationAddressUse"),
                 Value = new Coding(typeof(TelecommunicationAddressUse).GetValueSetDefinition(), MARC.Everest.Connectors.Util.ToWireFormat(telecommunicationAddressUse))
             };
         }
+
+        /// <summary>
+        /// Parse a TEL use extension
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="dtls"></param>
+        /// <returns></returns>
+        internal static string ParseTELUseExtension(List<Extension> extensions, List<IResultDetail> dtls)
+        {
+            StringBuilder retVal = new StringBuilder();
+            foreach (var ext in extensions.FindAll(o => o.Url == GetExtensionNameUrl("telecommunicationAddressUse")))
+            {
+                var codeValue = ext.Value as Coding;
+                if (codeValue != null || codeValue.System != typeof(TelecommunicationAddressUse).GetValueSetDefinition())
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Telecom use extension must carry a coding from system {0}", typeof(TelecommunicationAddressUse).GetValueSetDefinition()), null, null));
+                else
+                    retVal.AppendFormat(" {0}", codeValue.Code);
+            }
+            return retVal.ToString();
+        }
+
 
         /// <summary>
         /// Confidence of the match
@@ -128,7 +162,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#subjectObservation"),
+                Url = GetExtensionNameUrl("subjectObservation"),
                 Value = new FhirInt((int)(confidence.Confidence * 100))
             };
         }
@@ -139,8 +173,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "In a query: Identifies the algorithm used to perform the match")]
         public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
         {
-            return new Extension() { 
-                        Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#subjectObservationMatchAlgorithm"),
+            return new Extension() {
+                Url = GetExtensionNameUrl("subjectObservationMatchAlgorithm"),
                         Value = 
                             (confidence.MatchingAlgorithm & Core.ComponentModel.MatchAlgorithm.Soundex) != 0 ?
                                 new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PHCM") { Display = "phonetic match" } :
@@ -157,12 +191,29 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#personalRelationshipRoleType"),
+                Url = GetExtensionNameUrl("personalRelationshipRoleType"),
                 Value = new Coding(
                     typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
                     relationshipKind
                 )
             };
+        }
+
+        /// <summary>
+        /// Parse a relationship extension
+        /// </summary>
+        internal static string ParseRelationshipExtension(List<Extension> extensions, List<IResultDetail> dtls)
+        {
+            var rolExt = extensions.Find(o => o.Url.Value == GetExtensionNameUrl("personalRelationshipRoleType"));
+            if (rolExt != null)
+            {
+                var codeValue = rolExt.Value as Coding;
+                if (codeValue == null || codeValue.System != typeof(PersonalRelationshipRoleType).GetValueSetDefinition())
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Personal relationship role type extension must carry a coding from system {0}", typeof(PersonalRelationshipRoleType).GetValueSetDefinition()), null, null));
+                else
+                    return codeValue.Code;
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -175,7 +226,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             if (Enum.TryParse<EntityNameUse>(nameSetUse.ToString(), out entityNameUse))
                 return new Extension()
                 {
-                    Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nameUse"),
+                    Url = GetExtensionNameUrl("nameUse"),
                     Value = new Coding(
                         typeof(EntityNameUse).GetValueSetDefinition(),
                         MARC.Everest.Connectors.Util.ToWireFormat(entityNameUse)
@@ -193,7 +244,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             // Now fun part parse
             NameSet.NameSetUse value = 0;
-            foreach (var ext in extension.FindAll(o => o.Url == new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nameUse")))
+            foreach (var ext in extension.FindAll(o => o.Url == GetExtensionNameUrl("nameUse")))
             {
                 var coding = ext.Value as Coding;
                 if (coding == null)
@@ -217,7 +268,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#nullElementReason"),
+                Url = GetExtensionNameUrl("nullElementReason"),
                 Value = new Coding(
                     typeof(NullFlavor).GetValueSetDefinition(),
                     MARC.Everest.Connectors.Util.ToWireFormat(nullFlavor)
@@ -234,7 +285,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#originalText"),
+                Url = GetExtensionNameUrl("originalText"),
                 Value = value
             };
         }
@@ -247,7 +298,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId"),
+                Url = GetExtensionNameUrl("otherId"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(id.Value)
             };
         }
@@ -260,7 +311,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationId"),
+                Url = GetExtensionNameUrl("otherId-scopingOrganizationId"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(extId.Value as DomainIdentifier)
             };
         }
@@ -273,7 +324,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationName"),
+                Url = GetExtensionNameUrl("otherId-scopingOrganizationName"),
                 Value = (FhirString)(extName.Value as String)
             };
         }
@@ -286,7 +337,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#otherId-scopingOrganizationType"),
+                Url = GetExtensionNameUrl("otherId-scopingOrganizationType"),
                 Value = new PatientMessageProcessor().ConvertCode(extCode.Value as CodeValue)
             };
         }
@@ -301,7 +352,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#identification"),
+                Url = GetExtensionNameUrl("identification"),
                 Value = new PatientMessageProcessor().ConvertDomainIdentifier(id)
             };
         }
@@ -316,11 +367,36 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         {
             return new Extension()
             {
-                Url = new Uri(String.Format("http://cr.marc-hi.ca:8080/fhir/0.10/profile/@pix-fhir#related{0}", relatedTarget.GetType().Name)),
+                Url = GetExtensionNameUrl(String.Format("related{0}", relatedTarget.GetType().Name)),
                 Value = Resource.CreateResourceReference(relatedTarget, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri)
             };
         }
 
+        /// <summary>
+        /// Verify extensions can be processed
+        /// </summary>
+        internal static void VerifyExtensions(Shareable resource, List<IResultDetail> dtls, String path = "")
+        {
+            if (resource == null)
+                return;
 
+            path = path == String.Empty ? resource.GetType().Name : path;
+            foreach (var ext in resource.Extension)
+            {
+                bool supported = MARC.HI.EHRS.SVC.Messaging.FHIR.Util.ProfileUtil.GetProfiles().Exists(p => p.ExtensionDefinition.Exists(e => e.Code.Value == ext.Url.Value.Fragment.Replace("#","") && ext.Url.ToString().StartsWith(GetExtensionNameUrl(String.Empty).ToString())));
+                if (!supported)
+                    dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, String.Format("Extension {0} at {1} is not supported!", ext.Url, path), path));
+            }
+            foreach (var prop in Array.FindAll(resource.GetType().GetProperties(), p => p.GetCustomAttribute<XmlElementAttribute>() != null))
+            {
+                var value = prop.GetValue(resource, null);
+                string fPath = String.Format("{0}.{1}", path, prop.GetCustomAttribute<XmlElementAttribute>().ElementName);
+                if (value is IList)
+                    for (int i = 0; i < (value as IList).Count; i++)
+                        VerifyExtensions((value as IList)[i] as Shareable, dtls, String.Format("{0}[{1}]", fPath, i));
+                else
+                    VerifyExtensions(value as Shareable, dtls, fPath);
+            }
+        }
     }
 }

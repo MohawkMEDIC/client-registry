@@ -217,6 +217,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <returns></returns>
         public static T Lookup<T>(Dictionary<String, T> codeset, string fhirCode)
         {
+            fhirCode = fhirCode ?? String.Empty;
+
             T value = default(T);
             codeset.TryGetValue(fhirCode, out value);
             return value;

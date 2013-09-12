@@ -426,10 +426,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
             subject = new Person()
             {
-                AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers)
+                AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
+                Status = StatusType.Active | StatusType.Obsolete 
             };
             RegistrationEvent query = new RegistrationEvent();
-            query.Status = StatusType.Active;
+            query.Status = StatusType.Active | StatusType.Obsolete;
             query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             query.Add(new QueryParameters()
             {

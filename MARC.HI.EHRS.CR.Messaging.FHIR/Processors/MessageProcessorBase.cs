@@ -481,7 +481,37 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public SVC.Messaging.FHIR.FhirOperationResult Update(string id, SVC.Messaging.FHIR.Resources.ResourceBase target, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new DllNotFoundException();
+            // Create a registration event ... subject
+            FhirOperationResult retVal = new FhirOperationResult();
+            retVal.Details = new List<IResultDetail>();
+
+            // Get query parameters
+            var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
+
+            // Parse the incoming request
+            var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
+
+            if (storeContainer == null)
+                retVal.Outcome = ResultCode.Rejected;
+            else
+            {
+                // Now store the container
+                try
+                {
+                    // HACK: Store the container
+                    storeContainer = DataUtil.Update(storeContainer, id, DataPersistenceMode.Production, retVal.Details);
+
+                    retVal.Outcome = ResultCode.Accepted;
+                    retVal.Results = new List<ResourceBase>();
+                    retVal.Results.Add(resourceProcessor.ProcessComponent(storeContainer, retVal.Details));
+                }
+                catch (Exception e)
+                {
+                    retVal.Details.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("DTPE001"), e));
+                    retVal.Outcome = ResultCode.Error;
+                }
+            }
+            return retVal;
         }
 
         public SVC.Messaging.FHIR.FhirOperationResult Validate(string id, SVC.Messaging.FHIR.Resources.ResourceBase target)
@@ -645,6 +675,29 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 else if (asn.Value != retVal.AssigningAuthority)
                     dtls.Add(new FixedValueMisMatchedResultDetail(retVal.AssigningAuthority, asn.Value, "Identifier"));
             }
+            return retVal;
+        }
+
+        /// <summary>
+        /// Convert a telecom address
+        /// </summary>
+        internal TelecommunicationsAddress ConvertTelecom(Telecom tel, List<IResultDetail> dtls)
+        {
+            var retVal = new TelecommunicationsAddress();
+            if(tel.Use != null)
+            {
+                retVal.Use = MARC.Everest.Connectors.Util.ToWireFormat(HackishCodeMapping.Lookup(HackishCodeMapping.TELECOM_USE, tel.Use));
+                // Extensions
+                retVal.Use += ExtensionUtil.ParseTELUseExtension(tel.Extension, dtls);
+            }
+            retVal.Value = tel.Value;
+
+            if(tel.Period != null)
+            {
+                dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Period", "Name"));
+                tel.Period = null;
+            }
+
             return retVal;
         }
     }

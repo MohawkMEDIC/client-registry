@@ -317,6 +317,44 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             }
         }
 
-       
+
+        /// <summary>
+        /// Update the container
+        /// </summary>
+        public static IComponent Update(IComponent storeContainer, String id, DataPersistenceMode mode, List<IResultDetail> dtls)
+        {
+            // Get the services
+            IDataPersistenceService persistence = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+            IDataRegistrationService registration = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
+
+            try
+            {
+
+                // Sanity check
+                if (persistence == null)
+                    throw new InvalidOperationException("No persistence service has been configured, registrations cannot continue without this service");
+                else if (registration == null)
+                    throw new InvalidOperationException("No registration service has been configured, registrations cannot continue without this service");
+
+                // Store
+                if((storeContainer as HealthServiceRecordContainer).Id == default(decimal))
+                    (storeContainer as HealthServiceRecordContainer).Id = decimal.Parse(id);
+
+                var storedData = persistence.UpdateContainer(storeContainer as IContainer, mode);
+                if (storeContainer != null)
+                    registration.RegisterRecord(storeContainer, mode);
+
+                // Now read and return
+                return persistence.GetContainer(storedData, true) as IComponent;
+                //return null;
+
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+                throw;
+            }
+        }
     }
 }

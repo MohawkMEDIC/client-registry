@@ -724,7 +724,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.Id = Convert.ToDecimal(rdr["psn_id"]);
                         retVal.VersionId = Convert.ToDecimal(rdr["psn_vrsn_id"]);
                         retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), rdr["status"].ToString());
-                        retVal.GenderCode = Convert.ToString(rdr["gndr_cs"]);
+                        retVal.GenderCode = rdr["gndr_cs"] == DBNull.Value ? null : Convert.ToString(rdr["gndr_cs"]);
                         retVal.BirthOrder = (int?)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
                         retVal.Timestamp = Convert.ToDateTime(rdr["crt_utc"]);
                         // Other fetched data
@@ -1460,8 +1460,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else if (cmp is PersonalRelationship)
                 {
                     var oldPsnRltnshp = cmp as PersonalRelationship;
-                    if (!newPsnRltnshps.Exists(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && (o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)))) // Need to copy?
+                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier))  || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1));
+                    if (newPsnRltnshpMatch == null) // Need to copy?
                         newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                    else if((newPsnRltnshpMatch as PersonalRelationship).Id == default(Decimal) )// HACK: Massage the IDs
+                        (newPsnRltnshpMatch as PersonalRelationship).Id = oldPsnRltnshp.Id; 
                 }
 
             // Add a relationship of person reference
@@ -1475,12 +1478,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         public System.ComponentModel.IComponent DePersist(IDbConnection conn, decimal identifier, decimal versionId, System.ComponentModel.IContainer container, HealthServiceRecordSiteRoleType? role, bool loadFast)
         {
-            return this.GetPerson(conn, null, new VersionedDomainIdentifier()
+            var person = this.GetPerson(conn, null, new VersionedDomainIdentifier()
             {
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = identifier.ToString(),
                 Version = versionId.ToString()
             }, loadFast);
+            DbUtil.DePersistComponents(conn, person, this, loadFast);
+            return person;
         }
 
         #endregion
