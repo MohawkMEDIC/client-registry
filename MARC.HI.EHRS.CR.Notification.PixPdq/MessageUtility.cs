@@ -375,7 +375,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             var retVal = new Everest.RMIM.UV.NE2008.MFMI_MT700701UV01.Subject2<Everest.RMIM.UV.NE2008.PRPA_MT201302UV02.Patient>(
                 new Everest.RMIM.UV.NE2008.PRPA_MT201302UV02.Patient(
                     new SET<II>(iiSet),
-                    "active",
+                    MARC.Everest.Connectors.Util.ToWireFormat(ConvertRoleStatusCode(subject.Status)),
                     null,
                     null
                 ));
@@ -588,7 +588,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             // relationships
             foreach (PersonalRelationship psn in personalRelationships)
                 retVal.PersonalRelationship.Add(CreatePersonalRelationship(psn));
-
+            
             return retVal;
         }
 
@@ -720,6 +720,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     return RoleStatus.Suspended;
                 case StatusType.Cancelled | StatusType.Obsolete:
                     return RoleStatus.Terminated;
+                case StatusType.Unknown:
+                    return new CS<RoleStatus>() { NullFlavor = NullFlavor.Unknown };
                 default:
                     return new CS<RoleStatus>() { NullFlavor = NullFlavor.Other };
             }

@@ -327,7 +327,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// </summary>
         [ExtensionDefinition(Name = "originalText", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Text", MustSupport = false, MustUnderstand = false, ShortDescription = "Stores the original text entry for a resource")]
         [ExtensionDefinition(Name = "originalText", HostType = typeof(Organization), ValueType = typeof(FhirString), Property = "Text", MustSupport = false, MustUnderstand = false, ShortDescription = "Stores the original text entry for a resource")] 
-        public static Extension CreateOriginalTextExtension(FhirString value)
+        public static Extension CreateOriginalTextExtension(Attachment value)
         {
             return new Extension()
             {

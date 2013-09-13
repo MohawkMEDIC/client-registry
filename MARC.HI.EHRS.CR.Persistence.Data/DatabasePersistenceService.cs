@@ -427,7 +427,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             subject = new Person()
             {
                 AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
-                Status = StatusType.Active | StatusType.Obsolete 
+                Status = StatusType.Normal 
             };
             RegistrationEvent query = new RegistrationEvent();
             query.Status = StatusType.Active | StatusType.Obsolete;

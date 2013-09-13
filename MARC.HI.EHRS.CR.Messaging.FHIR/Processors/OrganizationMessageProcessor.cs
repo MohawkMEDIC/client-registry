@@ -54,19 +54,20 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// </summary>
         public override System.ComponentModel.IComponent ProcessResource(SVC.Messaging.FHIR.Resources.ResourceBase resource, List<Everest.Connectors.IResultDetail> dtls)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
         /// Process a query
         /// </summary>
-        [SearchParameterProfile(Name = "_id", Type = "token", Description = "Client registry assigned id for the organization (one repetition only)")]
-        [SearchParameterProfile(Name = "active", Type = "token", Description = "Whether the organization record is active (one repetition only)")]
-        [SearchParameterProfile(Name = "name", Type = "string", Description = "A portion of the organization's name (only supports OR)")]
-        [SearchParameterProfile(Name = "type", Type = "token", Description = "A code for the type of organization (only supports OR)")]
+        //[SearchParameterProfile(Name = "_id", Type = "token", Description = "Client registry assigned id for the organization (one repetition only)")]
+        //[SearchParameterProfile(Name = "active", Type = "token", Description = "Whether the organization record is active (one repetition only)")]
+        //[SearchParameterProfile(Name = "name", Type = "string", Description = "A portion of the organization's name (only supports OR)")]
+        //[SearchParameterProfile(Name = "type", Type = "token", Description = "A code for the type of organization (only supports OR)")]
         public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
             // Parse a query 
+            throw new NotImplementedException();
             return base.ParseQuery(parameters, dtls);
         }
 

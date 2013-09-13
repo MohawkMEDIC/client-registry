@@ -20,6 +20,8 @@ using System.ServiceModel.Web;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Data;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -281,7 +283,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     }
 
                                     if (actualIdParm.Length > 0)
+                                    {
+                                        actualIdParm.Remove(actualIdParm.Length - 1, 1);
                                         retVal.ActualParameters.Add("identifier", actualIdParm.ToString());
+                                    }
                                     break;
                                 }
                             case "provider.identifier": // maps to the target domains ? 
@@ -334,7 +339,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             var resPatient = resource as Patient;
 
-            if (resPatient == null)
+            if (resPatient == null )
                 throw new ArgumentNullException("resource", "Resource invalid");
 
 
@@ -357,18 +362,22 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             // Person component
             Person psn = new Person();
-            psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Obsolete;
+            psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Suspended;
 
             // Person identifier
-            if(resPatient.Identifier.Count > 0)
-            {
-                psn.AlternateIdentifiers = new List<DomainIdentifier>();
-                foreach (var id in resPatient.Identifier)
-                    psn.AlternateIdentifiers.Add(base.ConvertIdentifier(id, dtls));
-            }
-            if (resPatient.Identifier.Count == 0)
-                dtls.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE078"), null, null));
+            psn.AlternateIdentifiers = new List<DomainIdentifier>();
+            foreach (var id in resPatient.Identifier)
+                psn.AlternateIdentifiers.Add(base.ConvertIdentifier(id, dtls));
 
+            if(!String.IsNullOrEmpty(resource.Id))
+                psn.AlternateIdentifiers.Add(new DomainIdentifier()
+                {
+                    Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid,
+                    Identifier = resource.Id
+                });
+
+            if (psn.AlternateIdentifiers.Count == 0)
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE078"), "Patient"));
 
             // Birth date
             if(resPatient.BirthDate != null)
@@ -494,6 +503,28 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             foreach (var name in resPatient.Name)
                 psn.Names.Add(base.ConvertName(name, dtls));
 
+            // Original Text
+            if (resource.Text != null)
+            {
+                XmlSerializer xsz = new XmlSerializer(typeof(RawXmlWrapper));
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    xsz.Serialize(ms, resource.Text.Div);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    byte[] buffer = new byte[ms.Length];
+                    ms.Read(buffer, 0, (int)ms.Length);
+                    psn.Add(new ExtendedAttribute()
+                    {
+                        Name = "OriginalText",
+                        PropertyPath = "Patient.Text",
+                        Value = new Attachment()
+                        {
+                            ContentType = new PrimitiveCode<string>("text/xhtml"),
+                            Data = new FhirBinary(buffer)
+                        }
+                    });
+                }
+            }
             // Add subject
             regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             if(dtls.Exists(o=>o.Type == ResultDetailType.Error))
@@ -526,13 +557,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // Setup references
             if (component is RegistrationEvent)
                 component = (component as RegistrationEvent).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
-
+            
             Patient retVal = new Patient();
             Person person = component as Person;
             RegistrationEvent regEvt = component.Site != null ? component.Site.Container as RegistrationEvent: null;
 
+            if ((person.Status == StatusType.Terminated || person.Status == StatusType.Nullified) && (person.Site == null || person.Site.Container is RegistrationEvent))
+                throw new FileLoadException("Resource is no longer available");
+
             // Load registration event
-            if (regEvt == null)
+            if (regEvt == null && component.Site == null)
             {
                 IDataPersistenceService idp = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
                 IDataRegistrationService idq = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService))as IDataRegistrationService;
@@ -640,9 +674,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // Original text?
             var originalTextExtension = person.FindAllExtensions(o => o.Name == "OriginalText" && o.PropertyPath == "Patient.Text");
             if (originalTextExtension != null && originalTextExtension.Count() > 0)
+            {
                 foreach (var oext in originalTextExtension)
-                    retVal.Text.Extension.Add(ExtensionUtil.CreateOriginalTextExtension(oext.Value as FhirString));
-            
+                    retVal.Text.Extension.Add(ExtensionUtil.CreateOriginalTextExtension(oext.Value as Attachment));
+            }
+
             // Organizations that have registered this user
             var handler = MARC.HI.EHRS.SVC.Messaging.FHIR.Handlers.FhirResourceHandlerUtil.GetResourceHandler("Organization");
             if (handler != null && regEvt != null)
@@ -710,5 +746,54 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         }
 
         #endregion
+
+        /// <summary>
+        /// Delete a patient resource simply nullifies it
+        /// </summary>
+        public override FhirOperationResult Delete(string id, DataPersistenceMode mode)
+        {
+            FhirOperationResult result = new FhirOperationResult();
+                
+            // Registration event for the delete
+            RegistrationEvent regEvt = new RegistrationEvent()
+            {
+                EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart(TimestampPart.TimestampPartType.Standlone, DateTime.Now, "F") } },
+                EventClassifier = RegistrationEventType.Register,
+                EventType = new CodeValue("DELETE"),
+                LanguageCode = ApplicationContext.ConfigurationService.JurisdictionData.DefaultLanguageCode,
+                Mode = RegistrationEventType.Nullify,
+                Status = StatusType.Completed,
+                Timestamp = DateTime.Now
+            };
+
+            // Target
+            var psn = new Person() { Status = StatusType.Terminated };
+            psn.AlternateIdentifiers = new List<DomainIdentifier>();
+            psn.AlternateIdentifiers.Add(new DomainIdentifier()
+            {
+                Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid,
+                Identifier = id
+            });
+            regEvt.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+            // Execute
+            try
+            {
+                DataUtil.Update(regEvt, id, DataPersistenceMode.Production, result.Details);
+                result.Outcome = ResultCode.Accepted;
+            }
+            catch (MissingPrimaryKeyException e)
+            {
+                result.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                result.Outcome = ResultCode.TypeNotAvailable;
+            }
+            catch (Exception e)
+            {
+                result.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                result.Outcome = ResultCode.Error;
+            }
+
+            return result;
+        }
     }
 }

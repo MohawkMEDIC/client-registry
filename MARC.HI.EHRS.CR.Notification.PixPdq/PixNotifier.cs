@@ -81,9 +81,15 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             {
                 NotificationQueueWorkItem workItem = state as NotificationQueueWorkItem;
                 ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+                IDataPersistenceService idps = this.Context.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
 
                 if (workItem == null)
                     throw new ArgumentException("workItem");
+
+                var evt = workItem.Event;
+
+                if (idps != null)
+                    evt = idps.GetContainer(workItem.Event.AlternateIdentifier, true) as RegistrationEvent;
 
                 var subject = workItem.Event.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 if (subject == null)
@@ -126,7 +132,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         
                         // Build the message
                         Trace.TraceInformation("Sending notification to '{0}'...", t.Name);
-                        IInteraction notification = msgUtil.CreateMessage(workItem.Event, t.ActAs == TargetActorType.PAT_IDENTITY_X_REF_MGR ? ActionType.Update : workItem.Action, t);
+                        IInteraction notification = msgUtil.CreateMessage(evt, t.ActAs == TargetActorType.PAT_IDENTITY_X_REF_MGR ? ActionType.Update : workItem.Action, t);
 
                         // Send it
                         var sendResult = wcfClient.Send(notification);
@@ -191,6 +197,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         public void NotifyUpdate(Core.ComponentModel.RegistrationEvent evt)
         {
+            
             this.m_threadPool.QueueUserWorkItem(NotifyInternal, new NotificationQueueWorkItem(evt, ActionType.Update));
         }
 

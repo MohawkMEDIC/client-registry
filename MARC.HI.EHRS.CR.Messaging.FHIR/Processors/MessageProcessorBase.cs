@@ -23,6 +23,7 @@ using MARC.HI.EHRS.SVC.Messaging.FHIR.Util;
 using System.IO;
 using System.ServiceModel.Web;
 using System.ServiceModel;
+using System.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -358,9 +359,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Delete a resource
         /// </summary>
-        public SVC.Messaging.FHIR.FhirOperationResult Delete(string id, SVC.Core.Services.DataPersistenceMode mode)
+        public virtual SVC.Messaging.FHIR.FhirOperationResult Delete(string id, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Cannot delete resources of this type");
         }
 
         /// <summary>
@@ -422,6 +423,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 Identifier = id,
                 Version = String.IsNullOrEmpty(versionId) ? null : versionId
             }, String.IsNullOrEmpty(versionId));
+
 
             // Container was not found
             if (container == null)
@@ -489,6 +491,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var resourceProcessor = FhirMessageProcessorUtil.GetMessageProcessor(this.ResourceName);
 
             // Parse the incoming request
+            if(target != null)
+                target.Id = id;
             var storeContainer = resourceProcessor.ProcessResource(target, retVal.Details);
 
             if (storeContainer == null)
@@ -504,6 +508,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     retVal.Outcome = ResultCode.Accepted;
                     retVal.Results = new List<ResourceBase>();
                     retVal.Results.Add(resourceProcessor.ProcessComponent(storeContainer, retVal.Details));
+                }
+                catch (MissingPrimaryKeyException e)
+                {
+                    retVal.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                    retVal.Outcome = ResultCode.TypeNotAvailable;
                 }
                 catch (Exception e)
                 {
