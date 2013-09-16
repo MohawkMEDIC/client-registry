@@ -5,9 +5,13 @@ AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
 AppVerName = MEDIC Client Registry 0.6
 #ifdef BUNDLED
+#ifdef x64
 OutputBaseFilename = cr-setup-bundled-x64
 #else
-OutputBaseFilename = cr-setup-standalone-x64
+OutputBaseFilename = cr-setup-bundled
+#endif
+#else
+OutputBaseFilename = cr-setup-standalone
 #endif
 LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
@@ -24,7 +28,9 @@ Compression = lzma2
 SolidCompression = false
 AppCopyright = Copyright (C) 2011-2013 Mohawk College of Applied Arts and Technology
 Uninstallable = true
+#ifdef x64
 ArchitecturesAllowed = x64
+#endif
 DefaultGroupName = Mohawk College\Client Registry
 WizardSmallImageFile = .\install-small.bmp
 WizardImageFile = .\install.bmp
@@ -33,7 +39,11 @@ Name: english; MessagesFile: compiler:Default.isl
 
 [Files]
 #ifdef BUNDLED
+#ifdef x64
 Source: .\installsupp\postgresql-9.2.4-1-windows-x64.exe; DestDir: {tmp}; Flags:dontcopy
+#else
+Source: .\installsupp\postgresql-9.2.4-1-windows.exe; DestDir: {tmp}; Flags:dontcopy
+#endif
 #endif
 Source: .\installsupp\dotNetFx40_Full_setup.exe; DestDir: {tmp} ; Flags: dontcopy
 
@@ -54,6 +64,9 @@ Source: ..\bin\release\MARC.HI.EHRS.CR.Core.dll; DestDir:{app}; Flags:ignorevers
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Admin.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\admin
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Everest.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\ca msg\pixv3
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.HL7.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
+Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\bin\release\index.htm; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\MARC.HI.EHRS.CR.Notification.PixPdq.dll; DestDir:{app}; Flags:ignoreversion; Components:notif
 Source: ..\bin\release\MARC.HI.EHRS.CR.Persistence.Data.dll; DestDir:{app}; Flags:ignoreversion; Components:core
@@ -115,6 +128,7 @@ Name: msg\pixv3; Description: PIXv3/PDQv3 Interface;  Types: full pixv3 pixall
 Name: msg\ca; Description: HL7v3 pan-Canadian Interface;  Types: full ca 
 Name: msg\admin; Description: Administrative Interface;  Types: full
 Name: msg\rss; Description: Subscription Interface;  Types: full
+Name: msg\fhir; Description: HL7 FHIR 0.11
 Name: notif; Description: PIXv3 Notifications;  Types: full pix pixv3 pixall
 Name: src; Description: Source Code; 
 
@@ -244,8 +258,13 @@ begin
 
     #ifdef BUNDLED
     if (chkInstallPSQL.Checked) then begin
+	#ifdef x64
       ExtractTemporaryFile('postgresql-9.2.4-1-windows-x64.exe');
       if Exec(ExpandConstant('{tmp}\postgresql-9.2.4-1-windows-x64.exe'), '--mode unattended --superaccount ' + txtPostgresSU.Text + ' --superpassword ' + txtPostgresSUPass.Text + ' --servicename PostgreSQLCR --install_runtimes 1 --prefix "' + ExpandConstant('{app}\postgresql') + '" --datadir "' + ExpandConstant('{app}\postgresql\data') + '"', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
+	#else
+      ExtractTemporaryFile('postgresql-9.2.4-1-windows.exe');
+      if Exec(ExpandConstant('{tmp}\postgresql-9.2.4-1-windows.exe'), '--mode unattended --superaccount ' + txtPostgresSU.Text + ' --superpassword ' + txtPostgresSUPass.Text + ' --servicename PostgreSQLCR --install_runtimes 1 --prefix "' + ExpandConstant('{app}\postgresql') + '" --datadir "' + ExpandConstant('{app}\postgresql\data') + '"', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
+	#endif
           // handle success if necessary; ResultCode contains the exit code
           if not (ResultCode = 0) then begin
             Result := 'PostgreSQL Install Failed';

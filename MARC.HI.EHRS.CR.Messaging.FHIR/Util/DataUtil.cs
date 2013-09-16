@@ -268,7 +268,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
 
                 // Read the record from the DB
-                var result = persistence.GetContainer(recordId, qd.IncludeHistory) as HealthServiceRecordContainer;
+                var result = persistence.GetContainer(recordId, !qd.IncludeHistory) as HealthServiceRecordContainer;
 
                 // Does this result match what we're looking for?
                 if (result == null)
