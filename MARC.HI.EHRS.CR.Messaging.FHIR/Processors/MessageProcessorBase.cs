@@ -74,8 +74,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                      switch (parameters.GetKey(i))
                      {
                          case "_stateid":
-                             retVal.QueryId = Guid.Parse(parameters.GetValues(i)[0]);
-                             retVal.ActualParameters.Add("_stateid", retVal.QueryId.ToString());
+                             try
+                             {
+                                 retVal.QueryId = Guid.Parse(parameters.GetValues(i)[0]);
+                                 retVal.ActualParameters.Add("_stateid", retVal.QueryId.ToString());
+                             }
+                             catch (Exception e)
+                             {
+                                 dtls.Add(new ResultDetail(ResultDetailType.Error, "State identifiers must be issued from the registry and must be a valid GUID", null, e));
+                             }
                              break;
                          case "_count":
                              retVal.Quantity = Int32.Parse(parameters.GetValues(i)[0]);

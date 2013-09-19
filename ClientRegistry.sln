@@ -3,23 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99488588-6EB6-4649-810F-BD85ED9BEFE6}"
 	ProjectSection(SolutionItems) = preProject
-		Solution Items\MARC.Everest.dll = Solution Items\MARC.Everest.dll
 		Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll = Solution Items\MARC.Everest.Formatters.XML.Datatypes.R1.dll
 		Solution Items\MARC.Everest.Formatters.XML.ITS1.dll = Solution Items\MARC.Everest.Formatters.XML.ITS1.dll
 		Solution Items\MARC.Everest.RMIM.CA.R020402.dll = Solution Items\MARC.Everest.RMIM.CA.R020402.dll
-		Solution Items\MARC.HI.EHRS.QM.Core.dll = Solution Items\MARC.HI.EHRS.QM.Core.dll
-		Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.QM.Persistence.Data.dll
-		Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll = Solution Items\MARC.HI.EHRS.SVC.Auditing.Atna.dll
 		Solution Items\MARC.HI.EHRS.SVC.Auditing.dll = Solution Items\MARC.HI.EHRS.SVC.Auditing.dll
-		Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll = Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll
-		Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll = Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll
-		Solution Items\MARC.HI.EHRS.SVC.Core.dll = Solution Items\MARC.HI.EHRS.SVC.Core.dll
-		Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll = Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll
-		Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll = Solution Items\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll
-		Solution Items\MARC.HI.EHRS.SVC.Localization.dll = Solution Items\MARC.HI.EHRS.SVC.Localization.dll
-		Solution Items\MARC.HI.EHRS.SVC.Messaging.Multi.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Multi.dll
 		Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll = Solution Items\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll
-		Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll = Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.dll
 		Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.pdb = Solution Items\MARC.HI.EHRS.SVC.PolicyEnforcement.pdb
 		Solution Items\MARC.HI.EHRS.SVC.Terminology.dll = Solution Items\MARC.HI.EHRS.SVC.Terminology.dll
 		Solution Items\Mono.Security.dll = Solution Items\Mono.Security.dll
