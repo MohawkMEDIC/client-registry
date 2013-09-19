@@ -471,10 +471,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         {
                             if (resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
                                     resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/vs/administrative-gender")
-                                psn.GenderCode = resCont.Gender.GetPrimaryCode().Code;
+                                relationship.GenderCode = resCont.Gender.GetPrimaryCode().Code;
                             else if (resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
                                 resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
-                                psn.GenderCode = null;
+                                relationship.GenderCode = null;
                             else
                                 dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.contact.gender", null));
                         }
