@@ -171,16 +171,19 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     
                     try
                     {
-                     
-                        // HACK: nHAPI doesn't like URLs ... Will fix this later
-                        string messageString = messageData.ToString().Replace("|URL|", "|ST|");
-                        var message = parser.Parse(messageString);
-
                         // Setup local and remote receive endpoint data for auditing
                         var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
                         var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
                         Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
                         Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+
+                        #if DEBUG
+                        Trace.TraceInformation("Received message from llp://{0}:{1} : {2}", remoteEp.Address, remoteEp.Port, messageData);
+                        #endif
+
+                        // HACK: nHAPI doesn't like URLs ... Will fix this later
+                        string messageString = messageData.ToString().Replace("|URL|", "|ST|");
+                        var message = parser.Parse(messageString);
                         messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
 
                         // Call any bound event handlers that there is a message available
@@ -194,8 +197,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         if (messageArgs != null && messageArgs.Response != null)
                         {
 
+                            var strMessage = parser.Encode(messageArgs.Response);
+                            #if DEBUG
+                            Trace.TraceInformation("Sending message to llp://{0} : {1}", tcpClient.Client.RemoteEndPoint, messageData);
+                            #endif
+
                             // Since nHAPI only emits a string we just send that along the stream
-                            writer.Write(parser.Encode(messageArgs.Response));
+                            writer.Write(strMessage);
                             writer.Flush();
                         }
                         stream.Write(new byte[] { END_TX, END_TXNL }, 0, 2); // Finish the stream with FSCR
