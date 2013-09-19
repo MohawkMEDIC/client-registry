@@ -520,6 +520,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 {
                     retVal.Details.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                     retVal.Outcome = ResultCode.TypeNotAvailable;
+                    throw e;
                 }
                 catch (Exception e)
                 {
