@@ -67,6 +67,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery retVal = new Util.DataUtil.ClientRegistryFhirQuery();
             retVal.ActualParameters = new System.Collections.Specialized.NameValueCollection();
+            retVal.MinimumDegreeMatch = 0.8f;
 
              for(int i = 0; i < parameters.Count; i++)
                  try
@@ -103,6 +104,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                      Trace.TraceError(e.ToString());
                      dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                  }
+
              return retVal;
         }
 
@@ -123,11 +125,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         protected HumanName ConvertNameSet(NameSet name)
         {
             HumanName retVal = new HumanName();
-            retVal.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.NAME_USE, name.Use));
-            if (String.IsNullOrEmpty(retVal.Use.Value))
-                retVal.Use.Extension.Add(ExtensionUtil.CreatePNUseExtension(name.Use));
+            if (name.Use == NameSet.NameSetUse.Search)
+            {
+                retVal.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.NAME_USE, name.Use));
+                if (String.IsNullOrEmpty(retVal.Use.Value))
+                    retVal.Use.Extension.Add(ExtensionUtil.CreatePNUseExtension(name.Use));
+            }
+
             foreach (var pt in name.Parts)
             {
+
                 switch (pt.Type)
                 {
                     case NamePart.NamePartType.Family:
@@ -236,11 +243,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 {
                     Address adEntry = new Address();
                     // An address can have multiple uses
-                    adEntry.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.ADDRESS_USE, (AddressSet.AddressSetUse)use));
-                    if (adEntry.Use == null || adEntry.Use.Value == null)
+                    if ((AddressSet.AddressSetUse)use != AddressSet.AddressSetUse.Search)
                     {
-                        adEntry.Use = new PrimitiveCode<string>();
-                        adEntry.Use.Extension.Add(ExtensionUtil.CreateADUseExtension((AddressSet.AddressSetUse)use));
+                        adEntry.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.ADDRESS_USE, (AddressSet.AddressSetUse)use));
+                        if (adEntry.Use == null || adEntry.Use.Value == null)
+                        {
+                            adEntry.Use = new PrimitiveCode<string>();
+                            adEntry.Use.Extension.Add(ExtensionUtil.CreateADUseExtension((AddressSet.AddressSetUse)use));
+                        }
                     }
 
                     foreach (var pt in addr.Parts)
@@ -395,12 +405,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             result.Query = queryObject;
 
             // sanity check
+#if !DEBUG
             if (result.Query.ActualParameters.Count == 0)
             {
                 result.Outcome = ResultCode.Rejected;
                 result.Details.Add(new ValidationResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE077"), null, null));
             }
-            else if (result.Details.Exists(o => o.Type == ResultDetailType.Error))
+            else
+#endif 
+            if (result.Details.Exists(o => o.Type == ResultDetailType.Error))
             {
                 result.Outcome = ResultCode.Error;
                 result.Details.Add(new ResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE00A"), null, null));
@@ -618,6 +631,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 address.Period = null;
             }
 
+            retVal.Parts.RemoveAll(o => String.IsNullOrEmpty(o.AddressValue));
+
             
             return retVal;
         }
@@ -650,7 +665,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Given, Value = gn });
             foreach (var pfx in name.Prefix)
                 retVal.Parts.Add(new NamePart() { Type = NamePart.NamePartType.Prefix, Value = pfx });
-            
+
+            retVal.Parts.RemoveAll(o => String.IsNullOrEmpty(o.Value));
             // Use period
             if(name.Period != null)
             {
@@ -668,7 +684,21 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         internal DomainIdentifier ConvertIdentifier(Identifier id, List<IResultDetail> dtls)
         {
             // Attempt to lookup the OID
-            var oid = MessageUtil.TranslateFhirDomain(id.System.ToString());
+            //if(id.System == null)
+            if (id.System == null && id.Label != null)
+            {
+                var dat = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(id.Label);
+                if (dat != null)
+                    id.System = new Uri(MessageUtil.TranslateDomain(dat.Oid));
+                else
+                {
+                    dat = ApplicationContext.ConfigurationService.OidRegistrar.FindData(o => o.Attributes.Find(a => a.Key == "AssigningAuthorityName").Value == id.Label.ToString());
+                    if (dat != null)
+                        id.System = new Uri(MessageUtil.TranslateDomain(dat.Oid));
+                    throw new ConstraintException(String.Format("Can't find an OID with label {0}", id.Label));
+                }
+            }
+            String oid = MessageUtil.TranslateFhirDomain(id.System.ToString());
             var lookup = ApplicationContext.ConfigurationService.OidRegistrar.FindData(oid);
             var retVal = new DomainIdentifier()
             {
@@ -679,7 +709,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             // Assigning auth?
             if (lookup == null)
-                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("DBCF00C"), null, null));
+                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Warning, ApplicationContext.LocalizationService.GetString("DBCF00C"), null, null));
             else
             {
                 var asn = lookup.Attributes.Find(o => o.Key == "AssigningAuthorityName");

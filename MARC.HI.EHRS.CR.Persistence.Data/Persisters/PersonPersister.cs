@@ -1547,7 +1547,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Match birth time
             if (personFilter.BirthTime != null)
             {
-                sb.AppendFormat("AND PSN_ID IN (SELECT PSN_ID FROM FIND_PSN_BY_BRTH_TS('{0:MM/dd/yyyy HH:mm:ss z}','{1}')) ", personFilter.BirthTime.Value, personFilter.BirthTime.Precision);
+                sb.AppendFormat("AND PSN_ID IN (SELECT PSN_ID FROM FIND_PSN_BY_BRTH_TS('{0:yyyy-MM-dd HH:mm:sszz}','{1}')) ", personFilter.BirthTime.Value, personFilter.BirthTime.Precision);
             }
 
             // Other Identifiers
@@ -1662,6 +1662,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmpTypeString = new StringBuilder();
                 foreach (var cmp in nm.Parts)
                 {
+
                     filterString.AppendFormat("{0}{1}", cmp.Value.Replace("%", "").Replace("*", "%"), cmp == nm.Parts.Last() ? "" : ",");
                     cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.Type, cmp == nm.Parts.Last() ? "" : ",");
                 }

@@ -301,9 +301,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             // Get oid data
             var oidData = this.m_config.OidRegistrar.FindData(altId.Domain);
-            cx.AssigningAuthority.UniversalID.Value = altId.Domain ?? oidData.Oid;
+            cx.AssigningAuthority.UniversalID.Value = altId.Domain ?? (oidData == null ? null :  oidData.Oid);
             cx.AssigningAuthority.UniversalIDType.Value = "ISO";
-            cx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority ?? oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value;
+            cx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority ?? (oidData == null ? null : oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value);
             cx.IDNumber.Value = altId.Identifier;
         }
 

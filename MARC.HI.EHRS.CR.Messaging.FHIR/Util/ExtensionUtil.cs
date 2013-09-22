@@ -214,37 +214,30 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// <summary>
         /// Create a personal relationship code extension
         /// </summary>
-        [ExtensionDefinition(Name = "personalRelationshipRoleType", Binding = typeof(PersonalRelationshipRoleType), Property = "Contact.Relationship", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, ShortDescription = "Identifies a granular level of relationship role")]
-        public static Extension CreateRelationshipExtension(string relationshipKind)
-        {
-            return new Extension()
-            {
-                Url = GetExtensionNameUrl("personalRelationshipRoleType"),
-                Value = new Coding(
-                    typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
-                    relationshipKind
-                )
-            };
-        }
+        //[ExtensionDefinition(Name = "personalRelationshipRoleType", Binding = typeof(PersonalRelationshipRoleType), Property = "Contact.Relationship", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, ShortDescription = "Identifies a granular level of relationship role")]
+        //public static Extension CreateRelationshipExtension(string relationshipKind)
+        //{
+        //    return new Extension()
+        //    {
+        //        Url = GetExtensionNameUrl("personalRelationshipRoleType"),
+        //        Value = new Coding(
+        //            typeof(PersonalRelationshipRoleType).GetValueSetDefinition(),
+        //            relationshipKind
+        //        )
+        //    };
+        //}
 
         /// <summary>
         /// Parse a relationship extension
         /// </summary>
-        internal static string ParseRelationshipExtension(List<Extension> extensions, List<IResultDetail> dtls)
+        internal static string ParseRelationshipExtension(CodeableConcept relationship, List<IResultDetail> dtls)
         {
             try
             {
-                var rolExt = extensions.Find(o => o.Url.Value == GetExtensionNameUrl("personalRelationshipRoleType"));
+                var rolExt = relationship.Coding.Find(o=>o.System == typeof(PersonalRelationshipRoleType).GetValueSetDefinition() ||
+                    o.System == typeof(x_SimplePersonalRelationship).GetValueSetDefinition());
                 if (rolExt != null)
-                {
-                    var codeValue = rolExt.Value as Coding;
-                    if (codeValue == null || codeValue.System != typeof(PersonalRelationshipRoleType).GetValueSetDefinition())
-                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Personal relationship role type extension must carry a coding from system {0}", typeof(PersonalRelationshipRoleType).GetValueSetDefinition()), null, null));
-                    else
-                    {
-                        return MARC.Everest.Connectors.Util.ToWireFormat(MARC.Everest.Connectors.Util.Convert<PersonalRelationshipRoleType>(codeValue.Code));
-                    }
-                }
+                    return MARC.Everest.Connectors.Util.ToWireFormat(MARC.Everest.Connectors.Util.Convert<PersonalRelationshipRoleType>(rolExt.Code));
                 return string.Empty;
             }
             catch (VocabularyException e)

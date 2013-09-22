@@ -243,6 +243,34 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     }
                                     break;
                                 }
+                            case "name":
+                                {
+                                    if (subjectFilter.Names == null)
+                                        subjectFilter.Names = new List<NameSet>();
+
+                                    foreach (var nm in parameters.GetValues(i))
+                                    {
+                                        if (nm.Contains(",")) // Cannot do an OR on Name
+                                            dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform OR on name", null));
+
+                                        NameSet fn = new NameSet(), gn = new NameSet();
+
+                                        fn.Parts.Add(new SVC.Core.DataTypes.NamePart()
+                                        {
+                                            Type = SVC.Core.DataTypes.NamePart.NamePartType.Family,
+                                            Value = parameters.GetValues(i)[0]
+                                        });
+                                        gn.Parts.Add(new SVC.Core.DataTypes.NamePart()
+                                        {
+                                            Type = SVC.Core.DataTypes.NamePart.NamePartType.Given,
+                                            Value = parameters.GetValues(i)[0]
+                                        });
+                                        subjectFilter.Names.Add(fn);
+                                        subjectFilter.Names.Add(gn);
+                                        retVal.ActualParameters.Add("name", nm);
+                                    }
+                                    break;
+                                }
                             case "gender":
                                 {
                                     string value = parameters.GetValues(i)[0].ToUpper();
@@ -376,8 +404,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     Identifier = resource.Id
                 });
 
+            // HACK:
+            // TODO: Make this a configuration option
+#if !DEBUG
             if (psn.AlternateIdentifiers.Count == 0)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE078"), "Patient"));
+#endif 
 
             // Birth date
             if(resPatient.BirthDate != null)
@@ -399,7 +431,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if (resPatient.Gender != null)
             {
                 if (resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
-                    resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/vs/administrative-gender")
+                    resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/AdministrativeGender")
                     psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
                 else if (resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
                     resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
@@ -470,7 +502,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         if (resCont.Gender != null)
                         {
                             if (resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
-                                    resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/vs/administrative-gender")
+                                    resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/AdministrativeGender")
                                 relationship.GenderCode = resCont.Gender.GetPrimaryCode().Code;
                             else if (resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
                                 resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
@@ -480,8 +512,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         }
 
                         // Now add as a personal relationship
-                        relationship.RelationshipKind = ExtensionUtil.ParseRelationshipExtension(rkind.Extension, dtls);
-                        if (String.IsNullOrEmpty(relationship.RelationshipKind))
+                        relationship.RelationshipKind = ExtensionUtil.ParseRelationshipExtension(rkind, dtls);
+                        if (String.IsNullOrEmpty(relationship.RelationshipKind) && rkind.GetPrimaryCode() != null   )
                             relationship.RelationshipKind = HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rkind.GetPrimaryCode().Code);
                         relationship.Status = StatusType.Active;
 
@@ -565,6 +597,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if ((person.Status == StatusType.Terminated || person.Status == StatusType.Nullified) && (person.Site == null || person.Site.Container is RegistrationEvent))
                 throw new FileLoadException("Resource is no longer available");
 
+            retVal.Id = person.Id.ToString();
+
             // Load registration event
             if (regEvt == null && component.Site == null)
             {
@@ -611,7 +645,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     retVal.Telecom.AddRange(base.ConvertTelecom(tel));
             // Gender
             if (person.GenderCode != null)
+            {
                 retVal.Gender = base.ConvertPrimitiveCode<AdministrativeGender>(person.GenderCode);
+                retVal.Gender.GetPrimaryCode().System = new Uri("http://hl7.org/fhir/v3/AdministrativeGender");
+            }
             // DOB
             if(person.BirthTime != null)
                 retVal.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
@@ -663,10 +700,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     }
                                         
                     contactInfo.Relationship = new List<CodeableConcept>() {
-                        new CodeableConcept(new Uri("http://hl7.org/fhir/vs/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
+                        new CodeableConcept(new Uri("http://hl7.org/fhir/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
                     };
                     // Now add an extension as the relationship kind is more detailed in our expression
-                    contactInfo.Relationship[0].Extension.Add(ExtensionUtil.CreateRelationshipExtension(rel.RelationshipKind));
+                    contactInfo.Relationship[0].Coding.Add(new Coding(typeof(PersonalRelationshipRoleType).GetValueSetDefinition(), rel.RelationshipKind));
                     retVal.Contact.Add(contactInfo);
                 }
 
