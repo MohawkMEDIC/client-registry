@@ -115,8 +115,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result
-                response = dcu.CreateRSP_K21(result, dtls);
-                MessageUtil.CopyQPD((response as RSP_K21).QPD, request.QPD);
+                response = dcu.CreateRSP_K21(result, data, dtls);
+                //MessageUtil.CopyQPD((response as RSP_K21).QPD, request.QPD, data);
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
                 Terser ters = new Terser(response);
                 ters.Set("/MSH-9-2", "K22");

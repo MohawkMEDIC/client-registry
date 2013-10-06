@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                             var strMessage = parser.Encode(messageArgs.Response);
                             #if DEBUG
-                            Trace.TraceInformation("Sending message to llp://{0} : {1}", tcpClient.Client.RemoteEndPoint, messageData);
+                            Trace.TraceInformation("Sending message to llp://{0} : {1}", tcpClient.Client.RemoteEndPoint, strMessage);
                             #endif
 
                             // Since nHAPI only emits a string we just send that along the stream

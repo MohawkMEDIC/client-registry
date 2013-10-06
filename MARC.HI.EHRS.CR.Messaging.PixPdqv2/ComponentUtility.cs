@@ -83,7 +83,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             { "L", NameSet.NameSetUse.Legal },
             { "M", NameSet.NameSetUse.MaidenName },
             { "N", NameSet.NameSetUse.Artist },
-            { "T", NameSet.NameSetUse.Indigenous }
+            { "T", NameSet.NameSetUse.Indigenous },
+            { String.Empty, NameSet.NameSetUse.Search }
         };
 
         // AD Type maps
@@ -465,6 +466,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                         switch (subComponentNo)
                                         {
                                             case "1":
+                                            case "":
                                                 altId.AssigningAuthority = qip2;
                                                 break;
                                             case "2":

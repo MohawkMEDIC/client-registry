@@ -400,15 +400,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
         }
 
-        /// <summary>
-        /// Copy QPD segment
-        /// </summary>
-        internal static void CopyQPD(NHapi.Model.V25.Segment.QPD dest, NHapi.Model.V25.Segment.QPD source)
-        {
-            dest.MessageQueryName.Identifier.Value = source.MessageQueryName.Identifier.Value;
-            dest.MessageQueryName.Text.Value = source.MessageQueryName.Text.Value;
-            dest.QueryTag.Value = source.QueryTag.Value;
-            dest.UserParametersInsuccessivefields.Data = source.UserParametersInsuccessivefields.Data;
-        }
+        ///// <summary>
+        ///// Copy QPD segment
+        ///// </summary>
+        //internal static void CopyQPD(NHapi.Model.V25.Segment.QPD dest, NHapi.Model.V25.Segment.QPD source,  QueryData queryParms)
+        //{
+        //    dest.MessageQueryName.Identifier.Value = source.MessageQueryName.Identifier.Value;
+        //    dest.MessageQueryName.Text.Value = source.MessageQueryName.Text.Value;
+        //    dest.QueryTag.Value = source.QueryTag.Value;
+        //    var qps = source.GetField(3);
+
+        //    // Create the actual qparms
+        //    Dictionary<String, Object> actualQParms = new Dictionary<string, object>();
+        //    var qPerson = queryParms.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf);
+        //    if (qPerson == null)
+        //        return;
+            
+
+        //    //dest.UserParametersInsuccessivefields.Data = source.UserParametersInsuccessivefields.Data;
+        //}
     }
 }

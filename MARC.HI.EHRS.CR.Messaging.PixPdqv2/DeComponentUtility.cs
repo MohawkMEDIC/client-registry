@@ -27,6 +27,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using NHapi.Base.Model;
+using MARC.Everest.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -310,7 +311,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create RSP_K21 message
         /// </summary>
-        internal NHapi.Base.Model.IMessage CreateRSP_K21(QueryResultData result, List<Everest.Connectors.IResultDetail> dtls)
+        internal NHapi.Base.Model.IMessage CreateRSP_K21(QueryResultData result, QueryData filter, List<Everest.Connectors.IResultDetail> dtls)
         {
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K21();
@@ -320,6 +321,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var qak = retVal.QAK;
             var msa = retVal.MSA;
             var dsc = retVal.DSC;
+            var qpd = retVal.QPD;
 
             qak.QueryTag.Value = result.QueryTag;
             msa.AcknowledgmentCode.Value = "AA";
@@ -354,6 +356,76 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 {
                     retVal.DSC.ContinuationPointer.Value = result.ContinuationPtr;
                     retVal.DSC.ContinuationStyle.Value = "I";
+                }
+            }
+
+            // Actual query paramaeters
+            var regFilter = filter.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf) as RegistrationEvent;
+            var personFilter = regFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+
+            qpd.QueryTag.Value = filter.QueryTag;
+            var terser = new Terser(retVal);
+            int qpdRep = 0;
+            if (personFilter.GenderCode != null)
+            {
+                terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.8");
+                terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), personFilter.GenderCode);
+            }
+            if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
+            {
+                var altId = personFilter.AlternateIdentifiers[0];
+
+                if (altId.Domain != null)
+                {
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.3.4.2");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Domain);
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.3.4.3");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), "ISO");
+                }
+                if (altId.Identifier != null)
+                {
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.3.1");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Identifier);
+                }
+                if (altId.AssigningAuthority != null)
+                {
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.3.4.1");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.AssigningAuthority);
+                }
+            }
+            if (personFilter.Names != null && personFilter.Names.Count > 0)
+            {
+                var name = personFilter.Names[0];
+                foreach (var pt in name.Parts)
+                {
+                    string pidNo = ComponentUtility.XPN_MAP.First(o => o.Value == pt.Type).Key;
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), String.Format("@PID.5.{0}", pidNo));
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), pt.Value);
+                }
+                if (name.Use != NameSet.NameSetUse.Search)
+                {
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.5.7");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), ComponentUtility.XPN_USE_MAP.First(o => o.Value == name.Use).Key);
+                }
+            }
+            if (personFilter.BirthTime != null)
+            {
+                terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.7");
+                terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), new TS(personFilter.BirthTime.Value).Value);
+            }
+            if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
+            {
+                var addr = personFilter.Addresses[0];
+                foreach (var pt in addr.Parts)
+                {
+                    string pidNo = ComponentUtility.AD_MAP.First(o => o.Value == pt.PartType).Key;
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), String.Format("@PID.11.{0}", pidNo));
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), pt.AddressValue);
+                }
+                if (addr.Use != AddressSet.AddressSetUse.Search)
+                {
+                    terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.11.7");
+                    terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), ComponentUtility.AD_USE_MAP.First(o => o.Value == addr.Use).Key);
                 }
             }
 
