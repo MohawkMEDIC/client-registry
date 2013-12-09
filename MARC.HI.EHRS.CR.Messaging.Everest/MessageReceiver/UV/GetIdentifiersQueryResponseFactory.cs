@@ -80,6 +80,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 IsSummary = true
             };
 
+            
             // Ensure that the target domains are understood by this service
             if(filter.TargetDomains != null)
                 foreach(var id in filter.TargetDomains)

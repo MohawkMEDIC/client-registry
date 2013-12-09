@@ -23,10 +23,18 @@
         <interactionId name="*"/>
       </handler>
       <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.PdqSupplier, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
-        <interactionId name="PRPA_IN201305UV02" disclosure="true"/>
+        <interactionId name="PRPA_IN201305UV02" disclosure="true">
+          <responseHeaders>
+            <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:PRPA_IN201306UV02</wsa:Action>
+          </responseHeaders>
+        </interactionId>
       </handler>
       <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.QueryManager, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
-        <interactionId name="QUQI_IN000003UV01" disclosure="true"/>
+        <interactionId name="QUQI_IN000003UV01" disclosure="true">
+          <responseHeaders>
+            <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:PRPA_IN201306UV02</wsa:Action>
+          </responseHeaders>
+        </interactionId>
       </handler>
     </revision>
   </tpl:revisionConfiguration>

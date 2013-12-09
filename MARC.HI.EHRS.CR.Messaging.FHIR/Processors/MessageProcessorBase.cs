@@ -125,7 +125,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         protected HumanName ConvertNameSet(NameSet name)
         {
             HumanName retVal = new HumanName();
-            if (name.Use == NameSet.NameSetUse.Search)
+            if (name.Use != NameSet.NameSetUse.Search)
             {
                 retVal.Use = new PrimitiveCode<string>(HackishCodeMapping.ReverseLookup(HackishCodeMapping.NAME_USE, name.Use));
                 if (String.IsNullOrEmpty(retVal.Use.Value))

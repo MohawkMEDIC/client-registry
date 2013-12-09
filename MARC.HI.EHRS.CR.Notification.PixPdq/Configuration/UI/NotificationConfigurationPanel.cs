@@ -12,6 +12,7 @@ using System.Configuration;
 using System.IO;
 using System.Reflection;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 {
@@ -20,6 +21,15 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
     /// </summary>
     public class NotificationConfigurationPanel : IConfigurationPanel
     {
+        /// <summary>
+        /// Notification CTOR
+        /// </summary>
+        public NotificationConfigurationPanel()
+        {
+            OidRegistrar.ExtendedAttributes.Add("CustodialDeviceId", typeof(String));
+            OidRegistrar.ExtendedAttributes.Add("CustodialDeviceName", typeof(String));
+            OidRegistrar.ExtendedAttributes.Add("CustodialOrgName", typeof(String));
+        }
 
         // Panel
         private pnlNotification m_panel = new pnlNotification();
@@ -192,8 +202,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             // Load and import
             XmlDocument tEverestConfig = new XmlDocument();
             tEverestConfig.LoadXml("<marc.everest.connectors.wcf><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201301UV02\" action=\"urn:hl7-org:v3:PRPA_IN201301UV02\"/><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201302UV02\" action=\"urn:hl7-org:v3:PRPA_IN201301UV02\"/><action type=\"MARC.Everest.RMIM.UV.NE2008.Interactions.PRPA_IN201304UV02\" action=\"urn:hl7-org:v3:PRPA_IN201304UV02\"/></marc.everest.connectors.wcf>");
-            everestNode = configurationDom.ImportNode(tEverestConfig.DocumentElement, true) as XmlElement;
-            foreach (XmlElement child in everestNode.ChildNodes)
+            var tEverestNode = configurationDom.ImportNode(tEverestConfig.DocumentElement, true) as XmlElement;
+            foreach (XmlElement child in tEverestNode.ChildNodes)
                 if(everestNode.SelectSingleNode(String.Format("./*[local-name() = 'action'][@type='{0}']", child.Attributes["type"].Value)) == null)
                     everestNode.AppendChild(child);
 

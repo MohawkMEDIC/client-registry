@@ -81,6 +81,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             serviceName = typeof(DatabasePersistenceService).AssemblyQualifiedName;
             // OID Extensions used
             OidRegistrar.ExtendedAttributes.Add("IsUniqueIdentifier", typeof(bool));
+            OidRegistrar.ExtendedAttributes.Add("GloballyAssignable", typeof(bool));
             this.UpdateIfExists = true;
             this.AutoMerge = false;
             this.DefaultMatchStrength = "Strong";

@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Reflection;
 using System.Xml;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
 {
@@ -30,6 +31,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
         /// </summary>
         public HapiConfigurationPanel()
         {
+            OidRegistrar.ExtendedAttributes.Add("AssigningDevFacility", typeof(String));
             String etplPath = Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Config"), "HAPI");
             XmlSerializer xsz = new XmlSerializer(typeof(HandlerConfigTemplate));
             foreach (var etpFileName in Directory.GetFiles(etplPath))
