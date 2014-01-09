@@ -296,12 +296,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Create the person object
         /// </summary>
-        private MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person CreatePersonDetail(Person patient, List<IResultDetail> details)
+        private MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person CreatePersonDetail(Person patient, List<IResultDetail> details)
         {
             if (patient == null)
-                return new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person() { NullFlavor = NullFlavor.NoInformation };
+                return new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person() { NullFlavor = NullFlavor.NoInformation };
 
-            var retVal = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person();
+            var retVal = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person();
             var relations = patient.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
             
             // Names

@@ -359,6 +359,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var msh = request.MSH;
             var qpd = request.QPD;
             var rcp = request.RCP;
+            var dsc = request.DSC;
 
             // Message header validation code
             if (msh == null)
@@ -372,6 +373,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             else if (qpd.MessageQueryName.Identifier.Value != "IHE PDQ Query")
                 dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PDQ Query", false, "QPD^1"));
 
+            
             // Return value
             QueryData retVal = new QueryData()
             {
@@ -384,7 +386,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         Identifier = msh.MessageControlID.Value
                     }
                 },
-                ResponseMessageType = "RSP_K21"
+                ResponseMessageType = "RSP_K21",
+                Originator = String.Format("{0}|{1}", msh.SendingApplication.NamespaceID.Value, msh.SendingFacility.NamespaceID.Value)
             };
 
             // Add the author (null author role) to the return value (policy enforcement doesn't freak out)
@@ -439,7 +442,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             qip2 = ((qpcomp.Components[1] as Varies).Data).ToString();
                         
                         // Get the name of the components to be queried
-                        Regex paramSeg = new Regex(@"@(P[IV][D1]\.?\d+)\.?(\d+)\.?(\d+)?");
+                        Regex paramSeg = new Regex(@"@(P[IV][D1]\.?\d+)\.?(\d+)?\.?(\d+)?");
                         var match = paramSeg.Match(qip1);
                         if (match.Success)
                         {
@@ -564,7 +567,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     }
                     catch (Exception e)
                     {
-                        dtls.Add(new ResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE061"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
+                        dtls.Add(new ResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE061"), String.Format("QPD^1^3^{0}", Array.IndexOf(qps, qp) + 1), null));
                     }
                 }
 
@@ -631,7 +634,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Construct additional query data
             var tag = qpd.GetField(2, 0) as NHapi.Model.V25.Datatype.ST;
-            retVal.QueryId = Guid.NewGuid().ToString();
+
+            if (!string.IsNullOrEmpty(dsc.ContinuationPointer.Value))
+            {
+                retVal.QueryId = dsc.ContinuationPointer.Value;
+                retVal.IsContinue = true;
+            }
+            else
+                retVal.QueryId = Guid.NewGuid().ToString();
+
             if (tag != null)
                 retVal.QueryTag = tag.Value;
             else

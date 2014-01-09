@@ -40,6 +40,7 @@ using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Subscription.Core.Services;
+using System.Security;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -548,6 +549,36 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // Query continuation
                 if (this.m_registrationService == null)
                     throw new InvalidOperationException("No record registration service is registered. Querying for records cannot be done unless this service is present");
+                else if (filter.IsContinue) // continue
+                {
+                    if (this.m_queryPersistence == null || !this.m_queryPersistence.IsRegistered(filter.QueryId))
+                    {
+                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error,
+                           String.Format("The query '{0}' has not been registered with the query service", filter.QueryId),
+                           "DSC^1^1"
+                       ));
+                        throw new InvalidOperationException("Cannot continue query due to errors");
+                    }
+
+                    // Validate the sender
+                    QueryData queryTag = (QueryData)this.m_queryPersistence.GetQueryTag(filter.QueryId);
+                    if (filter.Originator != queryTag.Originator)
+                    {
+                        dtls.Add(new UnrecognizedSenderResultDetail(new DomainIdentifier() { Domain = filter.Originator }));
+                        throw new SecurityException("Cannot display results");
+                    }
+
+                    var retVal = GetRecordsAsync(this.m_queryPersistence.GetQueryResults(filter.QueryId, -1, filter.Quantity), retRecordId, dtls, filter);
+
+                    // Return continued query
+                    return new QueryResultData()
+                    {
+                        QueryTag = filter.QueryTag,
+                        ContinuationPtr = filter.QueryId,
+                        Results = retVal.ToArray(),
+                        TotalResults = (int)this.m_queryPersistence.QueryResultTotalQuantity(filter.QueryId)
+                    };
+                }
                 else if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(filter.QueryId))
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", filter.QueryId));
                 else
@@ -569,7 +600,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                     // Persist the query
                     if (this.m_queryPersistence != null)
+                    {
                         this.m_queryPersistence.RegisterQuerySet(filter.QueryId, recordIds, filter);
+                        this.m_queryPersistence.GetQueryResults(filter.QueryId, -1, filter.Quantity);
+                    }
 
                     // Return query data
                     return new QueryResultData()

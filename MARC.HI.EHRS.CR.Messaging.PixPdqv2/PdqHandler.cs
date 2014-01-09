@@ -111,7 +111,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data.Equals(QueryData.Empty))
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
+                // Is this a continue or new query?
                 QueryResultData result = dataUtil.Query(data, dtls);
+
                 audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result
@@ -125,9 +127,27 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             catch (Exception e)
             {
                 Trace.TraceError(e.ToString());
+
+
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
-                    dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                {
+                    if(dtls.Count == 0)
+                        dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                }
+                // HACK: Only one error allowed in nHAPI for some reason : 
+                // TODO: Fix NHapi
+                dtls.RemoveAll(o => o.Type != ResultDetailType.Error);
+                while (dtls.Count > 1)
+                    dtls.RemoveAt(1);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(RSP_K21));
+                
+                Terser errTerser = new Terser(response);
+                // HACK: Fix the generic ACK with a real ACK for this message
+                errTerser.Set("/MSH-9-2", "K22");
+                errTerser.Set("/MSH-9-3", "RSP_K21");
+                errTerser.Set("/QAK-2", "AE");
+                errTerser.Set("/MSA-1", "AE");
+                errTerser.Set("/QAK-1", request.QPD.QueryTag.Value);
                 audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
             finally

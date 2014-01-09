@@ -349,6 +349,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     UpdatePID(res, pid.PID, false);
                     UpdateQRI(res, pid.QRI);
                     pid.PID.SetIDPID.Value = retVal.QUERY_RESPONSERepetitionsUsed.ToString();
+                    
                 }
 
                 // DSC segment?

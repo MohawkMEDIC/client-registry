@@ -58,6 +58,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         [XmlAttribute("isSummary")]
         public bool IsSummary { get; set; }
 
+        [XmlAttribute("isContinue")]
+        public bool IsContinue { get; set; }
+
         /// <summary>
         /// Response message type
         /// </summary>

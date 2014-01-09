@@ -31,6 +31,7 @@ using System.Diagnostics;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using MARC.HI.EHRS.CR.Core.Services;
+using NHapi.Model.V25.Message;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -145,7 +146,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
                 // Now process the result
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
                 (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.TriggerEvent.Value = request.MSH.MessageType.TriggerEvent.Value;
                 (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.MessageType.Value = "ACK";
@@ -155,7 +156,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 Trace.TraceError(e.ToString());
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
             finally
@@ -210,7 +211,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
 
                 // Now process the result
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
                 (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.TriggerEvent.Value = request.MSH.MessageType.TriggerEvent.Value;
                 (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.MessageType.Value = "ACK";
@@ -220,7 +221,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 Trace.TraceError(e.ToString());
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
             finally
@@ -267,6 +268,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 ComponentUtility cu = new ComponentUtility() { Context = this.Context };
                 DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
                 var data = cu.CreateQueryComponents(request, dtls);
+                
                 if (data.Equals(QueryData.Empty))
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
@@ -277,16 +279,23 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // Now process the result
                 response = dcu.CreateRSP_K23(result, dtls);
                 // Copy QPD
-                //MessageUtil.CopyQPD((response as NHapi.Model.V25.Message.RSP_K23).QPD, request.QPD);
+                //MessageUtil.((response as NHapi.Model.V25.Message.RSP_K23).QPD, request.QPD);
                 
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
             }
             catch (Exception e)
             {
                 Trace.TraceError(e.ToString());
-                if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
+                if (!dtls.Exists(o => o is UnrecognizedPatientDomainResultDetail || o is UnrecognizedTargetDomainResultDetail || o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
-                response = MessageUtil.CreateNack(request, dtls, this.Context);
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(RSP_K23));
+                Terser errTerser = new Terser(response);
+                // HACK: Fix the generic ACK with a real ACK for this message
+                errTerser.Set("/MSH-9-2", "K23");
+                errTerser.Set("/MSH-9-3", "RSP_K23");
+                errTerser.Set("/QAK-2", "AE");
+                errTerser.Set("/MSA-1", "AE");
+                errTerser.Set("/QAK-1", request.QPD.QueryTag.Value);
                 audit = dataUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
             }
             finally

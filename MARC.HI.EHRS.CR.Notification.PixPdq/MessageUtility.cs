@@ -203,7 +203,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             );
 
             // Get person data
-            var personData = eventRegistration.RegistrationEvent.Subject1.registeredRole.PatientEntityChoiceSubject as Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person;
+            var personData = eventRegistration.RegistrationEvent.Subject1.registeredRole.PatientEntityChoiceSubject as Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person;
             personData.AsOtherIDs.Clear();
             retVal.controlActProcess.Subject.Add(eventRegistration);
 
@@ -463,9 +463,9 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// <summary>
         /// Create a person
         /// </summary>
-        private Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person CreatePerson(Person subject, TargetConfiguration configuration)
+        private Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person CreatePerson(Person subject, TargetConfiguration configuration)
         {
-            var retVal = new Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person();
+            var retVal = new Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person();
 
             // Personal relationships
             var personalRelationships = subject.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf);

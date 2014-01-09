@@ -172,35 +172,34 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create NACK
         /// </summary>
-        internal static IMessage CreateNack(IMessage request, List<IResultDetail> errors, IServiceProvider context)
+        internal static IMessage CreateNack(IMessage request, List<IResultDetail> errors, IServiceProvider context, Type errType)
         {
             var config = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
-            IMessage ack = null;
-
-            if (request.Version == "2.3.1")
-                ack = new NHapi.Model.V231.Message.ACK();
-            else
-                ack = new NHapi.Model.V25.Message.ACK();
-
+            IMessage ack = errType.GetConstructor(Type.EmptyTypes).Invoke(null) as IMessage;
+            
             Terser terser = new Terser(ack);
             MessageUtil.UpdateMSH(terser, request, config);
             int errLevel = 0;
 
+            int ec = 0;
             foreach (var dtl in errors)
             {
-                if (request.Version == "2.3.1" && dtl.Type == ResultDetailType.Error)
+                ISegment errSeg;
+                if(ack.Version == "2.5")
+                    errSeg = terser.getSegment(String.Format("/ERR({0})", ec++));
+                else
+                    errSeg = terser.getSegment(String.Format("/ERR", ec++));
+
+                if (errSeg is NHapi.Model.V231.Segment.ERR)
                 {
-                    
-                    var err = (ack as NHapi.Model.V231.Message.ACK).ERR;
-                    var tErr = MessageUtil.UpdateERR(err, dtl, context);
+                    var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V231.Segment.ERR, dtl, context);
                     if (tErr > errLevel)
                         errLevel = tErr;
                 }
-                else if (request.Version == "2.5")
+                else if (errSeg is NHapi.Model.V25.Segment.ERR)
                 {
-                    var err = (ack as NHapi.Model.V25.Message.ACK).GetERR((ack as NHapi.Model.V25.Message.ACK).ERRRepetitionsUsed);
-                    var tErr = MessageUtil.UpdateERR(err, dtl, context);
+                    var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V25.Segment.ERR, dtl, context);
                     if (tErr > errLevel)
                         errLevel = tErr;
                 }
@@ -342,6 +341,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Mesage
             err.UserMessage.Value = dtl.Message;
+
 
             return Int32.Parse(errCode[0].ToString());
 

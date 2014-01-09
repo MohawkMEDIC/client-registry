@@ -478,7 +478,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     }, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.FilterOf, null);
 
             // Identified entity check
-            var ident = patient.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person;
+            var ident = patient.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person;
             if (ident == null || ident.NullFlavor != null)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE012"), null));
@@ -1396,7 +1396,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             subjectOf.Status = StatusType.Active;
 
             // VAlidate patient
-            var person = patient.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Person;
+            var person = patient.PatientEntityChoiceSubject as MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Person;
             if (person == null || person.NullFlavor != null )
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_localeService.GetString("MSGE065"), null));
 

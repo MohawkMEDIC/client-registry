@@ -676,8 +676,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                     // Persist the query
                     if (this.m_queryService != null)
+                    {
                         this.m_queryService.RegisterQuerySet(filter.QueryId.ToLower(), recordIds, filter);
-
+                        this.m_queryService.GetQueryResults(filter.QueryId, -1, filter.Quantity);
+                    }
                     // Return query data
                     return new QueryResultData()
                     {
