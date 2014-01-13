@@ -216,6 +216,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                     var retVal = persister.Persist(conn, tx, storageData as IComponent, false);
 
+                    // Set the mode
+                    if (m_configuration.OverridePersistenceMode.HasValue)
+                        mode = m_configuration.OverridePersistenceMode.Value;
+
                     // Commit or rollback
                     if (mode == DataPersistenceMode.Production)
                     {
@@ -368,6 +372,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     tx = conn.BeginTransaction();
 
                     var retVal = persister.Persist(conn, tx, storageData as IComponent, true);
+
+                    if (m_configuration.OverridePersistenceMode.HasValue)
+                        mode = m_configuration.OverridePersistenceMode.Value;
 
                     if (mode == DataPersistenceMode.Production)
                     {

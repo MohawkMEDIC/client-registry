@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Data;
 using System.IO;
 using System.Xml.Serialization;
+using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources.Attributes;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -86,13 +87,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             var subjectFilter = new Person();
             RegistrationEvent queryFilter = new RegistrationEvent();
-
+            
             //MARC.HI.EHRS.SVC.Core.DataTypes.AddressSet addressFilter = null;
             MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameFilter = null;
 
             for(int i = 0; i < parameters.Count; i++)
                 try
                 {
+                    
+
                         switch (parameters.GetKey(i))
                         {
                             case "_id":
@@ -118,7 +121,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                             continue;
                                         }
                                         subjectFilter.AlternateIdentifiers.Add(domainId);
-                                        actualIdParm.AppendFormat("{0},", itm);
+                                        actualIdParm.AppendFormat("{0},", MessageUtil.UnEscape(itm));
                                     }
 
                                     retVal.ActualParameters.Add("_id", actualIdParm.ToString());
@@ -197,7 +200,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     else if (parameters.GetValues(i).Length > 1)
                                         dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on birthdate", null));
 
-                                    var dValue = new DateOnly() { Value = value };
+                                    var dValue = new DateOnly() { Value = MessageUtil.UnEscape(value) };
                                     subjectFilter.BirthTime = new SVC.Core.DataTypes.TimestampPart()
                                     {
                                         Value = dValue.DateValue.Value,
@@ -279,14 +282,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                     var gCode = MessageUtil.CodeFromToken(value);
                                     if (gCode.Code == "UNK") // Null Flavor
-                                        retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/NullFlavor!UNK"));
+                                        retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/NullFlavor|UNK"));
                                     else if (!new List<String>() { "M", "F", "UN" }.Contains(gCode.Code))
                                         dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Cannot find code {0} in administrative gender", gCode.Code), null));
 
                                     else
                                     {
                                         subjectFilter.GenderCode = gCode.Code;
-                                        retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/AdministrativeGender!{0}", gCode.Code));
+                                        retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/AdministrativeGender|{0}", gCode.Code));
                                     }
                                     break;
                                 }
@@ -330,7 +333,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                         }
 
                                         subjectFilter.AlternateIdentifiers.Add(did);
-                                        retVal.ActualParameters.Add("provider.identifier", String.Format("{0}!", MessageUtil.TranslateDomain(did.Domain)));
+                                        retVal.ActualParameters.Add("provider.identifier", String.Format("{0}|", MessageUtil.TranslateDomain(did.Domain)));
                                     }
                                     break;
 
@@ -771,13 +774,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     retVal.Language.Add(new CodeableConcept(new Uri("http://hl7.org/fhir/sid/iso-639-1"), p.Language));
                         
 
-            // Confidence?
+            // Confidence has moved 
             var confidence = person.FindComponent(HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn) as QueryParameters;
             if (confidence != null)
-            {
-                retVal.Extension.Add(ExtensionUtil.CreateConfidenceExtension(confidence));
-                retVal.Extension.Add(ExtensionUtil.CreateMatchAlgorithmExtension(confidence));
-            }
+                retVal.Attributes.Add(new ConfidenceAttribute() { Confidence = (decimal)confidence.Confidence });
 
             return retVal;
         }

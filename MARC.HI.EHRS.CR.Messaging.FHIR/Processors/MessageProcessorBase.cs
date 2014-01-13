@@ -398,7 +398,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             for (int i = 0; i < parameters.Count; i++)
                 for (int v = 0; v < parameters.GetValues(i).Length; v++)
                     if (!String.IsNullOrEmpty(parameters.GetValues(i)[v]))
-                        goodParameters.Add(parameters.GetKey(i), parameters.GetValues(i)[v]);
+                    {
+                        goodParameters.Add(parameters.GetKey(i), MessageUtil.Escape(parameters.GetValues(i)[v]));
+                    }
             parameters = goodParameters;
 
             var queryObject = resourceProcessor.ParseQuery(goodParameters, result.Details);

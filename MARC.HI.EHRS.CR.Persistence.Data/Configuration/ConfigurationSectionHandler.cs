@@ -28,6 +28,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
+using MARC.HI.EHRS.SVC.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
 {
@@ -52,6 +53,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
         /// Gets the validation configuration section
         /// </summary>
         public ValidationSection Validation { get; private set; }
+
+        /// <summary>
+        /// Override the persistence mode
+        /// </summary>
+        public DataPersistenceMode? OverridePersistenceMode { get; private set; }
 
         /// <summary>
         /// Create the configuration section
@@ -143,7 +149,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
                 roConnectionString = settings.ConnectionString;
 
             }
-            
+
+            if (connectionManagerConfig.Attributes["overrideProcessingID"] != null)
+                this.OverridePersistenceMode = connectionManagerConfig.Attributes["overrideProcessingID"].Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging;
 
             // Create the manager
             this.ConnectionManager = new ConnectionManager(

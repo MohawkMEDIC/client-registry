@@ -181,34 +181,34 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         }
 
 
-        /// <summary>
-        /// Confidence of the match
-        /// </summary>
-        [ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirInt), MustUnderstand = false, MustSupport = false, ShortDescription = "In a query: Identifies the confidence of the returned match")]
-        public static Extension CreateConfidenceExtension(Core.ComponentModel.QueryParameters confidence)
-        {
+        ///// <summary>
+        ///// Confidence of the match
+        ///// </summary>
+        //[ExtensionDefinition(Name = "subjectObservation", HostType = typeof(Patient), ValueType = typeof(FhirInt), MustUnderstand = false, MustSupport = false, ShortDescription = "In a query: Identifies the confidence of the returned match")]
+        //public static Extension CreateConfidenceExtension(Core.ComponentModel.QueryParameters confidence)
+        //{
 
-            return new Extension()
-            {
-                Url = GetExtensionNameUrl("subjectObservation"),
-                Value = new FhirInt((int)(confidence.Confidence * 100))
-            };
-        }
+        //    return new Extension()
+        //    {
+        //        Url = GetExtensionNameUrl("subjectObservation"),
+        //        Value = new FhirInt((int)(confidence.Confidence * 100))
+        //    };
+        //}
 
-        /// <summary>
-        /// Create a match algorithm extension
-        /// </summary>
-        [ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "In a query: Identifies the algorithm used to perform the match")]
-        public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
-        {
-            return new Extension() {
-                Url = GetExtensionNameUrl("subjectObservationMatchAlgorithm"),
-                        Value = 
-                            (confidence.MatchingAlgorithm & Core.ComponentModel.MatchAlgorithm.Soundex) != 0 ?
-                                new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PHCM") { Display = "phonetic match" } :
-                                new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PTNM") { Display = "pattern match" }
-                    };
-        }
+        ///// <summary>
+        ///// Create a match algorithm extension
+        ///// </summary>
+        //[ExtensionDefinition(Name = "subjectObservationMatchAlgorithm", HostType = typeof(Patient), ValueType = typeof(Coding), MustUnderstand = false, MustSupport = false, Binding = typeof(ObservationQueryMatchType), ShortDescription = "In a query: Identifies the algorithm used to perform the match")]
+        //public static Extension CreateMatchAlgorithmExtension(Core.ComponentModel.QueryParameters confidence)
+        //{
+        //    return new Extension() {
+        //        Url = GetExtensionNameUrl("subjectObservationMatchAlgorithm"),
+        //                Value = 
+        //                    (confidence.MatchingAlgorithm & Core.ComponentModel.MatchAlgorithm.Soundex) != 0 ?
+        //                        new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PHCM") { Display = "phonetic match" } :
+        //                        new Coding(typeof(ObservationQueryMatchType).GetValueSetDefinition(), "PTNM") { Display = "pattern match" }
+        //            };
+        //}
 
 
         /// <summary>
