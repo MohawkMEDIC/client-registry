@@ -52,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             get
             {
                 var ndc = new NotificationDomainConfiguration((cbxAuthority.SelectedItem as OidRegistrar.OidData).Oid);
-                ndc.Actions.Add(new ActionConfiguration(((TargetActorType)cbxActor.SelectedItem == TargetActorType.PAT_IDENTITY_X_REF_MGR) ? ActionType.Update : ActionType.Any));
+                ndc.Actions.Add(new ActionConfiguration(ActionType.Any));
 
                 return new pnlNotification.TargetConfigurationInformation()
                 {
@@ -60,8 +60,11 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                     ClientCertificate = txtCertificate.Tag as X509Certificate2,
                     ClientCertificateLocation = (StoreLocation)cbxStoreLocation.SelectedItem,
                     ClientCertificateStore = (StoreName)cbxStore.SelectedItem,
+                    ServerCertificate = txtServerCert.Tag as X509Certificate2,
+                    ServerCertificateLocation = (StoreLocation)cbxServerStoreLocation.SelectedItem,
+                    ServerCertificateStore = (StoreName)cbxServerStore.SelectedItem,
                     ValidateServerCert = chkValidateIssuer.Checked,
-                    Configuration = new TargetConfiguration(txtName.Text, this.m_targetConfiguration.ConnectionString ?? String.Format("endpointname={0}", Guid.NewGuid().ToString().Substring(0, 6)), (TargetActorType)cbxActor.SelectedItem, txtOid.Text)
+                    Configuration = new TargetConfiguration(txtName.Text, this.m_targetConfiguration.ConnectionString ?? String.Format("endpointname={0}", Guid.NewGuid().ToString().Substring(0, 6)), cbxActor.SelectedValue.ToString(), txtOid.Text)
                     {
                         NotificationDomain = new List<NotificationDomainConfiguration>() { ndc }
                     }
@@ -75,13 +78,17 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 txtAddress.Text = value.Address.ToString();
                 cbxStore.SelectedItem = value.ClientCertificateStore;
                 cbxStoreLocation.SelectedItem = value.ClientCertificateLocation;
-                cbxActor.SelectedItem = this.m_targetConfiguration.ActAs;
+                cbxActor.SelectedItem = (this.m_targetConfiguration.Notifier.GetType().GetCustomAttributes(typeof(DescriptionAttribute), false)[0] as DescriptionAttribute).Description;
 
                 chkSendClient.Checked = value.ClientCertificate != null;
                 txtCertificate.Tag = value.ClientCertificate;
                 if(value.ClientCertificate != null) txtCertificate.Text = value.ClientCertificate.Thumbprint;
                 cbxStore.SelectedItem = value.ClientCertificateStore;
                 cbxStoreLocation.SelectedItem = value.ClientCertificateLocation;
+                if (value.ClientCertificate != null) txtServerCert.Text = value.ServerCertificate.Thumbprint;
+                cbxServerStore.SelectedItem = value.ServerCertificateStore;
+                cbxServerStoreLocation.SelectedItem = value.ServerCertificateLocation;
+
                 chkValidateIssuer.Checked = value.ValidateServerCert;
                 if(value.Configuration.NotificationDomain != null &&
                     value.Configuration.NotificationDomain.Count > 0)
@@ -108,11 +115,17 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         private void InitializeStores()
         {
             foreach (var sv in Enum.GetValues(typeof(StoreLocation)))
+            {
                 cbxStoreLocation.Items.Add(sv);
+                cbxServerStoreLocation.Items.Add(sv);
+            }
             foreach (var sv in Enum.GetValues(typeof(StoreName)))
+            {
                 cbxStore.Items.Add(sv);
-            foreach (var sv in Enum.GetValues(typeof(TargetActorType)))
-                cbxActor.Items.Add(sv);
+                cbxServerStore.Items.Add(sv);
+            }
+            foreach (var sv in Array.FindAll(typeof(frmAddTarget).Assembly.GetTypes(), t=>t.GetInterfaces().Contains(typeof(INotifier)) != null))
+                cbxActor.Items.Add(sv.Name);
             cbxActor.SelectedIndex = cbxStoreLocation.SelectedIndex = cbxStore.SelectedIndex = 0;
         }
 

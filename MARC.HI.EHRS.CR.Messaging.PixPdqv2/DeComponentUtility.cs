@@ -67,7 +67,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create the RSP_K23 mesasge
         /// </summary>
-        internal NHapi.Model.V25.Message.RSP_K23 CreateRSP_K23(QueryResultData result, List<Everest.Connectors.IResultDetail> dtls)
+        public NHapi.Model.V25.Message.RSP_K23 CreateRSP_K23(QueryResultData result, List<Everest.Connectors.IResultDetail> dtls)
         {
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K23();
@@ -106,7 +106,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update the specified PID
         /// </summary>
-        private void UpdatePID(Core.ComponentModel.RegistrationEvent registrationEvent, NHapi.Model.V25.Segment.PID pid, bool summaryOnly)
+        public void UpdatePID(Core.ComponentModel.RegistrationEvent registrationEvent, NHapi.Model.V25.Segment.PID pid, bool summaryOnly)
         {
 
             var subject = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
@@ -239,7 +239,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update a CE
         /// </summary>
-        private void UpdateCE(CodeValue codeValue, NHapi.Model.V25.Datatype.CE ce)
+        public void UpdateCE(CodeValue codeValue, NHapi.Model.V25.Datatype.CE ce)
         {
             ITerminologyService tservice = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             codeValue = tservice.FillInDetails(codeValue);
@@ -252,7 +252,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update name
         /// </summary>
-        private void UpdateXPN(NameSet name, NHapi.Model.V25.Datatype.XPN xpn)
+        public void UpdateXPN(NameSet name, NHapi.Model.V25.Datatype.XPN xpn)
         {
             xpn.NameTypeCode.Value = ReverseLookup(ComponentUtility.XPN_USE_MAP, name.Use);
 
@@ -286,7 +286,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Reverse lookup dictionary
         /// </summary>
-        private K ReverseLookup<K,V>(Dictionary<K, V> dictionary, V value)
+        public K ReverseLookup<K,V>(Dictionary<K, V> dictionary, V value)
         {
             foreach (var kv in dictionary)
                 if (kv.Value.Equals(value))
@@ -298,7 +298,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Update a CX instance
         /// </summary>
-        private void UpdateCX(SVC.Core.DataTypes.DomainIdentifier altId, NHapi.Model.V25.Datatype.CX cx)
+        public void UpdateCX(SVC.Core.DataTypes.DomainIdentifier altId, NHapi.Model.V25.Datatype.CX cx)
         {
             // Get oid data
             var oidData = this.m_config.OidRegistrar.FindData(altId.Domain);

@@ -195,7 +195,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         new Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.Patient(
                             CreateIISet(identifiers),
                             RoleStatus.Active,
-                            CreatePerson(subject, new TargetConfiguration(String.Empty, null, TargetActorType.PAT_IDENTITY_X_REF_MGR, null)),
+                            CreatePerson(subject, new TargetConfiguration(String.Empty, null, configuration.Notifier.GetType().Name, null)),
                             providerOrg == null ? null : CreateProviderOrganization(providerOrg)
                         )
                     )
@@ -384,7 +384,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             var person = CreatePerson(subject, configuration);
 
             // Act as a source?
-            if (configuration.ActAs == TargetActorType.PAT_IDENTITY_SRC)
+            if (configuration.Notifier.GetType().Name == "PAT_IDENTITY_SRC_HL7v3")
             {
                 // Masking indicator
                 if (masking != null)
@@ -524,7 +524,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 }
 
             // Acting as a source?
-            if (configuration.ActAs == TargetActorType.PAT_IDENTITY_X_REF_MGR)
+            if (configuration.Notifier.GetType().Name == "PAT_IDENTITY_X_REF_MGR_HL7v3")
                 return retVal;
 
             if (subject.Addresses != null) // addresses

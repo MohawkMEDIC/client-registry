@@ -39,17 +39,7 @@
             this.btnAdd = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.btnChooseCert = new System.Windows.Forms.Button();
-            this.txtCertificate = new System.Windows.Forms.TextBox();
-            this.cbxStoreLocation = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.cbxStore = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.pnlControls.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lsvEp
@@ -65,7 +55,7 @@
             this.lsvEp.Location = new System.Drawing.Point(0, 113);
             this.lsvEp.MultiSelect = false;
             this.lsvEp.Name = "lsvEp";
-            this.lsvEp.Size = new System.Drawing.Size(195, 170);
+            this.lsvEp.Size = new System.Drawing.Size(195, 285);
             this.lsvEp.TabIndex = 10;
             this.lsvEp.UseCompatibleStateImageBehavior = false;
             this.lsvEp.View = System.Windows.Forms.View.Details;
@@ -93,7 +83,7 @@
             this.pnlControls.Dock = System.Windows.Forms.DockStyle.Right;
             this.pnlControls.Location = new System.Drawing.Point(195, 113);
             this.pnlControls.Name = "pnlControls";
-            this.pnlControls.Size = new System.Drawing.Size(80, 170);
+            this.pnlControls.Size = new System.Drawing.Size(80, 285);
             this.pnlControls.TabIndex = 11;
             // 
             // btnDelete
@@ -154,119 +144,17 @@
             this.label1.Text = "PIXv3 Notifications";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnChooseCert);
-            this.panel1.Controls.Add(this.txtCertificate);
-            this.panel1.Controls.Add(this.cbxStoreLocation);
-            this.panel1.Controls.Add(this.label4);
-            this.panel1.Controls.Add(this.cbxStore);
-            this.panel1.Controls.Add(this.label5);
-            this.panel1.Controls.Add(this.label6);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 303);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(275, 95);
-            this.panel1.TabIndex = 3;
-            // 
-            // btnChooseCert
-            // 
-            this.btnChooseCert.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChooseCert.Location = new System.Drawing.Point(229, 66);
-            this.btnChooseCert.Name = "btnChooseCert";
-            this.btnChooseCert.Size = new System.Drawing.Size(33, 20);
-            this.btnChooseCert.TabIndex = 16;
-            this.btnChooseCert.Text = "...";
-            this.btnChooseCert.UseVisualStyleBackColor = true;
-            this.btnChooseCert.Click += new System.EventHandler(this.btnChooseCert_Click);
-            // 
-            // txtCertificate
-            // 
-            this.txtCertificate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCertificate.Location = new System.Drawing.Point(98, 66);
-            this.txtCertificate.Name = "txtCertificate";
-            this.txtCertificate.ReadOnly = true;
-            this.txtCertificate.Size = new System.Drawing.Size(125, 20);
-            this.txtCertificate.TabIndex = 15;
-            // 
-            // cbxStoreLocation
-            // 
-            this.cbxStoreLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbxStoreLocation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxStoreLocation.FormattingEnabled = true;
-            this.cbxStoreLocation.Location = new System.Drawing.Point(98, 12);
-            this.cbxStoreLocation.Name = "cbxStoreLocation";
-            this.cbxStoreLocation.Size = new System.Drawing.Size(164, 21);
-            this.cbxStoreLocation.TabIndex = 13;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 15);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(79, 13);
-            this.label4.TabIndex = 12;
-            this.label4.Text = "Store Location:";
-            // 
-            // cbxStore
-            // 
-            this.cbxStore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbxStore.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxStore.FormattingEnabled = true;
-            this.cbxStore.Location = new System.Drawing.Point(98, 39);
-            this.cbxStore.Name = "cbxStore";
-            this.cbxStore.Size = new System.Drawing.Size(164, 21);
-            this.cbxStore.TabIndex = 14;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(35, 69);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(57, 13);
-            this.label5.TabIndex = 11;
-            this.label5.Text = "Certificate:";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(7, 42);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(85, 13);
-            this.label6.TabIndex = 10;
-            this.label6.Text = "Certificate Store:";
-            // 
-            // label3
-            // 
-            this.label3.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label3.Location = new System.Drawing.Point(0, 283);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(275, 20);
-            this.label3.TabIndex = 12;
-            this.label3.Text = "Trusted Issuer";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // pnlNotification
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.lsvEp);
             this.Controls.Add(this.pnlControls);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.panel1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "pnlNotification";
             this.Size = new System.Drawing.Size(275, 398);
             this.pnlControls.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -283,14 +171,5 @@
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button btnChooseCert;
-        private System.Windows.Forms.TextBox txtCertificate;
-        private System.Windows.Forms.ComboBox cbxStoreLocation;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox cbxStore;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
     }
 }

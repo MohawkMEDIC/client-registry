@@ -60,6 +60,21 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             public X509Certificate2 ClientCertificate { get; set; }
 
             /// <summary>
+            /// Client certificate
+            /// </summary>
+            public StoreName ServerCertificateStore { get; set; }
+
+            /// <summary>
+            /// Client certificate store
+            /// </summary>
+            public StoreLocation ServerCertificateLocation { get; set; }
+
+            /// <summary>
+            /// Gets or sets the client certificate 
+            /// </summary>
+            public X509Certificate2 ServerCertificate { get; set; }
+
+            /// <summary>
             /// True if server cert should be validated
             /// </summary>
             public bool ValidateServerCert { get; set; }
@@ -142,39 +157,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         }
 
 
-        /// <summary>
-        /// Trusted issuer store
-        /// </summary>
-        public StoreName TrustedIssuerStore {
-            get { return (StoreName)this.cbxStore.SelectedItem; }
-            set { this.cbxStore.SelectedItem = value; }
-        }
-        /// <summary>
-        /// Trusted issuer location
-        /// </summary>
-        public StoreLocation TrustedIssuerLocation {
-            get { return (StoreLocation)this.cbxStoreLocation.SelectedItem; }
-            set { this.cbxStoreLocation.SelectedItem = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the trusted issuer's cert
-        /// </summary>
-        public X509Certificate2 TrustedIssuerCert
-        {
-            get
-            {
-                return this.txtCertificate.Tag as X509Certificate2;
-            }
-            set
-            {
-                if (value == null)
-                    return;
-                this.txtCertificate.Tag = value;
-                this.txtCertificate.Text = value.Thumbprint;
-            }
-        }
-        
+       
         /// <summary>
         /// Refresh the list view
         /// </summary>
@@ -187,7 +170,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 var item = this.lsvEp.Items.Add(target.Configuration.Name, target.Configuration.Name, 0);
                 item.Tag = target;
                 item.SubItems.Add(target.Address.ToString());
-                item.SubItems.Add(target.Configuration.ActAs.ToString());
+                item.SubItems.Add(target.Configuration.Notifier.GetType().Name.ToString());
             }
             lsvEp.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
 
@@ -197,7 +180,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         public pnlNotification()
         {
             InitializeComponent();
-            this.InitializeStores();
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
@@ -225,7 +207,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 TargetConfiguration = new TargetConfigurationInformation()
                 {
                     Address = new Uri("http://pix/"),
-                    Configuration = new TargetConfiguration(name, String.Format("endpointName={0}", name), TargetActorType.PAT_IDENTITY_X_REF_MGR, "1.2.3.4.5.6")
+                    Configuration = new TargetConfiguration(name, String.Format("endpointName={0}", name), "PAT_IDENTITY_X_REF_MGR_HL7v3", "1.2.3.4.5.6")
                 },
                 OidRegistry = this.OidRegistrar
             };
@@ -250,31 +232,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         }
 
 
-        /// <summary>
-        /// Initialize certificate stores
-        /// </summary>
-        private void InitializeStores()
-        {
-            foreach (var sv in Enum.GetValues(typeof(StoreLocation)))
-                cbxStoreLocation.Items.Add(sv);
-            foreach (var sv in Enum.GetValues(typeof(StoreName)))
-                cbxStore.Items.Add(sv);
-            cbxStoreLocation.SelectedIndex = 0;
-            cbxStore.SelectedIndex = 0;
-        }
-
-        private void btnChooseCert_Click(object sender, EventArgs e)
-        {
-            var cert = ConfigurationSectionHandler.ChooseCertificate((StoreName)cbxStore.SelectedItem, (StoreLocation)cbxStoreLocation.SelectedItem, true);
-            if (cert == null)
-                txtCertificate.Tag = txtCertificate.Text = null;
-            else
-            {
-                txtCertificate.Tag = cert;
-                txtCertificate.Text = cert.Thumbprint;
-            }
-
-        }
+       
 
     }
 }

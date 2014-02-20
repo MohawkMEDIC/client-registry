@@ -21,36 +21,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Security.Cryptography.X509Certificates;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
+using MARC.HI.EHRS.CR.Notification.PixPdqv2.Configuration;
 
-namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
+namespace MARC.HI.EHRS.CR.Notification.PixPdqv3
 {
     /// <summary>
-    /// Notification configuration
+    /// Represents a notification work item for the wait thread poool
     /// </summary>
-    public class NotificationConfiguration
+    public class NotificationQueueWorkItem
     {
 
         /// <summary>
-        /// Creates a new instance of the NotificationConfiguration
+        /// Create a new notification queue work item
         /// </summary>
-        public NotificationConfiguration(int concurrencyLevel)
+        public NotificationQueueWorkItem(Core.ComponentModel.RegistrationEvent evt, Configuration.ActionType actionType)
         {
-            this.Targets = new List<TargetConfiguration>();
-            this.ConcurrencyLevel = concurrencyLevel;
+            // TODO: Complete member initialization
+            this.Event = evt;
+            this.Action = actionType;
         }
 
-
         /// <summary>
-        /// Gets or sets the list of targets that are configured as part of this notification service
+        /// Gets the event that triggered the action
         /// </summary>
-        public List<TargetConfiguration> Targets { get; private set; }
-
+        public RegistrationEvent Event { get; private set; }
         /// <summary>
-        /// Gets the concurrency level
+        /// Gets the action performed on the Event
         /// </summary>
-        public int ConcurrencyLevel { get; private set; }
-
+        public ActionType Action { get; private set; }
 
     }
 }

@@ -106,21 +106,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
             if (section.Attributes["concurrencyLevel"] != null)
                 retVal = new NotificationConfiguration(Int32.Parse(section.Attributes["concurrencyLevel"].Value));
 
-            // Parse certificate data
-            var certificateNode = section.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']");
-            if (certificateNode != null)
-            {
-                XmlAttribute storeLocationAtt = certificateNode.Attributes["storeLocation"],
-                            storeNameAtt = certificateNode.Attributes["storeName"],
-                            findTypeAtt = certificateNode.Attributes["x509FindType"],
-                            findValueAtt = certificateNode.Attributes["findValue"];
-
-                if (findTypeAtt == null || findValueAtt == null) throw new ConfigurationErrorsException("Must supply x509FindType and findValue"); // can't find if nothing to find...
-
-                retVal.TrustedIssuerCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
-                retVal.TrustedIssuerCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
-                retVal.TrustedIssuerCertificate = ConfigurationSectionHandler.FindCertificate(retVal.TrustedIssuerCertStore, retVal.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
-            }
 
             // Iterate through the <targets><add> elements and add them to the configuration
             foreach (XmlElement targ in targetsElement)
@@ -137,18 +122,47 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                 if (targ.Attributes["name"] != null)
                     targetName = targ.Attributes["name"].Value;
 
-                TargetActorType type = TargetActorType.PAT_IDENTITY_X_REF_MGR;
-                if(targ.Attributes["myActor"] != null && !Enum.TryParse(targ.Attributes["myActor"].Value, out type))
-                    throw new ConfigurationErrorsException(String.Format("Actor type '{0}' is not valid", targ.Attributes["myActor"].Value));
+                string actorType = "PAT_IDENTITY_X_REF_MGR";
+                if (targ.Attributes["myActor"] != null)
+                    actorType = targ.Attributes["myActor"].Value;
 
                 string deviceId = String.Empty;
                 if (targ.Attributes["deviceId"] != null)
                     deviceId = targ.Attributes["deviceId"].Value;
 
                 // Now create the target
-                TargetConfiguration targetConfig = new TargetConfiguration(targetName, connectionString, type, deviceId);
+                TargetConfiguration targetConfig = new TargetConfiguration(targetName, connectionString, actorType, deviceId);
 
-               
+                // Parse certificate data
+                var certificateNode = targ.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']");
+                if (certificateNode != null)
+                {
+                    XmlAttribute storeLocationAtt = certificateNode.Attributes["storeLocation"],
+                                storeNameAtt = certificateNode.Attributes["storeName"],
+                                findTypeAtt = certificateNode.Attributes["x509FindType"],
+                                findValueAtt = certificateNode.Attributes["findValue"];
+
+                    if (findTypeAtt == null || findValueAtt == null) throw new ConfigurationErrorsException("Must supply x509FindType and findValue"); // can't find if nothing to find...
+
+                    targetConfig.TrustedIssuerCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
+                    targetConfig.TrustedIssuerCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
+                    targetConfig.TrustedIssuerCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.TrustedIssuerCertStore, targetConfig.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
+                }
+                certificateNode = targ.SelectSingleNode("./*[local-name() = 'clientLLPCertificate']");
+                if (certificateNode != null)
+                {
+                    XmlAttribute storeLocationAtt = certificateNode.Attributes["storeLocation"],
+                                storeNameAtt = certificateNode.Attributes["storeName"],
+                                findTypeAtt = certificateNode.Attributes["x509FindType"],
+                                findValueAtt = certificateNode.Attributes["findValue"];
+
+                    if (findTypeAtt == null || findValueAtt == null) throw new ConfigurationErrorsException("Must supply x509FindType and findValue"); // can't find if nothing to find...
+
+                    targetConfig.LlpClientCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
+                    targetConfig.LlpClientCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
+                    targetConfig.LlpClientCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.TrustedIssuerCertStore, targetConfig.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
+                }
+
                 // Get the notification domains and add them to the configuration
                 var notificationElements = targ.SelectNodes("./*[local-name() = 'notify']");
                 foreach (XmlElement ne in notificationElements)

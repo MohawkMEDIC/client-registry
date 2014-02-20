@@ -58,6 +58,18 @@
     <Reference Include="MARC.HI.EHRS.SVC.Terminology">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Terminology.dll</HintPath>
     </Reference>
+    <Reference Include="NHapi.Base, Version=2.3.0.0, Culture=neutral, PublicKeyToken=d0d8ea960a3440eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\NHapi.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="NHapi.Model.V231, Version=2.3.0.0, Culture=neutral, PublicKeyToken=d0d8ea960a3440eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\NHapi.Model.V231.dll</HintPath>
+    </Reference>
+    <Reference Include="NHapi.Model.V25, Version=2.3.0.0, Culture=neutral, PublicKeyToken=d0d8ea960a3440eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\NHapi.Model.V25.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -77,6 +89,7 @@
     <Compile Include="Configuration\NotificationConfiguration.cs" />
     <Compile Include="Configuration\NotificationDomainConfiguration.cs" />
     <Compile Include="Configuration\TargetConfiguration.cs" />
+    <Compile Include="Configuration\UI\DescriptionAttributeEnum.cs" />
     <Compile Include="Configuration\UI\frmAddTarget.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,9 +103,14 @@
     <Compile Include="Configuration\UI\pnlNotification.Designer.cs">
       <DependentUpon>pnlNotification.cs</DependentUpon>
     </Compile>
+    <Compile Include="INotifier.cs" />
     <Compile Include="MessageUtility.Datatypes.cs" />
     <Compile Include="MessageUtility.cs" />
+    <Compile Include="MllpMessageSender.cs" />
     <Compile Include="NotificationQueueWorkItem.cs" />
+    <Compile Include="Notifiers\PAT_ID_X_REF_MGR_HL7v3.cs" />
+    <Compile Include="Notifiers\PAT_IDENTITY_SRC_HL7v3.cs" />
+    <Compile Include="Notifiers\PAT_IDENTITY_SRC.cs" />
     <Compile Include="PixNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecureNodeCertificateValidator.cs" />
@@ -101,6 +119,10 @@
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
       <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
       <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Messaging.PixPdqv2\MARC.HI.EHRS.CR.Messaging.PixPdqv2.csproj">
+      <Project>{89CA50BC-141F-4216-818F-6A6DA76BF745}</Project>
+      <Name>MARC.HI.EHRS.CR.Messaging.PixPdqv2</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

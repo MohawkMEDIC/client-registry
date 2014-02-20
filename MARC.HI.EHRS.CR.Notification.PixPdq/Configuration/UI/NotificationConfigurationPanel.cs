@@ -13,6 +13,7 @@ using System.IO;
 using System.Reflection;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 {
@@ -128,25 +129,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 serviceProviderNode.AppendChild(addServiceProvNode);
             }
 
-            // Certificate info
-            XmlElement certificateNode = notificationNode.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']") as XmlElement;
-            if(this.m_panel.TrustedIssuerCert != null)
-            {
-                if (certificateNode == null)
-                    certificateNode = notificationNode.AppendChild(configurationDom.CreateElement("trustedIssuerCertificate")) as XmlElement;
-
-                certificateNode.RemoveAll();
-                certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeLocation"));
-                certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeName"));
-                certificateNode.Attributes.Append(configurationDom.CreateAttribute("x509FindType"));
-                certificateNode.Attributes.Append(configurationDom.CreateAttribute("findValue"));
-                certificateNode.Attributes["storeLocation"].Value = this.m_panel.TrustedIssuerLocation.ToString();
-                certificateNode.Attributes["storeName"].Value = this.m_panel.TrustedIssuerStore.ToString();
-                certificateNode.Attributes["x509FindType"].Value = X509FindType.FindByThumbprint.ToString();
-                certificateNode.Attributes["findValue"].Value = this.m_panel.TrustedIssuerCert.Thumbprint;
-            }
-            else if(certificateNode != null)
-                certificateNode.ParentNode.RemoveChild(certificateNode);
+           
 
             // Write the configuration
             XmlElement targetsNode = notificationNode.SelectSingleNode("./*[local-name() = 'targets']") as XmlElement;
@@ -157,14 +140,59 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             foreach (var targ in this.m_panel.Targets)
             {
 
-                // Setup WCF endpoint
-                CreateWcfClient(configurationDom, targ);
-
                 // Find an add with the device id
                 XmlElement addNode = targetsNode.SelectSingleNode(string.Format("./*[local-name() = 'add'][@deviceId = '{0}']", targ.Configuration.DeviceIdentifier)) as XmlElement;
                 if (addNode == null)
                     addNode = targetsNode.AppendChild(configurationDom.CreateElement("add")) as XmlElement;
+
+
+
+                // Setup WCF endpoint
+                if (targ.Configuration.Notifier.GetType().Name.Contains("HL7v3"))
+                    CreateWcfClient(configurationDom, targ);
+                else
+                    targ.Configuration.ConnectionString = targ.Address.ToString();
+
+                // Certificate info
+                XmlElement certificateNode = addNode.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']") as XmlElement;
+                if (targ.ServerCertificate != null)
+                {
+                    if (certificateNode == null)
+                        certificateNode = addNode.AppendChild(configurationDom.CreateElement("trustedIssuerCertificate")) as XmlElement;
+
+                    certificateNode.RemoveAll();
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeLocation"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeName"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("x509FindType"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("findValue"));
+                    certificateNode.Attributes["storeLocation"].Value = targ.ServerCertificateLocation.ToString();
+                    certificateNode.Attributes["storeName"].Value = targ.ServerCertificateStore.ToString();
+                    certificateNode.Attributes["x509FindType"].Value = X509FindType.FindByThumbprint.ToString();
+                    certificateNode.Attributes["findValue"].Value = targ.ServerCertificate.Thumbprint;
+                }
+                else if (certificateNode != null)
+                    certificateNode.ParentNode.RemoveChild(certificateNode);
                 
+                // LLP Certificate
+                certificateNode = addNode.SelectSingleNode("./*[local-name() = 'clientLLPCertificate']") as XmlElement;
+                if (targ.ClientCertificate != null)
+                {
+                    if (certificateNode == null)
+                        certificateNode = addNode.AppendChild(configurationDom.CreateElement("clientLLPCertificate")) as XmlElement;
+
+                    certificateNode.RemoveAll();
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeLocation"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("storeName"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("x509FindType"));
+                    certificateNode.Attributes.Append(configurationDom.CreateAttribute("findValue"));
+                    certificateNode.Attributes["storeLocation"].Value = targ.ClientCertificateLocation.ToString();
+                    certificateNode.Attributes["storeName"].Value = targ.ClientCertificateStore.ToString();
+                    certificateNode.Attributes["x509FindType"].Value = X509FindType.FindByThumbprint.ToString();
+                    certificateNode.Attributes["findValue"].Value = targ.ClientCertificate.Thumbprint;
+                }
+                else if (certificateNode != null)
+                    certificateNode.ParentNode.RemoveChild(certificateNode);
+
                 // Clear add node
                 addNode.RemoveAll();
 
@@ -176,7 +204,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 addNode.Attributes.Append(configurationDom.CreateAttribute("name"));
                 addNode.Attributes["name"].Value = targ.Configuration.Name;
                 addNode.Attributes.Append(configurationDom.CreateAttribute("myActor"));
-                addNode.Attributes["myActor"].Value = targ.Configuration.ActAs.ToString();
+                addNode.Attributes["myActor"].Value = targ.Configuration.Notifier.GetType().Name;
 
                 // Now append notification domain
                 foreach (var ntfy in targ.Configuration.NotificationDomain)
@@ -428,9 +456,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             this.m_panel.OidRegistrar = OidRegistrarConfigurationPanel.LoadOidRegistrar(configurationDom);
 
             this.m_panel.SetTargets(this.m_configuration.Targets, wcfRoot);
-            this.m_panel.TrustedIssuerCert = this.m_configuration.TrustedIssuerCertificate;
-            this.m_panel.TrustedIssuerLocation = this.m_configuration.TrustedIssuerCertLocation;
-            this.m_panel.TrustedIssuerStore = this.m_configuration.TrustedIssuerCertStore;
+
 
             // Loop through the configuration templates 
             return isConfigured;

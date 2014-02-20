@@ -1,52 +1,24 @@
-﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
- * the License.
- * 
- * User: fyfej
- * Date: 21-8-2012
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MARC.HI.EHRS.CR.Core.Services;
-using MARC.HI.EHRS.CR.Notification.PixPdq.Configuration;
-using System.Configuration;
 using MARC.Everest.Threading;
 using System.Diagnostics;
-using MARC.HI.EHRS.CR.Core.ComponentModel;
-using MARC.HI.EHRS.SVC.Core.Services;
-using MARC.Everest.Interfaces;
-using MARC.Everest.Connectors.WCF;
-using MARC.Everest.Formatters.XML.ITS1;
-using MARC.Everest.Formatters.XML.Datatypes.R1;
-using MARC.Everest.RMIM.UV.NE2008.Interactions;
-using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.Connectors;
 
-namespace MARC.HI.EHRS.CR.Notification.PixPdq
+namespace MARC.HI.EHRS.CR.Notification.PixPdqv2
 {
     /// <summary>
-    /// Represents a client notification service that serves PIXv3 notifications
+    /// Represents a PIX noficiation handler for HL7v2
     /// </summary>
     public class PixNotifier : IClientNotificationService, IDisposable
     {
         #region IClientNotificationService Members
 
         // Wait threading pool
-        private WaitThreadPool m_threadPool ;
+        private WaitThreadPool m_threadPool;
 
         // Sync lock
         private static Object s_syncLock = new object();
@@ -59,7 +31,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         static PixNotifier()
         {
-            s_configuration = ConfigurationManager.GetSection("marc.hi.ehrs.cr.notification.pixpdq") as NotificationConfiguration;
+            s_configuration = ConfigurationManager.GetSection("MARC.HI.EHRS.CR.Notification.PixPdqv3") as NotificationConfiguration;
 
         }
 
@@ -101,20 +73,79 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 {
 
                     targets = s_configuration.Targets.FindAll(o => o.NotificationDomain.Exists(delegate(NotificationDomainConfiguration dc)
-                        {
-                            bool action = dc.Actions.Exists(act => (act.Action & workItem.Action) == workItem.Action);
-                            bool domain = subject.AlternateIdentifiers.Exists(id => id.Domain == dc.Domain);
-                            return action && domain;
-                        }
+                    {
+                        bool action = dc.Actions.Exists(act => (act.Action & workItem.Action) == workItem.Action);
+                        bool domain = subject.AlternateIdentifiers.Exists(id => id.Domain == dc.Domain);
+                        return action && domain;
+                    }
                     ));
                 }
 
-                // Notify the targets
-                foreach (var itm in targets)
+
+                // Create a message utility
+                MessageUtility msgUtil = new MessageUtility() { Context = this.Context };
+
+                // Create the EV formatters
+                XmlIts1Formatter formatter = new XmlIts1Formatter()
                 {
-                    itm.Notifier.Context = this.Context;
-                    itm.Notifier.Notify(workItem);
-                }
+                    ValidateConformance = false
+                };
+                formatter.GraphAides.Add(new DatatypeFormatter()
+                {
+                    ValidateConformance = false
+                });
+
+                // Iterate through the targets attempting to notify each one
+                foreach (var t in targets)
+                    using (WcfClientConnector wcfClient = new WcfClientConnector(t.ConnectionString))
+                    {
+                        wcfClient.Formatter = formatter;
+                        wcfClient.Open();
+
+                        // Build the message
+                        Trace.TraceInformation("Sending notification to '{0}'...", t.Name);
+                        IInteraction notification = msgUtil.CreateMessage(evt, t.ActAs == TargetActorType.PAT_IDENTITY_X_REF_MGR ? ActionType.Update : workItem.Action, t);
+
+                        // Send it
+                        var sendResult = wcfClient.Send(notification);
+                        if (sendResult.Code != Everest.Connectors.ResultCode.Accepted &&
+                            sendResult.Code != Everest.Connectors.ResultCode.AcceptedNonConformant)
+                        {
+                            Trace.TraceWarning(string.Format(locale.GetString("NTFW002"), t.Name));
+                            DumpResultDetails(sendResult.Details);
+                            continue;
+                        }
+
+                        // Receive the response
+                        var rcvResult = wcfClient.Receive(sendResult);
+                        if (rcvResult.Code != Everest.Connectors.ResultCode.Accepted &&
+                            rcvResult.Code != Everest.Connectors.ResultCode.AcceptedNonConformant)
+                        {
+                            Trace.TraceWarning(string.Format(locale.GetString("NTFW003"), t.Name));
+                            DumpResultDetails(rcvResult.Details);
+                            continue;
+                        }
+
+                        // Get structure
+                        var response = rcvResult.Structure as MCCI_IN000002UV01;
+                        if (response == null)
+                        {
+                            Trace.TraceWarning(string.Format(locale.GetString("NTFW003"), t.Name));
+                            continue;
+                        }
+
+                        if (response.Acknowledgement.Count == 0 ||
+                            response.Acknowledgement[0].TypeCode != AcknowledgementType.AcceptAcknowledgementCommitAccept)
+                        {
+                            Trace.TraceWarning(string.Format(locale.GetString("NTFW004"), t.Name));
+                            continue;
+                        }
+
+
+                        // Close the connector and continue
+                        wcfClient.Close();
+
+                    }
 
             }
             catch (Exception e)
@@ -123,12 +154,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             }
         }
 
+
         /// <summary>
         /// Notify that an update has occurred
         /// </summary>
         public void NotifyUpdate(Core.ComponentModel.RegistrationEvent evt)
         {
-            
+
             this.m_threadPool.QueueUserWorkItem(NotifyInternal, new NotificationQueueWorkItem(evt, ActionType.Update));
         }
 
@@ -167,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         #region IUsesHostContext Members
 
         /// <summary>
-        /// Gets or sets the context
+        /// Gets or sets the operational context
         /// </summary>
         public IServiceProvider Context
         {
@@ -184,8 +216,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         public void Dispose()
         {
-            if (m_threadPool != null)
-                m_threadPool.Dispose();
+            if(this.m_threadPool != null)
+                this.m_threadPool.Dispose();
         }
 
         #endregion

@@ -51,7 +51,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         private ISystemConfigurationService m_config;
 
         // XPN Maps
-        internal static readonly Dictionary<String, NamePart.NamePartType?> XPN_MAP = new Dictionary<string, NamePart.NamePartType?>()
+        public static readonly Dictionary<String, NamePart.NamePartType?> XPN_MAP = new Dictionary<string, NamePart.NamePartType?>()
         {
             { "1",  NamePart.NamePartType.Family },
             { "2", NamePart.NamePartType.Given },
@@ -62,7 +62,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         };
 
         // AD Maps
-        internal static readonly Dictionary<String, AddressPart.AddressPartType?> AD_MAP = new Dictionary<string, AddressPart.AddressPartType?>()
+        public static readonly Dictionary<String, AddressPart.AddressPartType?> AD_MAP = new Dictionary<string, AddressPart.AddressPartType?>()
         {
             { "1", AddressPart.AddressPartType.StreetAddressLine },
             { "2", AddressPart.AddressPartType.AdditionalLocator },
@@ -73,7 +73,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         };
 
         // XPN Type Maps
-        internal static readonly Dictionary<String, NameSet.NameSetUse?> XPN_USE_MAP = new Dictionary<string, NameSet.NameSetUse?>()
+        public static readonly Dictionary<String, NameSet.NameSetUse?> XPN_USE_MAP = new Dictionary<string, NameSet.NameSetUse?>()
         {
             { "A", NameSet.NameSetUse.Pseudonym },
             { "B", NameSet.NameSetUse.OfficialRecord },
@@ -88,7 +88,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         };
 
         // AD Type maps
-        internal static readonly Dictionary<String, AddressSet.AddressSetUse?> AD_USE_MAP = new Dictionary<string, AddressSet.AddressSetUse?>()
+        public static readonly Dictionary<String, AddressSet.AddressSetUse?> AD_USE_MAP = new Dictionary<string, AddressSet.AddressSetUse?>()
         {
             { "BA", AddressSet.AddressSetUse.BadAddress },
             { "C", AddressSet.AddressSetUse.TemporaryAddress },
@@ -101,7 +101,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         };
         
         // TS Maps
-        internal static readonly Dictionary<MARC.Everest.DataTypes.DatePrecision, string> TS_PREC_MAP = new Dictionary<MARC.Everest.DataTypes.DatePrecision, string>()
+        public static readonly Dictionary<MARC.Everest.DataTypes.DatePrecision, string> TS_PREC_MAP = new Dictionary<MARC.Everest.DataTypes.DatePrecision, string>()
                 { 
                        { MARC.Everest.DataTypes.DatePrecision.Day, "D" },
                        { MARC.Everest.DataTypes.DatePrecision.Full, "F" },

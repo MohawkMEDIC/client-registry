@@ -22,44 +22,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
+using System.ComponentModel;
+using System.Configuration;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 {
 
-    /// <summary>
-    /// The actor types
-    /// </summary>
-    public enum TargetActorType
-    {
-        PAT_IDENTITY_SRC,
-        PAT_IDENTITY_X_REF_MGR
-    }
-
+   
     /// <summary>
     /// Target node configuration
     /// </summary>
     public class TargetConfiguration
     {
+        // The notifier
+        private INotifier m_notifier;
 
         /// <summary>
         /// Creates a new target configuration
         /// </summary>
-        public TargetConfiguration(string name, string connectionString, TargetActorType actAs, string deviceId)
+        public TargetConfiguration(string name, string connectionString, String actAs, string deviceId)
         {
             this.Name = name;
             this.ConnectionString = connectionString;
-            this.ActAs = actAs;
             this.DeviceIdentifier = deviceId;
             this.NotificationDomain = new List<NotificationDomainConfiguration>();
 
+            var notifierType = Array.Find(typeof(TargetConfiguration).Assembly.GetTypes(), t => t.Name == actAs);
+            if (notifierType == null)
+                throw new ConfigurationErrorsException(String.Format("Could not find the specified actor implementation {0}", actAs));
+            var ci = notifierType.GetConstructor(Type.EmptyTypes);
+            if(ci == null)
+                throw new ConfigurationErrorsException(String.Format("Could not find the specified actor implementation {0}", actAs));
+            this.m_notifier = ci.Invoke(null) as INotifier;
+            this.m_notifier.Target = this;
         }
 
-        
-        /// <summary>
-        /// Gets the value that indicates which IHE actor this tool is acting as 
-        /// when communicating with the notification target
-        /// </summary>
-        public TargetActorType ActAs { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the notification configuration
@@ -82,5 +79,47 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// </summary>
         public string DeviceIdentifier { get; private set; }
 
+        /// <summary>
+        /// Gets the notifier technology implementation
+        /// </summary>
+        public INotifier Notifier
+        {
+            get
+            {
+                return this.m_notifier;
+            }
+        }
+
+        /// <summary>
+        /// Identifies the location to scan fo the server certificate
+        /// </summary>
+        public StoreLocation LlpClientCertLocation { get; internal set; }
+
+        /// <summary>
+        /// Identifies the name of the server certificate store
+        /// </summary>
+        public StoreName LlpClientCertStore { get; internal set; }
+
+        /// <summary>
+        /// Llp client certificate
+        /// </summary>
+        public X509Certificate2 LlpClientCertificate { get; internal set; }
+
+
+
+        /// <summary>
+        /// Identifies the location to scan fo the server certificate
+        /// </summary>
+        public StoreLocation TrustedIssuerCertLocation { get; internal set; }
+
+        /// <summary>
+        /// Identifies the name of the server certificate store
+        /// </summary>
+        public StoreName TrustedIssuerCertStore { get; internal set; }
+
+        /// <summary>
+        /// Gets the server certificate
+        /// </summary>
+        public X509Certificate2 TrustedIssuerCertificate { get; internal set; }
     }
 }

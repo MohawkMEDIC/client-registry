@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 {
@@ -43,7 +44,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         {
 
             // Get all assemblies which have a transport protocol
-            foreach(var asm in Array.FindAll(AppDomain.CurrentDomain.GetAssemblies(), a=>Array.Exists(a.GetTypes(), t=>t.GetInterface(typeof(ITransportProtocol).FullName) != null)))
+            var asm = typeof(TransportUtil).Assembly;
+            try
+            {
                 foreach (var typ in Array.FindAll(asm.GetTypes(), t => t.GetInterface(typeof(ITransportProtocol).FullName) != null))
                 {
                     ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
@@ -52,6 +55,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     ITransportProtocol tp = ci.Invoke(null) as ITransportProtocol;
                     s_prots.Add(tp.ProtocolName, typ);
                 }
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError(e.ToString());
+            }
         }
 
 
