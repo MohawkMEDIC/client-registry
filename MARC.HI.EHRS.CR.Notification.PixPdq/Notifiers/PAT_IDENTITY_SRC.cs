@@ -180,15 +180,19 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// <param name="pid"></param>
         private void UpdatePID(Person subject, PID pid, ISystemConfigurationService config)
         {
-            subject.AlternateIdentifiers.RemoveAll(ii => !this.Target.NotificationDomain.Exists(o => o.Domain.Equals(ii.Domain)));
 
             var dec = new DeComponentUtility();
 
             // Alternate identifiers
-            foreach (var altId in subject.AlternateIdentifiers)
+            if (subject.AlternateIdentifiers != null)
             {
-                var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
-                this.UpdateCX(altId, id, config);
+                subject.AlternateIdentifiers.RemoveAll(ii => !this.Target.NotificationDomain.Exists(o => o.Domain.Equals(ii.Domain)));
+
+                foreach (var altId in subject.AlternateIdentifiers)
+                {
+                    var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
+                    this.UpdateCX(altId, id, config);
+                }
             }
 
             // Populate Names
@@ -270,15 +274,16 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 }
 
             // Telecom addresses
-            foreach (var tel in subject.TelecomAddresses)
-                if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
-                else if (tel.Use == "HP")
-                    pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
-                else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
-                else if (tel.Use == "WP")
-                    pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
+            if(subject.TelecomAddresses != null)
+                foreach (var tel in subject.TelecomAddresses)
+                    if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
+                        MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
+                    else if (tel.Use == "HP")
+                        pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
+                    else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
+                        MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
+                    else if (tel.Use == "WP")
+                        pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
    
             
         }
@@ -373,9 +378,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             msh.AcceptAcknowledgmentType.Value = "AL";
             msh.DateTimeOfMessage.TimeOfAnEvent.Value = (TS)DateTime.Now;
             msh.MessageControlID.Value = Guid.NewGuid().ToString();
-            msh.MessageType.MessageStructure.Value = "ADT_A01";
-            msh.MessageType.MessageType.Value = "ADT";
-            msh.MessageType.TriggerEvent.Value = "A01";
+            msh.MessageType.MessageStructure.Value = msh.Message.GetType().Name;
             msh.ProcessingID.ProcessingID.Value = "P";
 
             if (this.Target.DeviceIdentifier.Contains("|"))

@@ -124,7 +124,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 
                         if (this.m_clientCert != null)
                         {
-                            realStream = new SslStream(stream, false, new RemoteCertificateValidationCallback(this.RemoteCertificateValidation), new LocalCertificateSelectionCallback(this.CertificateSelectionCallback), EncryptionPolicy.RequireEncryption);
+                            realStream = new SslStream(stream, false, new RemoteCertificateValidationCallback(this.RemoteCertificateValidation));
                             X509CertificateCollection collection = new X509CertificateCollection() {
                                 this.m_clientCert
                             };
@@ -136,7 +136,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 #if DEBUG
                         Trace.TraceInformation("Sending message to {0}: \r\n{1}", this.m_endpoint, strMessage);
 #endif
-                        byte[] buffer = new byte[System.Text.Encoding.UTF8.GetByteCount(strMessage)];
+                        byte[] buffer = new byte[System.Text.Encoding.UTF8.GetByteCount(strMessage) + 3];
                         buffer[0] = 0x0b;
                         Array.Copy(System.Text.Encoding.UTF8.GetBytes(strMessage), 0, buffer, 1, buffer.Length - 3);
                         buffer[buffer.Length - 2] = 0x1c;
