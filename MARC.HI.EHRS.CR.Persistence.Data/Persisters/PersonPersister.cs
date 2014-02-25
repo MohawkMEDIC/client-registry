@@ -1536,7 +1536,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Identifiers
-            if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
+            if (personFilter.Id != default(decimal))
+            {
+                sb.AppendFormat("AND PSN_ID = {0}", personFilter.Id);
+                return sb.ToString();
+            }
+            else if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
                 sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.AlternateIdentifiers, registrationEvent == null || registrationEvent.EventClassifier == RegistrationEventType.Query ? "UNION" : "INTERSECT"));
 
             #region Match Parameters

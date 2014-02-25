@@ -608,8 +608,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 IDataPersistenceService idp = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
                 IDataRegistrationService idq = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService))as IDataRegistrationService;
 
+                // Fetch by the primary id
+                var id = person.Id;
+                
                 var queryFilter = new RegistrationEvent();
-                queryFilter.Add(component, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                queryFilter.Add(new Person() { Id = person.Id }, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                 var regEvts = idq.QueryRecord(queryFilter);
                 if (regEvts.Length == 1)
                 {

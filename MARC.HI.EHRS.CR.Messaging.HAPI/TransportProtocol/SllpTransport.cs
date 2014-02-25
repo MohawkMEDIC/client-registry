@@ -50,6 +50,15 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// </summary>
         public class SllpConfigurationObject 
         {
+
+            /// <summary>
+            /// Check CRL 
+            /// </summary>
+            public SllpConfigurationObject()
+            {
+                this.CheckCrl = true;
+            }
+
             /// <summary>
             /// Identifies the location of the server's certificate
             /// </summary>
@@ -92,6 +101,24 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             [TypeConverter(typeof(ExpandableObjectConverter))]
             public X509Certificate2 TrustedCaCertificate { get; set; }
 
+            /// <summary>
+            /// Check revocation status
+            /// </summary>
+            public bool CheckCrl { get; set; }
+
+            /// <summary>
+            /// Gets or sets the local file name for the certificate )PFX)
+            /// </summary>
+            public String ServerCertificateFile { get; set; }
+            /// <summary>
+            /// Gets or sets the certificate PFX file password
+            /// </summary>
+            public String ServerCertificatePassword { get; set; }
+
+            /// <summary>
+            /// Gets or sets the local file name for the certificate (PFX)
+            /// </summary>
+            public String TrustedCaCertificateFile { get; set; }
 
             /// <summary>
             /// Enabling of the client cert negotiate
@@ -123,8 +150,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             KeyValuePair<String, String> certThumb = definition.Attributes.Find(o => o.Key == "x509.cert"),
                 certLocation = definition.Attributes.Find(o => o.Key == "x509.location"),
                 certStore = definition.Attributes.Find(o => o.Key == "x509.store"),
+                certFile = definition.Attributes.Find(o => o.Key == "x509.file"),
+                certPassword = definition.Attributes.Find(o=>o.Key == "x509.password"),
                 caCertThumb = definition.Attributes.Find(o => o.Key == "client.cacert"),
                 caCertLocation = definition.Attributes.Find(o => o.Key == "client.calocation"),
+                caCertFile = definition.Attributes.Find(o => o.Key == "client.cacertfile"),
+                caPassword = definition.Attributes.Find(o => o.Key == "client.capassword"),
+                checkCrl = definition.Attributes.Find(o=>o.Key == "client.checkcrl"),
+
                 caCertStore = definition.Attributes.Find(o => o.Key == "client.castore");
 
             // Now setup the object 
@@ -134,19 +167,59 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 ServerCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), certLocation.Value ?? "LocalMachine"),
                 ServerCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), certStore.Value ?? "My"),
                 TrustedCaCertificateLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), caCertLocation.Value ?? "LocalMachine"),
-                TrustedCaCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), caCertStore.Value ?? "Root")
+                TrustedCaCertificateStore = (StoreName)Enum.Parse(typeof(StoreName), caCertStore.Value ?? "Root"),
+                TrustedCaCertificateFile = caCertFile.Value,
+                ServerCertificateFile = certFile.Value,
+                ServerCertificatePassword = certPassword.Value,
+                CheckCrl = checkCrl.Value != null ? Boolean.Parse(checkCrl.Value) : true
             };
 
             // Now get the certificates
-            if (!String.IsNullOrEmpty(certThumb.Value))
+            if (!String.IsNullOrEmpty(certFile.Value))
+                this.m_configuration.ServerCertificate = this.GetCertificateFromFile(certFile.Value, certPassword.Value, certThumb.Value);
+            else if (!String.IsNullOrEmpty(certThumb.Value))
                 this.m_configuration.ServerCertificate = this.GetCertificateFromStore(certThumb.Value, this.m_configuration.ServerCertificateLocation, this.m_configuration.ServerCertificateStore);
             if (this.m_configuration.EnableClientCertNegotiation)
             {
-                if (!String.IsNullOrEmpty(caCertThumb.Value))
+                if(!String.IsNullOrEmpty(caCertFile.Value))
+                    this.m_configuration.ServerCertificate = this.GetCertificateFromFile(caCertFile.Value, caPassword.Value, certThumb.Value);
+                else if (!String.IsNullOrEmpty(caCertThumb.Value))
                     this.m_configuration.TrustedCaCertificate = this.GetCertificateFromStore(caCertThumb.Value, this.m_configuration.TrustedCaCertificateLocation, this.m_configuration.TrustedCaCertificateStore);
             }
 
             
+        }
+
+        /// <summary>
+        /// Loads a certificate from a file
+        /// </summary>
+        private X509Certificate2 GetCertificateFromFile(string pfxFile, string pfxPassword, string thumbprint)
+        {
+            try
+            {
+                var cert = new X509Certificate2Collection();
+                if (!String.IsNullOrEmpty(pfxPassword))
+                    cert.Import(pfxFile, pfxPassword, X509KeyStorageFlags.PersistKeySet);
+                else
+                    cert.Import(pfxFile);
+
+#if DEBUG
+                Trace.TraceInformation("File has {0} certificates", cert.Count);
+                foreach (var c in cert)
+                    Trace.TraceInformation("\t{0} : {1}", c.Thumbprint, c.Subject);
+#endif
+
+                if (!String.IsNullOrEmpty(thumbprint))
+                    cert = cert.Find(X509FindType.FindByThumbprint, thumbprint, true);
+                if (cert.Count == 0)
+                    throw new InvalidOperationException("Could not find certificate");
+                return cert[0];
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError("Could get certificate from file {0}. Error was: {1}", pfxFile, e.ToString());
+                throw;
+            }
         }
 
         /// <summary>
@@ -158,6 +231,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             try
             {
                 store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+#if DEBUG
+                Trace.TraceInformation("Store has {0} certificates", store.Certificates.Count);
+                foreach (var c in store.Certificates)
+                    Trace.TraceInformation("\t{0} : {1}", c.Thumbprint, c.Subject);
+#endif
                 var cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, true);
                 if (cert.Count == 0)
                     throw new InvalidOperationException("Could not find certificate");
@@ -204,7 +282,26 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         {
 
             // First Validate the chain
-            
+#if DEBUG
+            if(certificate != null)
+                Trace.TraceInformation("Received client certificate with subject {0}", certificate.Subject);
+            if (chain != null)
+                Trace.TraceInformation("Client certificate is chained with {0}", chain.ChainElements.Count);
+            else
+            {
+                Trace.TraceWarning("Didn't get a chain, so I'm making my own");
+                chain = new X509Chain(true);
+                X509Certificate2 cert2 = new X509Certificate2(certificate.GetRawCertData());
+                chain.Build(cert2);
+            }
+            if (sslPolicyErrors != SslPolicyErrors.None)
+            {
+                Trace.TraceError("SSL Policy Error : {0}", sslPolicyErrors);
+
+            }
+
+#endif
+
             if (certificate == null || chain == null)
                 return !this.m_configuration.EnableClientCertNegotiation;
             else
@@ -212,14 +309,17 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                 bool isValid = false;
                 foreach (var cer in chain.ChainElements)
+                {
+
                     if (cer.Certificate.Thumbprint == this.m_configuration.TrustedCaCertificate.Thumbprint)
                         isValid = true;
+                }
                 if (!isValid)
                     Trace.TraceError("Certification authority from the supplied certificate doesn't match the expected thumbprint of the CA");
                 foreach (var stat in chain.ChainStatus)
                     Trace.TraceWarning("Certificate chain validation error: {0}", stat.StatusInformation);
                 isValid &= chain.ChainStatus.Length == 0;
-                return isValid;
+                return sslPolicyErrors == SslPolicyErrors.None;
             }
         }
 
@@ -232,7 +332,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             SslStream stream = new SslStream(tcpClient.GetStream(), false, new RemoteCertificateValidationCallback(RemoteCertificateValidation));
             try
             {
-                stream.AuthenticateAsServer(this.m_configuration.ServerCertificate, this.m_configuration.EnableClientCertNegotiation, System.Security.Authentication.SslProtocols.Tls, true);
+
+                stream.AuthenticateAsServer(this.m_configuration.ServerCertificate, this.m_configuration.EnableClientCertNegotiation, System.Security.Authentication.SslProtocols.Tls, this.m_configuration.CheckCrl);
                 
                 // Now read to a string
                 NHapi.Base.Parser.PipeParser parser = new NHapi.Base.Parser.PipeParser();
@@ -254,7 +355,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     }
 
                     if (llpByte != START_TX) // first byte must be HT
-                        throw new InvalidOperationException("Invalid LLP First Byte");
+                    {
+                        Trace.TraceWarning("Invalid LLP First Byte expected 0x{0:x} got 0x{1:x}", START_TX, llpByte);
+                        break;
+                    }
+//                        throw new InvalidOperationException("Invalid LLP First Byte");
 
                     // Standard stream stuff, read until the stream is exhausted
                     StringBuilder messageData = new StringBuilder();
