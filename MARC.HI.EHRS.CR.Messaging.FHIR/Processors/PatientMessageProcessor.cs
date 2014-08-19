@@ -23,6 +23,7 @@ using System.Data;
 using System.IO;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.Resources.Attributes;
+using System.Text.RegularExpressions;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -285,12 +286,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                         retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/NullFlavor|UNK"));
                                     else if (!new List<String>() { "M", "F", "UN" }.Contains(gCode.Code))
                                         dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Cannot find code {0} in administrative gender", gCode.Code), null));
-
-                                    else
+                                    else if(gCode.CodeSystem != "http://hl7.org/fhir/v3/AdministrativeGender" || gCode.CodeSystem.EndsWith("v3-AdministrativeGender"))
                                     {
                                         subjectFilter.GenderCode = gCode.Code;
                                         retVal.ActualParameters.Add("gender", String.Format("http://hl7.org/fhir/v3/AdministrativeGender|{0}", gCode.Code));
                                     }
+                                    else
+                                        dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format("Cannot use code system {0} for administrative gender", gCode.CodeSystem), null));
+
                                     break;
                                 }
                             case "identifier":
