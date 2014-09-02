@@ -141,7 +141,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             {
 
                 // Find an add with the device id
-                XmlElement addNode = targetsNode.SelectSingleNode(string.Format("./*[local-name() = 'add'][@deviceId = '{0}']", targ.Configuration.DeviceIdentifier)) as XmlElement;
+                XmlElement addNode = targetsNode.SelectSingleNode(string.Format("./*[local-name() = 'add'][@name = '{0}']", targ.Configuration.Name)) as XmlElement;
                 if (addNode == null)
                     addNode = targetsNode.AppendChild(configurationDom.CreateElement("add")) as XmlElement;
 
@@ -506,32 +506,34 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 foreach (var targ in this.m_configuration.Targets)
                     {
                         var connectionString = ConnectionStringParser.ParseConnectionString(targ.ConnectionString);
-                        var serviceName = connectionString["endpointname"][0];
-                        // Lookup the service information
-                        XmlElement endpointNode = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'client']/*[local-name() = 'endpoint'][@name = '{0}']", serviceName)) as XmlElement;
-                        if (endpointNode == null) continue;
-                        if (endpointNode.Attributes["behaviorConfiguration"] != null)
+                        List<String> serviceColl = null;
+                        if(connectionString.TryGetValue("endpointname", out serviceColl))
                         {
-                            XmlElement behavior = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'behavior'][@name = '{0}']", endpointNode.Attributes["behaviorConfiguration"].Value)) as XmlElement;
-                            if (behavior != null)
+                            var serviceName = serviceColl[0];
+                            // Lookup the service information
+                            XmlElement endpointNode = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'client']/*[local-name() = 'endpoint'][@name = '{0}']", serviceName)) as XmlElement;
+                            if (endpointNode == null) continue;
+                            if (endpointNode.Attributes["behaviorConfiguration"] != null)
                             {
-                                XmlElement serviceCertificateNode = behavior.SelectSingleNode(".//*[local-name() = 'serviceCertificate']") as XmlElement;
-                                behavior.ParentNode.RemoveChild(behavior);
+                                XmlElement behavior = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'behavior'][@name = '{0}']", endpointNode.Attributes["behaviorConfiguration"].Value)) as XmlElement;
+                                if (behavior != null)
+                                {
+                                    XmlElement serviceCertificateNode = behavior.SelectSingleNode(".//*[local-name() = 'serviceCertificate']") as XmlElement;
+                                    behavior.ParentNode.RemoveChild(behavior);
+                                }
                             }
-                        }
 
-                        // Remove the bindings
-                        if (endpointNode.Attributes["bindingConfiguration"] != null)
-                        {
-                            var binding = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'binding'][@name = '{0}']", endpointNode.Attributes["bindingConfiguration"].Value)) as XmlElement;
+                            // Remove the bindings
+                            if (endpointNode.Attributes["bindingConfiguration"] != null)
+                            {
+                                var binding = wcfRoot.SelectSingleNode(String.Format(".//*[local-name() = 'binding'][@name = '{0}']", endpointNode.Attributes["bindingConfiguration"].Value)) as XmlElement;
 
-                            if (binding != null)
-                                binding.ParentNode.RemoveChild(binding);
-                        }
-
-
+                                if (binding != null)
+                                    binding.ParentNode.RemoveChild(binding);
+                            }
                             endpointNode.ParentNode.RemoveChild(endpointNode);
 
+                        }
 
                     }
             }

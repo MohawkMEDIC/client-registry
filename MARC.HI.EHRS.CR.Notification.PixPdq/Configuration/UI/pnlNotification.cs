@@ -90,14 +90,15 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 // Process connection string
                 var connectionString = ConnectionStringParser.ParseConnectionString(target.ConnectionString);
                 List<String> epName = null;
-                if(!connectionString.TryGetValue("endpointname", out epName))
-                    continue;
-
-                // Load the ep
-                var endpointNode = wcfRoot.SelectSingleNode(String.Format("./*[local-name() = 'client']/*[local-name() = 'endpoint'][@name = '{0}']", epName[0])) as XmlElement;
-                if (endpointNode == null || endpointNode.Attributes["address"] == null )
-                    continue;
-
+                XmlNode endpointNode = null;
+                if (connectionString.TryGetValue("endpointname", out epName))
+                {
+                    // Load the ep
+                    endpointNode = wcfRoot.SelectSingleNode(String.Format("./*[local-name() = 'client']/*[local-name() = 'endpoint'][@name = '{0}']", epName[0])) as XmlElement;
+                    if (endpointNode == null || endpointNode.Attributes["address"] == null)
+                        continue;
+                }
+                
                 // Configuration information
                 var configurationInformation = new TargetConfigurationInformation()
                 {
@@ -105,10 +106,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 };
                 
                 // Get address
-                configurationInformation.Address = new Uri(endpointNode.Attributes["address"].Value);
-                
+                if(endpointNode != null)
+                    configurationInformation.Address = new Uri(endpointNode.Attributes["address"].Value);
+                else
+                    configurationInformation.Address = new Uri(target.ConnectionString);
+
                 // Get the binding configuration
-                if (endpointNode.Attributes["bindingConfiguration"] != null)
+                if (endpointNode != null && endpointNode.Attributes["bindingConfiguration"] != null)
                 {
                     var bindingNode = wcfRoot.SelectSingleNode(String.Format("./*[local-name() = 'bindings']/*[local-name() = 'wsHttpBinding']/*[local-name() = 'binding'][@name = '{0}']", endpointNode.Attributes["bindingConfiguration"].Value)) as XmlElement;
                     if (bindingNode != null)
@@ -124,7 +128,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 }
 
                 // Get the behavior
-                if (endpointNode.Attributes["behaviorConfiguration"] != null)
+                if (endpointNode != null && endpointNode.Attributes["behaviorConfiguration"] != null)
                 {
                     var behaviorNode = wcfRoot.SelectSingleNode(String.Format("./*[local-name() = 'behaviors']/*[local-name() = 'endpointBehaviors']/*[local-name() = 'behavior'][@name = '{0}']", endpointNode.Attributes["behaviorConfiguration"].Value)) as XmlElement;
 
@@ -207,7 +211,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 TargetConfiguration = new TargetConfigurationInformation()
                 {
                     Address = new Uri("http://pix/"),
-                    Configuration = new TargetConfiguration(name, String.Format("endpointName={0}", name), "PAT_IDENTITY_X_REF_MGR_HL7v3", "1.2.3.4.5.6")
+                    Configuration = new TargetConfiguration(name, String.Format("endpointName={0}", name), "PAT_ID_X_REF_MGR_HL7v3", "1.2.3.4.5.6"),
+
                 },
                 OidRegistry = this.OidRegistrar
             };

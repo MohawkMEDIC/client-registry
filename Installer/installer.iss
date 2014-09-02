@@ -51,8 +51,8 @@ Source: .\installsupp\dotNetFx40_Full_setup.exe; DestDir: {tmp} ; Flags: dontcop
 Source: ..\bin\release\Config\Everest\PDQ.etpl; DestDir: {app}\config\everest; Flags:ignoreversion; Components:msg\pixv3
 Source: ..\bin\release\Config\Everest\PIX.etpl; DestDir: {app}\config\everest; Flags:ignoreversion; Components:msg\pixv3
 Source: ..\bin\release\Config\Everest\PCS.etpl; DestDir: {app}\config\everest; Flags:ignoreversion; Components:msg\ca
-Source: ..\bin\release\WSDL\CA\*.*; DestDir: {app}\WSDL\CA; Flags:ignoreversion recursesubdirs; Components:msg\ca
-Source: ..\bin\release\WSDL\UV\*.*; DestDir: {app}\WSDL\UV; Flags:ignoreversion recursesubdirs; Components:msg\pixv3
+Source: ..\Solution Items\WSDL\CA\*.*; DestDir: {app}\WSDL\CA; Flags:ignoreversion recursesubdirs; Components:msg\ca
+Source: ..\Solution Items\WSDL\UV\*.*; DestDir: {app}\WSDL\UV; Flags:ignoreversion recursesubdirs; Components:msg\pixv3
 Source: ..\bin\release\Config\PIX\NotificationBinding.xml; DestDir: {app}\config\pix; Flags:ignoreversion; Components:notif
 Source: ..\bin\release\MARC.Everest.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\ca msg\pixv3 notif
 Source: ..\bin\release\MARC.Everest.Formatters.XML.Datatypes.R1.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\ca msg\pixv3 notif

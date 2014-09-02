@@ -37,6 +37,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
     /// <summary>
     /// Patient identity XRef manager
     /// </summary>
+    [Description("Patient Identity Cross Reference Manager HL7v3")]
     public class PAT_ID_X_REF_MGR_HL7v3 : INotifier
     {
         #region INotifier Members

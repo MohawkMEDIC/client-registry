@@ -37,6 +37,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Notifiers
     /// <summary>
     /// Patient Identity Source HL7v3
     /// </summary>
+    [Description("Patient Identity Source HL7v3")]
     public class PAT_IDENTITY_SRC_HL7v3 : INotifier
     {
         #region INotifier Members

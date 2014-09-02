@@ -189,9 +189,6 @@
       "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /dBUNDLED "/o$(TargetDir)\dist" "$(ProjectDir)\installer.iss"
       "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /dx64 /dBUNDLED "/o$(TargetDir)\dist" "$(ProjectDir)\installer.iss"
       "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/o$(TargetDir)\dist" "$(ProjectDir)\installer.iss"
-      "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\signtool.exe" sign /sha1 7E3C7282BB29E33C201B70148535842EDAB24C1C /s MY /d "Mohawk College Client Registry Setup" /du http://te.marc-hi.ca /t http://timestamp.verisign.com/scripts/timstamp.dll /v "$(TargetDir)dist\cr-setup-bundled.exe"
-      "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\signtool.exe" sign /sha1 7E3C7282BB29E33C201B70148535842EDAB24C1C /s MY /d "Mohawk College Client Registry Setup" /du http://te.marc-hi.ca /t http://timestamp.verisign.com/scripts/timstamp.dll /v "$(TargetDir)dist\cr-setup-bundled-x64.exe"
-      "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\signtool.exe" sign /sha1 7E3C7282BB29E33C201B70148535842EDAB24C1C /s MY /d "Mohawk College Client Registry Setup" /du http://te.marc-hi.ca /t http://timestamp.verisign.com/scripts/timstamp.dll /v "$(TargetDir)dist\cr-setup-standalone-x64.exe"
     </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

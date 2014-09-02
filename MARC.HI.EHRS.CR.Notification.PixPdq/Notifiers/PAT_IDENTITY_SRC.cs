@@ -31,6 +31,7 @@ using MARC.Everest.DataTypes;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq
 {
@@ -39,6 +40,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
     /// </summary>
     /// <remarks>NB: Lots of this stuff is copied from DeComponentUtility because that uses 2.5 and this uses 2.3.1 , and it is a tight deadline. I will come back and clean this up</remarks>
     /// TODO: Clean this up
+    [Description("Patient Identity Source")]
     public class PAT_IDENTITY_SRC : INotifier
     {
         #region INotifier Members
