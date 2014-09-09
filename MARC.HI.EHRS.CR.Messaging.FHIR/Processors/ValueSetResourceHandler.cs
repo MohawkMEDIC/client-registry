@@ -62,7 +62,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         {
             // Determine where to fetch the code system from
             List<Type> codeSystemType = new List<Type>();
-            if (id.StartsWith("v3-")) // Everest
+            if (id != null && id.StartsWith("v3-")) // Everest
             {
                 id = id.Substring(3);
                 foreach (var asm in new Assembly[] { typeof(MARC.Everest.DataTypes.II).Assembly, typeof(MARC.Everest.RMIM.UV.NE2008.Vocabulary.AdministrativeGender).Assembly, typeof(MARC.Everest.RMIM.CA.R020402.Vocabulary.AdministrativeGender).Assembly })
