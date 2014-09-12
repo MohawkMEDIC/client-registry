@@ -445,7 +445,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             var retVal = new Person();
-
+            retVal.RoleCode = PersonRole.PAT;
             // Any alternate ids?
             if (patient.Id != null && !patient.Id.IsNull)
             {

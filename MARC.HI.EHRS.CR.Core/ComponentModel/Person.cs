@@ -212,6 +212,12 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         public CodeValue MaritalStatus { get; set; }
 
         /// <summary>
+        /// The primary role which the person holds
+        /// </summary>
+        [XmlElement("roleCode")]
+        public PersonRole RoleCode { get; set; }
+
+        /// <summary>
         /// Gets the birthplace of the person (shortcut to searching for a SDL with role BRTH)
         /// </summary>
         [XmlIgnore]

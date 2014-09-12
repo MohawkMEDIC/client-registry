@@ -679,8 +679,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
             else
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
-            Person subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
             
+            Person subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
+            subject.RoleCode = PersonRole.PAT;
             // TODO: Effective Time
 
             subject.AlternateIdentifiers = new List<DomainIdentifier>();

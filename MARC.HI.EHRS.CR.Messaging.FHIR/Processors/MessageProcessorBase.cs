@@ -58,52 +58,55 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         /// <summary>
         /// Parse query
         /// </summary>
-        [SearchParameterProfile(Name = "_stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
-        [SearchParameterProfile(Name = "_count", Type = "integer", Description = "The number of results to return in one page")]
-        [SearchParameterProfile(Name = "_page", Type = "integer", Description = "The page number of results to return")]
-        [SearchParameterProfile(Name = "_confidence", Type = "integer", Description = "The confidence of the returned results (0..100)")]
+        [SearchParameterProfile(Name = "stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
+        [SearchParameterProfile(Name = "count", Type = "number", Description = "The number of results to return in one page")]
+        [SearchParameterProfile(Name = "page", Type = "number", Description = "The page number of results to return")]
+        [SearchParameterProfile(Name = "confidence", Type = "number", Description = "The confidence of the returned results (0..100)")]
         public virtual MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
 
             MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery retVal = new Util.DataUtil.ClientRegistryFhirQuery();
             retVal.ActualParameters = new System.Collections.Specialized.NameValueCollection();
             retVal.MinimumDegreeMatch = 0.8f;
+            int page = 0;
 
              for(int i = 0; i < parameters.Count; i++)
                  try
                  {
                      switch (parameters.GetKey(i))
                      {
-                         case "_stateid":
+                         case "stateid":
                              try
                              {
                                  retVal.QueryId = Guid.Parse(parameters.GetValues(i)[0]);
-                                 retVal.ActualParameters.Add("_stateid", retVal.QueryId.ToString());
+                                 retVal.ActualParameters.Add("stateid", retVal.QueryId.ToString());
                              }
                              catch (Exception e)
                              {
                                  dtls.Add(new ResultDetail(ResultDetailType.Error, "State identifiers must be issued from the registry and must be a valid GUID", null, e));
                              }
                              break;
-                         case "_count":
+                         case "count":
                              retVal.Quantity = Int32.Parse(parameters.GetValues(i)[0]);
-                             retVal.ActualParameters.Add("_count", retVal.Quantity.ToString());
+                             retVal.ActualParameters.Add("count", retVal.Quantity.ToString());
                              break;
-                         case "_page":
-                             retVal.Start = retVal.Quantity * Int32.Parse(parameters.GetValues(i)[0]);
-                             retVal.ActualParameters.Add("_page", (retVal.Start / retVal.Quantity).ToString());
+                         case "page":
+                             page = Int32.Parse(parameters.GetValues(i)[0]);
+                             retVal.ActualParameters.Add("page", page.ToString());
                              break;
-                         case "_confidence":
+                         case "confidence":
                              retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
-                             retVal.ActualParameters.Add("_confidence", parameters.GetValues(i)[0]);
+                             retVal.ActualParameters.Add("confidence", parameters.GetValues(i)[0]);
                              break;
                      }
+
                  }
                  catch (Exception e)
                  {
                      Trace.TraceError(e.ToString());
                      dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                  }
+             retVal.Start = page * retVal.Quantity;
 
              return retVal;
         }
@@ -199,7 +202,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         {
             // Attempt to lookup the OID
             var oid = ApplicationContext.ConfigurationService.OidRegistrar.FindData(itm.Domain);
-            var retVal = new Identifier() { Key = itm.Identifier };
+            var retVal = new Identifier() { Value = itm.Identifier };
 
             if (oid == null)
                 retVal.System = new Uri(String.Format("urn:oid:{0}", itm.Domain));
@@ -468,7 +471,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                             result.Issues.Add(new SVC.Core.Issues.DetectedIssue() {
                                 MitigatedBy = ManagementType.OtherActionTaken,
                                 Severity = IssueSeverityType.Moderate,
-                                Text = String.Format("{0}/history/@{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
+                                Text = String.Format("{0}/_history/{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
                                 Type = IssueType.DetectedIssue
                             });
                         else
@@ -482,14 +485,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         var resource = processor.ProcessComponent(container as IComponent, result.Details);
                         container = hsrc.FindComponent(HealthServiceRecordSiteRoleType.ReplacementOf) as IContainer;
 
-                        if (resource.VersionId.ToString() != versionId) continue;
+
+                        if (resource != null && resource.VersionId.ToString() != versionId) continue;
 
                         if (hsrc.IsMasked) // record is masked so add a detected issue
                             result.Issues.Add(new SVC.Core.Issues.DetectedIssue()
                             {
                                 MitigatedBy = ManagementType.OtherActionTaken,
                                 Severity = IssueSeverityType.Moderate,
-                                Text = String.Format("{0}/history/@{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
+                                Text = String.Format("{0}/_history/{1} will not be returned as it has been masked", resource.Id, resource.VersionId),
                                 Type = IssueType.DetectedIssue
                             });
                         else
@@ -497,6 +501,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     }
                 result.Outcome = ResultCode.Accepted;
             }
+
+            result.Results.RemoveAll(o => o == null);
             return result;
         }
 
@@ -705,7 +711,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var retVal = new DomainIdentifier()
             {
                 Domain = oid,
-                Identifier = id.Key,
+                Identifier = id.Value,
                 AssigningAuthority = id.Label
             };
 

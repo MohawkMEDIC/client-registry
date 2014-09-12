@@ -61,5 +61,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// OID for events and change summaries
         /// </summary>
         internal const string EVENT_OID = "EVT_ID";
+        /// <summary>
+        /// Relationship ID
+        /// </summary>
+        internal const string RELATIONSHIP_OID = "CR_PRID";
     }
 }

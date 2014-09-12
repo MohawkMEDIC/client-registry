@@ -13,7 +13,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// <summary>
     /// Organization message processor
     /// </summary>
-    [Profile(ProfileId = "pix-fhir")]
+    [Profile(ProfileId = "pdqm")]
     [ResourceProfile(Resource = typeof(Organization), Name = "Client registry organization profile")]
     public class OrganizationMessageProcessor : MessageProcessorBase
     {
@@ -125,7 +125,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     ce.Gender = prac.Gender;
                     ce.Telecom = prac.Telecom;
                 }
-                ce.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
 
                 if(ce.Name != null)
                     ce.Name = base.ConvertNameSet(contact.LegalName);
@@ -135,6 +134,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 if (contact.PrimaryAddress != null)
                     ce.Address = base.ConvertAddressSet(contact.PrimaryAddress)[0];
 
+                retVal.ContactEntity.Add(ce);
             }
 
             return retVal;

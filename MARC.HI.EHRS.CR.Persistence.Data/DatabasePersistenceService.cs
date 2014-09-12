@@ -584,8 +584,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                                 var id = new VersionedResultIdentifier()
                                 {
                                     Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
-                                    Identifier = Convert.ToString(rdr[0])
-
+                                    Identifier = Convert.ToString(rdr[0]),
+                                    Version = Convert.ToString(rdr[1])
                                 };
                                 // Add the ID
                                 if (!retVal.Exists(o => o.Identifier == id.Identifier))

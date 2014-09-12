@@ -59,6 +59,7 @@
     <Compile Include="ComponentModel\ExtendedAttribute.cs" />
     <Compile Include="ComponentModel\MatchStrength.cs" />
     <Compile Include="ComponentModel\PersonRegistrationRef.cs" />
+    <Compile Include="ComponentModel\PersonRole.cs" />
     <Compile Include="ComponentModel\QueryParameters.cs" />
     <Compile Include="ComponentModel\Reason.cs" />
     <Compile Include="ComponentModel\RegistrationEvent.cs" />

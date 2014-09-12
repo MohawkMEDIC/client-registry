@@ -484,7 +484,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             //var subjectOfQuery = (data as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
             var hsr = data as RegistrationEvent;
             // Matching?
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID FROM (SELECT * FROM HSR_VRSN_TBL ORDER BY HSR_VRSN_ID DESC) AS HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified') ");
+            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified') ");
             sb.AppendFormat("AND HSR_ID IN (SELECT HSR_ID FROM HSR_TBL WHERE HSR_CLS IN (4, 8)) "); // only registrations
             
             return sb.ToString();
@@ -492,5 +492,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         }
 
         #endregion
+
+        /// <summary>
+        /// Control clauses
+        /// </summary>
+        public string BuildControlClauses(IComponent queryComponent)
+        {
+            return " ORDER BY HSR_VRSN_ID DESC";
+        }
     }
 }

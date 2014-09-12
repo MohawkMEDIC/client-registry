@@ -819,6 +819,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         retVal.Remove(retVal.Length - 12, 12);
                 }
             }
+            retVal.Append(register.BuildControlClauses(queryComponent));
             return retVal.ToString();
         }
         

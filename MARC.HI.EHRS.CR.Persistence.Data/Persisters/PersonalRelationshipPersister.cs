@@ -92,7 +92,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     GenderCode = pr.GenderCode,
                     BirthTime = pr.BirthTime,
                     TelecomAddresses = pr.TelecomAddresses,
-                    Status = StatusType.Active
+                    Status = StatusType.Active,
+                    RoleCode = PersonRole.PRS
                 };
 
                 var registrationEvent = DbUtil.GetRegistrationEvent(pr).Clone() as RegistrationEvent;
@@ -169,7 +170,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }, true);
             
             // Add the client components
-            retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers);
+            retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o=>o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid));
+            retVal.AlternateIdentifiers.Add(new DomainIdentifier()
+            {
+                Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid,
+                Identifier = identifier.ToString()
+            });
             if (clientDataRetVal.Names != null)
                 retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
             retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);

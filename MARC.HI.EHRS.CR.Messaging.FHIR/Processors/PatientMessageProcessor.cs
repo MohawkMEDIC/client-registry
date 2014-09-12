@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// <summary>
     /// Message processor for patients
     /// </summary>
-    [Profile(ProfileId = "pix-fhir")]
+    [Profile(ProfileId = "pdqm")]
     [ResourceProfile(Resource = typeof(Patient), Name = "Client registry patient profile")]
     public class PatientMessageProcessor : MessageProcessorBase, IFhirMessageProcessor
     {
@@ -79,6 +79,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [SearchParameterProfile(Name = "given", Type = "string", Description = "One of the patient's given names (only supports AND)")]
         [SearchParameterProfile(Name = "gender", Type = "token", Description = "Gender of the patient (one repetition only)")]
         [SearchParameterProfile(Name = "identifier", Type = "token", Description = "A patient identifier (only supports OR)")]
+        [SearchParameterProfile(Name = "mothersMaidenName.given", Type = "string", Description = "Filter on the patient's mother's maiden name (given)")]
+        [SearchParameterProfile(Name = "mothersMaidenName.family", Type = "string", Description = "Filter on the patient's mother's maiden name (family)")]
+        [SearchParameterProfile(Name = "telecom", Type = "string", Description = "Filter based on patient's telecommunications address")]
+        [SearchParameterProfile(Name= "multipleBirthInteger", Type = "string", Description = "Filter on patient's birth order")]
         [SearchParameterProfile(Name = "provider.identifier", Type = "token", Description = "One of the organizations to which this person is a patient (only supports OR)")]
         public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
         {
@@ -397,6 +401,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // Person component
             Person psn = new Person();
             psn.Status = resPatient.Active == true ? StatusType.Active : StatusType.Suspended;
+            psn.RoleCode = PersonRole.PAT;
 
             // Person identifier
             psn.AlternateIdentifiers = new List<DomainIdentifier>();
@@ -435,17 +440,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             // Gender code
             if (resPatient.Gender != null)
-            {
-                if (resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
-                    resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/AdministrativeGender")
-                    psn.GenderCode = resPatient.Gender.GetPrimaryCode().Code;
-                else if (resPatient.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
-                    resPatient.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
-                    psn.GenderCode = null;
-                else
-                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.gender", null));
-
-            }
+                psn.GenderCode = HackishCodeMapping.GetGenderCode(resPatient.Gender, dtls);
 
             // Multiple birth
             if (resPatient.MultipleBirth is FhirInt)
@@ -473,61 +468,78 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     });
 
             // Contact persons
-            foreach (var resCont in resPatient.Contact)
-                if(resCont.Relationship.Count == 0)
-                    dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Error, "Expected 1..* contact relationship kinds", null));
-                else
-                    foreach (var rkind in resCont.Relationship)
+            foreach (var containedResource in resPatient.Contained.Where(p=>p.Item is RelatedPerson))
+            {
+                var relativeResource = containedResource.Item as RelatedPerson;
+                // Now we need to create a personal relationship out of this mess.
+                PersonalRelationship relationship = new PersonalRelationship();
+                // Name
+                if (relativeResource.Name != null)
+                    relationship.LegalName = base.ConvertName(relativeResource.Name, dtls);
+
+                // Telecom
+                if (relativeResource.Telecom.Count > 0)
+                {
+                    relationship.TelecomAddresses = new List<TelecommunicationsAddress>();
+                    foreach (var tel in relativeResource.Telecom)
+                        relationship.TelecomAddresses.Add(base.ConvertTelecom(tel, dtls));
+                }
+
+                // Address
+                if (relativeResource.Address != null)
+                    relationship.PerminantAddress = base.ConvertAddress(relativeResource.Address, dtls);
+
+                // Gender
+                if (relativeResource.Gender != null)
+                {
+                    relationship.GenderCode = HackishCodeMapping.GetGenderCode(relativeResource.Gender, dtls);
+                }
+
+                // Now add as a personal relationship
+                if(relativeResource.Relationship != null)
+                {
+                    Coding relationshipKind = relativeResource.Relationship.GetCoding(typeof(PersonalRelationshipRoleType).GetValueSetDefinition());
+                    if (relationshipKind != null)
+                        relationship.RelationshipKind = relationshipKind.Code;
+                    else
                     {
-                        // Now we need to create a personal relationship out of this mess.
-                        PersonalRelationship relationship = new PersonalRelationship();
-                        // Name
-                        if (resCont.Name.Count > 0)
-                        {
-                            var legalName = resCont.Name.Find(o => o.Use == "official") ?? resCont.Name.Find(o => o.Use == "usual") ?? resCont.Name[0];
-                            if (legalName != null)
-                                relationship.LegalName = base.ConvertName(legalName, dtls);
-                        }
-
-                        // Telecom
-                        if (resCont.Telecom.Count > 0)
-                        {
-                            relationship.TelecomAddresses = new List<TelecommunicationsAddress>();
-                            foreach (var tel in resCont.Telecom)
-                                relationship.TelecomAddresses.Add(base.ConvertTelecom(tel, dtls));
-                        }
-                        // Address
-                        if (resCont.Address.Count > 0)
-                        {
-                            var permAddr = resCont.Address.Find(o => o.Use == "home") ?? resCont.Address.Find(o => o.Use == "work") ?? resCont.Address[0];
-                            if (permAddr != null)
-                                relationship.PerminantAddress = base.ConvertAddress(permAddr, dtls);
-                        }
-
-                        // Gender
-                        if (resCont.Gender != null)
-                        {
-                            if (resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-AdministrativeGender") ||
-                                    resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/AdministrativeGender")
-                                relationship.GenderCode = resCont.Gender.GetPrimaryCode().Code;
-                            else if (resCont.Gender.GetPrimaryCode().System.ToString() == "http://hl7.org/fhir/v3/NullFlavor" ||
-                                resCont.Gender.GetPrimaryCode().System.ToString().EndsWith("/@v3-NullFlavor"))
-                                relationship.GenderCode = null;
-                            else
-                                dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.contact.gender", null));
-                        }
-
-                        // Now add as a personal relationship
-                        relationship.RelationshipKind = ExtensionUtil.ParseRelationshipExtension(rkind, dtls);
-                        if (String.IsNullOrEmpty(relationship.RelationshipKind) && rkind.GetPrimaryCode() != null   )
-                            relationship.RelationshipKind = HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rkind.GetPrimaryCode().Code);
-                        relationship.Status = StatusType.Active;
-
-                        // Add the relationship
-                        psn.Add(relationship, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                        relationshipKind = relativeResource.Relationship.GetCoding(new Uri("http://hl7.org/fhir/patient-contact-relationship"));
+                        if (relationshipKind != null)
+                            relationship.RelationshipKind = HackishCodeMapping.Lookup(HackishCodeMapping.RELATIONSHIP_KIND, relationshipKind.Code);
+                        else
+                            dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Warning, "Could not process RelationshipKind", null));
                     }
 
-            // Communication lanugage
+                }
+
+                relationship.Status = StatusType.Active;
+
+                // Add the relationship
+                psn.Add(relationship, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+            }
+
+            // TODO: Communication lanugage
+
+            // Extensions
+            foreach (var extension in resource.Extension)
+            {
+                if (extension.Url == ExtensionUtil.GetExtensionNameUrl("mothersMaidenName"))
+                {
+                    // Extension, see if the person has a mother that we're processing?
+                    var representatives = psn.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
+                    PersonalRelationship mother = representatives.OfType<PersonalRelationship>().FirstOrDefault(p=>p.Status == StatusType.Active && p.RelationshipKind == "MTH");
+                    NameSet extensionNameValue = base.ConvertName(extension.Value as HumanName, dtls);
+
+                    if (mother == null)
+                    {
+                        mother = new PersonalRelationship();
+                        mother.LegalName = extensionNameValue;
+                        mother.LegalName.Use = NameSet.NameSetUse.MaidenName;
+                    }
+                    else if(mother.LegalName.SimilarityTo(extensionNameValue) != 1)// Already have a mother, the name match?
+                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "When RelatedPerson of type 'mother' is contained in patient resource, the 'mothersMaidenName' value must match the name of the relatedPerson.", null, null));
+                }
+            }
 
             // Telecoms
             if (resPatient.Telecom.Count > 0)
@@ -578,13 +590,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [ElementProfile(Property = "Animal", MaxOccurs = 0, Comment = "This registry only supports human patients")]
         [ElementProfile(Property = "Contact.Organization", MaxOccurs = 0, Comment = "This registry only supports relationships with 'Person' objects")]
         //[ElementProfile(Property = "Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
-        [ElementProfile(Property = "Gender", Binding = typeof(AdministrativeGender), Comment = "Since this FHIR registry is also a PIX manager and HL7v3 client registry the v3 AdministrativeGender code set used internally has been referenced")]
+        [ElementProfile(Property = "Name", MinOccurs = 1, MaxOccurs = -1, Comment = "PDQm Requirement that patients must have a name")]
+        [ElementProfile(Property = "Gender", RemoteBinding = "http://hl7.org/fhir/vs/administrative-gender", Comment = "Since this FHIR registry is also a PIX manager and HL7v3 client registry the v3 AdministrativeGender code set used internally has been referenced")]
         [ElementProfile(Property = "Identifier", MinOccurs = 1, MaxOccurs = -1, Comment = "PIX Manager logic requires at least one identifier. When submitting a resource the @system attribute must match the referenced provider identifier's @system attribute (i.e. you may only register new identifiers for systems which you are the registered creator)")]
         [ElementProfile(Property = "Deceased", ValueType = typeof(Date), Comment = "Only date values are supported for deceased indication. Boolean will be translated to a non-zero date")]
         [ElementProfile(Property = "MultipleBirth", ValueType = typeof(FhirInt), Comment = "Only multiple birth number is supported. Boolean will be translated to a non-zero value")]
-        [ElementProfile(Property = "MaritalStatus", RemoteBinding = null, Comment = "Marital status can be drawn from any code system")]
+        [ElementProfile(Property = "MaritalStatus", RemoteBinding = "http://hl7.org/fhir/vs/marital-status", Comment = "Marital status can be drawn from any code system")]
         [ElementProfile(Property = "Extension", Comment = "Additional attributes which could not be mapped to FHIR will be placed in the \"Extension\" element")]
-        [ElementProfile(Property = "Language", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
+        [ElementProfile(Property = "Communication", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
         [ElementProfile(Property = "Contact.Relationship", MinOccurs = 1, MaxOccurs = 1, Comment = "This registry only supports one type of relationship per contact. Multiple entries will result in the creation of multiple contacts with each type of relationship")]
         //[ElementProfile(Property = "Language.Mode", Binding = typeof(LanguageAbilityMode), Comment = "Language mode is restricted to ESP and EWR")]
         //[ElementProfile(Property = "Language.ProficiencyLevel", Binding = typeof(LanguageAbilityProficiency), Comment = "Language proficiency will be either E or not provided")]
@@ -597,8 +610,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 component = (component as RegistrationEvent).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
             
             Patient retVal = new Patient();
+            
             Person person = component as Person;
             RegistrationEvent regEvt = component.Site != null ? component.Site.Container as RegistrationEvent: null;
+
+            if (person.RoleCode != PersonRole.PAT)
+                return null;
 
             if ((person.Status == StatusType.Terminated || person.Status == StatusType.Nullified) && (person.Site == null || person.Site.Container is RegistrationEvent))
                 throw new FileLoadException("Resource is no longer available");
@@ -656,8 +673,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if (person.GenderCode != null)
             {
                 retVal.Gender = base.ConvertPrimitiveCode<AdministrativeGender>(person.GenderCode);
-                retVal.Gender.GetPrimaryCode().System = new Uri("http://hl7.org/fhir/v3/AdministrativeGender");
             }
+            else
+                retVal.Gender = base.ConvertPrimitiveCode<MARC.Everest.DataTypes.NullFlavor>("UNK");
+
             // DOB
             if(person.BirthTime != null)
                 retVal.BirthDate = new Date(person.BirthTime.Value) { Precision = HackishCodeMapping.Lookup(HackishCodeMapping.DATE_PRECISION, person.BirthTime.Precision) };
@@ -681,39 +700,41 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if(relationships != null && relationships.Count > 0)
                 foreach (PersonalRelationship rel in relationships)
                 {
-                    Contact contactInfo = new Contact();
-                    // Is there a person component here
-                    IComponent relatedTarget = rel.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as IComponent;
-                    if (relatedTarget != null)
-                    {
-                        var processor = FhirMessageProcessorUtil.GetComponentProcessor(relatedTarget.GetType());
-                        var processResult = processor.ProcessComponent(relatedTarget, dtls);
+                    // Is this related person a mother? 
+                    if (rel.RelationshipKind == "MTH")
+                        retVal.Extension.Add(ExtensionUtil.CreateMothersMaidenNameExtension(base.ConvertNameSet(rel.LegalName)));
 
-                        if (processResult is Patient)
-                        {
-                            var pat = processResult as Patient;
-                            contactInfo.Name = pat.Name;
-                            contactInfo.Address = pat.Address;
-                            contactInfo.Gender = pat.Gender;
-                            contactInfo.Telecom = pat.Telecom;
-                        }
-                        else if (processResult is Practictioner)
-                        {
-                            var prac = processResult as Practictioner;
-                            contactInfo.Name = prac.Name;
-                            contactInfo.Address = prac.Address;
-                            contactInfo.Gender = prac.Gender;
-                            contactInfo.Telecom = prac.Telecom;
-                        }
-                        //contactInfo.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
-                    }
-                                        
-                    contactInfo.Relationship = new List<CodeableConcept>() {
-                        new CodeableConcept(new Uri("http://hl7.org/fhir/patient-contact-relationship"), HackishCodeMapping.ReverseLookup(HackishCodeMapping.RELATIONSHIP_KIND, rel.RelationshipKind))
+                    // Construct resource
+                    RelatedPerson relatedPerson = new RelatedPerson()
+                    {
+                        Name = rel.LegalName != null ? base.ConvertNameSet(rel.LegalName) : null, 
+                        Address = rel.PerminantAddress != null ? base.ConvertAddressSet(rel.PerminantAddress).FirstOrDefault() : null,
+                        Patient = Resource<Patient>.CreateLocalResourceReference(retVal),
+                        Id = rel.Id.ToString(),
+                        SuppressText = true
                     };
-                    // Now add an extension as the relationship kind is more detailed in our expression
-                    contactInfo.Relationship[0].Coding.Add(new Coding(typeof(PersonalRelationshipRoleType).GetValueSetDefinition(), rel.RelationshipKind));
-                    retVal.Contact.Add(contactInfo);
+                    //relatedPerson.MakeIdRef();
+
+                    foreach (var relIdentifier in rel.AlternateIdentifiers)
+                        relatedPerson.Identifier.Add(base.ConvertDomainIdentifier(relIdentifier));
+
+                    if (rel.RelationshipKind != null)
+                    {
+                        relatedPerson.Relationship = base.ConvertPrimitiveCode<PersonalRelationshipRoleType>(rel.RelationshipKind);
+                        relatedPerson.Relationship.GetPrimaryCode().System = new Uri("http://hl7.org/fhir/v3/vs/RoleCode");
+                    }
+                    if (rel.GenderCode != null)
+                        relatedPerson.Gender = base.ConvertPrimitiveCode<AdministrativeGender>(person.GenderCode);
+                    else
+                        relatedPerson.Gender = base.ConvertPrimitiveCode<MARC.Everest.DataTypes.NullFlavor>("UNK");
+
+                    foreach (TelecommunicationsAddress tel in rel.TelecomAddresses)
+                        relatedPerson.Telecom.AddRange(base.ConvertTelecom(tel));
+
+                    // Add the contained resource
+                    retVal.AddContainedResource(relatedPerson);
+                    //contactInfo.Extension.Add(ExtensionUtil.CreateResourceLinkExtension(processResult));
+                    
                 }
 
           
@@ -743,7 +764,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     if (result == null || result.Results.Count == 0)
                         ;
                     else
-                        retVal.Provider = Resource<Organization>.CreateResourceReference(result.Results[0] as Organization, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri);
+                        retVal.ManagingOrganization = Resource<Organization>.CreateResourceReference(result.Results[0] as Organization, WebOperationContext.Current.IncomingRequest.UriTemplateMatch.BaseUri);
                 }
             }
 

@@ -136,7 +136,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null || psn.BirthTime.UpdateMode == UpdateModeType.Ignore ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
-
                 decimal? religionCode = null,
                     vipCode = null,
                     maritalStatusCode = null,
@@ -161,7 +160,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
-                
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rol_cs_in", DbType.String, psn.RoleCode.ToString()));
+
 
                 // Execute
                 using (IDataReader rdr = cmd.ExecuteReader())
@@ -656,6 +656,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rol_cs_in", DbType.String, psn.RoleCode.ToString()));
 
 
                 // Execute
@@ -727,6 +728,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.GenderCode = rdr["gndr_cs"] == DBNull.Value ? null : Convert.ToString(rdr["gndr_cs"]);
                         retVal.BirthOrder = (int?)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
                         retVal.Timestamp = Convert.ToDateTime(rdr["crt_utc"]);
+                        retVal.RoleCode = (PersonRole)Enum.Parse(typeof(PersonRole), Convert.ToString(rdr["rol_cs"]));
                         // Other fetched data
                         decimal? birthTs = null,
                             deceasedTs = null,
@@ -1535,10 +1537,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 sb.Append(") ");
             }
 
+            sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
+
             // Identifiers
             if (personFilter.Id != default(decimal))
             {
-                sb.AppendFormat("AND PSN_ID = {0}", personFilter.Id);
+                sb.AppendFormat("AND PSN_ID = {0} ", personFilter.Id);
                 return sb.ToString();
             }
             else if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
@@ -1626,7 +1630,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Match strength & algorithms
                 retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_ADDR_SET('{{{0}}}','{{{1}}}', {2})",
-                    filterString, cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
+                    filterString.Replace("'","''"), cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
 
                 if (addr != addresses.Last())
                     retVal.AppendFormat(" UNION ");
@@ -1685,7 +1689,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
 
                 retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_NAME_SET('{{{0}}}','{{{1}}}', {3}, {4}, {2})",
-                    filterString, cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use, desiredMatchLevel, useVariant);
+                    filterString.Replace("'", "''"), cmpTypeString, nm.Use == NameSet.NameSetUse.Search ? (object)"NULL" : (decimal)nm.Use, desiredMatchLevel, useVariant);
 
                 if (nm != names.Last())
                     retVal.AppendFormat(" UNION ");
@@ -1727,6 +1731,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
             }
             return retVal.ToString();
+        }
+
+
+        /// <summary>
+        /// Build control clause
+        /// </summary>
+        public string BuildControlClauses(System.ComponentModel.IComponent queryComponent)
+        {
+            return "";
         }
     }
 }

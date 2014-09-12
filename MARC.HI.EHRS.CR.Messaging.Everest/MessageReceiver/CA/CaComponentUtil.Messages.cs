@@ -67,6 +67,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Create the subject
             Person subjectOf = new Person();
+            subjectOf.RoleCode = PersonRole.PAT;
 
             // Validate
             if (subject.NullFlavor != null)
@@ -328,6 +329,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // Create the subject
             Person subjectOf = new Person();
+            subjectOf.RoleCode = PersonRole.PAT;
 
             // Validate
             if (subject.NullFlavor != null)

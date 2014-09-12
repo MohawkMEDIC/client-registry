@@ -103,16 +103,22 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 
                 VersionedDomainIdentifier[] identifiers;
 
-                if (result.Query.QueryId != Guid.Empty) // continue a query
+                if (result.Query.QueryId == Guid.Empty) // continue a query
+                    result.Query.QueryId = Guid.NewGuid();
+
+                if (queryPersistence != null)
                 {
-                    if (queryPersistence == null)
-                        throw new InvalidOperationException("Cannot continue a query when no query persistence engine is registered");
+                    if (!queryPersistence.IsRegistered(result.Query.QueryId.ToString()))
+                    {
+                        identifiers = registration.QueryRecord(querySpec.Filter);
+                        queryPersistence.RegisterQuerySet(querySpec.QueryId.ToString(), identifiers, querySpec.QueryId);
+                    }
                     identifiers = queryPersistence.GetQueryResults(result.Query.QueryId.ToString(), result.Query.Start, result.Query.Quantity);
                 }
-                else
+                else // stateless
                 {
-                    result.Query.QueryId = Guid.NewGuid();
                     identifiers = registration.QueryRecord(querySpec.Filter);
+                    identifiers = new List<VersionedDomainIdentifier>(identifiers.Skip(result.Query.Start).Take(result.Query.Quantity)).ToArray();
                 }
 
                 // Fetch the records async and convert
@@ -130,10 +136,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 // Sort control?
                 // TODO: Support sort control but for now just sort according to confidence then date
                 //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
-
-                // Persist the query
-                if (queryPersistence != null && !queryPersistence.IsRegistered(querySpec.QueryId.ToString()))
-                    queryPersistence.RegisterQuerySet(querySpec.QueryId.ToString(), identifiers, querySpec.QueryId);
 
                 if (queryPersistence != null)
                     result.TotalResults = (int)queryPersistence.QueryResultTotalQuantity(querySpec.QueryId.ToString());

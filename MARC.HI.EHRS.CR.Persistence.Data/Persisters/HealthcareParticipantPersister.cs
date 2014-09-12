@@ -548,5 +548,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         }
 
         #endregion
+
+        /// <summary>
+        /// Build control clause
+        /// </summary>
+        public string BuildControlClauses(IComponent queryComponent)
+        {
+            return "";
+        }
     }
 }

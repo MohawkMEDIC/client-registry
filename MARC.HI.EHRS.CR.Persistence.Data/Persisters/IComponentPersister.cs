@@ -73,6 +73,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// Gets the OID of the component type
         /// </summary>
         String ComponentTypeOid { get; }
+
+        /// <summary>
+        /// Build control clauses like limit, offset, etc.
+        /// </summary>
+        String BuildControlClauses(IComponent queryComponent);
     }
 
     /// <summary>

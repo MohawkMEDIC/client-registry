@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using MARC.Everest.DataTypes.Interfaces;
 using MARC.HI.EHRS.SVC.Messaging.FHIR.DataTypes;
+using MARC.Everest.Connectors;
+using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.HI.EHRS.SVC.Messaging.FHIR;
 
 namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 {
@@ -222,6 +225,27 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             T value = default(T);
             codeset.TryGetValue(fhirCode, out value);
             return value;
+        }
+
+        /// <summary>
+        /// Get the gender code
+        /// </summary>
+        internal static string GetGenderCode(CodeableConcept sourceCode, List<IResultDetail> dtls)
+        {
+            Coding genderCode = sourceCode.GetCoding(typeof(AdministrativeGender).GetValueSetDefinition());
+            if (genderCode != null)
+                return genderCode.Code;
+            else
+            {
+                genderCode = sourceCode.GetCoding(typeof(MARC.Everest.DataTypes.NullFlavor).GetValueSetDefinition());
+                if (genderCode != null)
+                    return null;
+                else
+                {
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, "Invalid gender coding system used", "Patient.gender", null));
+                    return null;
+                }
+            }
         }
     }
 }
