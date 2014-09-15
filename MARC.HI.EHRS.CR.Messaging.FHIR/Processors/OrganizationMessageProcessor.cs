@@ -13,7 +13,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// <summary>
     /// Organization message processor
     /// </summary>
-    [Profile(ProfileId = "pdqm")]
+    [Profile(ProfileId = "pdq-support")]
     [ResourceProfile(Resource = typeof(Organization), Name = "Client registry organization profile")]
     public class OrganizationMessageProcessor : MessageProcessorBase
     {

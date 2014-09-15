@@ -22,7 +22,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// <summary>
     /// FHIR Message processor for a value set
     /// </summary>
-    [Profile(ProfileId = "pdqm")]
+    [Profile(ProfileId = "pdq-support", Name = "PDQ Supporting resources profile")]
     [ResourceProfile(Resource = typeof(ValueSet), Name = "Client registry value-set profile")]
     public class ValueSetResourceHandler : IFhirResourceHandler
     {

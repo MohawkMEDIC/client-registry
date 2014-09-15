@@ -31,7 +31,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// Message processor for patients
     /// </summary>
     [Profile(ProfileId = "pdqm")]
-    [ResourceProfile(Resource = typeof(Patient), Name = "Client registry patient profile")]
+    [ResourceProfile(Resource = typeof(Patient), Name = "Patient Demographics Query for Mobile patient profile")]
     public class PatientMessageProcessor : MessageProcessorBase, IFhirMessageProcessor
     {
         #region IFhirMessageProcessor Members
@@ -133,7 +133,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     break;
                                 }
                             case "active":
-                                subjectFilter.Status = Boolean.Parse(parameters.GetValues(i)[0]) ? StatusType.Active | StatusType.Completed : StatusType.Obsolete | StatusType.Nullified | StatusType.Cancelled | StatusType.Aborted;
+
+                                bool activeParm = false;
+                                if (!Boolean.TryParse(parameters.GetValues(i)[0], out activeParm))
+                                    dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Active parameter must convey a boolean value", null, null));
+                                subjectFilter.Status = activeParm ? StatusType.Active | StatusType.Completed : StatusType.Obsolete | StatusType.Nullified | StatusType.Cancelled | StatusType.Aborted;
                                 retVal.ActualParameters.Add("active", (subjectFilter.Status == (StatusType.Active | StatusType.Completed)).ToString());
                                 break;
                             //case "address.use":
@@ -279,6 +283,50 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     }
                                     break;
                                 }
+                            case "multipleBirthInteger":
+                                {
+                                    // ultiple Birth Integer
+                                    string value = parameters.GetValues(i)[0].ToUpper();
+                                    if (value.Contains(",") || parameters.GetValues(i).Length > 1)
+                                        dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform OR or AND on gender", null));
+
+                                    // Multiple birth integer
+                                    int multipleBirthInteger = 0;
+                                    if (!Int32.TryParse(value, out multipleBirthInteger))
+                                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Parameter must be an integer", "multipleBirthInteger", null));
+                                    subjectFilter.BirthOrder = multipleBirthInteger;
+
+                                    break;
+                                }
+                            case "mothersMaidenName.given":
+                            case "mothersMaidenName.family":
+                                {
+                                    // Relationship for mother
+                                    PersonalRelationship prs = subjectFilter.FindComponent(HealthServiceRecordSiteRoleType.RepresentitiveOf) as PersonalRelationship;
+                                    if (prs == null)
+                                    {
+                                        prs = new PersonalRelationship();
+                                        prs.RelationshipKind = "MTH";
+                                        prs.LegalName = new NameSet();
+                                        subjectFilter.Add(prs, "PRS", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                                    }
+
+                                    // Parameters
+                                    foreach (var nm in parameters.GetValues(i))
+                                    {
+                                        if (nm.Contains(",")) // Cannot do an OR on Name
+                                            dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, String.Format("Cannot perform OR on {0}", parameters.GetKey(i)), null));
+                                        
+                                        prs.LegalName.Parts.Add(new SVC.Core.DataTypes.NamePart()
+                                        {
+                                            Type = parameters.GetKey(i) == "mothersMaidenName.given" ? NamePart.NamePartType.Given : NamePart.NamePartType.Family,
+                                            Value = nm
+                                        });
+                                        retVal.ActualParameters.Add(parameters.GetKey(i), nm);
+                                    }
+
+                                    break;
+                                }
                             case "gender":
                                 {
                                     string value = parameters.GetValues(i)[0].ToUpper();
@@ -302,28 +350,24 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                 }
                             case "identifier":
                                 {
-                                    if (parameters.GetValues(i).Length > 1)
-                                        dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, "Cannot perform AND on identifiers", null));
 
                                     if (subjectFilter.AlternateIdentifiers == null)
                                         subjectFilter.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
-                                    StringBuilder actualIdParm = new StringBuilder();
-                                    foreach (var val in parameters.GetValues(i)[0].Split(','))
+                                    foreach (var cparm in parameters.GetValues(i))
                                     {
-                                        var domainId = MessageUtil.IdentifierFromToken(val);
-                                        if (String.IsNullOrEmpty(domainId.Domain))
+                                        StringBuilder actualIdParm = new StringBuilder();
+                                        foreach (var val in cparm.Split(','))
                                         {
-                                            dtls.Add(new NotImplementedResultDetail(ResultDetailType.Error, "'identifier' must carry system, cannot perform generic query on identifiers", null, null));
-                                            continue;
+                                            var domainId = MessageUtil.IdentifierFromToken(val);
+                                            subjectFilter.AlternateIdentifiers.Add(domainId);
+                                            actualIdParm.AppendFormat("{0},", val);
                                         }
-                                        subjectFilter.AlternateIdentifiers.Add(domainId);
-                                        actualIdParm.AppendFormat("{0},", val);
-                                    }
 
-                                    if (actualIdParm.Length > 0)
-                                    {
-                                        actualIdParm.Remove(actualIdParm.Length - 1, 1);
-                                        retVal.ActualParameters.Add("identifier", actualIdParm.ToString());
+                                        if (actualIdParm.Length > 0)
+                                        {
+                                            actualIdParm.Remove(actualIdParm.Length - 1, 1);
+                                            retVal.ActualParameters.Add("identifier", actualIdParm.ToString());
+                                        }
                                     }
                                     break;
                                 }
@@ -341,6 +385,27 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                         subjectFilter.AlternateIdentifiers.Add(did);
                                         retVal.ActualParameters.Add("provider.identifier", String.Format("{0}|", MessageUtil.TranslateDomain(did.Domain)));
+                                    }
+                                    break;
+
+                                }
+                            case "telecom":
+                                {
+                                    if (subjectFilter.TelecomAddresses == null)
+                                        subjectFilter.TelecomAddresses = new List<TelecommunicationsAddress>();
+
+                                    StringBuilder actualTelParm = new StringBuilder();
+                                    foreach (var val in parameters.GetValues(i)[0].Split(','))
+                                    {
+
+                                        subjectFilter.TelecomAddresses.Add(new TelecommunicationsAddress() { Value = val });
+                                        actualTelParm.AppendFormat("{0},", val);
+                                    }
+
+                                    if (actualTelParm.Length > 0)
+                                    {
+                                        actualTelParm.Remove(actualTelParm.Length - 1, 1);
+                                        retVal.ActualParameters.Add("telecom", actualTelParm.ToString());
                                     }
                                     break;
 
@@ -591,14 +656,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [ElementProfile(Property = "Contact.Organization", MaxOccurs = 0, Comment = "This registry only supports relationships with 'Person' objects")]
         //[ElementProfile(Property = "Photo", MaxOccurs = 0, Comment = "This registry does not support the storage of photographs directly")]
         [ElementProfile(Property = "Name", MinOccurs = 1, MaxOccurs = -1, Comment = "PDQm Requirement that patients must have a name")]
-        [ElementProfile(Property = "Gender", RemoteBinding = "http://hl7.org/fhir/vs/administrative-gender", Comment = "Since this FHIR registry is also a PIX manager and HL7v3 client registry the v3 AdministrativeGender code set used internally has been referenced")]
-        [ElementProfile(Property = "Identifier", MinOccurs = 1, MaxOccurs = -1, Comment = "PIX Manager logic requires at least one identifier. When submitting a resource the @system attribute must match the referenced provider identifier's @system attribute (i.e. you may only register new identifiers for systems which you are the registered creator)")]
-        [ElementProfile(Property = "Deceased", ValueType = typeof(Date), Comment = "Only date values are supported for deceased indication. Boolean will be translated to a non-zero date")]
-        [ElementProfile(Property = "MultipleBirth", ValueType = typeof(FhirInt), Comment = "Only multiple birth number is supported. Boolean will be translated to a non-zero value")]
-        [ElementProfile(Property = "MaritalStatus", RemoteBinding = "http://hl7.org/fhir/vs/marital-status", Comment = "Marital status can be drawn from any code system")]
+        [ElementProfile(Property = "Identifier", MinOccurs = 1, MaxOccurs = -1, Comment = "PIX Manager and PDQm profile requires at least one identifier. When submitting a resource the @system attribute must match the referenced provider identifier's @system attribute (i.e. you may only register new identifiers for systems which you are the registered creator)")]
+        [ElementProfile(Property = "Deceased", ValueType = typeof(Date), Comment = "PDQm specifies only date values are supported for deceased indication. Boolean will be translated to a non-zero date")]
+        [ElementProfile(Property = "MultipleBirth", ValueType = typeof(FhirInt), Comment = "PDQm specifies that only multiple birth number is supported. Boolean will be translated to a non-zero value")]
+        [ElementProfile(Property = "MaritalStatus", RemoteBinding = "http://hl7.org/fhir/vs/marital-status", Comment = "Marital status can be drawn from this marital-status value set")]
         [ElementProfile(Property = "Extension", Comment = "Additional attributes which could not be mapped to FHIR will be placed in the \"Extension\" element")]
         [ElementProfile(Property = "Communication", RemoteBinding = "http://hl7.org/fhir/sid/iso-639-1", Comment = "Language codes should be drawn from ISO-639-1 , ISO-639-3 is acceptable but will be translated")]
-        [ElementProfile(Property = "Contact.Relationship", MinOccurs = 1, MaxOccurs = 1, Comment = "This registry only supports one type of relationship per contact. Multiple entries will result in the creation of multiple contacts with each type of relationship")]
         //[ElementProfile(Property = "Language.Mode", Binding = typeof(LanguageAbilityMode), Comment = "Language mode is restricted to ESP and EWR")]
         //[ElementProfile(Property = "Language.ProficiencyLevel", Binding = typeof(LanguageAbilityProficiency), Comment = "Language proficiency will be either E or not provided")]
         //[ElementProfile(Property = "Language.Preference", Comment = "Treated as indicator. Will only appear if set to 'true'")]

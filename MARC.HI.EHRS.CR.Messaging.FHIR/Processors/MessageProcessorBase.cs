@@ -62,6 +62,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [SearchParameterProfile(Name = "count", Type = "number", Description = "The number of results to return in one page")]
         [SearchParameterProfile(Name = "page", Type = "number", Description = "The page number of results to return")]
         [SearchParameterProfile(Name = "confidence", Type = "number", Description = "The confidence of the returned results (0..100)")]
+        [SearchParameterProfile(Name = "_format", Type = "string", Description = "Identifies the desired response format (json|xml)")]
         public virtual MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
 
@@ -69,6 +70,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             retVal.ActualParameters = new System.Collections.Specialized.NameValueCollection();
             retVal.MinimumDegreeMatch = 0.8f;
             int page = 0;
+            bool hasFormat = false;
 
              for(int i = 0; i < parameters.Count; i++)
                  try
@@ -98,6 +100,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                              retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
                              retVal.ActualParameters.Add("confidence", parameters.GetValues(i)[0]);
                              break;
+                         case "_format":
+                             hasFormat = true;
+                             //retVal.ActualParameters.Add("_format", parameters.GetValues(i)[0]);
+                             break;
                      }
 
                  }
@@ -106,7 +112,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                      Trace.TraceError(e.ToString());
                      dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                  }
-             retVal.Start = page * retVal.Quantity;
+
+             if (!hasFormat)
+                 throw new InvalidOperationException("Missing _format parameter");
+             
+            retVal.Start = page * retVal.Quantity;
 
              return retVal;
         }
@@ -723,7 +733,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 var asn = lookup.Attributes.Find(o => o.Key == "AssigningAuthorityName");
                 if (asn.Value == null)
                     dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, String.Format(ApplicationContext.LocalizationService.GetString("MSGE06A"), oid), null, null));
-                else if (asn.Value != retVal.AssigningAuthority)
+                else if (!String.IsNullOrEmpty(retVal.AssigningAuthority) && asn.Value != retVal.AssigningAuthority)
                     dtls.Add(new FixedValueMisMatchedResultDetail(retVal.AssigningAuthority, asn.Value, "Identifier"));
             }
             return retVal;
@@ -741,8 +751,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Extensions
                 retVal.Use += ExtensionUtil.ParseTELUseExtension(tel.Extension, dtls);
             }
-            retVal.Value = tel.Value;
-
+            if (String.IsNullOrEmpty(tel.Value))
+                dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Telecommunications address must carry a value", "telecom"));
+            else
+            {
+                retVal.Value = tel.Value;
+                if (tel.System.Value == "phone" && !retVal.Value.StartsWith("tel:"))
+                    dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Telecommunications address must start with tel: when system is phone", null, null));
+                else if (tel.System.Value == "email" && !retVal.Value.StartsWith("mailto:"))
+                    dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Telecommunications address must start with mailto: when system is email", null, null));
+            }
             if(tel.Period != null)
             {
                 dtls.Add(new UnsupportedFhirDatatypePropertyResultDetail(ResultDetailType.Warning, "Period", "Name"));

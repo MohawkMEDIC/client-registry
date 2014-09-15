@@ -37,7 +37,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
     /// <summary>
     /// Persister for personal relationships
     /// </summary>
-    public class PersonalRelationshipPersister : IComponentPersister
+    public class PersonalRelationshipPersister : IComponentPersister, IQueryComponentPersister
     {
         #region IComponentPersister Members
 
@@ -228,5 +228,41 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
         #endregion
 
+        /// <summary>
+        /// Build the filter
+        /// </summary>
+        public string BuildFilter(IComponent data, bool forceExact)
+        {
+            PersonalRelationship prs = data as PersonalRelationship;
+
+            // Subject relative
+            Person subjectRelative = new Person()
+            {
+                RoleCode = PersonRole.PRS,
+                Names = new List<NameSet>() { prs.LegalName }
+            };
+
+            PersonPersister prsp = new PersonPersister();
+            var filterString = prsp.BuildFilter(subjectRelative, forceExact);
+
+            return String.Format("SELECT DISTINCT TRG_PSN_ID AS PSN_ID FROM PSN_RLTNSHP_TBL WHERE KIND_CS = '{0}' AND SRC_PSN_ID IN (SELECT PSN_TBL.PSN_ID FROM ({1}) AS PSN_TBL)", prs.RelationshipKind.Replace("'", "''"), filterString);
+            //return String.Empty;
+        }
+
+        /// <summary>
+        /// The OID
+        /// </summary>
+        public string ComponentTypeOid
+        {
+            get { return ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid; }
+        }
+
+        /// <summary>
+        /// Build control cclass
+        /// </summary>
+        public string BuildControlClauses(IComponent queryComponent)
+        {
+            return string.Empty;
+        }
     }
 }

@@ -103,10 +103,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 
                 VersionedDomainIdentifier[] identifiers;
 
-                if (result.Query.QueryId == Guid.Empty) // continue a query
-                    result.Query.QueryId = Guid.NewGuid();
-
-                if (queryPersistence != null)
+                if (queryPersistence != null && result.Query.QueryId != Guid.Empty)
                 {
                     if (!queryPersistence.IsRegistered(result.Query.QueryId.ToString()))
                     {
@@ -118,7 +115,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 else // stateless
                 {
                     identifiers = registration.QueryRecord(querySpec.Filter);
+                    
+                    result.TotalResults = identifiers.Length;
+
                     identifiers = new List<VersionedDomainIdentifier>(identifiers.Skip(result.Query.Start).Take(result.Query.Quantity)).ToArray();
+                    if (result.Query.QueryId != Guid.Empty)
+                        details.Add(new NotImplementedElementResultDetail(ResultDetailType.Warning, "Stateful queries cannot be executed when a query manager is not configured", null, null));
                 }
 
                 // Fetch the records async and convert
@@ -137,10 +139,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 // TODO: Support sort control but for now just sort according to confidence then date
                 //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
 
-                if (queryPersistence != null)
-                    result.TotalResults = (int)queryPersistence.QueryResultTotalQuantity(querySpec.QueryId.ToString());
-                else
-                    result.TotalResults = retRecordId.Count(o => o != null);
+                //if (queryPersistence != null)
+                //    result.TotalResults = (int)queryPersistence.QueryResultTotalQuantity(querySpec.QueryId.ToString());
+                //else
+                //    result.TotalResults = retRecordId.Count(o => o != null);
 
                 return result;
             }
