@@ -37,7 +37,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Connection
         /// <summary>
         /// Sync-lock
         /// </summary>
-        private object m_syncLock = new object();
+        //private object m_syncLock = new object();
 
         /// <summary>
         /// Data provider factory

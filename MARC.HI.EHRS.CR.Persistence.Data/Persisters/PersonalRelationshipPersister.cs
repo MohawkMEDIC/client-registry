@@ -245,7 +245,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             PersonPersister prsp = new PersonPersister();
             var filterString = prsp.BuildFilter(subjectRelative, forceExact);
 
-            return String.Format("SELECT DISTINCT TRG_PSN_ID AS PSN_ID FROM PSN_RLTNSHP_TBL WHERE KIND_CS = '{0}' AND SRC_PSN_ID IN (SELECT PSN_TBL.PSN_ID FROM ({1}) AS PSN_TBL)", prs.RelationshipKind.Replace("'", "''"), filterString);
+            var registrationEvent = DbUtil.GetRegistrationEvent(data);
+
+            StringBuilder sb = new StringBuilder();
+            if (registrationEvent != null) // We don't discriminate on queries for related persons
+            {
+                if (registrationEvent.EventClassifier == RegistrationEventType.Register || registrationEvent.EventClassifier == RegistrationEventType.Replace)
+                    return ""; // We don't discriminate against registration events based on who they're related to
+                else
+                    sb.Append("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) INNER JOIN PSN_RLTNSHP_TBL ON (PSN_VRSN_TBL.PSN_ID = PSN_RLTNSHP_TBL.TRG_PSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_VRSN_TBL.PSN_VRSN_ID BETWEEN PSN_RLTNSHP_TBL.EFFT_VRSN_ID AND COALESCE(PSN_RLTNSHP_TBL.OBSLT_VRSN_ID, PSN_VRSN_TBL.PSN_VRSN_ID) ");
+            }
+            else
+                sb.Append("SELECT DISTINCT TRG_PSN_ID AS PSN_ID FROM PSN_RLTNSHP_TBL WHERE OBSLT_UTC IS NULL ");
+
+            sb.AppendFormat(" AND KIND_CS = '{0}' AND SRC_PSN_ID IN (SELECT PSN_TBL.PSN_ID FROM ({1}) AS PSN_TBL) ", prs.RelationshipKind.Replace("'", "''"), filterString);
+
+            return sb.ToString();
             //return String.Empty;
         }
 

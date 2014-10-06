@@ -93,7 +93,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 else if (i != comps.Length - 1)
                 {
                     sb.AppendFormat("{0}-", comps[i]);
-                    phone.AppendFormat("{0}-", comps[i]);
+                    phone.AppendFormat("{0}", comps[i]);
                 }
                 else
                 {
@@ -101,14 +101,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     phone.Append(comps[i]);
                 }
 
-            instance.LocalNumber.Value = phone.ToString();
+            instance.LocalNumber.Value = phone.ToString().Replace("-","");
 
             // Extension?
             string[] parms = match.Groups[7].Value.Split(';');
             foreach (var parm in parms)
             {
                 string[] pData = parm.Split('=');
-                if (pData[0] == "extension" || pData[0] == "ext")
+                if (pData[0] == "extension" || pData[0] == "ext" || pData[0] == "postd")
                 {
                     sb.AppendFormat("X{0}", pData[1]);
                     instance.Extension.Value = pData[1];

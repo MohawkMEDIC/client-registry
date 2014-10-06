@@ -174,8 +174,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             for (int i = 0; i < retVal.Length; i++)
                 recordFetch.Add(recordIds[i]);
 
-            int maxWorkerBees = Environment.ProcessorCount,
-                nResults = 0;
+            int maxWorkerBees = Environment.ProcessorCount * 2;
             //List<Thread> workerBees = new List<Thread>(maxWorkerBees);  // Worker bees
             var wtp = new MARC.Everest.Threading.WaitThreadPool(maxWorkerBees);
             try
@@ -222,17 +221,18 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                             });
                         }
 
-                        // Are we disclosing this record?
-                        if (result == null || result.IsMasked)
-                            lock (syncLock)
-                                retRecordId.Remove(parm as VersionedDomainIdentifier);
+                        //// Are we disclosing this record?
+                        //if (result == null || result.IsMasked)
+                        //    lock (syncLock)
+                        //        retRecordId.Remove(parm as VersionedDomainIdentifier);
 
                         // Add issues and details
-                        lock (syncLock)
-                        {
-                            issues.AddRange(mIssue);
-                            dtls.AddRange(mDtls);
-                        }
+                        if(mIssue.Count > 0 || mDtls.Count > 0)
+                            lock (syncLock)
+                            {
+                                issues.AddRange(mIssue);
+                                dtls.AddRange(mDtls);
+                            }
                     }, id
                         );
                 // for
@@ -304,8 +304,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                 if(subject != null)// We're fetching a patient?
                     confidence = (subject).Confidence(filter as Person);
 
-                if (confidence.Confidence < qd.MinimumDegreeMatch)
-                    return null;
+                //if (confidence.Confidence < qd.MinimumDegreeMatch)
+                //    return null;
 
                 (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
                 // Mask

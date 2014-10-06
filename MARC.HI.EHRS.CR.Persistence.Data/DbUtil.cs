@@ -42,7 +42,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         [ThreadStatic]
         private static List<HealthServiceRecordComponent> m_alreadyDepersisted = new List<HealthServiceRecordComponent>(100);
 
-        private static Object s_syncLock = new object();
+        //private static Object s_syncLock = new object();
 
         /// <summary>
         /// DAta about components

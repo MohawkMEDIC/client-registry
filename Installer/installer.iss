@@ -65,6 +65,10 @@ Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Admin.dll; DestDir:{app}; Flags
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Everest.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\ca msg\pixv3
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.HL7.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\Solution Items\HL7.Fhir.Api.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\Solution Items\HL7.Fhir.Model.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\Solution Items\Newtonsoft.Json.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\Solution Items\AtnaApi.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\bin\release\index.htm; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7

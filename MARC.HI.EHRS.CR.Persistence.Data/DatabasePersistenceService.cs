@@ -566,38 +566,38 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
 
-                    for (int i = 0; i < 2; i++)
-                    {
-
-                        string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, i == 0));
-
+                    string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
+                        
                         cmd.CommandText = queryFilterString;
 
                         cmd.CommandType = CommandType.Text;
-                        using (IDataReader rdr = cmd.ExecuteReader())
+                        try
                         {
-                            // Read all results
-                            while (rdr.Read())
+                            using (IDataReader rdr = cmd.ExecuteReader())
                             {
-
-                                // Id
-                                var id = new VersionedResultIdentifier()
+                                // Read all results
+                                while (rdr.Read())
                                 {
-                                    Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
-                                    Identifier = Convert.ToString(rdr[0]),
-                                    Version = Convert.ToString(rdr[1])
-                                };
-                                // Add the ID
-                                if (!retVal.Exists(o => o.Identifier == id.Identifier))
+
+                                    // Id
+                                    var id = new VersionedResultIdentifier()
+                                    {
+                                        Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
+                                        Identifier = Convert.ToString(rdr[0]),
+                                        Version = Convert.ToString(rdr[1])
+                                    };
+                                    // Add the ID
                                     retVal.Add(id);
 
+                                }
                             }
                         }
+                        catch
+                        {
+                            Trace.TraceInformation("Query in error: {0}", queryFilterString);
+                            throw;
+                        }
 
-                        // Is there a point to doing a second?
-                        if (queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact)
-                            break;
-                    }
                 }
             }
             catch (Exception e)

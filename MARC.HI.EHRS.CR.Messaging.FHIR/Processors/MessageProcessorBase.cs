@@ -61,7 +61,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [SearchParameterProfile(Name = "stateid", Type = "string", Description = "A unique identifier for the state of a query being continued")]
         [SearchParameterProfile(Name = "count", Type = "number", Description = "The number of results to return in one page")]
         [SearchParameterProfile(Name = "page", Type = "number", Description = "The page number of results to return")]
-        [SearchParameterProfile(Name = "confidence", Type = "number", Description = "The confidence of the returned results (0..100)")]
         [SearchParameterProfile(Name = "_format", Type = "string", Description = "Identifies the desired response format (json|xml)")]
         public virtual MARC.HI.EHRS.CR.Messaging.FHIR.Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<Everest.Connectors.IResultDetail> dtls)
         {
@@ -95,10 +94,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                          case "page":
                              page = Int32.Parse(parameters.GetValues(i)[0]);
                              retVal.ActualParameters.Add("page", page.ToString());
-                             break;
-                         case "confidence":
-                             retVal.MinimumDegreeMatch = Int32.Parse(parameters.GetValues(i)[0]) / 100.0f;
-                             retVal.ActualParameters.Add("confidence", parameters.GetValues(i)[0]);
                              break;
                          case "_format":
                              hasFormat = true;

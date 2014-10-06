@@ -84,6 +84,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [SearchParameterProfile(Name = "telecom", Type = "string", Description = "Filter based on patient's telecommunications address")]
         [SearchParameterProfile(Name= "multipleBirthInteger", Type = "string", Description = "Filter on patient's birth order")]
         [SearchParameterProfile(Name = "provider.identifier", Type = "token", Description = "One of the organizations to which this person is a patient (only supports OR)")]
+        [SearchParameterProfile(Name = "variant", Type = "token", Description="When true indicates variant matching")]
+        [SearchParameterProfile(Name = "soundex", Type="token", Description = "When true, indicates soundex should be used")]
+
         public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -92,7 +95,10 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
             var subjectFilter = new Person();
             RegistrationEvent queryFilter = new RegistrationEvent();
-            
+            QueryParameters queryControl = new QueryParameters()
+            {
+                MatchingAlgorithm = MatchAlgorithm.Exact
+            };
             //MARC.HI.EHRS.SVC.Core.DataTypes.AddressSet addressFilter = null;
             MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameFilter = null;
 
@@ -103,6 +109,24 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                         switch (parameters.GetKey(i))
                         {
+                            case "variant":
+                                {
+                                    bool variantParam = false;
+                                    if (!Boolean.TryParse(parameters.GetValues(i)[0], out variantParam))
+                                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Variant parameter must convey a boolean value", null, null));
+                                    queryControl.MatchingAlgorithm |= MatchAlgorithm.Variant;
+                                    retVal.ActualParameters.Add("variant", variantParam.ToString());
+                                    break;
+                                }
+                            case "soundex":
+                                {
+                                    bool soundexParam = false;
+                                    if (!Boolean.TryParse(parameters.GetValues(i)[0], out soundexParam))
+                                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Soundex parameter must convey a boolean value", null, null));
+                                    queryControl.MatchingAlgorithm |= MatchAlgorithm.Soundex;
+                                    retVal.ActualParameters.Add("soundex", soundexParam.ToString());
+                                    break;
+                                }
                             case "_id":
                                 {
                                     if (subjectFilter.AlternateIdentifiers == null)
@@ -426,6 +450,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 subjectFilter.Names = new List<SVC.Core.DataTypes.NameSet>() { nameFilter };
 
             queryFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            queryFilter.Add(queryControl, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
             retVal.Filter = queryFilter;
 
             return retVal;

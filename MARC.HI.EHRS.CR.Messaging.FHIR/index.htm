@@ -53,14 +53,10 @@
                             <option value="F">Female</option>
                         </select>
                     </td>
-                    <td>Confidence</td>
+                    <td>Matching Algorithms</td>
                     <td>
-                        <select name="_confidence">
-                            <option value="100">Exact Match</option>
-                            <option value="80">Strong Matches</option>
-                            <option value="60">Weak Matches</option>
-                            <option value="0">Anything</option>
-                        </select>
+                    <input type="checkbox" value="true" name="soundex" /> Soundex
+                    <input type="checkbox" value="true" name="variant" /> Variant
                     </td>
                 </tr>
                 <tr>
@@ -77,6 +73,15 @@
                                 <option value="1.3.6.1.4.1.33349.3.1.3.201303.0.0.0|">OSCAR EMR Clinic A</option>
                                 <option value="1.3.6.1.4.1.33349.3.1.3.201303.0.0.1|">OSCAR EMR Clinic B</option>
                             </optgroup>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">Response Format:</td>
+                    <td colspan="2">
+                        <select name="_format">
+                            <option value="xml">XML</option>
+                            <option value="json">JSON</option>
                         </select>
                     </td>
                 </tr>

@@ -365,6 +365,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var personFilter = regFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
             qpd.QueryTag.Value = filter.QueryTag;
+            qpd.MessageQueryName.Identifier.Value = "IHE PDQ Query";
             var terser = new Terser(retVal);
             int qpdRep = 0;
             if (personFilter.GenderCode != null)
