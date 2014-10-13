@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// <summary>
     /// Message processor for patients
     /// </summary>
-    [Profile(ProfileId = "pdqm")]
+    [Profile(ProfileId = "pdqm", Name = "Patient Demographics Query Mobile")]
     [ResourceProfile(Resource = typeof(Patient), Name = "Patient Demographics Query for Mobile patient profile")]
     public class PatientMessageProcessor : MessageProcessorBase, IFhirMessageProcessor
     {

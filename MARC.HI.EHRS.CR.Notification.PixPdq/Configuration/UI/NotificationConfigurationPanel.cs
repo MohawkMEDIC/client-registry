@@ -14,6 +14,8 @@ using System.Reflection;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.ComponentModel;
+using MARC.Everest.Formatters.XML.ITS1;
+using MARC.Everest.Formatters.XML.Datatypes.R1;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
 {
@@ -234,6 +236,17 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             foreach (XmlElement child in tEverestNode.ChildNodes)
                 if(everestNode.SelectSingleNode(String.Format("./*[local-name() = 'action'][@type='{0}']", child.Attributes["type"].Value)) == null)
                     everestNode.AppendChild(child);
+
+            if(everestNode.Attributes["formatter"] == null)
+            {
+                everestNode.Attributes.Append(configurationDom.CreateAttribute("formatter"));
+                everestNode.Attributes["formatter"].Value=typeof(XmlIts1Formatter).AssemblyQualifiedName;
+            }
+            if (everestNode.Attributes["aide"] == null)
+            {
+                everestNode.Attributes.Append(configurationDom.CreateAttribute("aide"));
+                everestNode.Attributes["aide"].Value = typeof(DatatypeFormatter).AssemblyQualifiedName;
+            }
 
             this.m_needSync = true;
         }
