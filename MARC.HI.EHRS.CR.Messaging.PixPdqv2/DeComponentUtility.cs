@@ -215,6 +215,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
                 else if (tel.Use == "WP")
                     pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
+
+            if (subject.Race != null)
+            {
+                foreach(var rc in subject.Race)
+                    this.UpdateCE(rc, pid.GetRace(pid.RaceRepetitionsUsed));
+            }
         }
 
         /// <summary>
