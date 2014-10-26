@@ -190,8 +190,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 retVal.AssigningAuthority = addlData.Identifier;
                 var oid = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(k=>k.Key.Equals("AssigningAuthorityName")) && addlData.Identifier.Equals(o.Attributes.Find(k=>k.Key.Equals("AssigningAuthorityName")).Value));
-                if (oid == null)
+                if (oid == null && String.IsNullOrEmpty(retVal.Domain))
                     retVal.Domain = String.Empty;
+                else if (oid == null)
+                    ;
                 else if (String.IsNullOrEmpty(retVal.Domain))
                     retVal.Domain = oid.Oid;
                 else if (retVal.Domain != oid.Oid)
