@@ -81,12 +81,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
         [SearchParameterProfile(Name = "identifier", Type = "token", Description = "A patient identifier (only supports OR)")]
         [SearchParameterProfile(Name = "mothersMaidenName.given", Type = "string", Description = "Filter on the patient's mother's maiden name (given)")]
         [SearchParameterProfile(Name = "mothersMaidenName.family", Type = "string", Description = "Filter on the patient's mother's maiden name (family)")]
+        [SearchParameterProfile(Name = "relatedPerson.id", Type = "string", Description = "Filter on the patient's family member's identifier")]
         [SearchParameterProfile(Name = "telecom", Type = "string", Description = "Filter based on patient's telecommunications address")]
         [SearchParameterProfile(Name= "multipleBirthInteger", Type = "string", Description = "Filter on patient's birth order")]
         [SearchParameterProfile(Name = "provider.identifier", Type = "token", Description = "One of the organizations to which this person is a patient (only supports OR)")]
         [SearchParameterProfile(Name = "variant", Type = "token", Description="When true indicates variant matching")]
         [SearchParameterProfile(Name = "soundex", Type="token", Description = "When true, indicates soundex should be used")]
-
         public override Util.DataUtil.ClientRegistryFhirQuery ParseQuery(System.Collections.Specialized.NameValueCollection parameters, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -322,6 +322,40 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
 
                                     break;
                                 }
+                            case "mothersIdentifier":
+                                {
+
+                                    // Relationship for mother
+                                    PersonalRelationship prs = subjectFilter.FindComponent(HealthServiceRecordSiteRoleType.RepresentitiveOf) as PersonalRelationship;
+                                    if (prs == null)
+                                    {
+                                        prs = new PersonalRelationship();
+                                        prs.RelationshipKind = "MTH";
+                                        prs.LegalName = new NameSet();
+                                        subjectFilter.Add(prs, "PRS", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                                    }
+
+                                    if (prs.AlternateIdentifiers == null)
+                                        prs.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
+                                    foreach (var cparm in parameters.GetValues(i))
+                                    {
+                                        StringBuilder actualIdParm = new StringBuilder();
+                                        foreach (var val in cparm.Split(','))
+                                        {
+                                            var domainId = MessageUtil.IdentifierFromToken(val);
+                                            prs.AlternateIdentifiers.Add(domainId);
+                                            actualIdParm.AppendFormat("{0},", val);
+                                        }
+
+                                        if (actualIdParm.Length > 0)
+                                        {
+                                            actualIdParm.Remove(actualIdParm.Length - 1, 1);
+                                            retVal.ActualParameters.Add("mothersIdentifier", actualIdParm.ToString());
+                                        }
+                                    }
+                                    break;
+                                }
+
                             case "mothersMaidenName.given":
                             case "mothersMaidenName.family":
                                 {

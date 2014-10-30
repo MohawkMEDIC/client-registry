@@ -426,6 +426,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 DomainIdentifier altId = null;
                 NameSet name = null;
                 AddressSet address = null;
+                NameSet mothersName = null;
+                DomainIdentifier mothersId = null;
 
                 // Query parameter
                 foreach (var qp in qps)
@@ -488,6 +490,34 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                     else
                                         throw new ArgumentException();
                                     break;
+                                case "PID.21":
+                                    // Alternate identifier
+                                    if (mothersId == null)
+                                        mothersId = new DomainIdentifier();
+
+                                    if (componentNo == "1")
+                                        mothersId.Identifier = qip2;
+                                    else if (componentNo == "4")
+                                        switch (subComponentNo)
+                                        {
+                                            case "1":
+                                            case "":
+                                                mothersId.AssigningAuthority = qip2;
+                                                break;
+                                            case "2":
+                                                mothersId.Domain = qip2;
+                                                break;
+                                            case "3":
+                                                if (qip2 != "ISO")
+                                                {
+                                                    dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE05B"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
+                                                    return QueryData.Empty;
+                                                }
+                                                break;
+                                        }
+                                    else
+                                        throw new ArgumentException();
+                                    break;
                                 case "PID.5":
                                     // Name
                                     if (name == null)
@@ -515,6 +545,34 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                     else
                                         throw new ArgumentException();
                                     break;
+                                case "PID.6":
+                                    // Mothers
+                                    if (mothersName == null)
+                                        mothersName = new NameSet() { Use = NameSet.NameSetUse.Search, Parts = new List<NamePart>() };
+
+                                    // Naming part? 
+                                    if (componentNo.CompareTo("7") < 0)
+                                    {
+                                        NamePart np = new NamePart() { Value = qip2 };
+                                        NamePart.NamePartType? typ = null;
+                                        if (XPN_MAP.TryGetValue(componentNo, out typ))
+                                            np.Type = typ.Value;
+                                        else
+                                            np.Type = NamePart.NamePartType.None;
+                                        mothersName.Parts.Add(np);
+                                    }
+                                    else if (componentNo.Equals("7"))
+                                    {
+                                        NameSet.NameSetUse? use = null;
+                                        if (XPN_USE_MAP.TryGetValue(qip2, out use))
+                                            mothersName.Use = use.Value;
+                                        else
+                                            dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, m_locale.GetString("MSGW017"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
+                                    }
+                                    else
+                                        throw new ArgumentException();
+                                    break;
+
                                 case "PID.7":
                                     // Birth
                                     object ts = null;
@@ -588,7 +646,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     subjectOf.Names = new List<NameSet>() { name };
                 if(address != null)
                     subjectOf.Addresses = new List<AddressSet>(){ address };
+                if (mothersName != null || mothersId != null)
+                {
+                    PersonalRelationship prs = new PersonalRelationship() { RelationshipKind = "MTH" };
 
+                    // Fill out the altId
+                    if (mothersId != null)
+                    {
+                        NHapi.Model.V25.Datatype.CX tcx = new NHapi.Model.V25.Datatype.CX(request);
+                        tcx.AssigningAuthority.NamespaceID.Value = mothersId.AssigningAuthority;
+                        tcx.AssigningAuthority.UniversalID.Value = mothersId.Domain;
+                        tcx.AssigningAuthority.UniversalIDType.Value = "ISO";
+                        tcx.IDNumber.Value = mothersId.Identifier;
+                        prs.AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(tcx, dtls) };
+                    }
+                    if (mothersName != null)
+                        prs.LegalName = mothersName;
+                    subjectOf.Add(prs, "PRS", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                }
             }
 
             // Get the algorithm name

@@ -36,6 +36,13 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     [XmlType("Person")]
     public class Person : CrHealthServiceRecordContainer
     {
+        /// <summary>
+        /// Person / patient
+        /// </summary>
+        public Person()
+        {
+            this.RoleCode = PersonRole.PAT;
+        }
 
         /// <summary>
         /// Calculates the similarity to another person

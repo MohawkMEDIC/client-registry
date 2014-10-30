@@ -31,6 +31,7 @@ using MARC.HI.EHRS.SVC.Core.Exceptions;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.CR.Core.Services;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -84,6 +85,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // If not, then we need to register a patient in the database 
             if (relationshipPerson == null)
             {
+                if (pr.LegalName == null)
+                    throw new DataException(ApplicationContext.LocaleService.GetString("DBCF00B"));
                 relationshipPerson = new Person()
                 {
                     AlternateIdentifiers = pr.AlternateIdentifiers,
@@ -109,7 +112,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Validate
-            if (!relationshipPerson.Names.Exists(o=>QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+            if (pr.LegalName == null)
+                Trace.TraceWarning("Linking patients solely on identifier: This can be dangerous");
+            else if (!relationshipPerson.Names.Exists(o => QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
                 throw new DataException(ApplicationContext.LocaleService.GetString("DBCF00A"));
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
@@ -170,12 +175,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }, true);
             
             // Add the client components
-            retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o=>o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid));
-            retVal.AlternateIdentifiers.Add(new DomainIdentifier()
-            {
-                Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid,
-                Identifier = identifier.ToString()
-            });
+            retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers);
+
+
             if (clientDataRetVal.Names != null)
                 retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
             retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
@@ -210,6 +212,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.Id = identifier;
                         retVal.RelationshipKind = Convert.ToString(rdr["kind_cs"]);
                         rltdId = Convert.ToDecimal(rdr["trg_psn_id"]);
+
+
+                        // Add prs
+                        retVal.AlternateIdentifiers.Add(new DomainIdentifier()
+                        {
+                            Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid,
+                            Identifier = rdr["rltnshp_id"].ToString()
+                        });
+                        retVal.Id = Convert.ToDecimal(rdr["rltnshp_id"]);
                     }
                 }
                 
@@ -238,7 +249,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Subject relative
             Person subjectRelative = new Person()
             {
-                RoleCode = PersonRole.PRS,
+                RoleCode = PersonRole.PRS | PersonRole.PAT,
                 Names = new List<NameSet>() { prs.LegalName }
             };
 

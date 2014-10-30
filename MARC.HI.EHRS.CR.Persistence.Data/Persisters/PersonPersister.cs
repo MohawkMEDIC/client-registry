@@ -160,6 +160,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+
+                if (psn.RoleCode == (PersonRole.PAT | PersonRole.PRS))
+                    psn.RoleCode = PersonRole.PAT;
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rol_cs_in", DbType.String, psn.RoleCode.ToString()));
 
 
@@ -656,6 +659,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+
+                if (psn.RoleCode == (PersonRole.PAT | PersonRole.PRS))
+                    psn.RoleCode = PersonRole.PAT;
+
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rol_cs_in", DbType.String, psn.RoleCode.ToString()));
 
 
@@ -1537,7 +1544,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 sb.Append(") ");
             }
 
-            sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
+            if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
+                sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
 
             // Identifiers
             if (personFilter.Id != default(decimal))

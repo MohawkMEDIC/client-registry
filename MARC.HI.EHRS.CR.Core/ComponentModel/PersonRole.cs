@@ -13,10 +13,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// The person is a patient
         /// </summary>
-        PAT,
+        PAT = 0x01,
         /// <summary>
         /// The person is related to a patient
         /// </summary>
-        PRS
+        PRS = 0x02
     }
 }

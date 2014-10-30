@@ -570,6 +570,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         
                         cmd.CommandText = queryFilterString;
 
+                    
+                        Trace.TraceInformation(cmd.CommandText);
                         cmd.CommandType = CommandType.Text;
                         try
                         {
