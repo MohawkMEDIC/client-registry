@@ -463,6 +463,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             switch (segmentName)
                             {
                                 case "PID.3":
+                                case "PID.18":
                                     // Alternate identifier
                                     if (altId == null)
                                         altId = new DomainIdentifier();
@@ -615,8 +616,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                     else
                                         throw new ArgumentException();
                                     break;
-                                case "PID.18":
-                                    throw new ArgumentException();
+                                case "PID.13":
+                                     // Naming part? 
+                                    if (componentNo.CompareTo("9") < 0)
+                                    {
+                                        subjectOf.TelecomAddresses.Add(new TelecommunicationsAddress()
+                                        {
+                                            Value = qip2.ToLower()
+                                        });
+                                    }
                                     break;
                                 default:
                                     throw new ArgumentException("Could not understand query parameter");
