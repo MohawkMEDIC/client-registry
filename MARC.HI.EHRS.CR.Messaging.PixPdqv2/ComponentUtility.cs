@@ -902,9 +902,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // SSN Number
             if (!String.IsNullOrEmpty(pid.SSNNumberPatient.Value))
+            {
+                subject.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
                 subject.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                     new CodeValue() { CodeSystem = "2.16.840.1.113883.2.20.3.85", Code = "SIN" },
                     new DomainIdentifier() { Domain = this.m_config.OidRegistrar.GetOid("SSN").Oid, Identifier = pid.SSNNumberPatient.Value }));
+            }
 
             // License Number
             if (!String.IsNullOrEmpty(pid.DriverSLicenseNumberPatient.DriverSLicenseNumber.Value))
@@ -1078,7 +1081,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             var retVal = CreateDomainIdentifier(id, dtls);
             // Assigning authority validation
-            if (String.IsNullOrEmpty(retVal.AssigningAuthority) || String.IsNullOrEmpty(retVal.Domain)) // No aaut, so populate from config
+            if (String.IsNullOrEmpty(retVal.AssigningAuthority) && String.IsNullOrEmpty(retVal.Domain)) // No aaut, so populate from config
             {
                 if (aaut == null)
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));

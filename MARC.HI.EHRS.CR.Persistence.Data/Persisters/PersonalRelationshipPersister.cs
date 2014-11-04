@@ -69,18 +69,55 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // First, let's see if we can fetch the client
             if (pr.Id != default(decimal))
-                relationshipPerson = persister.GetPerson(conn, tx, new DomainIdentifier()
-                {
-                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
-                    Identifier = pr.Id.ToString()
-                }, true);
+            {
+                var personalRelationship = this.DePersist(conn, pr.Id, pr.Site.Container, (pr.Site as HealthServiceRecordSite).SiteRoleType, true) as PersonalRelationship;
+                relationshipPerson = personalRelationship.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            }
             else if (pr.AlternateIdentifiers != null)
             {
                 int i = 0;
                 while (relationshipPerson == null && i < pr.AlternateIdentifiers.Count)
                     relationshipPerson = persister.GetPerson(conn, tx, pr.AlternateIdentifiers[i++], true);
             }
+            
+            if(relationshipPerson == null)
+            {
+                List<DomainIdentifier> candidateId = new List<DomainIdentifier>();
 
+                // Is this an existing person (same name and relation)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+                    cmd.CommandText = "get_psn_rltnshps";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_id_in", DbType.Decimal, clientContainer.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_vrsn_id_in", DbType.Decimal, clientContainer.VersionId));
+                    using (IDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            if (rdr["kind_cs"].ToString() == pr.RelationshipKind)
+                            {
+                                candidateId.Add(new DomainIdentifier()
+                                {
+                                    Domain = configService.OidRegistrar.GetOid("CR_CID").Oid,
+                                    Identifier = rdr["src_psn_id"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Now load candidates and check
+                foreach (var id in candidateId)
+                {
+                    var candidate = persister.GetPerson(conn, tx, id, true);
+                    if (candidate.Names.Exists(n => n.SimilarityTo(pr.LegalName) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+                    {
+                        relationshipPerson = candidate;
+                        break;
+                    }
+                }
+
+            }
             // Did we get one?
             // If not, then we need to register a patient in the database 
             if (relationshipPerson == null)
@@ -112,14 +149,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Validate
-            if (pr.LegalName == null)
-                Trace.TraceWarning("Linking patients solely on identifier: This can be dangerous");
-            else if (!relationshipPerson.Names.Exists(o => QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+            if (!relationshipPerson.Names.Exists(o => QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
                 throw new DataException(ApplicationContext.LocaleService.GetString("DBCF00A"));
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
             if (clientContainer != null) // We need to do some linking
-                LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind, pr.Status.ToString());
+                pr.Id = LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind, pr.Status.ToString());
             else if (clientContainer == null) // We need to do some digging to find out "who" this person is related to (the record target)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF003"));
                             
@@ -127,15 +162,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             return new VersionedDomainIdentifier() 
                 {
-                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
-                    Identifier = relationshipPerson.Id.ToString()
+                    Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid,
+                    Identifier = pr.Id.ToString()
                 };
         }
 
         /// <summary>
         /// Link two clients together
         /// </summary>
-        private void LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind, string status)
+        private decimal LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind, string status)
         {
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
@@ -147,9 +182,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "kind_in", DbType.StringFixedLength, kind));
 
                 // Insert
-                cmd.ExecuteNonQuery();
+                return (decimal)cmd.ExecuteScalar();
             }
-            catch { }
+            catch { throw; }
             finally
             {
                 cmd.Dispose();
@@ -167,43 +202,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // De-persist the observation record
             ISystemConfigurationService sysConfig = ApplicationContext.ConfigurationService;
 
-            // First, de-persist the client portions
-            var clientDataRetVal = new PersonPersister().GetPerson(conn, null, new DomainIdentifier()
-            {
-                Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
-                Identifier = identifier.ToString()
-            }, true);
-            
-            // Add the client components
-            retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers);
-
-
-            if (clientDataRetVal.Names != null)
-                retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
-            retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-            //if (!loadFast)
-            //{
-            //    retVal.BirthTime = clientDataRetVal.BirthTime;
-            //    foreach (IComponent cmp in clientDataRetVal.Components)
-            //        retVal.Add(cmp, cmp.Site.Name, (cmp.Site as HealthServiceRecordSite).SiteRoleType, (cmp.Site as HealthServiceRecordSite).OriginalIdentifier);
-            //    retVal.GenderCode = clientDataRetVal.GenderCode;
-            //    retVal.Id = clientDataRetVal.Id;
-            //    retVal.IsMasked = clientDataRetVal.IsMasked;
-            //    if (clientDataRetVal.Addresses != null && clientDataRetVal.Addresses.Count > 0)
-            //        retVal.PerminantAddress = clientDataRetVal.Addresses.Find(o => o.Use == AddressSet.AddressSetUse.HomeAddress) ?? clientDataRetVal.Addresses[0];
-            //    retVal.TelecomAddresses.AddRange(clientDataRetVal.TelecomAddresses);
-            //    retVal.Timestamp = clientDataRetVal.Timestamp;
-            //}
-            // Load the personal relationship
+            // De-persist 
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, null))
             {
                 cmd.CommandText = "get_psn_rltnshp";
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_id_in", DbType.Decimal, clientDataRetVal.Id));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_vrsn_id_in", DbType.Decimal, (container as Person).VersionId));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "trg_psn_id_in", DbType.Decimal, (container as Person).Id));
-
-                decimal rltdId = 0;
-
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_rltnshp_id_in", DbType.Decimal, identifier));
+                String clientId = String.Empty;
                 // Execute the reader
                 using (IDataReader rdr = cmd.ExecuteReader())
                 {
@@ -211,9 +215,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         retVal.Id = identifier;
                         retVal.RelationshipKind = Convert.ToString(rdr["kind_cs"]);
-                        rltdId = Convert.ToDecimal(rdr["trg_psn_id"]);
-
-
+                        
                         // Add prs
                         retVal.AlternateIdentifiers.Add(new DomainIdentifier()
                         {
@@ -221,17 +223,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             Identifier = rdr["rltnshp_id"].ToString()
                         });
                         retVal.Id = Convert.ToDecimal(rdr["rltnshp_id"]);
+                        clientId = rdr["src_psn_id"].ToString();
                     }
                 }
-                
-                // Append to the container
-                if (container is Person)
-                    (container as Person).Add(retVal, Guid.NewGuid().ToString(), MARC.HI.EHRS.SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+
+                // First, de-persist the client portions
+                var clientDataRetVal = new PersonPersister().GetPerson(conn, null, new DomainIdentifier()
+                {
+                    Domain = sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
+                    Identifier = clientId.ToString()
+                }, true);
+
+                if (clientDataRetVal.Names != null)
+                    retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
+                retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
             }
-
-            // Load the sub-components
-            //DbUtil.DePersistComponents(conn, retVal, this, loadFast);
 
             return retVal;
 

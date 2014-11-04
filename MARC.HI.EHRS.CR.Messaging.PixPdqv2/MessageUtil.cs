@@ -45,16 +45,29 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             Regex re = new Regex(@"([+0-9A-Za-z]{1,4})?\((\d{3})\)?(\d{3})\-(\d{4})X?(\d{1,6})?");
 
-            var match = re.Match(v2XTN.Get9999999X99999CAnyText.Value);
-            StringBuilder sb = new StringBuilder("tel:");
+            if (v2XTN.Get9999999X99999CAnyText.Value == null)
+            {
+                StringBuilder sb = new StringBuilder("tel:");
+                if (v2XTN.CountryCode.Value != null)
+                    sb.AppendFormat("{0}-", v2XTN.CountryCode);
+                sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
+                if (v2XTN.Extension.Value != null)
+                    sb.AppendFormat(";ext={0}", v2XTN.Extension);
+                return sb.ToString();
+            }
+            else
+            {
+                var match = re.Match(v2XTN.Get9999999X99999CAnyText.Value);
+                StringBuilder sb = new StringBuilder("tel:");
 
-            for (int i = 1; i < 5; i++)
-                if (!String.IsNullOrEmpty(match.Groups[i].Value))
-                    sb.AppendFormat("{0}{1}", match.Groups[i].Value, i == 4 ? "" : "-");
-            if (!string.IsNullOrEmpty(match.Groups[5].Value))
-                sb.AppendFormat(";ext={0}", match.Groups[5].Value);
-            
-            return sb.ToString();
+                for (int i = 1; i < 5; i++)
+                    if (!String.IsNullOrEmpty(match.Groups[i].Value))
+                        sb.AppendFormat("{0}{1}", match.Groups[i].Value, i == 4 ? "" : "-");
+                if (!string.IsNullOrEmpty(match.Groups[5].Value))
+                    sb.AppendFormat(";ext={0}", match.Groups[5].Value);
+
+                return sb.ToString();
+            }
         }
 
         /// <summary>
