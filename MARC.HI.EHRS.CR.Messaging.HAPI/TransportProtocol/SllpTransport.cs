@@ -412,16 +412,27 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     finally
                     {
                         // Send the response back
-                        StreamWriter writer = new StreamWriter(stream);
-                        stream.Write(new byte[] { START_TX }, 0, 1); // header
-                        if (messageArgs != null && messageArgs.Response != null)
+                        using (MemoryStream memoryWriter = new MemoryStream())
                         {
-                            // Since nHAPI only emits a string we just send that along the stream
-                            writer.Write(parser.Encode(messageArgs.Response));
-                            writer.Flush();
+                            using (StreamWriter streamWriter = new StreamWriter(memoryWriter))
+                            {
+                                memoryWriter.Write(new byte[] { START_TX }, 0, 1); // header
+                                if (messageArgs != null && messageArgs.Response != null)
+                                {
+                                    var strMessage = parser.Encode(messageArgs.Response);
+#if DEBUG
+                                    Trace.TraceInformation("Sending message to llp://{0} : {1}", tcpClient.Client.RemoteEndPoint, strMessage);
+#endif
+                                    // Since nHAPI only emits a string we just send that along the stream
+                                    streamWriter.Write(strMessage);
+                                    streamWriter.Flush();
+                                }
+                                memoryWriter.Write(new byte[] { END_TX, END_TXNL }, 0, 2); // Finish the stream with FSCR
+                                stream.Write(memoryWriter.ToArray(), 0, (int)memoryWriter.Position);
+                                stream.Flush();
+                            }
                         }
-                        stream.Write(new byte[] { END_TX, END_TXNL }, 0, 2); // Finish the stream with FSCR
-                        stream.Flush();
+
                         lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                     }
                 }

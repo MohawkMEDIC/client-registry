@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test</RootNamespace>
+    <AssemblyName>MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MARC.HI.EHRS.SVC.Core">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel">
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="NHapi.Base">
+      <HintPath>..\Solution Items\NHapi.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="NHapi.Model.V231">
+      <HintPath>..\Solution Items\NHapi.Model.V231.dll</HintPath>
+    </Reference>
+    <Reference Include="NHapi.Model.V25">
+      <HintPath>..\Solution Items\NHapi.Model.V25.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseHostContextTest.cs" />
+    <Compile Include="OHIE\CR01.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestConfigurationService.cs" />
+    <Compile Include="Util\ResourceUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\OHIE-CR-01-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-02-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-02-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-02-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-02-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-03-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-03-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-04-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-04-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-05-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-05-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-05-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-06-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-06-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-06-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-07-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-07-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-07-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-07-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-08-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-08-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-09-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-09-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-09-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-09-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-10-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-10-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-10-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-10-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-50.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-60.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-11-70.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-45.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-50.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-60.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-12-70.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-13-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-13-15.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-13-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-13-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-14-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-14-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-14-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-14-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-14-50.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-50.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-15-60.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-10.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-15.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-50.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-16-60.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-15.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-20.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-25.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-30.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-40.txt" />
+    <EmbeddedResource Include="Resources\OHIE-CR-17-50.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Messaging.HAPI\MARC.HI.EHRS.CR.Messaging.HL7.csproj">
+      <Project>{257710CF-713E-4534-B562-DB25CDBADD79}</Project>
+      <Name>MARC.HI.EHRS.CR.Messaging.HL7</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Messaging.PixPdqv2\MARC.HI.EHRS.CR.Messaging.PixPdqv2.csproj">
+      <Project>{89CA50BC-141F-4216-818F-6A6DA76BF745}</Project>
+      <Name>MARC.HI.EHRS.CR.Messaging.PixPdqv2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Persistence.Data\MARC.HI.EHRS.CR.Persistence.Data.csproj">
+      <Project>{6C5C870F-0C4F-403D-87E0-7EA798F772D6}</Project>
+      <Name>MARC.HI.EHRS.CR.Persistence.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

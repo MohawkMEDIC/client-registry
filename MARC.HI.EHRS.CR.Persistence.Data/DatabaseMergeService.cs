@@ -125,8 +125,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             IDbTransaction tx = null;
             try
             {
-                
-                    
+                                  
                 // Update container
                 var vid = persistenceService.UpdateContainer(mergeRegistrationEvent, DataPersistenceMode.Production);
 

@@ -29,6 +29,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using NHapi.Base.validation.impl;
 using NHapi.Base.Parser;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -198,23 +199,30 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             int ec = 0;
             foreach (var dtl in errors)
             {
-                ISegment errSeg;
-                if(ack.Version == "2.5")
-                    errSeg = terser.getSegment(String.Format("/ERR({0})", ec++));
-                else
-                    errSeg = terser.getSegment(String.Format("/ERR", ec++));
+                try
+                {
+                    ISegment errSeg;
+                    if (ack.Version == "2.5")
+                        errSeg = terser.getSegment(String.Format("/ERR({0})", ec++));
+                    else
+                        errSeg = terser.getSegment(String.Format("/ERR", ec++));
 
-                if (errSeg is NHapi.Model.V231.Segment.ERR)
-                {
-                    var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V231.Segment.ERR, dtl, context);
-                    if (tErr > errLevel)
-                        errLevel = tErr;
+                    if (errSeg is NHapi.Model.V231.Segment.ERR)
+                    {
+                        var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V231.Segment.ERR, dtl, context);
+                        if (tErr > errLevel)
+                            errLevel = tErr;
+                    }
+                    else if (errSeg is NHapi.Model.V25.Segment.ERR)
+                    {
+                        var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V25.Segment.ERR, dtl, context);
+                        if (tErr > errLevel)
+                            errLevel = tErr;
+                    }
                 }
-                else if (errSeg is NHapi.Model.V25.Segment.ERR)
+                catch (Exception e)
                 {
-                    var tErr = MessageUtil.UpdateERR(errSeg as NHapi.Model.V25.Segment.ERR, dtl, context);
-                    if (tErr > errLevel)
-                        errLevel = tErr;
+                    Trace.TraceError(e.ToString());
                 }
             }
 
