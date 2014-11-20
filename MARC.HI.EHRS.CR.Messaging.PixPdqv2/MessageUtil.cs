@@ -51,6 +51,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 StringBuilder sb = new StringBuilder("tel:");
                 if (v2XTN.CountryCode.Value != null)
                     sb.AppendFormat("{0}-", v2XTN.CountryCode);
+                if (!v2XTN.PhoneNumber.Value.Contains("-"))
+                    v2XTN.PhoneNumber.Value = v2XTN.PhoneNumber.Value.Insert(3, "-");
                 sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
                 if (v2XTN.Extension.Value != null)
                     sb.AppendFormat(";ext={0}", v2XTN.Extension);
@@ -466,7 +468,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     sb.Append(comps[i]);
                     instance.CountryCode.Value = comps[i];
                 }
-                else if (sb.Length == 0 && comps.Length == 3 ||
+                else if (sb.Length == 0 && comps.Length <= 3 ||
                     comps.Length == 4 && i == 1) // area code?
                 {
                     sb.AppendFormat("({0})", comps[i]);
@@ -475,7 +477,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 else if (i != comps.Length - 1)
                 {
                     sb.AppendFormat("{0}-", comps[i]);
-                    phone.AppendFormat("{0}-", comps[i]);
+                    phone.AppendFormat("{0}", comps[i]);
                 }
                 else
                 {

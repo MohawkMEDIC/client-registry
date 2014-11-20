@@ -33,10 +33,38 @@
   </xs:simpleType>
   <xs:simpleType name="ActorType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="PAT_IDENTITY_X_REF_MGR"/>
+      <xs:enumeration value="PAT_IDENTITY_X_REF_MGR_HL7v3"/>
+      <xs:enumeration value="PAT_IDENTITY_SRC_HL7v3"/>
       <xs:enumeration value="PAT_IDENTITY_SRC"/>
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="storePointer">
+    <xs:attribute name="storeLocation" type="storeLocation"/>
+    <xs:attribute name="storeName" type="storeName"/>
+    <xs:attribute name="findType" type="findType"/>
+    <xs:attribute name="findValue" type="xs:string"/>
+    
+  </xs:complexType>
+  <xs:simpleType name="storeLocation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CurrentUser"/>
+      <xs:enumeration value="LocalMachine"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="storeName">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="My"/>
+      <xs:enumeration value="Root"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="findType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FindByThumbprint"/>
+      <xs:enumeration value="FindBySubjectDistinguishedName"/>
+      <xs:enumeration value="FindBySubjectName"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
   <xs:element name="marc.hi.ehrs.cr.notification.pixpdq">
     <xs:complexType>
       <xs:sequence>
@@ -46,6 +74,8 @@
               <xs:element name="add" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
+                    <xs:element maxOccurs="1" minOccurs="0" name="trustedIssuerCertificate" type="storePointer"/>
+                    <xs:element maxOccurs="1" minOccurs="0" name="clientCertificate" type="storePointer"/>
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="notify">
                       <xs:complexType>
                         <xs:sequence>
@@ -62,6 +92,7 @@
                   <xs:attribute name="connectionString" type="xs:string" use="required" />
                   <xs:attribute name="name" type="xs:string" use="required" />
                   <xs:attribute name="myActor" type="ActorType" use="required"/>
+                  <xs:attribute name="deviceId" type="xs:string" use="required"/>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>

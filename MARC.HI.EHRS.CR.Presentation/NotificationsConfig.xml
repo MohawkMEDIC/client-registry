@@ -1,0 +1,18 @@
+﻿<marc.hi.ehrs.cr.notification.pixpdq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file://./Configuration/marc.hi.ehrs.cr.notification.pixpdq.xsd">
+  <targets>
+    <add connectionString="llp://192.168.1.120:3602" deviceId="OPENXDS|ALLSCRIPTS" name="OpenXDS" myActor="PAT_IDENTITY_SRC">
+      <notify domain="1.2.103.430.203.102.403.0">
+        <action type="Any"/>
+      </notify>
+    </add>
+    <add connectionString="llp://127.0.0.1:9100" deviceId="TS_SCE" name="MARC-HI XDS Registry" myActor="PAT_IDENTITY_SRC">
+    
+      <!-- NB: this is for testing only, change this to match the affinity domain of the XDS repository -->
+      <!--<trustedIssuerCertificate storeLocation="My" storeName="Root" x509FindType="FindByThumbprint" findValue=""/>
+        <clientLLPCertificate storeLocation="My" storeName="Root" x509FindType="FindByThumbprint" findValue=""/>-->
+      <notify domain="1.2.103.430.203.102.403.0">
+        <action type="Any"/>
+      </notify>
+    </add>
+  </targets>
+</marc.hi.ehrs.cr.notification.pixpdq>

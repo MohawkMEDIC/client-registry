@@ -299,7 +299,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Get the PID qualifier
             var pid = qpd.GetField(3, 0) as NHapi.Base.Model.Varies;
-            if (pid == null)
+            if (pid == null || pid.Data == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE05F"), "QPD^3"));
             else
             {
@@ -757,6 +757,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
+            
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
 
@@ -764,8 +765,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
             else
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
-            
-            Person subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
+
+            Person subject = this.CreatePerson(pid, dtls, aaut);
+
+            // Add to subject
+            retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                return null;
+            return retVal;
+
+        }
+
+        /// <summary>
+        /// Creat the person
+        /// </summary>
+        private Person CreatePerson(NHapi.Model.V231.Segment.PID pid, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData aaut)
+        {
+            var subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
             subject.RoleCode = PersonRole.PAT;
             // TODO: Effective Time
 
@@ -779,7 +796,17 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // TODO: If the aaut matches a PID auth here then it is the primary
                 // and can be the only one that results in a create.
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
-                    subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+                {
+                    var cx = pid.GetPatientIdentifierList(i);
+                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI")
+                        subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+                    else
+                        subject.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
+                            new CodeValue() { CodeSystem = "1.3.6.1.4.1.33349.3.98.12", Code = cx.IdentifierTypeCode.Value },
+                            CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls)
+                        ));
+
+                }
             }
             else
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE063"), "PID^3"));
@@ -862,7 +889,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Business Home
             if (pid.PhoneNumberBusinessRepetitionsUsed > 0)
             {
-                if(subject.TelecomAddresses == null)
+                if (subject.TelecomAddresses == null)
                     subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberBusiness())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
@@ -895,7 +922,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Marital Status
             if (!String.IsNullOrEmpty(pid.MaritalStatus.Identifier.Value))
                 subject.MaritalStatus = CreateCodeValue(pid.MaritalStatus, dtls);
-            
+
             // Religion
             if (!String.IsNullOrEmpty(pid.Religion.Identifier.Value))
                 subject.ReligionCode = CreateCodeValue(pid.Religion, dtls);
@@ -941,13 +968,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             this.MarkScopedId(subject, aaut, dtls);
 
-            // Add to subject
-            retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-
-            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return null;
-            return retVal;
-
+            return subject;
         }
 
         /// <summary>
@@ -1087,11 +1108,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                 else
                 {
-                    retVal.AssigningAuthority = aaut.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
-                    retVal.Domain = aaut.Oid;
+                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value == "true"))
+                        dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
+                    else
+                    {
+                        retVal.AssigningAuthority = aaut.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
+                        retVal.Domain = aaut.Oid;
+                    }
                 }
             }
             return retVal;
+        }
+
+        /// <summary>
+        /// Create components
+        /// </summary>
+        internal RegistrationEvent CreateComponents(NHapi.Model.V231.Message.ADT_A40 request, List<IResultDetail> dtls)
+        {
+            throw new NotImplementedException();
         }
     }
 }

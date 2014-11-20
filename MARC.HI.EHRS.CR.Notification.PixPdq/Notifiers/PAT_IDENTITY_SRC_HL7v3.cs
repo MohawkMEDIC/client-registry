@@ -149,5 +149,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Notifiers
         }
 
         #endregion
+
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        public void Initialize()
+        {
+            Trace.TraceInformation("Initializing PAT_IDENTITY_SRC_HL7v3 for {0}", this.Target.Name);
+        }
     }
 }

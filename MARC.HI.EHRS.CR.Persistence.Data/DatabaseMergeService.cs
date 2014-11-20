@@ -201,12 +201,26 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 MatchStrength = MatchStrength.Exact
             };
 
-            var patientQuery = new RegistrationEvent();
-            patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
-            patientQuery.Add(new Person() { AlternateIdentifiers = subject.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
-            // Perform the query
-            pid = registrationService.QueryRecord(patientQuery);
-            return pid;
+            var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            List<VersionedDomainIdentifier> conflictIds = new List<VersionedDomainIdentifier>();
+            foreach (var id in subject.AlternateIdentifiers)
+            {
+                var data = config.OidRegistrar.FindData(id.Domain);
+                if (data == null || !data.Attributes.Exists(a => a.Key == "IsUnique" && Convert.ToBoolean(a.Value)))
+                    continue;
+                var patientQuery = new RegistrationEvent();
+                patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                patientQuery.Add(new Person() { AlternateIdentifiers = new List<DomainIdentifier>() { id }}, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                // Perform the query
+                pid = registrationService.QueryRecord(patientQuery);
+                foreach (var result in pid)
+                {
+                    if (!conflictIds.Exists(o => o.Identifier.ToString() == result.Identifier))
+                        conflictIds.Add(result);
+                }
+            }
+            return conflictIds.ToArray();
 
         }
 

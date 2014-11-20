@@ -236,7 +236,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 foreach (var c in store.Certificates)
                     Trace.TraceInformation("\t{0} : {1}", c.Thumbprint, c.Subject);
 #endif
-                var cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, true);
+                var cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, false);
                 if (cert.Count == 0)
                     throw new InvalidOperationException("Could not find certificate");
                 return cert[0];

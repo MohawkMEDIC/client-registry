@@ -394,7 +394,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         tx.Rollback();
 
                   
-
                     return retVal;
                 }
                 catch (Exception e)

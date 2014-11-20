@@ -147,5 +147,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         }
 
         #endregion
+
+        /// <summary>
+        /// Initialize the notifier
+        /// </summary>
+        public void Initialize()
+        {
+            Trace.TraceInformation("Initializing PAT_ID_X_REF_MGR_HL7v3 for {0}", this.Target.Name);
+        }
     }
 }

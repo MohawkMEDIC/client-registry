@@ -1456,9 +1456,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             var re = new PersonRegistrationRef()
                             {
                                 AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id, dtls)
+                                
                             };
                             subjectOf.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
-                            //(re.Site as HealthServiceRecordSite).IsSymbolic = true;
+                            (re.Site as HealthServiceRecordSite).IsSymbolic = true;
                         }
 
                     }

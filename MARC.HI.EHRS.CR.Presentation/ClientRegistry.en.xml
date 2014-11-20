@@ -185,10 +185,11 @@
   <string name="HL7901">Unknown sender</string>
   <!-- Notification Strings -->
   <string name="NTFE001">NTFE001 : Cannot find subject for notification</string>
-  <string name="NTFW002">NTFW001 : Couldn't send the request to {0}</string>
-  <string name="NTFW003">NTFW001 : Couldn't process the result from {0}</string>
-  <string name="NTFW004">NTFW001 : Negative ACK received from {0}</string>
-  
+  <string name="NTFW002">NTFW002 : Couldn't send the request to {0}</string>
+  <string name="NTFW003">NTFW003 : Couldn't process the result from {0}</string>
+  <string name="NTFW004">NTFW004 : Negative ACK received from {0}</string>
+  <string name="NTFW005">NTFW005 : Message will be queued for resend</string>
+  <string name="NTFW006">NTFW006 : Message has exceeded fail count, giving up</string>
   <!-- FHIR -->
   <string name="FHIR001">First Page</string>
   <string name="FHIR002">Previous</string>

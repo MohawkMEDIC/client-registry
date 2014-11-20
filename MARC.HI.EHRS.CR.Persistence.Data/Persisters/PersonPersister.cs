@@ -1469,7 +1469,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else if (cmp is PersonalRelationship)
                 {
                     var oldPsnRltnshp = cmp as PersonalRelationship;
-                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier))  || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1));
+                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)) || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName != null && (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1));
                     if (newPsnRltnshpMatch == null) // Need to copy?
                         newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
                     else if((newPsnRltnshpMatch as PersonalRelationship).Id == default(Decimal) )// HACK: Massage the IDs

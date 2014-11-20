@@ -1,0 +1,85 @@
+﻿<marc.hi.ehrs.svc.messaging.everest>
+
+  <revision messageIdFormat="{0}" validate="true" name="HL7v3 CA R02.04.02" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.CanadianDatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.CA.R020402, Version=1.0.3977.20430, Culture=neutral, PublicKeyToken=null">
+    <listen connectionString="servicename=pcs" type="MARC.Everest.Connectors.WCF.WcfServerConnector, MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd" mode="ListenWaitRespond"/>
+    <cacheTypes namespace="MARC.Everest.RMIM.CA.R020402.Interactions">
+      <add name="PRPA_IN101101CA"/>
+      <add name="PRPA_IN101102CA"/>
+      <add name="PRPA_IN101103CA"/>
+      <add name="PRPA_IN101104CA"/>
+      <add name="PRPA_IN101105CA"/>
+      <add name="PRPA_IN101106CA"/>
+      <add name="PRPA_IN101201CA"/>
+      <add name="PRPA_IN101202CA"/>
+      <add name="PRPA_IN101203CA"/>
+      <add name="PRPA_IN101204CA"/>
+      <add name="PRPA_IN101205CA"/>
+      <add name="PRPA_IN101206CA"/>
+    </cacheTypes>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA.NotSupportedMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="*"/>
+    </handler>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA.ContinueQueryMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="QUQI_IN000003CA"/>
+    </handler>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA.ClientRegistryMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="PRPA_IN101101CA" disclosure="true"/>
+      <interactionId name="PRPA_IN101103CA" disclosure="true"/>
+      <interactionId name="PRPA_IN101105CA" disclosure="true"/>
+      <interactionId name="PRPA_IN101201CA"/>
+      <interactionId name="PRPA_IN101204CA"/>
+    </handler>
+  </revision>
+  <revision messageIdFormat="{0}^^^&amp;{1}&amp;ISO" validate="true" name="HL7v3 UV NE2008 PIX Manager" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.DatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.UV.NE2008, Version=1.0.4432.17804, Culture=neutral, PublicKeyToken=null">
+    <listen connectionString="servicename=pix" type="MARC.Everest.Connectors.WCF.WcfServerConnector, MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd" mode="ListenWaitRespond"/>
+    <cacheTypes namespace="MARC.Everest.RMIM.UV.NE2008.Interactions">
+      <add name="PRPA_IN201301UV02"/>
+      <add name="PRPA_IN201302UV02"/>
+      <add name="PRPA_IN201304UV02"/>
+      <add name="PRPA_IN201309UV02"/>
+      <add name="PRPA_IN201310UV02"/>
+    </cacheTypes>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.NotSupportedMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="*"/>
+    </handler>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.PixManager, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="PRPA_IN201301UV02">
+        <responseHeaders>
+          <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:MCCI_IN000002UV01</wsa:Action>
+        </responseHeaders>
+      </interactionId>
+      <interactionId name="PRPA_IN201302UV02">
+        <responseHeaders>
+          <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:MCCI_IN000002UV01</wsa:Action>
+        </responseHeaders>
+      </interactionId>
+      <interactionId name="PRPA_IN201304UV02">
+        <responseHeaders>
+          <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:MCCI_IN000002UV01</wsa:Action>
+        </responseHeaders>
+      </interactionId>
+      <interactionId name="PRPA_IN201309UV02" disclosure="true">
+        <responseHeaders>
+          <wsa:Action xmlns:wsa="http://www.w3.org/2005/08/addressing">urn:hl7-org:v3:PRPA_IN201310UV02</wsa:Action>
+        </responseHeaders>
+      </interactionId>
+    </handler>
+  </revision>
+  <revision messageIdFormat="{0}^^^&amp;{1}&amp;ISO" validate="true" name="HL7v3 UV NE2008 PDQ Supplier" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.DatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.UV.NE2008, Version=1.0.4432.17804, Culture=neutral, PublicKeyToken=null">
+    <listen connectionString="servicename=pdq" type="MARC.Everest.Connectors.WCF.WcfServerConnector, MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd" mode="ListenWaitRespond"/>
+    <cacheTypes namespace="MARC.Everest.RMIM.UV.NE2008.Interactions">
+      <add name="PRPA_IN201305UV02"/>
+      <add name="QUQI_IN000003UV01"/>
+    </cacheTypes>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.NotSupportedMessageReceiver, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="*"/>
+    </handler>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.PdqSupplier, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="PRPA_IN201305UV02" disclosure="true"/>
+    </handler>
+    <handler type="MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV.QueryManager, MARC.HI.EHRS.CR.Messaging.Everest, Version=1.0.0.0">
+      <interactionId name="QUQI_IN000003UV01" disclosure="true"/>
+    </handler>
+  </revision>
+
+</marc.hi.ehrs.svc.messaging.everest>

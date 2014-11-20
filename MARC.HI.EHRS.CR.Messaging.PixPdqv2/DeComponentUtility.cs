@@ -73,6 +73,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var retVal = new NHapi.Model.V25.Message.RSP_K23();
 
             retVal.MSH.MessageType.MessageStructure.Value = "RSP_K23";
+            retVal.MSH.MessageType.TriggerEvent.Value = "K23";
 
             var qak = retVal.QAK;
             var msa = retVal.MSA;
@@ -117,6 +118,33 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
                 UpdateCX(altId, id);
+            }
+
+            // Other identifiers
+            foreach (var othId in subject.OtherIdentifiers)
+            {
+                var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
+                UpdateCX(othId.Value, id);
+
+                // Correct v3 codes
+                if (othId.Key.CodeSystem == "1.3.6.1.4.1.33349.3.98.12")
+                    id.IdentifierTypeCode.Value = othId.Key.Code;
+                else if (othId.Key.CodeSystem == "2.16.840.1.113883.2.20.3.85")
+                    switch (othId.Key.Code)
+                    {
+                        case "SIN":
+                            id.IdentifierTypeCode.Value = "SS";
+                            break;
+                        case "DL":
+                            id.IdentifierTypeCode.Value = othId.Key.Code;
+                            break;
+                        default:
+                            id.IdentifierTypeCode.Value = null;
+                            break;
+                    }
+                else
+                    id.IdentifierTypeCode.Value = null;
+
             }
 
             // IHE: This first repetition should be null
@@ -310,8 +338,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var oidData = this.m_config.OidRegistrar.FindData(altId.Domain);
             cx.AssigningAuthority.UniversalID.Value = altId.Domain ?? (oidData == null ? null :  oidData.Oid);
             cx.AssigningAuthority.UniversalIDType.Value = "ISO";
-            cx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority ?? (oidData == null ? null : oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value);
+            cx.AssigningAuthority.NamespaceID.Value = oidData == null ? altId.AssigningAuthority : oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value;
             cx.IDNumber.Value = altId.Identifier;
+
+            if (cx.AssigningAuthority.UniversalID.Value == this.m_config.OidRegistrar.GetOid("CR_CID").Oid) // AA
+                cx.IdentifierTypeCode.Value = "PI";
+            else
+                cx.IdentifierTypeCode.Value = "PT";
         }
 
         /// <summary>

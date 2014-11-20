@@ -255,6 +255,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             //    if (notificationService != null)
             //        notificationService.NotifyDuplicatesResolved(cntrPsn, refr.AlternateIdentifiers[0]);
             //}
+            refr.Id = psn.Id;
+            
 
             // Person identifier
             return new SVC.Core.DataTypes.VersionedDomainIdentifier()

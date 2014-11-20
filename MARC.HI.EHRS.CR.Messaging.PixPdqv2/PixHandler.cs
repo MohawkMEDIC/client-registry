@@ -84,6 +84,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             else
                                 response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
                             break;
+                        case "A40":
+                            if (e.Message is NHapi.Model.V231.Message.ADT_A40)
+                                response = HandlePixMerge(e.Message as NHapi.Model.V231.Message.ADT_A40, e);
+                            else
+                                response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+                            break;
                         default:
                             response = MessageUtil.CreateNack(e.Message, "AR", "201", locale.GetString("HL7201"), config);
                             Trace.TraceError("{0} is not a supported trigger", trigger);
@@ -101,6 +107,91 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 response = MessageUtil.CreateNack(e.Message, "AR", "207", ex.Message, config);
             }
 
+            return response;
+        }
+
+        /// <summary>
+        /// Handle the PIX merge request
+        /// </summary>
+        private IMessage HandlePixMerge(NHapi.Model.V231.Message.ADT_A40 request, Hl7MessageReceivedEventArgs evt)
+        {
+            // Get config
+            var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Create a details array
+            List<IResultDetail> dtls = new List<IResultDetail>();
+
+            // Validate the inbound message
+            MessageUtil.Validate((IMessage)request, config, dtls, this.Context);
+
+            IMessage response = null;
+
+            // Control 
+            if (request == null)
+                return null;
+
+            // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            // Construct appropriate audit
+            List<AuditData> audit = new List<AuditData>();
+            try
+            {
+
+                // Create Query Data
+                ComponentUtility cu = new ComponentUtility() { Context = this.Context };
+                DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
+                var data = cu.CreateComponents(request, dtls);
+                if (data == null)
+                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+
+                var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+
+                if (vid == null)
+                    throw new InvalidOperationException(locale.GetString("DTPE001"));
+
+                List<VersionedDomainIdentifier> deletedRecordIds = new List<VersionedDomainIdentifier>(),
+                    updatedRecordIds = new List<VersionedDomainIdentifier>();
+
+                // Subjects
+                var oidData = config.OidRegistrar.GetOid("CR_CID").Oid;
+                foreach (Person subj in data.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf))
+                {
+                    PersonRegistrationRef replcd = subj.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ReplacementOf) as PersonRegistrationRef;
+                    deletedRecordIds.Add(new VersionedDomainIdentifier() { 
+                        Identifier = replcd.Id.ToString(),
+                        Domain = oidData
+                    });
+                    updatedRecordIds.Add(new VersionedDomainIdentifier() {
+                        Identifier = subj.Id.ToString(),
+                        Domain = oidData
+                    });
+                }
+
+                // Now audit
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.Success, evt, deletedRecordIds));
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Update, OutcomeIndicator.Success, evt, updatedRecordIds));
+                // Now process the result
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
+                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.TriggerEvent.Value = request.MSH.MessageType.TriggerEvent.Value;
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.MessageType.Value = "ACK";
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError(e.ToString());
+                if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty));
+            }
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    foreach(var aud in audit) 
+                        auditSvc.SendAudit(aud);
+            }
             return response;
         }
 

@@ -92,6 +92,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             string sourceData = String.Format("{0}|{1}", terser.Get("/MSH-3"), terser.Get("/MSH-4")),
                 destData = String.Format("{0}|{1}",terser.Get("/MSH-5"), terser.Get("/MSH-6"));
 
+
             switch (itiName)
             {
                 case "ITI-21":
@@ -206,9 +207,26 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var expDatOid = config.OidRegistrar.GetOid("CR_CID");
 
+            // HACK: Use only patient identifiers in the output
+            foreach (var id in identifiers.Where(o => o.Domain != expDatOid.Oid).ToArray())
+            {
+                RegistrationEvent evt = this.GetRecord(id, new List<IResultDetail>(), new QueryData());
+                if (evt != null)
+                {
+                    identifiers.Remove(id);
+                    foreach (Person subj in evt.FindAllComponents(HealthServiceRecordSiteRoleType.SubjectOf))
+                        identifiers.Add(new VersionedDomainIdentifier()
+                        {
+                            Identifier = subj.Id.ToString(),
+                            Domain = expDatOid.Oid
+                        });
+                }
+            }
+
             // Audit patients
             foreach (var id in identifiers)
             {
+                // If the id is not a patient then
                 // Construct the audit object
                 AuditableObject aud = new AuditableObject()
                 {
@@ -503,7 +521,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         return null;
                 }
 
-                if (subject != null)
+                if (subject != null && qd.QueryRequest != null)
                 {
                     var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf);
                     if (filter != null)
