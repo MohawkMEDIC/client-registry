@@ -468,6 +468,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                     break;
 
                                 }
+                            case "_format":
+                                break;
                             default:
                                 if (retVal.ActualParameters.Get(parameters.GetKey(i)) == null)
                                     dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Warning, String.Format("{0} is not a supported query parameter", parameters.GetKey(i)), null));

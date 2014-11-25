@@ -190,6 +190,7 @@
     </Content>
     <Content Include="ServiceCoreConfig.ConnectAThon.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="ServiceCoreConfig.IntegrationTests.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

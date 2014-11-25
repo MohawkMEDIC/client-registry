@@ -118,7 +118,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
 
 
@@ -157,7 +158,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
 
 
@@ -197,7 +199,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
 
 
@@ -236,7 +239,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         UserIsRequestor = false,
                         ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                         NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                        NetworkAccessPointId = Dns.GetHostName()
+                        NetworkAccessPointId = Dns.GetHostName(),
+                        AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                     });
                     break;
                 case "ITI-45":
@@ -261,7 +265,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
 
                         // Add query 
@@ -301,7 +306,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
 
                         // Add query 

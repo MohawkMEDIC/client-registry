@@ -97,7 +97,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 case "ITI-21":
                     {
-                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.Query, new CodeValue(itiName, "IHE Transactions"));
+                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.Query, new CodeValue(itiName, "IHE Transactions") { DisplayName = "Patient Demographics Query" });
 
                         // Audit actor for Patient Identity Source
                         retVal.Actors.Add(new AuditActorData()
@@ -121,7 +121,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                 QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                                 Type = AuditableObjectType.SystemObject,
                                 Role = AuditableObjectRole.Query,
-                                ObjectId = terser.Get("/QPD-2")
+                                ObjectId = terser.Get("/QPD-2"),
+                                ObjectData = new Dictionary<string, byte[]>()
+                                {
+                                    { "MSH-10", System.Text.Encoding.ASCII.GetBytes(terser.Get("/MSH-10"))}
+                                }
                             }
                         );
 
@@ -132,13 +136,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
                         break;
                     }
                 case "ITI-8":
                     {
-                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "IHE Transactions"));
+                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "IHE Transactions") { DisplayName = "Patient Identity Feed" });
 
                         // Audit actor for Patient Identity Source
                         retVal.Actors.Add(new AuditActorData()
@@ -159,13 +164,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
                         break;
                     }
                 case "ITI-9":
                     {
-                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.Query, new CodeValue(itiName, "IHE Transactions"));
+                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.Query, new CodeValue(itiName, "IHE Transactions") { DisplayName = "PIX Query" } );
 
                         // Audit actor for Patient Identity Source
                         retVal.Actors.Add(new AuditActorData()
@@ -188,7 +194,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                 QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                                 Type = AuditableObjectType.SystemObject,
                                 Role = AuditableObjectRole.Query,
-                                ObjectId = terser.Get("/QPD-2")
+                                ObjectId = terser.Get("/QPD-2"),
+                                ObjectData = new Dictionary<string, byte[]>()
+                                {
+                                    { "MSH-10", System.Text.Encoding.ASCII.GetBytes(terser.Get("/MSH-10"))}
+                                }
+
                             }
                         );
 
@@ -199,7 +210,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             UserIsRequestor = false,
                             ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
                             NetworkAccessPointType = NetworkAccessPointType.MachineName,
-                            NetworkAccessPointId = Dns.GetHostName()
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
                         });
                         break;
                     }
@@ -255,6 +267,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         break;
                 }
 
+                aud.ObjectData.Add("MSH-10", System.Text.Encoding.ASCII.GetBytes(terser.Get("/MSH-10")));
                 aud.ObjectId = String.Format("{1}^^^{2}&{0}&ISO", expDatOid.Oid, id.Identifier, expDatOid.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value);
                 retVal.AuditableObjects.Add(aud);
             }

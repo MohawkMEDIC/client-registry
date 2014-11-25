@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <marc.hi.ehrs.svc.core>
   <system>
-    <device id="1.3.6.1.4.1.33349.3.1.1.2" name="PAT_IDENTITY_X_REF_MGR_MISYS"/>
+    <device id="1.3.6.1.4.1.33349.3.1.1.2" name="PIX_MGR_OpenHIE_CR_MCAAT"/>
   </system>
   <!-- Custodial information for records -->
   <custodianship>
-    <name>MARC-HI Client Registry</name>
+    <name>OPENHIE</name>
     <!-- Identifies the domain under which identifiers are reported from this registry -->
     <id domain="1.3.6.1.4.1.33349.3.1.2.2.0" value="CR1"/>
   </custodianship>
   <!-- Realm that the persistence engine is running within -->
   <jurisdiction>
-    <name>ALLSCRIPTS</name>
+    <name>OPENHIE</name>
     <id domain="1.3.6.1.4.1.33349.3.1" value="HI"/>
     <!-- The next three lines identify the realm (roots) that should be
       returned in messages when communicating with external entities-->

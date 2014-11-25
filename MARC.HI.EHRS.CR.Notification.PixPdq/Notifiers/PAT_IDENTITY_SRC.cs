@@ -274,6 +274,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         }
                     if (psn.LegalName != null)
                         UpdateXPN(psn.LegalName, pid.GetMotherSMaidenName(0));
+                    break;
                 }
 
             // Telecom addresses

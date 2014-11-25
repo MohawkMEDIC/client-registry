@@ -226,7 +226,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         clientId = rdr["src_psn_id"].ToString();
                     }
                 }
-
                 // First, de-persist the client portions
                 var clientDataRetVal = new PersonPersister().GetPerson(conn, null, new DomainIdentifier()
                 {
@@ -236,6 +235,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 if (clientDataRetVal.Names != null)
                     retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
+                retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o=>o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid));
+
                 retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
             }
@@ -256,9 +257,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Subject relative
             Person subjectRelative = new Person()
             {
-                RoleCode = PersonRole.PRS | PersonRole.PAT,
-                Names = new List<NameSet>() { prs.LegalName }
+                RoleCode = PersonRole.PRS | PersonRole.PAT
             };
+
+            if (prs.LegalName != null)
+                subjectRelative.Names = new List<NameSet>() { prs.LegalName };
+            if (prs.AlternateIdentifiers != null && prs.AlternateIdentifiers.Count > 0)
+                subjectRelative.AlternateIdentifiers = new List<DomainIdentifier>(prs.AlternateIdentifiers);
 
             PersonPersister prsp = new PersonPersister();
             var filterString = prsp.BuildFilter(subjectRelative, forceExact);
