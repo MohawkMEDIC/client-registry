@@ -188,6 +188,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> FindIdConflicts(RegistrationEvent registration)
         {
+            
             var registrationService = this.Context.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
             VersionedDomainIdentifier[] pid = null;
 
@@ -207,7 +208,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             foreach (var id in subject.AlternateIdentifiers)
             {
                 var data = config.OidRegistrar.FindData(id.Domain);
-                if (data == null || !data.Attributes.Exists(a => a.Key == "IsUnique" && Convert.ToBoolean(a.Value)))
+                if (data == null || !data.Attributes.Exists(a => a.Key == "IsUniqueIdentifier" && Convert.ToBoolean(a.Value)))
                     continue;
                 var patientQuery = new RegistrationEvent();
                 patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);

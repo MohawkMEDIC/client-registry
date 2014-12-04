@@ -449,8 +449,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                     }
                 }
-                catch 
-                { 
+                catch (Exception e)
+                {
+                    Trace.TraceError(e.ToString());
                     throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DBCF008"));
                 }
         }

@@ -31,6 +31,7 @@ using NHapi.Base.Util;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Text.RegularExpressions;
 using MARC.HI.EHRS.CR.Core;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -798,14 +799,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
                 {
                     var cx = pid.GetPatientIdentifierList(i);
-                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI")
+                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT")
+                    { 
+
+                        Trace.TraceInformation("Adding {0}^^^&{1}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.UniversalID.Value);
                         subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+                    }
                     else
+                    {
+                        if (subject.OtherIdentifiers == null)
+                            subject.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
                         subject.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                             new CodeValue() { CodeSystem = "1.3.6.1.4.1.33349.3.98.12", Code = cx.IdentifierTypeCode.Value },
                             CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls)
                         ));
-
+                    }
                 }
             }
             else

@@ -95,25 +95,25 @@
       <attribute name="AssigningAuthorityName" value="TEST"/>
       <attribute name="OIDType" value="ISO"/>
       <attribute name="AssigningDevFacility" value="TEST_HARNESS|TEST"/>
-      <attribute name="IsUnique" value="true"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
     </add>
     <add name="TEST_A" oid="2.16.840.1.113883.3.72.5.9.2" desc="OHIE Integration Tests Domain A">
       <attribute name="AssigningAuthorityName" value="TEST_A"/>
       <attribute name="OIDType" value="ISO"/>
       <attribute name="AssigningDevFacility" value="TEST_HARNESS_A|TEST"/>
-      <attribute name="IsUnique" value="true"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
     </add>
     <add name="TEST_B" oid="2.16.840.1.113883.3.72.5.9.3" desc="OHIE Integration Tests Domain B">
       <attribute name="AssigningAuthorityName" value="TEST_B"/>
       <attribute name="OIDType" value="ISO"/>
       <attribute name="AssigningDevFacility" value="TEST_HARNESS_B|TEST"/>
-      <attribute name="IsUnique" value="true"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
     </add>
     <add name="NID" oid="2.16.840.1.113883.3.72.5.9.9" desc="OHIE Integration National ID">
       <attribute name="AssigningAuthorityName" value="NID"/>
       <attribute name="OIDType" value="ISO"/>
       <attribute name="AssigningDevFacility" value="NID_AUTH|TEST"/>
-      <attribute name="IsUnique" value="true"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
     </add>
   </registeredOids>
   <serviceAssemblies>
