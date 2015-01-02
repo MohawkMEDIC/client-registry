@@ -11,11 +11,11 @@
           <message name="*"/>
         </handler>
       </service>-->
-    <service name="SLLP Listener" timeout="00:00:30" address="sllp://0.0.0.0:2200">
+    <!--<service name="SLLP Listener" timeout="00:00:30" address="sllp://0.0.0.0:2200">
         <attribute name="x509.cert" value="555A48A9DED421A8E1CF40CEDADD6732782850DF"/>
         <attribute name="x509.store" value="My"/>
-<!--        <attribute name="client.castore" value="Root"/>
-        <attribute name="client.cacert" value="8fde87cfea569e65a3c44ea2dcc1af3ca5bd12c1"/>-->
+--><!--        <attribute name="client.castore" value="Root"/>
+        <attribute name="client.cacert" value="8fde87cfea569e65a3c44ea2dcc1af3ca5bd12c1"/>--><!--
         <handler type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.PixHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
           <message name="QBP^Q23" isQuery="true"/>
           <message name="ADT^A01"/>
@@ -29,7 +29,7 @@
         <handler type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.NotSupportedHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
           <message name="*"/>
         </handler>
-      </service>
+      </service>-->
     <service name="LLP Listener" timeout="00:00:30" address="llp://0.0.0.0:2100">
       <handler type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.PixHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
         <message name="QBP^Q23" isQuery="true"/>

@@ -194,6 +194,7 @@
     </Content>
     <Content Include="ServiceCoreConfig.IntegrationTests.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="EverestConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

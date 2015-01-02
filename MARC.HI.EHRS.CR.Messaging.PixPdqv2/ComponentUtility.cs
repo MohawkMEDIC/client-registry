@@ -918,7 +918,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PrimaryLanguage.Identifier.Value))
             {
                 var langCd = CreateCodeValue(pid.PrimaryLanguage, dtls);
-                if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
+                if (langCd.CodeSystem == null)
+                    langCd.CodeSystem = this.m_config.OidRegistrar.GetOid("ISO639-1").Oid;
+                else if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
                 {
                     var termSvc = this.m_context.GetService(typeof(ITerminologyService)) as ITerminologyService;
                     langCd = termSvc.Translate(langCd, this.m_config.OidRegistrar.GetOid("ISO639-1").Oid);

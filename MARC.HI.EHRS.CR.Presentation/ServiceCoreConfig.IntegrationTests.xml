@@ -24,6 +24,7 @@
     <add value="TEST_HARNESS"/>
     <add value="TEST_HARNESS_A"/>
     <add value="TEST_HARNESS_B"/>
+    <add value="NID_AUTH"/>
   </registeredDevices>
   <registeredOids>
     <add name="ICD10" ref="http://hl7.org/fhir/sid/icd-10" oid="2.16.840.1.113883.6.3" desc="International Classification of Diseases version 10">

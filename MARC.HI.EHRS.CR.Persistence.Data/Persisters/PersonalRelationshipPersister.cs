@@ -235,7 +235,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 if (clientDataRetVal.Names != null)
                     retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
-                retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o=>o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid));
+
+                if(clientDataRetVal.RoleCode == PersonRole.PAT)
+                    retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o => o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid));
+                else
+                    retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o=>o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid));
 
                 retVal.Add(clientDataRetVal, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
