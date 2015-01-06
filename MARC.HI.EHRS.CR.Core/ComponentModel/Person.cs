@@ -42,7 +42,13 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         public Person()
         {
             this.RoleCode = PersonRole.PAT;
+            this.EthnicGroup = new List<CodeValue>();
         }
+
+        /// <summary>
+        /// Ethnic groups
+        /// </summary>
+        public List<CodeValue> EthnicGroup { get; set; }
 
         /// <summary>
         /// Calculates the similarity to another person
@@ -228,11 +234,11 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// Gets the birthplace of the person (shortcut to searching for a SDL with role BRTH)
         /// </summary>
         [XmlIgnore]
-        public ServiceDeliveryLocation BirthPlace
+        public Place BirthPlace
         {
             get
             {
-                return this.XmlComponents.Find(o => o.Site.Name == "BRTH") as ServiceDeliveryLocation;
+                return this.XmlComponents.Find(o => o.Site.Name == "BRTH") as Place;
             }
         }
 

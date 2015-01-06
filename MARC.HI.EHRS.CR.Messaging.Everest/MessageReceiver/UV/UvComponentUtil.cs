@@ -733,12 +733,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Didn't actually have a place for this so this will be an extension
             if (ident.EthnicGroupCode != null && !ident.EthnicGroupCode.IsNull)
                 foreach (var eth in ident.EthnicGroupCode)
-                    retVal.Add(new ExtendedAttribute()
-                    {
-                        Name = "EthnicGroupCode",
-                        PropertyPath = "",
-                        Value = CreateCodeValue(eth, dtls)
-                    });
+                    retVal.EthnicGroup.Add(this.CreateCodeValue(eth, dtls));
 
 
             // Marital Status Code
@@ -749,6 +744,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if (ident.ReligiousAffiliationCode != null && !ident.ReligiousAffiliationCode.IsNull)
                 retVal.ReligionCode = CreateCodeValue(ident.ReligiousAffiliationCode, dtls);
 
+            
             // Citizenship Code
             if (ident.AsCitizen.Count > 0)
             {
@@ -947,10 +943,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Create a birthplace
         /// </summary>
-        private ServiceDeliveryLocation CreateBirthplace(MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.Place place, List<IResultDetail> dtls)
+        private Place CreateBirthplace(MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.Place place, List<IResultDetail> dtls)
         {
-            var retVal = new ServiceDeliveryLocation();
-
+            var retVal = new Place();
+            
             // Place id
             if (place.Id != null && !place.Id.IsNull)
                 retVal.AlternateIdentifiers = CreateDomainIdentifierList(place.Id, dtls);

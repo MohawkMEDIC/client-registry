@@ -33,7 +33,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
-    public class ServiceDeliveryLocationPersister : IComponentPersister
+    public class PlacePersister : IComponentPersister
     {
         #region IComponentPersister Members
 
@@ -41,7 +41,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Gets the component type that this persister handles
         /// </summary>
-        public Type HandlesComponent { get { return typeof(ServiceDeliveryLocation); } }
+        public Type HandlesComponent { get { return typeof(Place); } }
 
         /// <summary>
         /// Persist the specified component to the database
@@ -52,14 +52,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             ISystemConfigurationService configServce = ApplicationContext.ConfigurationService; //ApplicationContext.Current.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // First, we must determine if we're going to be performing an update or a put
-            ServiceDeliveryLocation loc = data as ServiceDeliveryLocation;
+            Place loc = data as Place;
 
             // Do we have the shrid?
             if (loc.Id == default(decimal) && loc.AlternateIdentifiers.Count > 0) // nope
             {
                 // Attempt to get the SHRID
                 int iId = 0;
-                ServiceDeliveryLocation resLoc = null;
+                Place resLoc = null;
                 while (resLoc == null && iId < loc.AlternateIdentifiers.Count)
                 {
                     resLoc = GetLocation(conn, tx, loc.AlternateIdentifiers[iId]);
@@ -107,17 +107,17 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Update location
         /// </summary>
-        private void UpdateLocation(IDbConnection conn, IDbTransaction tx, ServiceDeliveryLocation loc)
+        private void UpdateLocation(IDbConnection conn, IDbTransaction tx, Place loc)
         {
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
             {
-                cmd.CommandText = "upd_sdl";
+                cmd.CommandText = "upd_plc";
 
                 // parameters
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, loc.Id));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_addr_set_id_in", DbType.Decimal, loc.Address == null ? DBNull.Value : (Object)DbUtil.CreateAddressSet(conn, tx, loc.Address)));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_typ_cd_id_in", DbType.Decimal, loc.LocationType == null ? DBNull.Value : (Object)DbUtil.CreateCodedValue(conn, tx, loc.LocationType)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.Decimal, loc.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_addr_set_id_in", DbType.Decimal, loc.Address == null ? DBNull.Value : (Object)DbUtil.CreateAddressSet(conn, tx, loc.Address)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_typ_cd_id_in", DbType.Decimal, loc.LocationType == null ? DBNull.Value : (Object)DbUtil.CreateCodedValue(conn, tx, loc.LocationType)));
 
                 // Execute
                 cmd.ExecuteNonQuery();
@@ -136,12 +136,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
             {
-                cmd.CommandText = "link_sdl";
+                cmd.CommandText = "link_plc";
 
                 // Parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "hsr_id_in", DbType.Decimal, hsrId));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, (loc.Component as ServiceDeliveryLocation).Id));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_cls_in", DbType.Decimal, (decimal)loc.SiteRoleType));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.Decimal, (loc.Component as Place).Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_cls_in", DbType.Decimal, (decimal)loc.SiteRoleType));
 
                 // Insert
                 cmd.ExecuteNonQuery();
@@ -161,10 +161,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             try
             {
-                cmd.CommandText = "crt_sdl_alt_id";
+                cmd.CommandText = "crt_plc_alt_id";
 
                 // parameters
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, identifier));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.Decimal, identifier));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_domain_in", DbType.StringFixedLength, altId.Domain));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "alt_id_in", DbType.StringFixedLength, (object)altId.Identifier ?? DBNull.Value));
 
@@ -180,21 +180,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Create a location 
         /// </summary>
-        private void CreateLocation(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, ServiceDeliveryLocation loc)
+        private void CreateLocation(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, Place loc)
         {
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
             {
-                cmd.CommandText = "crt_sdl";
+                cmd.CommandText = "crt_plc";
 
                 // Insert the code
                 decimal? codeId = loc.LocationType != null ? (decimal?)DbUtil.CreateCodedValue(conn, tx, loc.LocationType) : null,
                     addrSetId = loc.Address != null ? (decimal?)DbUtil.CreateAddressSet(conn, tx, loc.Address) : null;
 
                 // parameters
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_name_in", DbType.StringFixedLength, (object)loc.Name ?? DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_addr_set_id_in", DbType.Decimal, (object)addrSetId ?? DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_typ_cd_id_in", DbType.Decimal, (object)codeId ?? DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_name_in", DbType.StringFixedLength, (object)loc.Name ?? DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_cls_cs_in", DbType.StringFixedLength, ((object)loc.Class ?? DBNull.Value)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_addr_set_id_in", DbType.Decimal, (object)addrSetId ?? DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_typ_cd_id_in", DbType.Decimal, (object)codeId ?? DBNull.Value));
 
                 // Execute the parameter
                 loc.Id = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -217,7 +218,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <param name="tx"></param>
         /// <param name="domainIdentifier"></param>
         /// <returns></returns>
-        private ServiceDeliveryLocation GetLocation(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, DomainIdentifier domainIdentifier)
+        private Place GetLocation(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, DomainIdentifier domainIdentifier)
         {
             // Get configuration service
             ISystemConfigurationService config = ApplicationContext.ConfigurationService; //ApplicationContext.Current.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -230,14 +231,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Fetch the client data using shrid
                 if (String.IsNullOrEmpty(domainIdentifier.Domain) || domainIdentifier.Domain.Equals(config.OidRegistrar.GetOid(ClientRegistryOids.LOCATION_CRID).Oid))
                 {
-                    cmd.CommandText = "get_sdl";
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, Convert.ToDecimal(domainIdentifier.Identifier)));
+                    cmd.CommandText = "get_plc";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.Decimal, Convert.ToDecimal(domainIdentifier.Identifier)));
                 }
                 else // get using alt id
                 {
-                    cmd.CommandText = "get_sdl_extern";
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_domain_in", DbType.StringFixedLength, domainIdentifier.Domain));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.StringFixedLength, (object)domainIdentifier.Identifier ?? DBNull.Value));
+                    cmd.CommandText = "get_plc_extern";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_domain_in", DbType.StringFixedLength, domainIdentifier.Domain));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.StringFixedLength, (object)domainIdentifier.Identifier ?? DBNull.Value));
                 }
 
                 // Execute the reader
@@ -248,16 +249,17 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     return null;
 
                 // Parse data
-                ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
+                Place retVal = new Place();
                 decimal? codeTypeId = null, addrSetId = null;
                 try
                 {
-                    retVal.Id = Convert.ToDecimal(reader["sdl_id"]);
+                    retVal.Id = Convert.ToDecimal(reader["plc_id"]);
 
                     // Define set identifiers
-                    retVal.Name = reader["sdl_name"] == DBNull.Value ? null : Convert.ToString(reader["sdl_name"]);
-                    addrSetId = reader["sdl_addr_set_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["sdl_addr_set_id"]);
-                    codeTypeId = reader["sdl_typ_cd_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["sdl_typ_cd_id"]);
+                    retVal.Name = reader["plc_name"] == DBNull.Value ? null : Convert.ToString(reader["plc_name"]);
+                    retVal.Class = reader["plc_class"] == DBNull.Value ? null : Convert.ToString(reader["plc_cls_cs"]);
+                    addrSetId = reader["plc_addr_set_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["plc_addr_set_id"]);
+                    codeTypeId = reader["plc_typ_cd_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["plc_typ_cd_id"]);
                 }
                 finally
                 {
@@ -293,8 +295,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
             {
-                cmd.CommandText = "get_sdl_alt_id";
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "sdl_id_in", DbType.Decimal, sdlId));
+                cmd.CommandText = "get_plc_alt_id";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_id_in", DbType.Decimal, sdlId));
 
                 List<DomainIdentifier> retVal = new List<DomainIdentifier>();
 
@@ -327,7 +329,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         public System.ComponentModel.IComponent DePersist(System.Data.IDbConnection conn, decimal identifier, IContainer container, HealthServiceRecordSiteRoleType? roleType, bool loadFast)
         {
-            ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
+            Place retVal = new Place();
 
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, null);
             try

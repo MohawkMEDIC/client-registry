@@ -645,15 +645,50 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
 
             // TODO: Communication lanugage
+            foreach (var lang in resPatient.Language)
+            {
+                var termService = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
+
+                PersonLanguage pl = new PersonLanguage();
+
+                CodeValue languageCode = this.ConvertCode(lang, dtls);
+                // Default ISO 639-3
+                languageCode.CodeSystem = languageCode.CodeSystem ?? ApplicationContext.ConfigurationService.OidRegistrar.GetOid("ISO639-3").Oid;
+
+                // Validate the language code
+                if (languageCode.CodeSystem != ApplicationContext.ConfigurationService.OidRegistrar.GetOid("ISO639-3").Oid &&
+                    languageCode.CodeSystem != ApplicationContext.ConfigurationService.OidRegistrar.GetOid("ISO639-1").Oid)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE04B"), null));
+
+                // Translate the language code
+                if (languageCode.CodeSystem == ApplicationContext.ConfigurationService.OidRegistrar.GetOid("ISO639-3").Oid) // we need to translate
+                    languageCode = termService.Translate(languageCode, ApplicationContext.ConfigurationService.OidRegistrar.GetOid("ISO639-1").Oid);
+
+                if (languageCode == null)
+                    dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE04C"), null, null));
+                else
+                    pl.Language = languageCode.Code;
+
+                pl.Type = 0;
+
+                // Add
+                psn.Language.Add(pl);
+
+            }
 
             // Extensions
             foreach (var extension in resource.Extension)
             {
-                if (extension.Url == ExtensionUtil.GetExtensionNameUrl("mothersMaidenName"))
+                if (extension.Url == ExtensionUtil.GetExtensionNameUrl("ethnicGroup"))
+                {
+                    var ethnicGroup = extension.Value as CodeableConcept;
+                    psn.EthnicGroup.Add(this.ConvertCode(ethnicGroup, dtls));
+                }
+                else if (extension.Url == ExtensionUtil.GetExtensionNameUrl("mothersMaidenName"))
                 {
                     // Extension, see if the person has a mother that we're processing?
                     var representatives = psn.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf);
-                    PersonalRelationship mother = representatives.OfType<PersonalRelationship>().FirstOrDefault(p=>p.Status == StatusType.Active && p.RelationshipKind == "MTH");
+                    PersonalRelationship mother = representatives.OfType<PersonalRelationship>().FirstOrDefault(p => p.Status == StatusType.Active && p.RelationshipKind == "MTH");
                     NameSet extensionNameValue = base.ConvertName(extension.Value as HumanName, dtls);
 
                     if (mother == null)
@@ -662,7 +697,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         mother.LegalName = extensionNameValue;
                         mother.LegalName.Use = NameSet.NameSetUse.MaidenName;
                     }
-                    else if(mother.LegalName.SimilarityTo(extensionNameValue) != 1)// Already have a mother, the name match?
+                    else if (mother.LegalName.SimilarityTo(extensionNameValue) != 1)// Already have a mother, the name match?
                         dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "When RelatedPerson of type 'mother' is contained in patient resource, the 'mothersMaidenName' value must match the name of the relatedPerson.", null, null));
                 }
             }

@@ -640,7 +640,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         /// <param name="serviceDeliveryLocation"></param>
         /// <returns></returns>
-        private Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.BirthPlace CreateLocation(ServiceDeliveryLocation serviceDeliveryLocation)
+        private Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.BirthPlace CreateLocation(Place serviceDeliveryLocation)
         {
             return new Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.BirthPlace(
                 null,

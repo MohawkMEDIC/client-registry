@@ -159,7 +159,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rlgn_cd_id_in", DbType.Decimal, religionCode.HasValue ? (object)religionCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_plc_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
 
                 if (psn.RoleCode == (PersonRole.PAT | PersonRole.PRS))
                     psn.RoleCode = PersonRole.PAT;
@@ -223,6 +223,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var race in psn.Race)
                     this.PersistPersonRace(conn, tx, psn, race);
 
+            // Persist person ethnic group codes
+            if (psn.EthnicGroup != null)
+                foreach (var eth in psn.EthnicGroup)
+                    this.PersistPersonEthnicGroup(conn, tx, psn, eth);
+
             // Persist person language
             if (psn.Language != null)
                 foreach (var lang in psn.Language)
@@ -238,6 +243,44 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var emp in psn.Employment)
                     this.PersistPersonEmployment(conn, tx, psn, emp);
 
+        }
+
+        /// <summary>
+        /// Persist person ethnic group
+        /// </summary>
+        private void PersistPersonEthnicGroup(IDbConnection conn, IDbTransaction tx, Person psn, CodeValue eth)
+        { 
+            if (eth == null || eth.UpdateMode == UpdateModeType.Ignore) return; // skip
+
+            // Update or add or update? we first have to obsolete the existing
+            if (eth.UpdateMode == UpdateModeType.Remove || eth.UpdateMode == UpdateModeType.Update || eth.UpdateMode == UpdateModeType.AddOrUpdate)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+                    cmd.CommandText = "obslt_psn_eth_grp";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "eth_grp_cd_id_in", DbType.Decimal, eth.Key));
+                    cmd.ExecuteNonQuery(); // obsolete
+                }
+
+            // Add telecom
+            if (eth.UpdateMode != UpdateModeType.Remove)
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                {
+
+                    decimal codeId = DbUtil.CreateCodedValue(conn, tx, eth);
+
+                    cmd.CommandText = "crt_psn_eth_grp";
+
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "eth_grp_cd_id_in", DbType.Decimal, codeId));
+
+                    // Execute
+                    cmd.ExecuteNonQuery();
+                    eth.Key = codeId;
+
+                }
         }
 
         /// <summary>
@@ -659,7 +702,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "rlgn_cd_id_in", DbType.Decimal, religionCode.HasValue ? (object)religionCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "vip_cd_id_in", DbType.Decimal, vipCode.HasValue ? (object)vipCode.Value : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mrtl_sts_cd_id_in", DbType.Decimal, maritalStatusCode.HasValue ? (object)maritalStatusCode.Value : DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_sdl_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_plc_id_in", DbType.Decimal, birthLocation.HasValue ? (object)birthLocation.Value : DBNull.Value));
 
                 if (psn.RoleCode == (PersonRole.PAT | PersonRole.PRS))
                     psn.RoleCode = PersonRole.PAT;
@@ -741,7 +784,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         decimal? birthTs = null,
                             deceasedTs = null,
                             religionCode = null,
-                            replacesVersion = null;
+                            replacesVersion = null,
+                            brthPlc = null;
                         
                         if (rdr["brth_ts"] != DBNull.Value)
                             birthTs = Convert.ToDecimal(rdr["brth_ts"]);
@@ -751,6 +795,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             religionCode = Convert.ToDecimal(rdr["rlgn_cd_id"]);
                         if (rdr["rplc_vrsn_id"] != DBNull.Value)
                             replacesVersion = Convert.ToDecimal(rdr["rplc_vrsn_id"]);
+                        if (rdr["brth_plc_id"] != DBNull.Value)
+                            brthPlc = Convert.ToDecimal(rdr["brth_plc_id"]);
                         // Close the reader and read dependent values
                         rdr.Close();
 
@@ -765,15 +811,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             retVal.DeceasedTime = DbUtil.GetEffectiveTimestampSet(conn, tx, deceasedTs.Value).Parts[0];
                         if (religionCode.HasValue)
                             retVal.ReligionCode = DbUtil.GetCodedValue(conn, tx, religionCode);
-
+                        if(brthPlc.HasValue)
+                        {
+                            var place = new PlacePersister().DePersist(conn, brthPlc.Value, retVal, null, false) as Place;
+                            place.Site.Name = "BRTH";
+                        }
                         // Load other properties
                         GetPersonNames(conn, tx, retVal);
                         GetPersonAlternateIdentifiers(conn, tx, retVal);
-
                         GetPersonAddresses(conn, tx, retVal);
                         GetPersonLanguages(conn, tx, retVal);
                         GetPersonRaces(conn, tx, retVal);
                         GetPersonTelecomAddresses(conn, tx, retVal);
+                        GetPersonEthnicGroups(conn, tx, retVal);
 
                         if(!retVal.AlternateIdentifiers.Exists(o=>o.Domain == domainIdentifier.Domain && o.Identifier == domainIdentifier.Identifier))
                             retVal.AlternateIdentifiers.Add(domainIdentifier);
@@ -799,6 +849,35 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             }
 
+        }
+
+        /// <summary>
+        /// Get person's ethnic groups 
+        /// </summary>
+        private void GetPersonEthnicGroups(IDbConnection conn, IDbTransaction tx, Person person)
+        {
+#if PERFMON
+            Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_eth_grp");
+#endif
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_eth_grp";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
+
+                // Ethnic Group
+                person.EthnicGroup = new List<CodeValue>();
+                using (IDataReader rdr = cmd.ExecuteReader())
+                    while (rdr.Read())
+                        person.EthnicGroup.Add(new CodeValue() { Key = Convert.ToDecimal(rdr["eth_grp_cd_id"]) });
+
+                // Fill out races
+                for (int i = 0; i < person.EthnicGroup.Count; i++)
+                    person.EthnicGroup[i] = DbUtil.GetCodedValue(conn, tx, person.EthnicGroup[i].Key);
+            }
+#if PERFMON
+            Trace.TraceInformation("EO {0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_eth_grp");
+#endif
         }
 
         /// <summary>
@@ -1289,6 +1368,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (newPerson.MaritalStatus != null && oldPerson.MaritalStatus != null &&
                 newPerson.MaritalStatus.Code == oldPerson.MaritalStatus.Code)
                 newPerson.MaritalStatus.UpdateMode = UpdateModeType.Ignore;
+
+            // Ethnicity Codes
+            if (newPerson.EthnicGroup != null && oldPerson.EthnicGroup != null)
+            {
+                foreach (var rce in newPerson.EthnicGroup)
+                {
+                    if (rce.UpdateMode == UpdateModeType.Remove) continue;
+
+                    var candidateRace = oldPerson.EthnicGroup.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
+                    if (candidateRace != null) // New exists in the old
+                    {
+                        rce.UpdateMode = UpdateModeType.Ignore;
+                        //candidateRace.Key = -1;
+                    }
+                    else
+                        rce.UpdateMode = UpdateModeType.Add;
+                }
+                //newPerson.Race.RemoveAll(o => o.Key < 0);
+            }
 
             // Race codes 
             if (newPerson.Race != null && oldPerson.Race != null)

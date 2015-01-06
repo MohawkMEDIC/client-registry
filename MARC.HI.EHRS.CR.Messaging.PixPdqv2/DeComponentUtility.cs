@@ -244,11 +244,22 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 else if (tel.Use == "WP")
                     pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
 
+            // Race
             if (subject.Race != null)
             {
                 foreach(var rc in subject.Race)
                     this.UpdateCE(rc, pid.GetRace(pid.RaceRepetitionsUsed));
             }
+            
+            // Ethnic code
+            if (subject.EthnicGroup != null)
+                foreach (var e in subject.EthnicGroup)
+                    this.UpdateCE(e, pid.GetEthnicGroup(pid.EthnicGroupRepetitionsUsed));
+
+
+            // Place of birth
+            if (subject.BirthPlace != null)
+                pid.BirthPlace.Value = subject.BirthPlace.Name;
         }
 
         /// <summary>

@@ -976,6 +976,18 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PatientDeathDateAndTime.TimeOfAnEvent.Value))
                 subject.DeceasedTime = CreateTimestampPart(pid.PatientDeathDateAndTime, dtls);
 
+            // Ethnic group
+            if (pid.EthnicGroupRepetitionsUsed > 0)
+                foreach (var eth in pid.GetEthnicGroup())
+                    subject.EthnicGroup.Add(this.CreateCodeValue(eth, dtls));
+
+            // Birthplace
+            if (!String.IsNullOrEmpty(pid.BirthPlace.Value))
+                subject.Add(new Place()
+                {
+                    Name = pid.BirthPlace.Value
+                }, "BRTH");
+
             this.MarkScopedId(subject, aaut, dtls);
 
             return subject;
