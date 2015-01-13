@@ -28,6 +28,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using NHapi.Base.Model;
 using MARC.Everest.DataTypes;
+using MARC.Everest.DataTypes.Interfaces;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -206,10 +207,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         UpdateCE(new CodeValue(cit.CountryCode, this.m_config.OidRegistrar.GetOid("ISO3166-1").Oid), c);
                     }
 
+            if (subject.MaritalStatus != null)
+                UpdateCE(subject.MaritalStatus, pid.MaritalStatus);
             // Language
             if(subject.Language != null)
                 foreach(var lang in subject.Language)
-                    if (lang.Type == LanguageType.Fluency)
+                    if (lang.Type == LanguageType.Preferred)
                     {
                         UpdateCE(new CodeValue(lang.Language, this.m_config.OidRegistrar.GetOid("ISO639-1").Oid), pid.PrimaryLanguage);
                         break;
@@ -236,11 +239,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Telecom addresses
             foreach (var tel in subject.TelecomAddresses)
                 if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
+                    MessageUtil.XTNFromTel(new TEL()
+                    {
+                        Value = tel.Value,
+                        Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                        Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                    }, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
                 else if (tel.Use == "HP")
                     pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
                 else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
+                    MessageUtil.XTNFromTel(new TEL()
+                    {
+                        Value = tel.Value,
+                        Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                        Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                    }, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
                 else if (tel.Use == "WP")
                     pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
 

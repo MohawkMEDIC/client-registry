@@ -150,7 +150,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     // More tricky, but here is how it works
                     // 1. Get the persister for the SDL
-                    var sdlPersister = new ServiceDeliveryLocationPersister();
+                    var sdlPersister = new PlacePersister();
                     var sdlId = sdlPersister.Persist(conn, tx, psn.BirthPlace, false);
                     // Delete the sdl from the container (so it doesn't get persisted)
                     psn.Remove(psn.BirthPlace);
@@ -579,7 +579,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "telecom_in", DbType.String, tel.Value));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "telecom_use_in", DbType.String, tel.Use));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "telecom_cap_in", DbType.String, DBNull.Value));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "telecom_cap_in", DbType.String, (Object)tel.Capability ?? DBNull.Value));
                     
                     // Execute
                     tel.Key = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -693,7 +693,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     // More tricky, but here is how it works
                     // 1. Get the persister for the SDL
-                    var sdlPersister = new ServiceDeliveryLocationPersister();
+                    var sdlPersister = new PlacePersister();
                     var sdlId = sdlPersister.Persist(conn, tx, psn.BirthPlace, false);
                     // Delete the sdl from the container (so it doesn't get persisted)
                     psn.Remove(psn.BirthPlace);
@@ -785,8 +785,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             deceasedTs = null,
                             religionCode = null,
                             replacesVersion = null,
-                            brthPlc = null;
-                        
+                            brthPlc = null,
+                            mrtlStatus = null;
+
+                        if (rdr["mrtl_sts_cd_id"] != DBNull.Value)
+                            mrtlStatus = Convert.ToDecimal(rdr["mrtl_sts_cd_id"]);
                         if (rdr["brth_ts"] != DBNull.Value)
                             birthTs = Convert.ToDecimal(rdr["brth_ts"]);
                         if (rdr["dcsd_ts"] != DBNull.Value)
@@ -805,6 +808,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 #endif
 
                         // Load immediate values
+                        if (mrtlStatus.HasValue)
+                            retVal.MaritalStatus = DbUtil.GetCodedValue(conn, tx, mrtlStatus);
+
                         if (birthTs.HasValue)
                             retVal.BirthTime = DbUtil.GetEffectiveTimestampSet(conn, tx, birthTs.Value).Parts[0];
                         if (deceasedTs.HasValue)
@@ -902,7 +908,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         person.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
                             Use = Convert.ToString(rdr["tel_use"]),
-                            Value = Convert.ToString(rdr["tel_value"])
+                            Value = Convert.ToString(rdr["tel_value"]),
+                            Capability = Convert.ToString(rdr["tel_cap"])
                         });
 
             }
@@ -1424,6 +1431,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     else
                         lang.UpdateMode = UpdateModeType.Add;
                 }
+                foreach (var itm in garbagePail)
+                    newPerson.Language.Remove(itm);
 
                 // Find all race codes in the old that aren't in the new (remove)
                 //foreach (var lang in oldPerson.Language)

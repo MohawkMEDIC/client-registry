@@ -55,16 +55,17 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             Place loc = data as Place;
 
             // Do we have the shrid?
-            if (loc.Id == default(decimal) && loc.AlternateIdentifiers.Count > 0) // nope
+            if (loc.Id == default(decimal)) // nope
             {
                 // Attempt to get the SHRID
                 int iId = 0;
                 Place resLoc = null;
-                while (resLoc == null && iId < loc.AlternateIdentifiers.Count)
-                {
-                    resLoc = GetLocation(conn, tx, loc.AlternateIdentifiers[iId]);
-                    iId++;
-                }
+                if(loc.AlternateIdentifiers.Count > 0)
+                    while (resLoc == null && iId < loc.AlternateIdentifiers.Count)
+                    {
+                        resLoc = GetLocation(conn, tx, loc.AlternateIdentifiers[iId]);
+                        iId++;
+                    }
 
                 if (resLoc == null) // We need to create a client
                     CreateLocation(conn, tx, loc);
@@ -193,7 +194,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_name_in", DbType.StringFixedLength, (object)loc.Name ?? DBNull.Value));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_cls_cs_in", DbType.StringFixedLength, ((object)loc.Class ?? DBNull.Value)));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_cls_cs_in", DbType.StringFixedLength, ((object)loc.Class ?? "PLC")));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_addr_set_id_in", DbType.Decimal, (object)addrSetId ?? DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "plc_typ_cd_id_in", DbType.Decimal, (object)codeId ?? DBNull.Value));
 
@@ -257,7 +258,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                     // Define set identifiers
                     retVal.Name = reader["plc_name"] == DBNull.Value ? null : Convert.ToString(reader["plc_name"]);
-                    retVal.Class = reader["plc_class"] == DBNull.Value ? null : Convert.ToString(reader["plc_cls_cs"]);
+                    retVal.Class = reader["plc_cls_cs"] == DBNull.Value ? null : Convert.ToString(reader["plc_cls_cs"]);
                     addrSetId = reader["plc_addr_set_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["plc_addr_set_id"]);
                     codeTypeId = reader["plc_typ_cd_id"] == DBNull.Value ? null : (decimal?)Convert.ToDecimal(reader["plc_typ_cd_id"]);
                 }

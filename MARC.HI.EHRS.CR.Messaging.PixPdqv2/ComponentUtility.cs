@@ -881,17 +881,19 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberHome())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
-                        subject.TelecomAddresses.Add(new TelecommunicationsAddress()
-                        {
-                            Use = "HP",
-                            Value = MessageUtil.TelFromXTN(tel).Value
-                        });
+                    {
+                        var tca = MessageUtil.TelFromXTN(tel);
+                        tca.Use = "HP";
+                        subject.TelecomAddresses.Add(tca);
+                    }
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
+                            Capability = "data text",
                             Use = "HP",
                             Value = String.Format("mailto:{0}", tel.EmailAddress)
                         });
+                    
             }
 
             // Business Home
@@ -901,15 +903,16 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberBusiness())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
-                        subject.TelecomAddresses.Add(new TelecommunicationsAddress()
-                        {
-                            Use = "WP",
-                            Value = MessageUtil.TelFromXTN(tel)
-                        });
+                    {
+                        var tca = MessageUtil.TelFromXTN(tel);
+                        tca.Use = "WP";
+                        subject.TelecomAddresses.Add(tca);
+                    }
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
                             Use = "WP",
+                            Capability = "data text",
                             Value = String.Format("mailto:{0}", tel.EmailAddress)
                         });
             }
@@ -927,6 +930,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
                 if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
                     dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE04C"), "PID^15", null));
+                subject.Language = new List<PersonLanguage>();
+                subject.Language.Add(new PersonLanguage()
+                {
+                    Language = langCd.Code,
+                    Type = LanguageType.Preferred
+                });
             }
 
             // Marital Status
