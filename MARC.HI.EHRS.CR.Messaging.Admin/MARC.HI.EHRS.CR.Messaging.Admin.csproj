@@ -76,6 +76,8 @@
     </Compile>
     <Compile Include="ConflictCollection.cs" />
     <Compile Include="Conflict.cs" />
+    <Compile Include="Contract\LogInfo.cs" />
+    <Compile Include="Contract\ServiceStatus.cs" />
     <Compile Include="IClientRegistryAdminInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrationEventCollection.cs" />

@@ -1,0 +1,726 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="GetLogFiles">
+    <xs:complexType />
+  </xs:element>
+  <xs:element name="GetLogFilesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetLogFilesResult" type="tns:ArrayOfLogInfo" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfLogInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="LogInfo" nillable="true" type="tns:LogInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="LogInfo">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="size" type="xs:long" />
+      <xs:element minOccurs="1" maxOccurs="1" name="lastModified" type="xs:dateTime" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" />
+  </xs:complexType>
+  <xs:element name="GetLog">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="id" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetLogResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetLogResult" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetServices">
+    <xs:complexType />
+  </xs:element>
+  <xs:element name="GetServicesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetServicesResult" type="tns:ArrayOfServiceStatus" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfServiceStatus">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ServiceStatus" nillable="true" type="tns:ServiceStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ServiceStatus">
+    <xs:attribute name="contract" type="xs:string" />
+    <xs:attribute name="class" type="xs:string" />
+    <xs:attribute name="version" type="xs:string" />
+  </xs:complexType>
+  <xs:element name="GetRegistrations">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="queryPrototype" type="tns:Person" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="Person">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="EthnicGroup" type="tns:ArrayOfCodeValue" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="otherId" type="tns:KeyValuePairOfCodeValueDomainIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="1" name="birthTime" type="tns:TimestampPart" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="telecom" type="tns:TelecomAddress" />
+          <xs:element minOccurs="0" maxOccurs="1" name="deceased" type="tns:TimestampPart" />
+          <xs:element minOccurs="1" maxOccurs="1" name="birth" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" maxOccurs="1" name="religionCode" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="language" type="tns:PersonLanguage" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="addr" type="tns:AddressSet" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="name" type="tns:NameSet" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="race" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="1" name="vip" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="1" name="marital" type="tns:CodeValue" />
+          <xs:element minOccurs="1" maxOccurs="1" name="roleCode" type="tns:PersonRole" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="citizenship" type="tns:Citizenship" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="employment" type="tns:Employment" />
+        </xs:sequence>
+        <xs:attribute name="genderCode" type="xs:string" />
+        <xs:attribute name="verId" type="xs:decimal" use="required" />
+        <xs:attribute name="status" type="tns:StatusType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="CrHealthServiceRecordContainer">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element minOccurs="0" maxOccurs="1" name="personRegRef" type="tns:PersonRegistrationRef" />
+            <xs:element minOccurs="0" maxOccurs="1" name="registration" type="tns:HealthServiceRecord" />
+            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
+            <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
+            <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
+          </xs:choice>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="HealthServiceRecordContainer" abstract="true">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element minOccurs="0" maxOccurs="1" name="mask" type="tns:MaskingIndicator" />
+            <xs:element minOccurs="0" maxOccurs="1" name="changeSummary" type="tns:ChangeSummary" />
+            <xs:element minOccurs="0" maxOccurs="1" name="healthcareParticipant" type="tns:HealthcareParticipant" />
+            <xs:element minOccurs="0" maxOccurs="1" name="queryRestriction" type="tns:QueryRestriction" />
+            <xs:element minOccurs="0" maxOccurs="1" name="annotation" type="tns:Annotation" />
+            <xs:element minOccurs="0" maxOccurs="1" name="personalRelationship" type="tns:PersonalRelationship" />
+            <xs:element minOccurs="0" maxOccurs="1" name="serviceDeliveryLocation" type="tns:ServiceDeliveryLocation" />
+            <xs:element minOccurs="0" maxOccurs="1" name="client" type="tns:Client" />
+            <xs:element minOccurs="0" maxOccurs="1" name="healthServiceRecordComponentRef" type="tns:HealthServiceRecordComponentRef" />
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:decimal" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="HealthServiceRecordComponent" abstract="true">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="hsrSite" type="tns:HealthServiceRecordSite" />
+    </xs:sequence>
+    <xs:attribute name="isMasked" type="xs:boolean" use="required" />
+    <xs:attribute name="timestamp" type="xs:dateTime" use="required" />
+  </xs:complexType>
+  <xs:complexType name="HealthServiceRecordSite">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="originalIdentifier" type="tns:DomainIdentifier" />
+    </xs:sequence>
+    <xs:attribute name="roleType" type="tns:HealthServiceRecordSiteRoleType" use="required" />
+    <xs:attribute name="updateMode" type="tns:UpdateMode" use="required" />
+    <xs:attribute name="contextConduction" type="xs:boolean" use="required" />
+    <xs:attribute name="symbolic" type="xs:boolean" use="required" />
+    <xs:attribute name="name" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="DomainIdentifier">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:attribute name="domain" type="xs:string" />
+        <xs:attribute name="uid" type="xs:string" />
+        <xs:attribute name="priv" type="xs:boolean" use="required" />
+        <xs:attribute name="licenseAuthority" type="xs:boolean" use="required" />
+        <xs:attribute name="assigningAuth" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Datatype" abstract="true">
+    <xs:attribute name="key" type="xs:decimal" use="required" />
+    <xs:attribute name="updateMode" type="tns:UpdateModeType" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="UpdateModeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Add" />
+      <xs:enumeration value="AddOrUpdate" />
+      <xs:enumeration value="Update" />
+      <xs:enumeration value="Remove" />
+      <xs:enumeration value="Ignore" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="TelecomAddress">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="usable" type="tns:TimestampSet" />
+        </xs:sequence>
+        <xs:attribute name="use" type="xs:string" />
+        <xs:attribute name="value" type="xs:string" />
+        <xs:attribute name="capability" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="TimestampSet">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="part" type="tns:TimestampPart" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="TimestampPart">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="value" type="xs:dateTime" />
+        </xs:sequence>
+        <xs:attribute name="type" type="tns:TimestampPartType" use="required" />
+        <xs:attribute name="precision" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="TimestampPartType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LowBound" />
+      <xs:enumeration value="HighBound" />
+      <xs:enumeration value="Width" />
+      <xs:enumeration value="Standlone" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="NameSet">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="part" type="tns:NamePart" />
+        </xs:sequence>
+        <xs:attribute name="use" type="tns:NameSetUse" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="NamePart">
+    <xs:attribute name="type" type="tns:NamePartType" use="required" />
+    <xs:attribute name="value" type="xs:string" />
+  </xs:complexType>
+  <xs:simpleType name="NamePartType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None" />
+      <xs:enumeration value="Given" />
+      <xs:enumeration value="Prefix" />
+      <xs:enumeration value="Delimeter" />
+      <xs:enumeration value="Suffix" />
+      <xs:enumeration value="Family" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="NameSetUse">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Search" />
+      <xs:enumeration value="Legal" />
+      <xs:enumeration value="OfficialRecord" />
+      <xs:enumeration value="License" />
+      <xs:enumeration value="Indigenous" />
+      <xs:enumeration value="Pseudonym" />
+      <xs:enumeration value="Artist" />
+      <xs:enumeration value="Religious" />
+      <xs:enumeration value="Assigned" />
+      <xs:enumeration value="Phonetic" />
+      <xs:enumeration value="MaidenName" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="AddressSet">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="part" type="tns:AddressPart" />
+        </xs:sequence>
+        <xs:attribute name="use" type="tns:AddressSetUse" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="AddressPart">
+    <xs:attribute name="type" type="tns:AddressPartType" use="required" />
+    <xs:attribute name="value" type="xs:string" />
+  </xs:complexType>
+  <xs:simpleType name="AddressPartType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AddressLine" />
+      <xs:enumeration value="AdditionalLocator" />
+      <xs:enumeration value="UnitIdentifier" />
+      <xs:enumeration value="UnitDesignator" />
+      <xs:enumeration value="DeliveryAddressLine" />
+      <xs:enumeration value="DeliveryInstallationType" />
+      <xs:enumeration value="DeliveryInstallationArea" />
+      <xs:enumeration value="DeliveryInstallationQualifier" />
+      <xs:enumeration value="DeliveryMode" />
+      <xs:enumeration value="DeliveryModeIdentifier" />
+      <xs:enumeration value="StreetAddressLine" />
+      <xs:enumeration value="BuildingNumber" />
+      <xs:enumeration value="BuildingNumberSuffix" />
+      <xs:enumeration value="StreetName" />
+      <xs:enumeration value="StreetNameBase" />
+      <xs:enumeration value="StreetType" />
+      <xs:enumeration value="Direction" />
+      <xs:enumeration value="CareOf" />
+      <xs:enumeration value="CensusTract" />
+      <xs:enumeration value="Country" />
+      <xs:enumeration value="County" />
+      <xs:enumeration value="City" />
+      <xs:enumeration value="Delimeter" />
+      <xs:enumeration value="PostBox" />
+      <xs:enumeration value="Precinct" />
+      <xs:enumeration value="State" />
+      <xs:enumeration value="PostalCode" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AddressSetUse">
+    <xs:list>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Search" />
+          <xs:enumeration value="HomeAddress" />
+          <xs:enumeration value="PrimaryHome" />
+          <xs:enumeration value="Direct" />
+          <xs:enumeration value="VacationHome" />
+          <xs:enumeration value="WorkPlace" />
+          <xs:enumeration value="Public" />
+          <xs:enumeration value="BadAddress" />
+          <xs:enumeration value="PhysicalVisit" />
+          <xs:enumeration value="PostalAddress" />
+          <xs:enumeration value="TemporaryAddress" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+  <xs:complexType name="CodeValue">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="originalText" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="codeSystemName" type="xs:string" />
+        </xs:sequence>
+        <xs:attribute name="codeSys" type="xs:string" />
+        <xs:attribute name="code" type="xs:string" />
+        <xs:attribute name="display" type="xs:string" />
+        <xs:attribute name="version" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="VersionedIdentifier">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DomainIdentifier">
+        <xs:attribute name="ver" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="HealthServiceRecordSiteRoleType">
+    <xs:list>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Inverse" />
+          <xs:enumeration value="ComponentOf" />
+          <xs:enumeration value="ParticipantIn" />
+          <xs:enumeration value="ReplacementOf" />
+          <xs:enumeration value="ReportsOn" />
+          <xs:enumeration value="Fulfills" />
+          <xs:enumeration value="AuthorOf" />
+          <xs:enumeration value="ResponsibleFor" />
+          <xs:enumeration value="TargetOf" />
+          <xs:enumeration value="NotifiedOf" />
+          <xs:enumeration value="InformantTo" />
+          <xs:enumeration value="EntererOf" />
+          <xs:enumeration value="PlaceOfOccurence" />
+          <xs:enumeration value="PlaceOfEntry" />
+          <xs:enumeration value="SubjectOf" />
+          <xs:enumeration value="Attestor" />
+          <xs:enumeration value="RepresentitiveOf" />
+          <xs:enumeration value="ReferenceFor" />
+          <xs:enumeration value="Discharger" />
+          <xs:enumeration value="OutcomeOf" />
+          <xs:enumeration value="FilterOf" />
+          <xs:enumeration value="OlderVersionOf" />
+          <xs:enumeration value="CommentOn" />
+          <xs:enumeration value="PlaceOfRecord" />
+          <xs:enumeration value="ReasonFor" />
+          <xs:enumeration value="AlternateTo" />
+          <xs:enumeration value="PerformerOf" />
+          <xs:enumeration value="AttenderFor" />
+          <xs:enumeration value="ConsentOverrideFor" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+  <xs:simpleType name="UpdateMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Add" />
+      <xs:enumeration value="Remove" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="QueryParameters">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="MatchingAlgorithm" type="tns:MatchAlgorithm" />
+          <xs:element minOccurs="1" maxOccurs="1" name="MatchStrength" type="tns:MatchStrength" />
+          <xs:element minOccurs="1" maxOccurs="1" name="Confidence" type="xs:float" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="MatchAlgorithm">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Unspecified" />
+      <xs:enumeration value="Exact" />
+      <xs:enumeration value="Soundex" />
+      <xs:enumeration value="Variant" />
+      <xs:enumeration value="Default" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MatchStrength">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Exact" />
+      <xs:enumeration value="Strong" />
+      <xs:enumeration value="Moderate" />
+      <xs:enumeration value="Weak" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ServiceDeliveryLocation">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="addr" type="tns:AddressSet" />
+          <xs:element minOccurs="0" maxOccurs="1" name="code" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="telecom" type="tns:TelecomAddress" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:decimal" use="required" />
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attribute name="class" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="QueryRestriction">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="amendDate" type="tns:TimestampPart" />
+        </xs:sequence>
+        <xs:attribute name="mostRecentByType" type="xs:boolean" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="MaskingIndicator">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="code" type="tns:CodeValue" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ChangeSummary">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:VersionedIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="1" name="changeType" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="1" name="effectiveTime" type="tns:TimestampSet" />
+        </xs:sequence>
+        <xs:attribute name="lang" type="xs:string" />
+        <xs:attribute name="version" type="xs:decimal" use="required" />
+        <xs:attribute name="status" type="tns:StatusType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="StatusType">
+    <xs:list>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Unknown" />
+          <xs:enumeration value="New" />
+          <xs:enumeration value="Active" />
+          <xs:enumeration value="Cancelled" />
+          <xs:enumeration value="Completed" />
+          <xs:enumeration value="Obsolete" />
+          <xs:enumeration value="Aborted" />
+          <xs:enumeration value="Nullified" />
+          <xs:enumeration value="Suspended" />
+          <xs:enumeration value="Terminated" />
+          <xs:enumeration value="Normal" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+  <xs:complexType name="HealthcareParticipant">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="type" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="1" name="addr" type="tns:AddressSet" />
+          <xs:element minOccurs="0" maxOccurs="1" name="name" type="tns:NameSet" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="telecom" type="tns:TelecomAddress" />
+        </xs:sequence>
+        <xs:attribute name="classifier" type="tns:HealthcareParticipantType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="HealthcareParticipantType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Person" />
+      <xs:enumeration value="Organization" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Annotation">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="text" type="xs:string" />
+        </xs:sequence>
+        <xs:attribute name="lang" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="PersonalRelationship">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Client">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="Status" type="tns:StatusType" />
+        </xs:sequence>
+        <xs:attribute name="kind" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Client">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="addr" type="tns:AddressSet" />
+          <xs:element minOccurs="0" maxOccurs="1" name="legalName" type="tns:NameSet" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="telecom" type="tns:TelecomAddress" />
+          <xs:element minOccurs="0" maxOccurs="1" name="birthTime" type="tns:TimestampPart" />
+        </xs:sequence>
+        <xs:attribute name="genderCode" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="HealthServiceRecordComponentRef">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:DomainIdentifier" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="PersonRegistrationRef">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="HealthServiceRecord">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:VersionedIdentifier" />
+          <xs:element minOccurs="0" maxOccurs="1" name="type" type="tns:CodeValue" />
+          <xs:element minOccurs="0" maxOccurs="1" name="efft" type="tns:TimestampSet" />
+        </xs:sequence>
+        <xs:attribute name="classifier" type="tns:RegistrationEventType" use="required" />
+        <xs:attribute name="version" type="xs:decimal" use="required" />
+        <xs:attribute name="refuted" type="xs:boolean" use="required" />
+        <xs:attribute name="status" type="tns:StatusType" use="required" />
+        <xs:attribute name="lang" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="RegistrationEventType">
+    <xs:list>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Any" />
+          <xs:enumeration value="None" />
+          <xs:enumeration value="ComponentEvent" />
+          <xs:enumeration value="Notification" />
+          <xs:enumeration value="Register" />
+          <xs:enumeration value="Revise" />
+          <xs:enumeration value="Nullify" />
+          <xs:enumeration value="Replace" />
+          <xs:enumeration value="Query" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+  <xs:complexType name="Extension">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="data" type="xs:base64Binary" />
+        </xs:sequence>
+        <xs:attribute name="property" type="xs:string" />
+        <xs:attribute name="key" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfCodeValue">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CodeValue" nillable="true" type="tns:CodeValue" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="KeyValuePairOfCodeValueDomainIdentifier" />
+  <xs:complexType name="PersonLanguage">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Language" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="updateMode" type="tns:UpdateModeType" use="required" />
+    <xs:attribute name="type" type="tns:LanguageType" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="LanguageType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Written" />
+      <xs:enumeration value="Spoken" />
+      <xs:enumeration value="Preferred" />
+      <xs:enumeration value="Fluency" />
+      <xs:enumeration value="WrittenAndSpoken" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PersonRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PAT" />
+      <xs:enumeration value="PRS" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Citizenship">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="efft" type="tns:TimestampSet" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:decimal" use="required" />
+    <xs:attribute name="status" type="tns:StatusType" use="required" />
+    <xs:attribute name="code" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="updateMode" type="tns:UpdateModeType" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Employment">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="efft" type="tns:TimestampSet" />
+      <xs:element minOccurs="0" maxOccurs="1" name="occupation" type="tns:CodeValue" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:decimal" use="required" />
+    <xs:attribute name="updateMode" type="tns:UpdateModeType" use="required" />
+    <xs:attribute name="status" type="tns:StatusType" use="required" />
+  </xs:complexType>
+  <xs:element name="GetRegistrationsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetRegistrationsResult" type="tns:RegistrationEventCollection" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="RegistrationEventCollection">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="registration" type="tns:HealthServiceRecord" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GetRegistrationEvent">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="1" name="id" type="xs:decimal" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetRegistrationEventResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetRegistrationEventResult" type="tns:HealthServiceRecord" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetConflicts">
+    <xs:complexType />
+  </xs:element>
+  <xs:element name="GetConflictsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetConflictsResult" type="tns:ConflictCollection" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ConflictCollection">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="conflict" type="tns:ConflictedVersionIdentifier" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ConflictedVersionIdentifier">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="source" type="tns:HealthServiceRecord" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="matches" type="tns:HealthServiceRecord" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GetConflict">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="1" name="id" type="xs:decimal" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetConflictResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetConflictResult" type="tns:ConflictCollection" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Merge">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="sourceIds" type="tns:ArrayOfDecimal" />
+        <xs:element minOccurs="1" maxOccurs="1" name="targetId" type="xs:decimal" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfDecimal">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="decimal" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MergeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="MergeResult" type="tns:HealthServiceRecord" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Resolve">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="1" name="sourceId" type="xs:decimal" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ResolveResponse">
+    <xs:complexType />
+  </xs:element>
+</xs:schema>

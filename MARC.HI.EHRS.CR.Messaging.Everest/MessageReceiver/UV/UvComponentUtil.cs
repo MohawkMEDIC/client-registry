@@ -102,7 +102,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             retVal.Add(changeSummary, "CHANGE", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
             (changeSummary.Site as HealthServiceRecordSite).IsSymbolic = true; // this link adds no real value to the parent's data
             
-
+            
             // author ( this is optional in IHE)
             if(controlActEvent.Subject == null || controlActEvent.Subject.Count != 1 || controlActEvent.Subject[0].RegistrationEvent == null || controlActEvent.Subject[0].RegistrationEvent.NullFlavor != null)
                 ;
@@ -131,11 +131,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 {
                     changeSummary.Add(aut, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, aut.AlternateIdentifiers);
                     retVal.Add(aut.Clone() as IComponent, "AUT".ToString(), HealthServiceRecordSiteRoleType.AuthorOf, aut.AlternateIdentifiers);
-
                 }
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE004"), null, null));
             }
+
+            if (controlActEvent.Id != null && !controlActEvent.Id.IsEmpty)
+                changeSummary.AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Domain = controlActEvent.Id.First.Root,
+                    Identifier = controlActEvent.Id.First.Extension,
+                    AssigningAuthority = controlActEvent.Id.First.AssigningAuthorityName
+                };
 
             return retVal;
         }

@@ -153,6 +153,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Inst
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.FHIR", "MARC.HI.EHRS.CR.Messaging.FHIR\MARC.HI.EHRS.CR.Messaging.FHIR.csproj", "{BDC2FCB8-E319-41FC-BA1A-40108E86D550}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{535F9ED3-2412-42ED-A6D6-10D9FB9BAEB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientRegistryAdmin", "ClientRegistryAdmin\ClientRegistryAdmin.csproj", "{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = ClientRegistry.vsmdi
@@ -276,6 +280,16 @@ Global
 		{BDC2FCB8-E319-41FC-BA1A-40108E86D550}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BDC2FCB8-E319-41FC-BA1A-40108E86D550}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BDC2FCB8-E319-41FC-BA1A-40108E86D550}.Release|x86.ActiveCfg = Release|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -297,6 +311,7 @@ Global
 		{16D35FF0-14AC-4D24-9C3B-7E064B0EFE0E} = {330196EE-CA01-4513-84C3-F2991AC7A061}
 		{08FF2D4C-924C-4CED-9DA2-EC72C14C3538} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
 		{D1A5F200-1BBF-44CF-B405-274ADE252FCB} = {CCF09759-32BC-4B44-9C1E-97CDA021356D}
+		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06} = {535F9ED3-2412-42ED-A6D6-10D9FB9BAEB1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .

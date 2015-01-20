@@ -112,7 +112,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
 
             var subject = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var aut = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as RepositoryDevice;
 
+            // Update time
+            pid.LastUpdateDateTime.Time.Value = ((TS)subject.Timestamp).Value;
+            if (aut != null)
+                pid.LastUpdateFacility.NamespaceID.Value = aut.Jurisdiction;
             
             // Alternate identifiers
             foreach (var altId in subject.AlternateIdentifiers)

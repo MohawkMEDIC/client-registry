@@ -1,0 +1,10 @@
+﻿@model ClientRegistryAdmin.Models.ViewLogModel
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Log Detail - @Model.Id</h2>
+<em>Note that log files larger than 5MB will not be shown in this viewer.</em>
+<pre class="pre-scrollable" style="height:600px; max-height:700px">
+@Model.Log
+</pre>

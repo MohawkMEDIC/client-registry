@@ -756,12 +756,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 LanguageCode = m_config.JurisdictionData.DefaultLanguageCode
             };
 
-            var evn = request.EVN;
-            var pid = request.PID; // get the pid segment
-            
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
 
+            var evn = request.EVN;
+            var pid = request.PID; // get the pid segment
+            
             if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
             else
@@ -771,6 +771,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Add to subject
             retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+            // Add author information (facility)
+            RepositoryDevice dev = new RepositoryDevice();
+            dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
+            dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value; 
+            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
+                dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
+            retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
 
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 return null;
@@ -1156,7 +1165,66 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         internal RegistrationEvent CreateComponents(NHapi.Model.V231.Message.ADT_A40 request, List<IResultDetail> dtls)
         {
-            throw new NotImplementedException();
+            // Registration event
+            RegistrationEvent retVal = new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Register,
+                Mode = RegistrationEventType.Replace,
+                EventType = new CodeValue(request.MSH.MessageType.TriggerEvent.Value),
+                Status = StatusType.Completed,
+                LanguageCode = m_config.JurisdictionData.DefaultLanguageCode
+            };
+
+            var evn = request.EVN;
+            var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
+            var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+
+
+            // Can be multiple patients
+            for (int i = 0; i < request.PATIENTRepetitionsUsed; i++)
+            {
+                var patient = request.GetPATIENT(i);
+                var pid = patient.PID; // get the pid segment
+                
+                if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
+                    retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
+                else
+                    retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
+
+                Person subject = this.CreatePerson(pid, dtls, aaut);
+
+                // Merge
+                if (patient.MRG.GetPriorPatientIdentifierList().Length > 0)
+                {
+                    var re = new PersonRegistrationRef()
+                    {
+                        AlternateIdentifiers = new List<DomainIdentifier>()
+                    };
+
+                    foreach (var id in patient.MRG.GetPriorPatientIdentifierList())
+                        re.AlternateIdentifiers.Add(this.CreateDomainIdentifier(id, dtls));
+
+                    subject.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                    (re.Site as HealthServiceRecordSite).IsSymbolic = true;
+                }
+
+                // Add to subject
+                retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            }
+
+
+            // Add author information (facility)
+            RepositoryDevice dev = new RepositoryDevice();
+            dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
+            dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value;
+            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
+
+
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                return null;
+
+            return retVal;
         }
     }
 }

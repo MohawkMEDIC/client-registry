@@ -20,13 +20,14 @@
     <sdlExport domain="1.3.6.1.4.1.33349.3.1.2.1.2"/>
     <defaultLanguageCode code="en"/>
   </jurisdiction>
-  <registeredDevices validateSolicitors="true">
+  <registeredDevices validateSolicitors="false">
     <add value="TEST_HARNESS"/>
     <add value="TEST_HARNESS_A"/>
     <add value="TEST_HARNESS_B"/>
     <add value="NID_AUTH"/>
   </registeredDevices>
   <registeredOids>
+    
     <add name="ICD10" ref="http://hl7.org/fhir/sid/icd-10" oid="2.16.840.1.113883.6.3" desc="International Classification of Diseases version 10">
       <attribute name="HL70396Name" value="I10"/>
     </add>
@@ -81,7 +82,7 @@
     <add name="CR_MSGID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.8" desc="Message identifiers root when not in token"/>
     <add name="DEV_CRID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.7" desc="Device identifier"/>
     <add name="CR_PRID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.9" desc="Personal Relationship identifiers" ref="http://cr.marc-hi.ca:8080/fhir/RelatedPerson"/>
-
+    <add name="V2_SEND_FAC_ID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.394" desc="HL7v2 Sending Device/Facility IDs Assigning Authority"/>
     <!-- Subscription Stuff -->
     <add name="SUBSC_PID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.1" desc="Client Registry Subscription Provider IDs"/>
     <add name="SUBSC_RID" oid="1.3.6.1.4.1.33349.3.1.2.2.0.4" desc="Client Registry Subscription Record IDs"/>
