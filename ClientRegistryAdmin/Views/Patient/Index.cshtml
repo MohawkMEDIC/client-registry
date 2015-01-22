@@ -1,0 +1,85 @@
+﻿@model ClientRegistryAdmin.Models.PatientSearchModel
+@{
+    ViewBag.Title = "Patient Search";
+}
+
+<h2>Patient Search</h2>
+@using (Html.BeginForm("Search", "Patient", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken();
+    Html.EnableClientValidation();
+        
+    <div class="form-group">
+        @Html.LabelFor(m => m.FamilyName)
+        @Html.TextBoxFor(m => m.FamilyName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.FamilyName)
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.GivenName)
+        @Html.TextBoxFor(m => m.GivenName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.GivenName)
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.DateOfBirth)
+        @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "datepicker datepicker-pointer form-control", @id = "dateOfBirth" })
+        @Html.ValidationMessageFor(m => m.DateOfBirth)
+    </div>
+    <button class="btn btn-primary" style="float:right"><span class="glyphicon glyphicon-search"></span> Search</button>
+}
+
+@if (Model.IsError)
+{
+    <div class="alert alert-danger">
+        An error occurred executing the search against the Client Registry
+    </div>
+}
+else if(Model.Outcome != null)
+{
+    var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
+    grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
+
+    @grid.GetHtml(
+        tableStyle: "table table-striped",
+        mode: WebGridPagerModes.Numeric,
+        footerStyle: "grid-footer",
+        headerStyle: "grid-header",
+        htmlAttributes: new { id = "resultTable" },
+        columns: grid.Columns(
+        grid.Column(
+        columnName: "Id",
+        header: "Id",
+        style: "width:20%",
+        format: item => Html.ActionLink((String)item.Id.ToString(), "List", "SharedHealthRecord", new { id = item.Id }, new object())
+        ),
+        grid.Column(
+        columnName: "Name",
+        header: "Name",
+        style: "width:30%",
+                format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName), "List", "SharedHealthRecord", new { id = item.Id }, new object())
+            ),
+            grid.Column(
+                columnName: "DateOfBirth",
+            header: "DOB",
+            style: "width:30%",
+                format: item => new HtmlString((String)item.DateOfBirth.ToString("yyyy-MMM-dd"))
+                ),
+                grid.Column(
+            columnName: "Gender",
+            header: "Gender",
+            style: "width:10%"
+            ),
+            grid.Column(
+            columnName: "Address",
+            header: "Address",
+            style: "width:30%",
+                format: item => new HtmlString(String.Format("{0}, {1}", item.City, item.State))
+            ),
+            grid.Column(
+                columnName: "Confidence",
+                header: "Confidence",
+                style: "width:10%",
+                    format: item => new HtmlString(String.Format("{0}%", item.Confidence))
+                )
+        )
+    )
+}
