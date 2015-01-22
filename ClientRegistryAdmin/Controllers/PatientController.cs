@@ -40,5 +40,22 @@ namespace ClientRegistryAdmin.Controllers
             }
             return View("Index", model);
         }
+
+        /// <summary>
+        /// View a patient
+        /// </summary>
+        public ActionResult View(Decimal id)
+        {
+            PatientMatch model = null;
+            try
+            {
+                model = CrUtil.Get(id);
+            }
+            catch (Exception e)
+            {
+                
+            }
+            return View("View", model);
+        }
     }
 }

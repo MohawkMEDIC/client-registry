@@ -66,34 +66,67 @@ namespace ClientRegistryAdmin.Util
                 List<ClientRegistryAdmin.Models.PatientMatch> retVal = new List<Models.PatientMatch>();
                 foreach (var reg in registrations)
                 {
-                    var psn = reg.Items1.Where(o => o.hsrSite.roleType == HealthServiceRecordSiteRoleType.SubjectOf).First() as Person;
-                    ClientRegistryAdmin.Models.PatientMatch pm = new Models.PatientMatch();
-                    
-                    // Name
-                    if (psn.name != null)
-                    {
-                        familyNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Family);
-                        givenNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Given);
-                        if (familyNamePart != null)
-                            pm.FamilyName = familyNamePart.value;
-                        if (givenNamePart != null)
-                            pm.GivenName = givenNamePart.value;
-                    }
-
-                    pm.DateOfBirth = psn.birthTime.value;
-                    pm.Gender = psn.genderCode;
-
-                    pm.Id = psn.id.ToString();
-                    pm.OtherIds = new List<KeyValuePair<string,string>>();
-                    foreach (var altid in psn.altId)
-                        pm.OtherIds.Add(new KeyValuePair<string, string>(altid.domain, altid.uid));
-
+                    ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(reg);
                     // Address?
                     retVal.Add(pm);
                 }
                 return retVal;
             }
             catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Convert registration event
+        /// </summary>
+        private static Models.PatientMatch ConvertRegistrationEvent(HealthServiceRecord reg)
+        {
+            var psn = reg.Items1.Where(o => o.hsrSite.roleType == HealthServiceRecordSiteRoleType.SubjectOf).First() as Person;
+            ClientRegistryAdmin.Models.PatientMatch pm = new Models.PatientMatch();
+            NamePart familyNamePart = null,
+                givenNamePart = null;
+
+            // Name
+            if (psn.name != null)
+            {
+                familyNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Family);
+                givenNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Given);
+                if (familyNamePart != null)
+                    pm.FamilyName = familyNamePart.value;
+                if (givenNamePart != null)
+                    pm.GivenName = givenNamePart.value;
+            }
+
+            pm.DateOfBirth = psn.birthTime.value;
+            pm.Gender = psn.genderCode;
+
+            pm.Id = psn.id.ToString();
+            pm.RegistrationId = reg.id;
+            pm.OriginalData = reg;
+            pm.OtherIds = new List<KeyValuePair<string, string>>();
+            foreach (var altid in psn.altId)
+                pm.OtherIds.Add(new KeyValuePair<string, string>(altid.domain, altid.uid));
+            return pm;
+        }
+
+        /// <summary>
+        /// Get the specified patient identifier
+        /// </summary>
+        internal static Models.PatientMatch Get(decimal id)
+        {
+            try
+            {
+                ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
+                var regEvent = client.GetRegistrationEvent(id);
+                if (regEvent == null)
+                    return null;
+
+                return ConvertRegistrationEvent(regEvent);
+
+            }
+            catch (Exception e)
             {
                 return null;
             }

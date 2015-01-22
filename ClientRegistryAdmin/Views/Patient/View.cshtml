@@ -1,0 +1,12 @@
+﻿@model ClientRegistryAdmin.Models.PatientMatch
+@{
+    ViewBag.Title = "View";
+}
+
+<h2>Viewing Patient @Model.Id</h2>
+
+<h3>Original Record</h3>
+<em>The original record as it appears in the Client Registry persistence store</em>
+<pre class="pre-scrollable" style="height:600px; max-height:700px">
+@Model.OriginalXml
+</pre>

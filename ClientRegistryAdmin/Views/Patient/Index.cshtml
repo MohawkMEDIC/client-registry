@@ -49,13 +49,13 @@ else if(Model.Outcome != null)
         columnName: "Id",
         header: "Id",
         style: "width:20%",
-        format: item => Html.ActionLink((String)item.Id.ToString(), "List", "SharedHealthRecord", new { id = item.Id }, new object())
+        format: item => Html.ActionLink((String)item.Id.ToString(), "View", "Patient", new { id = item.RegistrationId }, new object())
         ),
         grid.Column(
         columnName: "Name",
         header: "Name",
         style: "width:30%",
-                format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName), "List", "SharedHealthRecord", new { id = item.Id }, new object())
+                    format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName), "View", "Patient", new { id = item.RegistrationId }, new object())
             ),
             grid.Column(
                 columnName: "DateOfBirth",

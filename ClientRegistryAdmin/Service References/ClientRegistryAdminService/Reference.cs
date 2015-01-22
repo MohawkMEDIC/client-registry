@@ -1167,9 +1167,9 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34234")]
     [System.SerializableAttribute()]
@@ -1186,6 +1186,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         [System.Xml.Serialization.XmlElementAttribute("person", typeof(Person), Order=0)]
         [System.Xml.Serialization.XmlElementAttribute("personRegRef", typeof(PersonRegistrationRef), Order=0)]
         [System.Xml.Serialization.XmlElementAttribute("registration", typeof(HealthServiceRecord), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("repositoryDevice", typeof(RepositoryDevice), Order=0)]
         public HealthServiceRecordComponent[] Items1 {
             get {
                 return this.items1Field;
@@ -1290,15 +1291,16 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(RepositoryDevice))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryParameters))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ServiceDeliveryLocation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryRestriction))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(MaskingIndicator))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordContainer))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CrHealthServiceRecordContainer))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]
@@ -1581,6 +1583,57 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
+    public partial class RepositoryDevice : HealthServiceRecordComponent {
+        
+        private DomainIdentifier altIdField;
+        
+        private string nameField;
+        
+        private string jurisdictionField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public DomainIdentifier altId {
+            get {
+                return this.altIdField;
+            }
+            set {
+                this.altIdField = value;
+                this.RaisePropertyChanged("altId");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string name {
+            get {
+                return this.nameField;
+            }
+            set {
+                this.nameField = value;
+                this.RaisePropertyChanged("name");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string jurisdiction {
+            get {
+                return this.jurisdictionField;
+            }
+            set {
+                this.jurisdictionField = value;
+                this.RaisePropertyChanged("jurisdiction");
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34234")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
     public partial class ServiceDeliveryLocation : HealthServiceRecordComponent {
         
         private AddressSet addrField;
@@ -1744,9 +1797,9 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CrHealthServiceRecordContainer))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]

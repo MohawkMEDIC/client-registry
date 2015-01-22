@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace ClientRegistryAdmin.Models
 {
@@ -69,5 +71,31 @@ namespace ClientRegistryAdmin.Models
         /// Other identifiers
         /// </summary>
         public List<KeyValuePair<String, String>> OtherIds { get; set; }
+
+        /// <summary>
+        /// Registration id
+        /// </summary>
+        public decimal RegistrationId { get; set; }
+
+        /// <summary>
+        /// Original data
+        /// </summary>
+        public ClientRegistryAdminService.HealthServiceRecord OriginalData { get; set; }
+
+        /// <summary>
+        /// Original XML
+        /// </summary>
+        public String OriginalXml
+        {
+            get
+            {
+                XmlSerializer xsz = new XmlSerializer(typeof(ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord));
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    xsz.Serialize(ms, this.OriginalData);
+                    return System.Text.Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
+        }
     }
 }

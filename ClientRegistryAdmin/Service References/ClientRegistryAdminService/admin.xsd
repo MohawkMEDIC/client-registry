@@ -96,11 +96,12 @@
       <xs:extension base="tns:HealthServiceRecordContainer">
         <xs:sequence>
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element minOccurs="0" maxOccurs="1" name="personRegRef" type="tns:PersonRegistrationRef" />
-            <xs:element minOccurs="0" maxOccurs="1" name="registration" type="tns:HealthServiceRecord" />
-            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
-            <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
             <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
+            <xs:element minOccurs="0" maxOccurs="1" name="repositoryDevice" type="tns:RepositoryDevice" />
+            <xs:element minOccurs="0" maxOccurs="1" name="personRegRef" type="tns:PersonRegistrationRef" />
+            <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
+            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
+            <xs:element minOccurs="0" maxOccurs="1" name="registration" type="tns:HealthServiceRecord" />
           </xs:choice>
         </xs:sequence>
       </xs:extension>
@@ -374,6 +375,17 @@
       <xs:enumeration value="Remove" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="RepositoryDevice">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:DomainIdentifier" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attribute name="jurisdiction" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
   <xs:complexType name="QueryParameters">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:HealthServiceRecordComponent">
@@ -541,6 +553,17 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
+  <xs:complexType name="Extension">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="data" type="xs:base64Binary" />
+        </xs:sequence>
+        <xs:attribute name="property" type="xs:string" />
+        <xs:attribute name="key" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
   <xs:complexType name="HealthServiceRecord">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:CrHealthServiceRecordContainer">
@@ -574,17 +597,6 @@
       </xs:simpleType>
     </xs:list>
   </xs:simpleType>
-  <xs:complexType name="Extension">
-    <xs:complexContent mixed="false">
-      <xs:extension base="tns:CrHealthServiceRecordContainer">
-        <xs:sequence>
-          <xs:element minOccurs="0" maxOccurs="1" name="data" type="xs:base64Binary" />
-        </xs:sequence>
-        <xs:attribute name="property" type="xs:string" />
-        <xs:attribute name="key" type="xs:string" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
   <xs:complexType name="ArrayOfCodeValue">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="CodeValue" nillable="true" type="tns:CodeValue" />

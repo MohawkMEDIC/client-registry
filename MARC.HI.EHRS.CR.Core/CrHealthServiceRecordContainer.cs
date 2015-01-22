@@ -43,7 +43,8 @@ namespace MARC.HI.EHRS.CR.Core
             typeof(ExtendedAttribute),
             typeof(PersonRegistrationRef),
             typeof(QueryParameters),
-            typeof(RegistrationEvent)
+            typeof(RegistrationEvent),
+            typeof(RepositoryDevice)
         };
 
         /// <summary>
@@ -54,6 +55,7 @@ namespace MARC.HI.EHRS.CR.Core
         [XmlElement("personRegRef", typeof(PersonRegistrationRef))]
         [XmlElement("crQueryParameters", typeof(QueryParameters))]
         [XmlElement("registration", typeof(RegistrationEvent))]
+        [XmlElement("repositoryDevice", typeof(RepositoryDevice))]
         public List<HealthServiceRecordComponent> CrSpecificComponents
         {
             get
