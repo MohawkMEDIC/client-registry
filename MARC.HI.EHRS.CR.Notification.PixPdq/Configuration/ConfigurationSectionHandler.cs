@@ -160,7 +160,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 
                     targetConfig.LlpClientCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
                     targetConfig.LlpClientCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
-                    targetConfig.LlpClientCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.TrustedIssuerCertStore, targetConfig.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
+                    targetConfig.LlpClientCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.LlpClientCertStore, targetConfig.LlpClientCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
                 }
 
                 // Get the notification domains and add them to the configuration

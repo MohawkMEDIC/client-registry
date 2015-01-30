@@ -65,7 +65,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         // AD Maps
         public static readonly Dictionary<String, AddressPart.AddressPartType?> AD_MAP = new Dictionary<string, AddressPart.AddressPartType?>()
         {
-            { "1", AddressPart.AddressPartType.StreetAddressLine },
+            { "1", AddressPart.AddressPartType.AddressLine },
             { "2", AddressPart.AddressPartType.AdditionalLocator },
             { "3", AddressPart.AddressPartType.City },
             { "4", AddressPart.AddressPartType.State },
@@ -974,7 +974,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // MBO
             if (!String.IsNullOrEmpty(pid.BirthOrder.Value))
                 subject.BirthOrder = Convert.ToInt32(pid.BirthOrder.Value);
-
+            else if (!String.IsNullOrEmpty(pid.MultipleBirthIndicator.Value))
+                subject.BirthOrder = -1;
             // Citizenship
             if (pid.CitizenshipRepetitionsUsed > 0)
             {
@@ -1062,11 +1063,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(xad.CountyParishCode.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.CountyParishCode.Value, PartType = AddressPart.AddressPartType.County });
             if (!String.IsNullOrEmpty(xad.OtherDesignation.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.OtherDesignation.Value, PartType = AddressPart.AddressPartType.AddressLine });
+                retVal.Parts.Add(new AddressPart() { AddressValue = xad.OtherDesignation.Value, PartType = AddressPart.AddressPartType.AdditionalLocator });
             if (!String.IsNullOrEmpty(xad.StateOrProvince.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.StateOrProvince.Value, PartType = AddressPart.AddressPartType.State });
             if (!String.IsNullOrEmpty(xad.StreetAddress.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StreetAddress.Value, PartType = AddressPart.AddressPartType.StreetAddressLine });
+                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StreetAddress.Value, PartType = AddressPart.AddressPartType.AddressLine });
             if (!String.IsNullOrEmpty(xad.ZipOrPostalCode.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.ZipOrPostalCode.Value, PartType = AddressPart.AddressPartType.PostalCode });
             return retVal;
@@ -1163,7 +1164,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create components
         /// </summary>
-        internal RegistrationEvent CreateComponents(NHapi.Model.V231.Message.ADT_A40 request, List<IResultDetail> dtls)
+        internal RegistrationEvent CreateComponents(NHapi.Model.V231.Message.ADT_A39 request, List<IResultDetail> dtls)
         {
             // Registration event
             RegistrationEvent retVal = new RegistrationEvent()
@@ -1218,6 +1219,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
             dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value;
             dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
+                dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
             retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
 
 

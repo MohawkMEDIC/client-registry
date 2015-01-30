@@ -88,10 +88,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                              }
                              break;
                          case "count":
+                         case "_count": // TODO: CP
                              retVal.Quantity = Int32.Parse(parameters.GetValues(i)[0]);
                              retVal.ActualParameters.Add("count", retVal.Quantity.ToString());
                              break;
                          case "page":
+                         case "_page":
                              page = Int32.Parse(parameters.GetValues(i)[0]);
                              retVal.ActualParameters.Add("page", page.ToString());
                              break;
@@ -108,8 +110,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                      dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                  }
 
-             if (!hasFormat)
-                 throw new InvalidOperationException("Missing _format parameter");
+             //if (!hasFormat)
+             //    throw new InvalidOperationException("Missing _format parameter");
              
             retVal.Start = page * retVal.Quantity;
 

@@ -78,7 +78,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var qak = retVal.QAK;
             var msa = retVal.MSA;
-            
+
             qak.QueryTag.Value = result.QueryTag;
             msa.AcknowledgmentCode.Value = "AA";
             if (dtls.Exists(o => o.Type == Everest.Connectors.ResultDetailType.Error))
@@ -101,6 +101,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 qak.QueryResponseStatus.Value = "OK";
                 UpdatePID(result.Results[0], retVal.QUERY_RESPONSE.PID, true);
             }
+
+
 
             return retVal;
         }
@@ -200,7 +202,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (subject.BirthOrder.HasValue)
             {
                 pid.MultipleBirthIndicator.Value = "Y";
-                pid.BirthOrder.Value = subject.BirthOrder.ToString();
+                if(subject.BirthOrder.Value > 0)
+                    pid.BirthOrder.Value = subject.BirthOrder.ToString();
             }
 
             // Citizenship
@@ -498,7 +501,42 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), ComponentUtility.AD_USE_MAP.First(o => o.Value == addr.Use).Key);
                 }
             }
+            var ma = personFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf) as PersonalRelationship;
+            if(ma != null)
+            {
+                if(ma.LegalName != null)
+                {
+                    foreach (var pt in ma.LegalName.Parts)
+                    {
+                        string pidNo = ComponentUtility.XPN_MAP.First(o => o.Value == pt.Type).Key;
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), String.Format("@PID.6.{0}", pidNo));
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), pt.Value);
+                    }
+                }
+                if(ma.AlternateIdentifiers != null && ma.AlternateIdentifiers.Count > 0)
+                {
+                    var altId = personFilter.AlternateIdentifiers[0];
 
+                    if (altId.Domain != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.2");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Domain);
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.3");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), "ISO");
+                    }
+                    if (altId.Identifier != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.1");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Identifier);
+                    }
+                    if (altId.AssigningAuthority != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.1");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.AssigningAuthority);
+                    }
+
+                }
+            }
             return retVal;
         }
 

@@ -25,6 +25,7 @@
 {
     var serviceGrid = new WebGrid(Model.ServiceStats, canPage : true, rowsPerPage:30);
     var logGrid = new WebGrid(Model.ClientRegistryLogs, canPage: true, rowsPerPage: 30, defaultSort: "id", selectionFieldName:"Identification");
+    var oidGrid = new WebGrid(Model.Oids, canPage: true, rowsPerPage: 30, defaultSort: "name", selectionFieldName: "oid");
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Services</h3>
@@ -53,4 +54,22 @@
              ), htmlAttributes: new { @class = "table-striped", style = "width:100%" })
         </div>
     </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">OIDs</h3>
+        </div>
+        <div class="panel-body">
+            @oidGrid.GetHtml(
+            columns: oidGrid.Columns(
+            serviceGrid.Column("key", "Key", style: "width:20%"),
+             serviceGrid.Column("oid", "OID", style: "width:20%",
+             format: item => Html.ActionLink((String)item.oid.ToString(), null, "Oid", new { id = item.oid }, new object())
+             ),
+             serviceGrid.Column("url", "URI", style: "width:20%"),
+             serviceGrid.Column("Text", "Description", style: "width:40%")
+             ), htmlAttributes: new { @class = "table-striped", style = "width:100%" })
+        </div>
+    </div>
+
 }

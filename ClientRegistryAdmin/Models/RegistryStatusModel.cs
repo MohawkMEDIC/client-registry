@@ -26,5 +26,7 @@ namespace ClientRegistryAdmin.Models
         /// </summary>
         public ClientRegistryAdminService.LogInfo[] ClientRegistryLogs { get; set; }
 
+
+        public ClientRegistryAdminService.OidInfo[] Oids { get; set; }
     }
 }

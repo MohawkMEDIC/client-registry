@@ -117,7 +117,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             new AuditableObject()
                             {
                                 IDTypeCode = AuditableObjectIdType.Custom,
-                                CustomIdTypeCode = new CodeValue(itiName.Replace("-", "")),
+                                CustomIdTypeCode = new CodeValue(itiName, "IHE Transactions") { DisplayName = "Patient Demographics Query" },
                                 QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                                 Type = AuditableObjectType.SystemObject,
                                 Role = AuditableObjectRole.Query,
@@ -190,7 +190,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                             new AuditableObject()
                             {
                                 IDTypeCode = AuditableObjectIdType.Custom,
-                                CustomIdTypeCode = new CodeValue("ITI9"),
+                                CustomIdTypeCode = new CodeValue("ITI-9", "IHE Transactions") { DisplayName = "PIX Query" },
                                 QueryData = Convert.ToBase64String(CreateMessageSerialized(msgEvent.Message)),
                                 Type = AuditableObjectType.SystemObject,
                                 Role = AuditableObjectRole.Query,
@@ -805,16 +805,19 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
             catch (DuplicateNameException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }
             catch (MissingPrimaryKeyException ex) // Already persisted stuff
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }
             catch (ConstraintException ex)
             {
+                Trace.TraceError(ex.ToString());
                 dtls.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
                 return null;
             }

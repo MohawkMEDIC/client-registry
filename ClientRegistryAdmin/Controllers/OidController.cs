@@ -1,37 +1,32 @@
-﻿using System;
+﻿using ClientRegistryAdmin.ClientRegistryAdminService;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using ClientRegistryAdmin.Models;
-using System.Diagnostics;
 
 namespace ClientRegistryAdmin.Controllers
 {
-    public class HomeController : Controller
+    public class OidController : Controller
     {
         //
-        // GET: /Home/
-
-        public ActionResult Index()
+        // GET: /Oid/
+        public ActionResult Index(String id)
         {
-
-            RegistryStatusModel model = new RegistryStatusModel();
+            OidInfo model = new OidInfo();
 
             try
             {
                 // Client to the CR admin interface
                 ClientRegistryAdminService.ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminService.ClientRegistryAdminInterfaceClient();
 
-                model.ServiceStats = client.GetServices();
-                model.ClientRegistryLogs = client.GetLogFiles();
-                model.Oids = client.GetOids();
-                model.ClientRegistryOnline = true;
+                model = client.GetOids().Where(o=>o.oid == id).First();
+                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError(e.ToString());
-                model.ClientRegistryOnline = false;
             }
 
             return View(model);

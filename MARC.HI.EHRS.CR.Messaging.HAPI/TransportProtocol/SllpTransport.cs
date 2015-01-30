@@ -286,7 +286,12 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             if(certificate != null)
                 Trace.TraceInformation("Received client certificate with subject {0}", certificate.Subject);
             if (chain != null)
+            {
                 Trace.TraceInformation("Client certificate is chained with {0}", chain.ChainElements.Count);
+
+                foreach (var el in chain.ChainElements)
+                    Trace.TraceInformation("\tChain Element : {0}", el.Certificate.Subject);
+            }
             else
             {
                 Trace.TraceWarning("Didn't get a chain, so I'm making my own");
@@ -318,8 +323,8 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                     Trace.TraceError("Certification authority from the supplied certificate doesn't match the expected thumbprint of the CA");
                 foreach (var stat in chain.ChainStatus)
                     Trace.TraceWarning("Certificate chain validation error: {0}", stat.StatusInformation);
-                isValid &= chain.ChainStatus.Length == 0;
-                return sslPolicyErrors == SslPolicyErrors.None;
+                //isValid &= chain.ChainStatus.Length == 0;
+                return isValid;
             }
         }
 
@@ -402,8 +407,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         // Setup local and remote receive endpoint data for auditing
                         var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
                         var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
-                        Uri localEndpoint = new Uri(String.Format("llp://{0}:{1}", localEp.Address, localEp.Port));
-                        Uri remoteEndpoint = new Uri(String.Format("llp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+                        Uri localEndpoint = new Uri(String.Format("sllp://{0}:{1}", localEp.Address, localEp.Port));
+                        Uri remoteEndpoint = new Uri(String.Format("sllp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+#if DEBUG
+                        Trace.TraceInformation("Received message from sllp://{0} : {1}", tcpClient.Client.RemoteEndPoint, messageData.ToString());
+#endif
+
+                        
                         messageArgs = new Hl7MessageReceivedEventArgs(message, localEndpoint, remoteEndpoint, DateTime.Now);
 
                         // Call any bound event handlers that there is a message available
@@ -421,7 +431,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                                 {
                                     var strMessage = parser.Encode(messageArgs.Response);
 #if DEBUG
-                                    Trace.TraceInformation("Sending message to llp://{0} : {1}", tcpClient.Client.RemoteEndPoint, strMessage);
+                                    Trace.TraceInformation("Sending message to sllp://{0} : {1}", tcpClient.Client.RemoteEndPoint, strMessage);
 #endif
                                     // Since nHAPI only emits a string we just send that along the stream
                                     streamWriter.Write(strMessage);

@@ -112,6 +112,7 @@
     <Compile Include="MessageUtility.cs" />
     <Compile Include="MllpMessageSender.cs" />
     <Compile Include="NotificationQueueWorkItem.cs" />
+    <Compile Include="Notifiers\PAT_ID_X_REF_MGR.cs" />
     <Compile Include="Notifiers\PAT_ID_X_REF_MGR_HL7v3.cs" />
     <Compile Include="Notifiers\PAT_IDENTITY_SRC_HL7v3.cs" />
     <Compile Include="Notifiers\PAT_IDENTITY_SRC.cs" />

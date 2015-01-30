@@ -16,6 +16,10 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>false</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -132,6 +136,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LogController.cs" />
+    <Compile Include="Controllers\OidController.cs" />
     <Compile Include="Controllers\PatientController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -229,6 +234,7 @@
     <Content Include="Scripts\modernizr-2.5.3.js" />
     <Content Include="Scripts\npm.js" />
     <Content Include="Scripts\_references.js" />
+    <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -238,6 +244,9 @@
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.LogInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -261,6 +270,7 @@
     <Content Include="Views\Log\Details.cshtml" />
     <Content Include="Views\Patient\Index.cshtml" />
     <Content Include="Views\Patient\View.cshtml" />
+    <Content Include="Views\Oid\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

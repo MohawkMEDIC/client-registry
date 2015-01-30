@@ -72,7 +72,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Identifier = cntrPsn.Id.ToString()
             }, true);
             pp.MergePersons(dbCntrPsn, cntrPsn);
-
+            
             // Load the components for the person
             DbUtil.DePersistComponents(conn, psn, this, true);
 
@@ -95,7 +95,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Not symbolic, means that we do a hard replace
                 // Symbolic replace = Just replace the reference to that identifier
                 // Hard replace = Merge the new and old record and then replace them
-                if(!symbolic)
+                if (!symbolic)
                 {
 
                     // Now to copy the components of the current version down
@@ -107,9 +107,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     // This is a merge from old to new in order to capture any data elements 
                     // that have been updated in the old that might be newer (or more accurate) than the 
                     // the new
-                    if(psn.AlternateIdentifiers == null)
+                    if (psn.AlternateIdentifiers == null)
                         dbCntrPsn.AlternateIdentifiers = new List<SVC.Core.DataTypes.DomainIdentifier>();
-                    else if(psn.OtherIdentifiers == null)
+                    else if (psn.OtherIdentifiers == null)
                         dbCntrPsn.OtherIdentifiers = new List<KeyValuePair<SVC.Core.DataTypes.CodeValue, SVC.Core.DataTypes.DomainIdentifier>>();
                     foreach (var id in psn.AlternateIdentifiers)
                     {
@@ -117,7 +117,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         id.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
 
                         // If this is a duplicate id then don't add
-                        if(dbCntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
+                        if (dbCntrPsn.AlternateIdentifiers.Exists(i => i.Domain == id.Domain && i.Identifier == id.Identifier))
                             continue;
 
                         bool isPrivate = false;
@@ -141,13 +141,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         // Remove the identifier from the original
                         id.Value.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Remove;
-                        
+
                         // If this is a duplicate id then don't add
-                        if(dbCntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain && i.Value.Identifier == id.Value.Identifier))
+                        if (dbCntrPsn.OtherIdentifiers.Exists(i => i.Value.Domain == id.Value.Domain && i.Value.Identifier == id.Value.Identifier))
                             continue;
 
                         // Add to other identifiers
-                        var oth = new KeyValuePair<SVC.Core.DataTypes.CodeValue,SVC.Core.DataTypes.DomainIdentifier>(
+                        var oth = new KeyValuePair<SVC.Core.DataTypes.CodeValue, SVC.Core.DataTypes.DomainIdentifier>(
                             id.Key,
                             new SVC.Core.DataTypes.DomainIdentifier()
                             {
@@ -161,12 +161,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                         // Copy extensions
                         var extns = psn.FindAllExtensions(o => o.PropertyPath == String.Format("OtherIdentifiers[{0}{1}]", oth.Value.Domain, oth.Value.Identifier));
-                        if(extns != null)
-                            foreach(var ex in extns)
-                                if(dbCntrPsn.FindExtension(o => o.PropertyPath == ex.PropertyPath && o.Name == ex.Name) == null)
+                        if (extns != null)
+                            foreach (var ex in extns)
+                                if (dbCntrPsn.FindExtension(o => o.PropertyPath == ex.PropertyPath && o.Name == ex.Name) == null)
                                     dbCntrPsn.Add(ex);
                         dbCntrPsn.OtherIdentifiers.Add(oth);
                     }
+
+
 
                     // Make sure we don't update what we don't need to 
                     dbCntrPsn.Addresses = psn.Addresses = null;
@@ -183,6 +185,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     psn.Status = SVC.Core.ComponentModel.Components.StatusType.Obsolete; // obsolete the old person
                 }
                 else // migrate identifiers
+                {
                     foreach (var id in refr.AlternateIdentifiers)
                     {
                         bool isPrivate = false;
@@ -201,25 +204,51 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         });
                     }
 
+                    // set to ignore
+                    if (psn.Names != null)
+                        foreach (var rc in psn.Names)
+                            rc.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Ignore;
+
+                    // set to ignore
+                    if (psn.Addresses != null)
+                        foreach (var rc in psn.Addresses)
+                            rc.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Ignore;
+
+                    // set to ignore
+                    if(psn.Race != null)
+                        foreach (var rc in psn.Race)
+                            rc.UpdateMode = SVC.Core.DataTypes.UpdateModeType.Ignore;
+                }
                 // Now update the person
                 //psn.Site = refr.Site;
                 //pp.Persist(conn, tx, psn, true); // update the person record
                 var regEvent = this.GetRegistrationEvent(conn, tx, psn); // get the registration event
                 var changeSummary = DbUtil.GetRegistrationEvent(refr).FindComponent(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf) as ChangeSummary;
-                regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf);
-                regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
-                regEvent.Add(new ChangeSummary() {
-                    ChangeType = changeSummary.ChangeType,
-                    EffectiveTime = changeSummary.EffectiveTime,
-                    LanguageCode = changeSummary.LanguageCode,
-                    Status = changeSummary.Status,
-                    Timestamp = changeSummary.Timestamp
-                }, "CHG", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
-                regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                if (changeSummary != null)
+                {
+                    regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf);
+                    regEvent.Add(new ChangeSummary()
+                    {
+                        ChangeType = changeSummary.ChangeType,
+                        EffectiveTime = changeSummary.EffectiveTime,
+                        LanguageCode = changeSummary.LanguageCode,
+                        Status = changeSummary.Status,
+                        Timestamp = changeSummary.Timestamp
+                    }, "CHG", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
+                }
                 if (!symbolic)
                     regEvent.Status = StatusType.Obsolete; // obsolete
 
+                regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
+                regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                 new RegistrationEventPersister().Persist(conn, tx, regEvent, true);
+
+                refr.AlternateIdentifiers.Clear();
+                refr.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
+                {
+                    Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid("CR_CID").Oid,
+                    Identifier = psn.Id.ToString()
+                });
 
                 //pp.CreatePersonVersion(conn, tx, psn);
                 //DbUtil.PersistComponents(conn, tx, false, this, psn);

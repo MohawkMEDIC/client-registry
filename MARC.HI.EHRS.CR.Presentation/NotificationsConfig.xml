@@ -5,7 +5,7 @@
         <action type="Any"/>
       </notify>
     </add>
-    <add connectionString="llp://127.0.0.1:9100" deviceId="TS_SCE" name="MARC-HI XDS Registry" myActor="PAT_IDENTITY_SRC">
+    <add connectionString="llp://127.0.0.1:9100" deviceId="TS_SCE" name="MARC-HI XDS Registry" myActor="PAT_ID_X_REF_MGR">
     
       <!-- NB: this is for testing only, change this to match the affinity domain of the XDS repository -->
       <!--<trustedIssuerCertificate storeLocation="My" storeName="Root" x509FindType="FindByThumbprint" findValue=""/>

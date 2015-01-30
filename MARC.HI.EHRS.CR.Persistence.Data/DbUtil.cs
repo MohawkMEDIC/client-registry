@@ -184,7 +184,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             CodeSystem = Convert.ToString(reader["cd_domain"]),
                             OriginalText = reader["org_text"] == DBNull.Value ? null : Encoding.UTF8.GetString((byte[])reader["org_text"]),
                             CodeSystemVersion = reader["cd_vrsn"] == DBNull.Value ? null :  Convert.ToString(reader["cd_vrsn"]),
-                            Key = codeId.Value
+                            Key = codeId.Value,
+                            UpdateMode = UpdateModeType.Ignore
                         };
                     }
                 }

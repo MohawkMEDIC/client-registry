@@ -67,6 +67,24 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         private bool RemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
 
+#if DEBUG
+            if (certificate != null)
+                Trace.TraceInformation("Received client certificate with subject {0}", certificate.Subject);
+            if (chain != null)
+            {
+                Trace.TraceInformation("Client certificate is chained with {0}", chain.ChainElements.Count);
+
+                foreach (var el in chain.ChainElements)
+                    Trace.TraceInformation("\tChain Element : {0}", el.Certificate.Subject);
+            }
+            if (sslPolicyErrors != SslPolicyErrors.None)
+            {
+                Trace.TraceError("SSL Policy Error : {0}", sslPolicyErrors);
+
+            }
+
+#endif
+
             // First Validate the chain
 
             if (certificate == null || chain == null)
@@ -82,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     Trace.TraceError("Certification authority from the supplied certificate doesn't match the expected thumbprint of the CA");
                 foreach (var stat in chain.ChainStatus)
                     Trace.TraceWarning("Certificate chain validation error: {0}", stat.StatusInformation);
-                isValid &= chain.ChainStatus.Length == 0;
+                //isValid &= chain.ChainStatus.Length == 0;
                 return isValid;
             }
         }

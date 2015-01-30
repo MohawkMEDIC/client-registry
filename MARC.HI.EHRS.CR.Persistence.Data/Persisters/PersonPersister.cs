@@ -949,7 +949,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 Domain = Convert.ToString(rdr["id_domain"]),
                                 Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                 AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
-                                IsPrivate = Convert.ToBoolean(rdr["is_prvt"])
+                                IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
+                                UpdateMode = UpdateModeType.Ignore
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
@@ -960,7 +961,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                     Domain = Convert.ToString(rdr["id_domain"]),
                                     Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                     AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
-                                    IsPrivate = Convert.ToBoolean(rdr["is_prvt"])
+                                    IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
+                                    UpdateMode = UpdateModeType.Ignore
                                 })
                             );
                     }
@@ -1043,7 +1045,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         person.Language.Add(new PersonLanguage()
                         {
                             Language = Convert.ToString(rdr["lang_cs"]),
-                            Type = (LanguageType)Convert.ToInt32(rdr["mode_cs"])
+                            Type = (LanguageType)Convert.ToInt32(rdr["mode_cs"]),
+                            UpdateMode = UpdateModeType.Ignore
                         });
             }
 #if PERFMON
@@ -1072,7 +1075,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         person.Addresses.Add(new AddressSet()
                         {
+                            UpdateMode = UpdateModeType.Ignore,
                             Key = Convert.ToDecimal(rdr["addr_set_id"]),
+                            
                             Use = (AddressSet.AddressSetUse)Convert.ToInt32(rdr["addr_set_use"])
                         });
                     }
@@ -1111,6 +1116,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         person.Names.Add(new NameSet()
                         {
                             Key = Convert.ToDecimal(rdr["name_set_id"]),
+                            UpdateMode = UpdateModeType.Ignore,
                             Use = (NameSet.NameSetUse)Convert.ToInt32(rdr["name_set_use"])
                         });
                     }
@@ -1383,7 +1389,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     if (rce.UpdateMode == UpdateModeType.Remove) continue;
 
-                    var candidateRace = oldPerson.EthnicGroup.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
+                    var candidateRace = oldPerson.EthnicGroup.Find(o => o.CodeSystem == (rce.CodeSystem ?? "") && o.Code == rce.Code);
                     if (candidateRace != null) // New exists in the old
                     {
                         rce.UpdateMode = UpdateModeType.Ignore;
@@ -1401,7 +1407,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var rce in newPerson.Race)
                 {
                     if (rce.UpdateMode == UpdateModeType.Remove) continue;
-                    var candidateRace = oldPerson.Race.Find(o => o.CodeSystem == rce.CodeSystem && o.Code == rce.Code);
+                    var candidateRace = oldPerson.Race.Find(o => o.CodeSystem == (rce.CodeSystem ?? "") && o.Code == rce.Code);
                     if (candidateRace != null) // New exists in the old
                     {
                         rce.UpdateMode = UpdateModeType.Ignore;

@@ -680,5 +680,19 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
             
         }
+
+        /// <summary>
+        /// Get OIDS
+        /// </summary>
+        public List<OidInfo> GetOids()
+        {
+            List<OidInfo> retVal = new List<OidInfo>();
+            var conf = ApplicationContext.CurrentContext.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            foreach (MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData data in conf.OidRegistrar)
+            {
+                retVal.Add(new OidInfo(data));
+            }
+            return retVal;
+        }
     }
 }

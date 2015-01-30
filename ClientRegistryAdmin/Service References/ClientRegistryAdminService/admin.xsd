@@ -96,12 +96,12 @@
       <xs:extension base="tns:HealthServiceRecordContainer">
         <xs:sequence>
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
+            <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
             <xs:element minOccurs="0" maxOccurs="1" name="repositoryDevice" type="tns:RepositoryDevice" />
             <xs:element minOccurs="0" maxOccurs="1" name="personRegRef" type="tns:PersonRegistrationRef" />
-            <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
-            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
             <xs:element minOccurs="0" maxOccurs="1" name="registration" type="tns:HealthServiceRecord" />
+            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
+            <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
           </xs:choice>
         </xs:sequence>
       </xs:extension>
@@ -375,17 +375,6 @@
       <xs:enumeration value="Remove" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:complexType name="RepositoryDevice">
-    <xs:complexContent mixed="false">
-      <xs:extension base="tns:HealthServiceRecordComponent">
-        <xs:sequence>
-          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:DomainIdentifier" />
-        </xs:sequence>
-        <xs:attribute name="name" type="xs:string" />
-        <xs:attribute name="jurisdiction" type="xs:string" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
   <xs:complexType name="QueryParameters">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:HealthServiceRecordComponent">
@@ -414,6 +403,17 @@
       <xs:enumeration value="Weak" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="RepositoryDevice">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:HealthServiceRecordComponent">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="altId" type="tns:DomainIdentifier" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attribute name="jurisdiction" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
   <xs:complexType name="ServiceDeliveryLocation">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:HealthServiceRecordComponent">
@@ -544,15 +544,6 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:complexType name="PersonRegistrationRef">
-    <xs:complexContent mixed="false">
-      <xs:extension base="tns:CrHealthServiceRecordContainer">
-        <xs:sequence>
-          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
   <xs:complexType name="Extension">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:CrHealthServiceRecordContainer">
@@ -561,6 +552,15 @@
         </xs:sequence>
         <xs:attribute name="property" type="xs:string" />
         <xs:attribute name="key" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="PersonRegistrationRef">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CrHealthServiceRecordContainer">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="altId" type="tns:DomainIdentifier" />
+        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -735,4 +735,31 @@
   <xs:element name="ResolveResponse">
     <xs:complexType />
   </xs:element>
+  <xs:element name="GetOids">
+    <xs:complexType />
+  </xs:element>
+  <xs:element name="GetOidsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="GetOidsResult" type="tns:ArrayOfOidInfo" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfOidInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="OidInfo" nillable="true" type="tns:OidInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="OidInfo" mixed="true">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="attribute" type="tns:AttributeData" />
+    </xs:sequence>
+    <xs:attribute name="oid" type="xs:string" />
+    <xs:attribute name="url" type="xs:string" />
+    <xs:attribute name="key" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="AttributeData">
+    <xs:attribute name="key" type="xs:string" />
+    <xs:attribute name="value" type="xs:string" />
+  </xs:complexType>
 </xs:schema>

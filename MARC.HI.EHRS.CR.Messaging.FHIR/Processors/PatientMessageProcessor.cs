@@ -222,6 +222,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                                         }
                                     }
 
+                                    actualAdParm = actualAdParm.Remove(actualAdParm.Length - 1, 1);
                                     retVal.ActualParameters.Add("address", actualAdParm.ToString());
                                     break;
                                 }

@@ -93,5 +93,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         [OperationContract(Action = "Resolve")]
         void Resolve(decimal sourceId);
 
+        /// <summary>
+        /// Get a list of configured OIDs
+        /// </summary>
+        [OperationContract(Action = "GetOids")]
+        List<OidInfo> GetOids();
+
     }
 }
