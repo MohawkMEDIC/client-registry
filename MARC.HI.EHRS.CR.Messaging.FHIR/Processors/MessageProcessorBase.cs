@@ -77,6 +77,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                      switch (parameters.GetKey(i))
                      {
                          case "stateid":
+                         case "_stateid":
                              try
                              {
                                  retVal.QueryId = Guid.Parse(parameters.GetValues(i)[0]);

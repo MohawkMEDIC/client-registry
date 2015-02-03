@@ -215,7 +215,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     {
                         retVal.Id = identifier;
                         retVal.RelationshipKind = Convert.ToString(rdr["kind_cs"]);
-                        
+
                         // Add prs
                         retVal.AlternateIdentifiers.Add(new DomainIdentifier()
                         {
@@ -225,6 +225,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         retVal.Id = Convert.ToDecimal(rdr["rltnshp_id"]);
                         clientId = rdr["src_psn_id"].ToString();
                     }
+                    else
+                        return null;
                 }
                 // First, de-persist the client portions
                 var clientDataRetVal = new PersonPersister().GetPerson(conn, null, new DomainIdentifier()
