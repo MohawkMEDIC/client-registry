@@ -24,6 +24,7 @@ using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using System.ComponentModel;
 using System.Configuration;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 {
@@ -55,33 +56,39 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                 throw new ConfigurationErrorsException(String.Format("Could not find the specified actor implementation {0}", actAs));
             this.m_notifier = ci.Invoke(null) as INotifier;
             this.m_notifier.Target = this;
+            
         }
 
 
         /// <summary>
         /// Gets or sets the name of the notification configuration
         /// </summary>
+        [XmlAttribute("name")]
         public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the WcfServiceConnector connection string
         /// </summary>
+        [XmlIgnore]
         public string ConnectionString { get; internal set; }
 
         /// <summary>
         /// Gets or sets the notification domains to be sent when an action is 
         /// created
         /// </summary>
+        [XmlIgnore]
         public List<NotificationDomainConfiguration> NotificationDomain { get; set; }
 
         /// <summary>
         /// Configuration device identifier
         /// </summary>
+        [XmlIgnore]
         public string DeviceIdentifier { get; private set; }
 
         /// <summary>
         /// Gets the notifier technology implementation
         /// </summary>
+        [XmlIgnore]
         public INotifier Notifier
         {
             get
@@ -93,33 +100,37 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         /// <summary>
         /// Identifies the location to scan fo the server certificate
         /// </summary>
+        [XmlIgnore]
         public StoreLocation LlpClientCertLocation { get; internal set; }
 
         /// <summary>
         /// Identifies the name of the server certificate store
         /// </summary>
+        [XmlIgnore]
         public StoreName LlpClientCertStore { get; internal set; }
 
         /// <summary>
         /// Llp client certificate
         /// </summary>
+        [XmlIgnore]
         public X509Certificate2 LlpClientCertificate { get; internal set; }
-
-
-
+        
         /// <summary>
         /// Identifies the location to scan fo the server certificate
         /// </summary>
+        [XmlIgnore]
         public StoreLocation TrustedIssuerCertLocation { get; internal set; }
 
         /// <summary>
         /// Identifies the name of the server certificate store
         /// </summary>
+        [XmlIgnore]
         public StoreName TrustedIssuerCertStore { get; internal set; }
 
         /// <summary>
         /// Gets the server certificate
         /// </summary>
+        [XmlIgnore]
         public X509Certificate2 TrustedIssuerCertificate { get; internal set; }
     }
 }

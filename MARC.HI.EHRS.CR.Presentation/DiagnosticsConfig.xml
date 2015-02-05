@@ -1,0 +1,15 @@
+﻿<system.diagnostics>
+  <sharedListeners>
+    <add name="fileLog"  type="MARC.HI.EHRS.SVC.Core.Logging.RollOverTextWriterTraceListener, MARC.HI.EHRS.SVC.Core" initializeData="cr.log"/>
+    <add name="console" type="System.Diagnostics.ConsoleTraceListener"/>
+    <add name="xmlLog" type="System.Diagnostics.XmlWriterTraceListener" initializeData="shr.log.svclog" >
+      <filter type="System.Diagnostics.EventTypeFilter" initializeData="Information, Warning, Error"/>
+    </add>
+  </sharedListeners>
+  <trace autoflush="true">
+    <listeners>
+      <add name="fileLog"/>
+      <add name="console"/>
+    </listeners>
+  </trace>
+</system.diagnostics>

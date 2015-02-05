@@ -1,0 +1,43 @@
+﻿@model ClientRegistryAdmin.ClientRegistryAdminService.OidInfo
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Oid Details (@Model.key)</h2>
+
+
+<table border="1" style="width:80%" class="infotable">
+    <tr>
+        <th>KEY</th>
+        <td>@Model.key</td>
+    </tr>
+    <tr>
+        <th>OID</th>
+        <td>@Model.oid</td>
+    </tr>
+    <tr>
+        <th>URI</th>
+        <td>@Model.url</td>
+    </tr>
+    <tr>
+        <th>Description</th>
+        <td>@Model.Text</td>
+    </tr>
+    @if(Model.attribute != null)
+    { 
+        <tr>
+            <th colspan="2" style="text-align:center">Attributes</th>
+        </tr>
+        <tr>
+            <th style="text-align:center">Key</th>
+            <th style="text-align:center">Value</th>
+        </tr>
+        foreach(var att in Model.attribute)
+        {
+            <tr>
+                <td>@att.key</td>
+                <td>@att.value</td>
+            </tr>
+        }
+    }
+</table>

@@ -32,6 +32,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using MARC.HI.EHRS.CR.Core.Services;
 using NHapi.Model.V25.Message;
+using NHapi.Base.Parser;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -62,6 +63,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     // Get the MSH segment
                     var terser = new Terser(e.Message);
                     var trigger = terser.Get("/MSH-9-2");
+                    Trace.TraceInformation("Message is of type {0} {1}", e.Message.GetType().FullName, trigger);
+
                     switch (trigger)
                     {
                         case "Q23":
@@ -81,6 +84,16 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         case "A08":
                             if(e.Message is NHapi.Model.V231.Message.ADT_A01)
                                 response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A01, e);
+                            else if(e.Message is NHapi.Model.V231.Message.ADT_A08)
+                                response = HandlePixUpdate(e.Message as NHapi.Model.V231.Message.ADT_A08, e);
+                            else
+                                response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+                            break;
+                        case "A40":
+                            if (e.Message is NHapi.Model.V231.Message.ADT_A39)
+                                response = HandlePixMerge(e.Message as NHapi.Model.V231.Message.ADT_A39, e);
+                            else if (e.Message is NHapi.Model.V231.Message.ADT_A40)
+                                response = HandlePixMerge(e.Message as NHapi.Model.V231.Message.ADT_A40, e);
                             else
                                 response = MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
                             break;
@@ -101,6 +114,122 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 response = MessageUtil.CreateNack(e.Message, "AR", "207", ex.Message, config);
             }
 
+            return response;
+        }
+
+        private IMessage HandlePixMerge(NHapi.Model.V231.Message.ADT_A40 aDT_A40, Hl7MessageReceivedEventArgs e)
+        {
+            ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            ISystemConfigurationService config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            PipeParser parser = new PipeParser();
+            aDT_A40.MSH.MessageType.MessageStructure.Value = "ADT_A39";
+            var message = parser.Parse(parser.Encode(aDT_A40));
+            if (message is NHapi.Model.V231.Message.ADT_A39)
+                return this.HandlePixMerge(message as NHapi.Model.V231.Message.ADT_A39, e);
+            else
+                return MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+        }
+
+        /// <summary>
+        /// Handle PIX Update
+        /// </summary>
+        private IMessage HandlePixUpdate(NHapi.Model.V231.Message.ADT_A08 aDT_A08, Hl7MessageReceivedEventArgs e)
+        {
+            ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            ISystemConfigurationService config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+
+            PipeParser parser = new PipeParser();
+            aDT_A08.MSH.MessageType.MessageStructure.Value = "ADT_A01";
+            var message = parser.Parse(parser.Encode(aDT_A08));
+            if (message is NHapi.Model.V231.Message.ADT_A01)
+                return this.HandlePixUpdate(message as NHapi.Model.V231.Message.ADT_A01, e);
+            else
+                return MessageUtil.CreateNack(e.Message, "AR", "200", locale.GetString("MSGE074"), config);
+        }
+
+        /// <summary>
+        /// Handle the PIX merge request
+        /// </summary>
+        private IMessage HandlePixMerge(NHapi.Model.V231.Message.ADT_A39 request, Hl7MessageReceivedEventArgs evt)
+        {
+            // Get config
+            var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Create a details array
+            List<IResultDetail> dtls = new List<IResultDetail>();
+
+            // Validate the inbound message
+            MessageUtil.Validate((IMessage)request, config, dtls, this.Context);
+
+            IMessage response = null;
+
+            // Control 
+            if (request == null)
+                return null;
+
+            // Data controller
+            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            // Construct appropriate audit
+            List<AuditData> audit = new List<AuditData>();
+            try
+            {
+
+                // Create Query Data
+                ComponentUtility cu = new ComponentUtility() { Context = this.Context };
+                DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
+                var data = cu.CreateComponents(request, dtls);
+                if (data == null)
+                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+
+                var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+
+                if (vid == null)
+                    throw new InvalidOperationException(locale.GetString("DTPE001"));
+
+                List<VersionedDomainIdentifier> deletedRecordIds = new List<VersionedDomainIdentifier>(),
+                    updatedRecordIds = new List<VersionedDomainIdentifier>();
+
+                // Subjects
+                var oidData = config.OidRegistrar.GetOid("CR_CID").Oid;
+                foreach (Person subj in data.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf))
+                {
+                    PersonRegistrationRef replcd = subj.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.ReplacementOf) as PersonRegistrationRef;
+                    deletedRecordIds.Add(new VersionedDomainIdentifier() { 
+                        Identifier = replcd.Id.ToString(),
+                        Domain = oidData
+                    });
+                    updatedRecordIds.Add(new VersionedDomainIdentifier() {
+                        Identifier = subj.Id.ToString(),
+                        Domain = oidData
+                    });
+                }
+
+                // Now audit
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.Success, evt, deletedRecordIds));
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Update, OutcomeIndicator.Success, evt, updatedRecordIds));
+                // Now process the result
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
+                MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.TriggerEvent.Value = request.MSH.MessageType.TriggerEvent.Value;
+                (response as NHapi.Model.V231.Message.ACK).MSH.MessageType.MessageType.Value = "ACK";
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError(e.ToString());
+                if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
+                    dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
+                response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
+                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty));
+            }
+            finally
+            {
+                IAuditorService auditSvc = this.Context.GetService(typeof(IAuditorService)) as IAuditorService;
+                if (auditSvc != null)
+                    foreach(var aud in audit) 
+                        auditSvc.SendAudit(aud);
+            }
             return response;
         }
 
@@ -278,7 +407,29 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 // Now process the result
                 response = dcu.CreateRSP_K23(result, dtls);
+                //var r = dcu.CreateRSP_K23(null, null);
                 // Copy QPD
+                try
+                {
+                    (response as NHapi.Model.V25.Message.RSP_K23).QPD.MessageQueryName.Identifier.Value = request.QPD.MessageQueryName.Identifier.Value;
+                    Terser reqTerser = new Terser(request),
+                        rspTerser = new Terser(response);
+                    rspTerser.Set("/QPD-1", reqTerser.Get("/QPD-1"));
+                    rspTerser.Set("/QPD-2", reqTerser.Get("/QPD-2"));
+                    rspTerser.Set("/QPD-3-1", reqTerser.Get("/QPD-3-1"));
+                    rspTerser.Set("/QPD-3-4-1", reqTerser.Get("/QPD-3-4-1"));
+                    rspTerser.Set("/QPD-3-4-2", reqTerser.Get("/QPD-3-4-2"));
+                    rspTerser.Set("/QPD-3-4-3", reqTerser.Get("/QPD-3-4-3"));
+                    rspTerser.Set("/QPD-4-1", reqTerser.Get("/QPD-4-1"));
+                    rspTerser.Set("/QPD-4-4-1", reqTerser.Get("/QPD-4-4-1"));
+                    rspTerser.Set("/QPD-4-4-2", reqTerser.Get("/QPD-4-4-2"));
+                    rspTerser.Set("/QPD-4-4-3", reqTerser.Get("/QPD-4-4-3"));
+
+                }
+                catch(Exception e)
+                {
+                    Trace.TraceError(e.ToString());
+                }
                 //MessageUtil.((response as NHapi.Model.V25.Message.RSP_K23).QPD, request.QPD);
                 
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);

@@ -49,7 +49,7 @@
   <add name="CR_MSGID" oid="0.0.0.0.4" desc="Message identifiers root when not in token"/>
   <add name="DEV_CRID" oid="0.0.0.0.3" desc="Device identifier"/>
   <add name="CR_PRID" oid="0.0.0.0.2" desc="Personal Relationship identifiers"/>
-
+  <add name="V2_SEND_FAC_ID" oid="0.0.0.0.394" desc="HL7v2 Sending Device/Facility IDs Assigning Authority"/>
   <add name="SUBSC_PID" oid="0.0.0.0.8" desc="Subscription Provider IDs (Should point to CR_PID)"/>
   <add name="SUBSC_RID" oid="0.0.0.0.1" desc="Subscription Record IDs (Should point to REG_EVT)"/>
 </registeredOids>

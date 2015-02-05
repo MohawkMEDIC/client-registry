@@ -102,7 +102,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             retVal.Add(changeSummary, "CHANGE", HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf, null);
             (changeSummary.Site as HealthServiceRecordSite).IsSymbolic = true; // this link adds no real value to the parent's data
             
-
+            
             // author ( this is optional in IHE)
             if(controlActEvent.Subject == null || controlActEvent.Subject.Count != 1 || controlActEvent.Subject[0].RegistrationEvent == null || controlActEvent.Subject[0].RegistrationEvent.NullFlavor != null)
                 ;
@@ -131,11 +131,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 {
                     changeSummary.Add(aut, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, aut.AlternateIdentifiers);
                     retVal.Add(aut.Clone() as IComponent, "AUT".ToString(), HealthServiceRecordSiteRoleType.AuthorOf, aut.AlternateIdentifiers);
-
                 }
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE004"), null, null));
             }
+
+            if (controlActEvent.Id != null && !controlActEvent.Id.IsEmpty)
+                changeSummary.AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Domain = controlActEvent.Id.First.Root,
+                    Identifier = controlActEvent.Id.First.Extension,
+                    AssigningAuthority = controlActEvent.Id.First.AssigningAuthorityName
+                };
 
             return retVal;
         }
@@ -733,12 +740,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Didn't actually have a place for this so this will be an extension
             if (ident.EthnicGroupCode != null && !ident.EthnicGroupCode.IsNull)
                 foreach (var eth in ident.EthnicGroupCode)
-                    retVal.Add(new ExtendedAttribute()
-                    {
-                        Name = "EthnicGroupCode",
-                        PropertyPath = "",
-                        Value = CreateCodeValue(eth, dtls)
-                    });
+                    retVal.EthnicGroup.Add(this.CreateCodeValue(eth, dtls));
 
 
             // Marital Status Code
@@ -749,6 +751,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if (ident.ReligiousAffiliationCode != null && !ident.ReligiousAffiliationCode.IsNull)
                 retVal.ReligionCode = CreateCodeValue(ident.ReligiousAffiliationCode, dtls);
 
+            
             // Citizenship Code
             if (ident.AsCitizen.Count > 0)
             {
@@ -947,10 +950,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Create a birthplace
         /// </summary>
-        private ServiceDeliveryLocation CreateBirthplace(MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.Place place, List<IResultDetail> dtls)
+        private Place CreateBirthplace(MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.Place place, List<IResultDetail> dtls)
         {
-            var retVal = new ServiceDeliveryLocation();
-
+            var retVal = new Place();
+            
             // Place id
             if (place.Id != null && !place.Id.IsNull)
                 retVal.AlternateIdentifiers = CreateDomainIdentifierList(place.Id, dtls);
@@ -1456,9 +1459,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                             var re = new PersonRegistrationRef()
                             {
                                 AlternateIdentifiers = CreateDomainIdentifierList(rplc.PriorRegistration.Subject1.PriorRegisteredRole.Id, dtls)
+                                
                             };
                             subjectOf.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
-                            //(re.Site as HealthServiceRecordSite).IsSymbolic = true;
+                            (re.Site as HealthServiceRecordSite).IsSymbolic = true;
                         }
 
                     }

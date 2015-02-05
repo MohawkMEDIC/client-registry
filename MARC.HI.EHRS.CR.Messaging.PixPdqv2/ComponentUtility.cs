@@ -31,6 +31,7 @@ using NHapi.Base.Util;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Text.RegularExpressions;
 using MARC.HI.EHRS.CR.Core;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -64,7 +65,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         // AD Maps
         public static readonly Dictionary<String, AddressPart.AddressPartType?> AD_MAP = new Dictionary<string, AddressPart.AddressPartType?>()
         {
-            { "1", AddressPart.AddressPartType.StreetAddressLine },
+            { "1", AddressPart.AddressPartType.AddressLine },
             { "2", AddressPart.AddressPartType.AdditionalLocator },
             { "3", AddressPart.AddressPartType.City },
             { "4", AddressPart.AddressPartType.State },
@@ -299,7 +300,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Get the PID qualifier
             var pid = qpd.GetField(3, 0) as NHapi.Base.Model.Varies;
-            if (pid == null)
+            if (pid == null || pid.Data == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE05F"), "QPD^3"));
             else
             {
@@ -755,17 +756,43 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 LanguageCode = m_config.JurisdictionData.DefaultLanguageCode
             };
 
-            var evn = request.EVN;
-            var pid = request.PID; // get the pid segment
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
 
+            var evn = request.EVN;
+            var pid = request.PID; // get the pid segment
+            
             if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
             else
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
-            
-            Person subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
+
+            Person subject = this.CreatePerson(pid, dtls, aaut);
+
+            // Add to subject
+            retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+            // Add author information (facility)
+            RepositoryDevice dev = new RepositoryDevice();
+            dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
+            dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value; 
+            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
+                dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
+            retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
+
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                return null;
+            return retVal;
+
+        }
+
+        /// <summary>
+        /// Creat the person
+        /// </summary>
+        private Person CreatePerson(NHapi.Model.V231.Segment.PID pid, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData aaut)
+        {
+            var subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
             subject.RoleCode = PersonRole.PAT;
             // TODO: Effective Time
 
@@ -779,7 +806,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // TODO: If the aaut matches a PID auth here then it is the primary
                 // and can be the only one that results in a create.
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
-                    subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+                {
+                    var cx = pid.GetPatientIdentifierList(i);
+                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT")
+                    { 
+
+                        Trace.TraceInformation("Adding {0}^^^&{1}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.UniversalID.Value);
+                        subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
+                    }
+                    else
+                    {
+                        if (subject.OtherIdentifiers == null)
+                            subject.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
+                        subject.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
+                            new CodeValue() { CodeSystem = "1.3.6.1.4.1.33349.3.98.12", Code = cx.IdentifierTypeCode.Value },
+                            CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls)
+                        ));
+                    }
+                }
             }
             else
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE063"), "PID^3"));
@@ -846,35 +890,38 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberHome())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
-                        subject.TelecomAddresses.Add(new TelecommunicationsAddress()
-                        {
-                            Use = "HP",
-                            Value = MessageUtil.TelFromXTN(tel).Value
-                        });
+                    {
+                        var tca = MessageUtil.TelFromXTN(tel);
+                        tca.Use = "HP";
+                        subject.TelecomAddresses.Add(tca);
+                    }
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
+                            Capability = "data text",
                             Use = "HP",
                             Value = String.Format("mailto:{0}", tel.EmailAddress)
                         });
+                    
             }
 
             // Business Home
             if (pid.PhoneNumberBusinessRepetitionsUsed > 0)
             {
-                if(subject.TelecomAddresses == null)
+                if (subject.TelecomAddresses == null)
                     subject.TelecomAddresses = new List<TelecommunicationsAddress>();
                 foreach (var tel in pid.GetPhoneNumberBusiness())
                     if (String.IsNullOrEmpty(tel.EmailAddress.Value))
-                        subject.TelecomAddresses.Add(new TelecommunicationsAddress()
-                        {
-                            Use = "WP",
-                            Value = MessageUtil.TelFromXTN(tel)
-                        });
+                    {
+                        var tca = MessageUtil.TelFromXTN(tel);
+                        tca.Use = "WP";
+                        subject.TelecomAddresses.Add(tca);
+                    }
                     else
                         subject.TelecomAddresses.Add(new TelecommunicationsAddress()
                         {
                             Use = "WP",
+                            Capability = "data text",
                             Value = String.Format("mailto:{0}", tel.EmailAddress)
                         });
             }
@@ -883,19 +930,27 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PrimaryLanguage.Identifier.Value))
             {
                 var langCd = CreateCodeValue(pid.PrimaryLanguage, dtls);
-                if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
+                if (langCd.CodeSystem == null)
+                    langCd.CodeSystem = this.m_config.OidRegistrar.GetOid("ISO639-1").Oid;
+                else if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
                 {
                     var termSvc = this.m_context.GetService(typeof(ITerminologyService)) as ITerminologyService;
                     langCd = termSvc.Translate(langCd, this.m_config.OidRegistrar.GetOid("ISO639-1").Oid);
                 }
                 if (langCd.CodeSystem != this.m_config.OidRegistrar.GetOid("ISO639-1").Oid)
                     dtls.Add(new VocabularyIssueResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE04C"), "PID^15", null));
+                subject.Language = new List<PersonLanguage>();
+                subject.Language.Add(new PersonLanguage()
+                {
+                    Language = langCd.Code,
+                    Type = LanguageType.Preferred
+                });
             }
 
             // Marital Status
             if (!String.IsNullOrEmpty(pid.MaritalStatus.Identifier.Value))
                 subject.MaritalStatus = CreateCodeValue(pid.MaritalStatus, dtls);
-            
+
             // Religion
             if (!String.IsNullOrEmpty(pid.Religion.Identifier.Value))
                 subject.ReligionCode = CreateCodeValue(pid.Religion, dtls);
@@ -919,7 +974,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // MBO
             if (!String.IsNullOrEmpty(pid.BirthOrder.Value))
                 subject.BirthOrder = Convert.ToInt32(pid.BirthOrder.Value);
-
+            else if (!String.IsNullOrEmpty(pid.MultipleBirthIndicator.Value))
+                subject.BirthOrder = -1;
             // Citizenship
             if (pid.CitizenshipRepetitionsUsed > 0)
             {
@@ -939,15 +995,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(pid.PatientDeathDateAndTime.TimeOfAnEvent.Value))
                 subject.DeceasedTime = CreateTimestampPart(pid.PatientDeathDateAndTime, dtls);
 
+            // Ethnic group
+            if (pid.EthnicGroupRepetitionsUsed > 0)
+                foreach (var eth in pid.GetEthnicGroup())
+                    subject.EthnicGroup.Add(this.CreateCodeValue(eth, dtls));
+
+            // Birthplace
+            if (!String.IsNullOrEmpty(pid.BirthPlace.Value))
+                subject.Add(new Place()
+                {
+                    Name = pid.BirthPlace.Value
+                }, "BRTH");
+
             this.MarkScopedId(subject, aaut, dtls);
 
-            // Add to subject
-            retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-
-            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return null;
-            return retVal;
-
+            return subject;
         }
 
         /// <summary>
@@ -1001,11 +1063,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(xad.CountyParishCode.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.CountyParishCode.Value, PartType = AddressPart.AddressPartType.County });
             if (!String.IsNullOrEmpty(xad.OtherDesignation.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.OtherDesignation.Value, PartType = AddressPart.AddressPartType.AddressLine });
+                retVal.Parts.Add(new AddressPart() { AddressValue = xad.OtherDesignation.Value, PartType = AddressPart.AddressPartType.AdditionalLocator });
             if (!String.IsNullOrEmpty(xad.StateOrProvince.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.StateOrProvince.Value, PartType = AddressPart.AddressPartType.State });
             if (!String.IsNullOrEmpty(xad.StreetAddress.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StreetAddress.Value, PartType = AddressPart.AddressPartType.StreetAddressLine });
+                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StreetAddress.Value, PartType = AddressPart.AddressPartType.AddressLine });
             if (!String.IsNullOrEmpty(xad.ZipOrPostalCode.Value))
                 retVal.Parts.Add(new AddressPart() { AddressValue = xad.ZipOrPostalCode.Value, PartType = AddressPart.AddressPartType.PostalCode });
             return retVal;
@@ -1087,10 +1149,84 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                 else
                 {
-                    retVal.AssigningAuthority = aaut.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
-                    retVal.Domain = aaut.Oid;
+                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value == "true"))
+                        dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
+                    else
+                    {
+                        retVal.AssigningAuthority = aaut.Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
+                        retVal.Domain = aaut.Oid;
+                    }
                 }
             }
+            return retVal;
+        }
+
+        /// <summary>
+        /// Create components
+        /// </summary>
+        internal RegistrationEvent CreateComponents(NHapi.Model.V231.Message.ADT_A39 request, List<IResultDetail> dtls)
+        {
+            // Registration event
+            RegistrationEvent retVal = new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Register,
+                Mode = RegistrationEventType.Replace,
+                EventType = new CodeValue(request.MSH.MessageType.TriggerEvent.Value),
+                Status = StatusType.Completed,
+                LanguageCode = m_config.JurisdictionData.DefaultLanguageCode
+            };
+
+            var evn = request.EVN;
+            var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
+            var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+
+
+            // Can be multiple patients
+            for (int i = 0; i < request.PATIENTRepetitionsUsed; i++)
+            {
+                var patient = request.GetPATIENT(i);
+                var pid = patient.PID; // get the pid segment
+                
+                if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
+                    retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
+                else
+                    retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
+
+                Person subject = this.CreatePerson(pid, dtls, aaut);
+
+                // Merge
+                if (patient.MRG.GetPriorPatientIdentifierList().Length > 0)
+                {
+                    var re = new PersonRegistrationRef()
+                    {
+                        AlternateIdentifiers = new List<DomainIdentifier>()
+                    };
+
+                    foreach (var id in patient.MRG.GetPriorPatientIdentifierList())
+                        re.AlternateIdentifiers.Add(this.CreateDomainIdentifier(id, dtls));
+
+                    subject.Add(re, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                    (re.Site as HealthServiceRecordSite).IsSymbolic = true;
+                }
+
+                // Add to subject
+                retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            }
+
+
+            // Add author information (facility)
+            RepositoryDevice dev = new RepositoryDevice();
+            dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
+            dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value;
+            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
+                dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
+            retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
+
+
+            if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+                return null;
+
             return retVal;
         }
     }

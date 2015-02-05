@@ -52,6 +52,10 @@
     <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.Timer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.Timer.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.Localization">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Localization.dll</HintPath>
     </Reference>
@@ -108,11 +112,14 @@
     <Compile Include="MessageUtility.cs" />
     <Compile Include="MllpMessageSender.cs" />
     <Compile Include="NotificationQueueWorkItem.cs" />
+    <Compile Include="Notifiers\PAT_ID_X_REF_MGR.cs" />
     <Compile Include="Notifiers\PAT_ID_X_REF_MGR_HL7v3.cs" />
     <Compile Include="Notifiers\PAT_IDENTITY_SRC_HL7v3.cs" />
     <Compile Include="Notifiers\PAT_IDENTITY_SRC.cs" />
     <Compile Include="PixNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queue\Hl7MessageQueue.cs" />
+    <Compile Include="Queue\Hl7MessageResendTimerJob.cs" />
     <Compile Include="SecureNodeCertificateValidator.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +138,7 @@
     </None>
     <None Include="Configuration\marc.hi.ehrs.cr.notification.pixpdq.xsd">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

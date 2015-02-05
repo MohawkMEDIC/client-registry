@@ -32,6 +32,14 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
+using MARC.HI.EHRS.SVC.Core.Timer;
+using MARC.HI.EHRS.SVC.Core;
+using System.IO;
+using System.Reflection;
+using System.Xml.Serialization;
+using NHapi.Base.Parser;
+using MARC.HI.EHRS.CR.Notification.PixPdq.Queue;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq
 {
@@ -43,6 +51,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
     [Description("Patient Identity Source")]
     public class PAT_IDENTITY_SRC : INotifier
     {
+
+        
         #region INotifier Members
 
         /// <summary>
@@ -59,6 +69,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         public void Notify(NotificationQueueWorkItem workItem)
         {
+            
             // configuration service
             ISystemConfigurationService config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
@@ -76,18 +87,21 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             {
                 case MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.ActionType.Create:
                     {
-                        ADT_A04 message = new ADT_A04();
+                        ADT_A01 message = new ADT_A01();
                         msh = message.MSH;
                         pid = message.PID;
                         evn = message.EVN;
                         pv1 = message.PV1;
                         notificationMessage = message;
+                        msh.MessageType.TriggerEvent.Value = "A04";
+
                         break;
                     }
                 case MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.ActionType.DuplicatesResolved:
                     {
-                        ADT_A40 message = new ADT_A40();
+                        ADT_A39 message = new ADT_A39();
                         msh = message.MSH;
+                        msh.MessageType.TriggerEvent.Value = "A40";
                         pid = message.GetPATIENT(0).PID;
                         evn = message.EVN;
                         pv1 = message.GetPATIENT(0).PV1;
@@ -97,13 +111,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     };
                 case MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.ActionType.Update:
                     {
-                        ADT_A08 message = new ADT_A08();
+                        ADT_A01 message = new ADT_A01();
                         msh = message.MSH;
                         pid = message.PID;
                         evn = message.EVN;
                         pv1 = message.PV1;
                         notificationMessage = message;
-
+                        msh.MessageType.TriggerEvent.Value = "A08";
                         break;
                     }
             }
@@ -147,32 +161,27 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
 
                     foreach (var ii in replacedPerson.AlternateIdentifiers.FindAll(o => this.Target.NotificationDomain.Exists(d => d.Domain == o.Domain)))
                     {
-                        var cx = mrg.GetPriorAlternatePatientID(mrg.PriorAlternatePatientIDRepetitionsUsed);
+                        var cx = mrg.GetPriorPatientIdentifierList(mrg.PriorAlternatePatientIDRepetitionsUsed);
                         cx.ID.Value = ii.Identifier;
-                        cx.AssigningAuthority.NamespaceID.Value = ii.AssigningAuthority;
+                        if (String.IsNullOrEmpty(ii.AssigningAuthority))
+                        {
+                            cx.AssigningAuthority.NamespaceID.Value = config.OidRegistrar.FindData(ii.Domain).Attributes.Find(o => o.Key == "AssigningAuthorityName").Value;
+                        }
+                        else
+                            cx.AssigningAuthority.NamespaceID.Value = ii.AssigningAuthority;
                         cx.AssigningAuthority.UniversalID.Value = ii.Domain;
                         cx.AssigningAuthority.UniversalIDType.Value = "ISO";
                     }
                 }
             }
 
-            // Now send
-            MllpMessageSender sender = new MllpMessageSender(new Uri(this.Target.ConnectionString), this.Target.LlpClientCertificate, this.Target.TrustedIssuerCertificate);
-            ACK response = sender.SendAndReceive(notificationMessage) as ACK;
-
-            // See if the ACK is good
-            if (response == null)
+            // Send
+            var queueItem = new Hl7MessageQueue.MessageQueueWorkItem(this.Target, notificationMessage);
+            if (!queueItem.TrySend())
             {
-                Trace.TraceWarning(string.Format(locale.GetString("NTFW003"), this.Target.Name));
-                return;
+                Trace.TraceWarning(locale.GetString("NTFW005"));
+                Hl7MessageQueue.Current.EnqueueMessageItem(queueItem);
             }
-
-            if (response.MSA.AcknowledgementCode.Value != "AA")
-            {
-                Trace.TraceWarning(string.Format(locale.GetString("NTFW004"), this.Target.Name));
-                return;
-            }
-
         }
 
         /// <summary>
@@ -189,11 +198,16 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             if (subject.AlternateIdentifiers != null)
             {
                 subject.AlternateIdentifiers.RemoveAll(ii => !this.Target.NotificationDomain.Exists(o => o.Domain.Equals(ii.Domain)));
-
+                List<String> alreadyAdded = new List<string>();
                 foreach (var altId in subject.AlternateIdentifiers)
                 {
-                    var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
-                    this.UpdateCX(altId, id, config);
+                    String idS = String.Format("{0}^{1}", altId.Domain, altId.Identifier);
+                    if (!alreadyAdded.Contains(idS))
+                    {
+                        var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
+                        this.UpdateCX(altId, id, config);
+                        alreadyAdded.Add(idS);
+                    }
                 }
             }
 
@@ -273,6 +287,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         }
                     if (psn.LegalName != null)
                         UpdateXPN(psn.LegalName, pid.GetMotherSMaidenName(0));
+                    break;
                 }
 
             // Telecom addresses
@@ -379,7 +394,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         {
             msh.AcceptAcknowledgmentType.Value = "AL";
             msh.DateTimeOfMessage.TimeOfAnEvent.Value = (TS)DateTime.Now;
-            msh.MessageControlID.Value = Guid.NewGuid().ToString();
+            
+            msh.MessageControlID.Value = BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0).ToString();
             msh.MessageType.MessageStructure.Value = msh.Message.GetType().Name;
             msh.ProcessingID.ProcessingID.Value = "P";
 
@@ -412,5 +428,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         }
 
         #endregion
+
     }
 }

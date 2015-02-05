@@ -184,7 +184,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             CodeSystem = Convert.ToString(reader["cd_domain"]),
                             OriginalText = reader["org_text"] == DBNull.Value ? null : Encoding.UTF8.GetString((byte[])reader["org_text"]),
                             CodeSystemVersion = reader["cd_vrsn"] == DBNull.Value ? null :  Convert.ToString(reader["cd_vrsn"]),
-                            Key = codeId.Value
+                            Key = codeId.Value,
+                            UpdateMode = UpdateModeType.Ignore
                         };
                     }
                 }
@@ -633,7 +634,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                         // Value
                         pt.Precision = Convert.ToString(reader["ts_precision"]);
-                        pt.Value = pt.Precision == "D" ? Convert.ToDateTime(reader["ts_value"]).Date : Convert.ToDateTime(reader["ts_value"]);
+                        pt.Value = pt.Precision == "D" || pt.Precision == "Y" || pt.Precision == "M" ? Convert.ToDateTime(reader["ts_date"]).Date : Convert.ToDateTime(reader["ts_value"]);
                         retVal.Parts.Add(pt);
 
                     }

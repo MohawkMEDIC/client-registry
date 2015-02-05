@@ -143,7 +143,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
                                 findValueAtt = certificateNode.Attributes["findValue"];
 
                     if (findTypeAtt == null || findValueAtt == null) throw new ConfigurationErrorsException("Must supply x509FindType and findValue"); // can't find if nothing to find...
-
+                    
                     targetConfig.TrustedIssuerCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
                     targetConfig.TrustedIssuerCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
                     targetConfig.TrustedIssuerCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.TrustedIssuerCertStore, targetConfig.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
@@ -160,7 +160,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
 
                     targetConfig.LlpClientCertLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), storeLocationAtt == null ? "LocalMachine" : storeLocationAtt.Value);
                     targetConfig.LlpClientCertStore = (StoreName)Enum.Parse(typeof(StoreName), storeNameAtt == null ? "My" : storeNameAtt.Value);
-                    targetConfig.LlpClientCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.TrustedIssuerCertStore, targetConfig.TrustedIssuerCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
+                    targetConfig.LlpClientCertificate = ConfigurationSectionHandler.FindCertificate(targetConfig.LlpClientCertStore, targetConfig.LlpClientCertLocation, (X509FindType)Enum.Parse(typeof(X509FindType), findTypeAtt.Value), findValueAtt.Value);
                 }
 
                 // Get the notification domains and add them to the configuration

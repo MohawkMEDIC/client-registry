@@ -366,13 +366,25 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 retVal.ReligiousAffiliationCode = CreateCD<String>(patient.ReligionCode, details);
 
             // Ethnicity
-            var eth = patient.FindAllExtensions(o => o.Name == "EthnicGroupCode");
-            if (eth != null && eth.Count() > 0)
-            {
-                retVal.EthnicGroupCode = new SET<CE<string>>();
-                foreach (var e in eth)
-                    retVal.EthnicGroupCode.Add(CreateCD<string>(e.Value as CodeValue, details));
-            }
+            if (patient.EthnicGroup != null)
+                foreach (var e in patient.EthnicGroup)
+                    retVal.EthnicGroupCode.Add(CreateCD<String>(e, details));
+
+            if (patient.BirthPlace != null)
+                retVal.BirthPlace = new MARC.Everest.RMIM.UV.NE2008.PRPA_MT201303UV02.BirthPlace(
+                        this.CreateAD(patient.BirthPlace.Address, details),
+                        new MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.Place(
+                            this.CreateIISet(patient.BirthPlace.AlternateIdentifiers, details),
+                            this.CreateCD<String>(patient.BirthPlace.LocationType, details),
+                            BAG<EN>.CreateBAG(new EN(null, new ENXP[] { new ENXP(patient.BirthPlace.Name) })),
+                            null,
+                            this.CreateAD(patient.BirthPlace.Address, details),
+                            null,
+                            null,
+                            new MARC.Everest.RMIM.UV.NE2008.COCT_MT710007UV.LocatedEntity()
+                        ),
+                    null
+                    );
 
             // Other identifiers
             if (patient.OtherIdentifiers != null)

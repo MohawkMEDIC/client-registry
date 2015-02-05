@@ -377,12 +377,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create location component
         /// </summary>
-        private ServiceDeliveryLocation CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240003CA.ServiceDeliveryLocation serviceDeliveryLocation, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240003CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
-            ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
-
+            Place retVal = new Place();
+            retVal.Class = "SDL";
             // Check for identifier
-            if (serviceDeliveryLocation.Id == null || serviceDeliveryLocation.Id.IsNull)
+            if (Place.Id == null || Place.Id.IsNull)
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE033"), null, null));
                 return null;
@@ -390,17 +390,17 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             retVal.AlternateIdentifiers.Add(
                 new DomainIdentifier()
                 {
-                    Domain = serviceDeliveryLocation.Id.Root,
-                    Identifier = serviceDeliveryLocation.Id.Extension
+                    Domain = Place.Id.Root,
+                    Identifier = Place.Id.Extension
                 });
 
             // Check for name
-            if (serviceDeliveryLocation.Location != null && serviceDeliveryLocation.Location.NullFlavor == null)
-                retVal.Name = serviceDeliveryLocation.Location.Name;
+            if (Place.Location != null && Place.Location.NullFlavor == null)
+                retVal.Name = Place.Location.Name;
 
             // Telecom
-            if (serviceDeliveryLocation.Telecom != null)
-                foreach (var tel in serviceDeliveryLocation.Telecom)
+            if (Place.Telecom != null)
+                foreach (var tel in Place.Telecom)
                     retVal.TelecomAddresses.Add(new TelecommunicationsAddress()
                     {
                         Value = tel.Value,
@@ -408,16 +408,16 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     });
 
             // Address
-            if (serviceDeliveryLocation.Addr != null)
-                retVal.Address = CreateAddressSet(serviceDeliveryLocation.Addr, dtls);
+            if (Place.Addr != null)
+                retVal.Address = CreateAddressSet(Place.Addr, dtls);
 
             // Location type
-            if (serviceDeliveryLocation.Code == null || serviceDeliveryLocation.Code.IsNull)
+            if (Place.Code == null || Place.Code.IsNull)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE034"), null));
                 return null;
             }
-            retVal.LocationType = CreateCodeValue(serviceDeliveryLocation.Code, dtls);
+            retVal.LocationType = CreateCodeValue(Place.Code, dtls);
 
             return retVal;
         }
@@ -505,12 +505,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create location component
         /// </summary>
-        private ServiceDeliveryLocation CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240012CA.ServiceDeliveryLocation serviceDeliveryLocation, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240012CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
-            ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
+            Place retVal = new Place();
 
             // Check for identifier
-            if (serviceDeliveryLocation.Id == null || serviceDeliveryLocation.Id.IsNull)
+            if (Place.Id == null || Place.Id.IsNull)
             {
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE033"), null, null));
                 return null;
@@ -518,13 +518,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             retVal.AlternateIdentifiers.Add(
                 new DomainIdentifier()
                 {
-                    Domain = serviceDeliveryLocation.Id.Root,
-                    Identifier = serviceDeliveryLocation.Id.Extension
+                    Domain = Place.Id.Root,
+                    Identifier = Place.Id.Extension
                 });
 
             // Check for name
-            if (serviceDeliveryLocation.Location != null && serviceDeliveryLocation.Location.NullFlavor == null)
-                retVal.Name = serviceDeliveryLocation.Location.Name;
+            if (Place.Location != null && Place.Location.NullFlavor == null)
+                retVal.Name = Place.Location.Name;
 
             return retVal;
         }
@@ -532,30 +532,30 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a location component
         /// </summary>
-        private ServiceDeliveryLocation CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240007CA.ServiceDeliveryLocation serviceDeliveryLocation, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240007CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
-            ServiceDeliveryLocation retVal = new ServiceDeliveryLocation();
+            Place retVal = new Place();
 
             // Check for identifier
-            if (serviceDeliveryLocation.Id == null || serviceDeliveryLocation.Id.IsNull)
+            if (Place.Id == null || Place.Id.IsNull)
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE033"), null, null));
             else
                 retVal.AlternateIdentifiers.Add(
                     new DomainIdentifier()
                     {
-                        Domain = serviceDeliveryLocation.Id.Root,
-                        Identifier = serviceDeliveryLocation.Id.Extension
+                        Domain = Place.Id.Root,
+                        Identifier = Place.Id.Extension
                     });
 
             // SDL type
-            if (serviceDeliveryLocation.Code == null || serviceDeliveryLocation.Code.IsNull)
+            if (Place.Code == null || Place.Code.IsNull)
                 dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE034"), null, null));
             else
-                retVal.LocationType = CreateCodeValue(serviceDeliveryLocation.Code, dtls);
+                retVal.LocationType = CreateCodeValue(Place.Code, dtls);
 
             // Telecom
-            if (serviceDeliveryLocation.Telecom != null)
-                foreach (var tel in serviceDeliveryLocation.Telecom)
+            if (Place.Telecom != null)
+                foreach (var tel in Place.Telecom)
                     retVal.TelecomAddresses.Add(new TelecommunicationsAddress()
                     {
                         Value = tel.Value,
@@ -563,12 +563,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     });
 
             // Address
-            if (serviceDeliveryLocation.Addr != null)
-                retVal.Address = CreateAddressSet(serviceDeliveryLocation.Addr, dtls);
+            if (Place.Addr != null)
+                retVal.Address = CreateAddressSet(Place.Addr, dtls);
 
             // Check for name
-            if (serviceDeliveryLocation.Location != null && serviceDeliveryLocation.Location.NullFlavor == null)
-                retVal.Name = serviceDeliveryLocation.Location.Name;
+            if (Place.Location != null && Place.Location.NullFlavor == null)
+                retVal.Name = Place.Location.Name;
 
             return retVal;
         }

@@ -28,6 +28,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using NHapi.Base.Model;
 using MARC.Everest.DataTypes;
+using MARC.Everest.DataTypes.Interfaces;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -73,10 +74,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var retVal = new NHapi.Model.V25.Message.RSP_K23();
 
             retVal.MSH.MessageType.MessageStructure.Value = "RSP_K23";
+            retVal.MSH.MessageType.TriggerEvent.Value = "K23";
 
             var qak = retVal.QAK;
             var msa = retVal.MSA;
-            
+
             qak.QueryTag.Value = result.QueryTag;
             msa.AcknowledgmentCode.Value = "AA";
             if (dtls.Exists(o => o.Type == Everest.Connectors.ResultDetailType.Error))
@@ -100,6 +102,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 UpdatePID(result.Results[0], retVal.QUERY_RESPONSE.PID, true);
             }
 
+
+
             return retVal;
         }
 
@@ -110,13 +114,45 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
 
             var subject = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+            var aut = registrationEvent.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as RepositoryDevice;
 
+            // Update time
+            pid.LastUpdateDateTime.Time.Value = ((TS)subject.Timestamp).Value;
+            if (aut != null)
+                pid.LastUpdateFacility.NamespaceID.Value = aut.Jurisdiction;
             
             // Alternate identifiers
             foreach (var altId in subject.AlternateIdentifiers)
             {
                 var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
                 UpdateCX(altId, id);
+            }
+
+            // Other identifiers
+            foreach (var othId in subject.OtherIdentifiers)
+            {
+                var id = pid.GetPatientIdentifierList(pid.PatientIdentifierListRepetitionsUsed);
+                UpdateCX(othId.Value, id);
+
+                // Correct v3 codes
+                if (othId.Key.CodeSystem == "1.3.6.1.4.1.33349.3.98.12")
+                    id.IdentifierTypeCode.Value = othId.Key.Code;
+                else if (othId.Key.CodeSystem == "2.16.840.1.113883.2.20.3.85")
+                    switch (othId.Key.Code)
+                    {
+                        case "SIN":
+                            id.IdentifierTypeCode.Value = "SS";
+                            break;
+                        case "DL":
+                            id.IdentifierTypeCode.Value = othId.Key.Code;
+                            break;
+                        default:
+                            id.IdentifierTypeCode.Value = null;
+                            break;
+                    }
+                else
+                    id.IdentifierTypeCode.Value = null;
+
             }
 
             // IHE: This first repetition should be null
@@ -166,7 +202,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (subject.BirthOrder.HasValue)
             {
                 pid.MultipleBirthIndicator.Value = "Y";
-                pid.BirthOrder.Value = subject.BirthOrder.ToString();
+                if(subject.BirthOrder.Value > 0)
+                    pid.BirthOrder.Value = subject.BirthOrder.ToString();
             }
 
             // Citizenship
@@ -178,10 +215,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         UpdateCE(new CodeValue(cit.CountryCode, this.m_config.OidRegistrar.GetOid("ISO3166-1").Oid), c);
                     }
 
+            if (subject.MaritalStatus != null)
+                UpdateCE(subject.MaritalStatus, pid.MaritalStatus);
             // Language
             if(subject.Language != null)
                 foreach(var lang in subject.Language)
-                    if (lang.Type == LanguageType.Fluency)
+                    if (lang.Type == LanguageType.Preferred)
                     {
                         UpdateCE(new CodeValue(lang.Language, this.m_config.OidRegistrar.GetOid("ISO639-1").Oid), pid.PrimaryLanguage);
                         break;
@@ -208,19 +247,40 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Telecom addresses
             foreach (var tel in subject.TelecomAddresses)
                 if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
+                    MessageUtil.XTNFromTel(new TEL()
+                    {
+                        Value = tel.Value,
+                        Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                        Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                    }, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
                 else if (tel.Use == "HP")
                     pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
                 else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
-                    MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
+                    MessageUtil.XTNFromTel(new TEL()
+                    {
+                        Value = tel.Value,
+                        Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                        Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                    }, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
                 else if (tel.Use == "WP")
                     pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
 
+            // Race
             if (subject.Race != null)
             {
                 foreach(var rc in subject.Race)
                     this.UpdateCE(rc, pid.GetRace(pid.RaceRepetitionsUsed));
             }
+            
+            // Ethnic code
+            if (subject.EthnicGroup != null)
+                foreach (var e in subject.EthnicGroup)
+                    this.UpdateCE(e, pid.GetEthnicGroup(pid.EthnicGroupRepetitionsUsed));
+
+
+            // Place of birth
+            if (subject.BirthPlace != null)
+                pid.BirthPlace.Value = subject.BirthPlace.Name;
         }
 
         /// <summary>
@@ -310,8 +370,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var oidData = this.m_config.OidRegistrar.FindData(altId.Domain);
             cx.AssigningAuthority.UniversalID.Value = altId.Domain ?? (oidData == null ? null :  oidData.Oid);
             cx.AssigningAuthority.UniversalIDType.Value = "ISO";
-            cx.AssigningAuthority.NamespaceID.Value = altId.AssigningAuthority ?? (oidData == null ? null : oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value);
+            cx.AssigningAuthority.NamespaceID.Value = oidData == null ? altId.AssigningAuthority : oidData.Attributes.Find(o => o.Key.Equals("AssigningAuthorityName")).Value;
             cx.IDNumber.Value = altId.Identifier;
+
+            if (cx.AssigningAuthority.UniversalID.Value == this.m_config.OidRegistrar.GetOid("CR_CID").Oid) // AA
+                cx.IdentifierTypeCode.Value = "PI";
+            else
+                cx.IdentifierTypeCode.Value = "PT";
         }
 
         /// <summary>
@@ -436,7 +501,42 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), ComponentUtility.AD_USE_MAP.First(o => o.Value == addr.Use).Key);
                 }
             }
+            var ma = personFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf) as PersonalRelationship;
+            if(ma != null)
+            {
+                if(ma.LegalName != null)
+                {
+                    foreach (var pt in ma.LegalName.Parts)
+                    {
+                        string pidNo = ComponentUtility.XPN_MAP.First(o => o.Value == pt.Type).Key;
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), String.Format("@PID.6.{0}", pidNo));
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), pt.Value);
+                    }
+                }
+                if(ma.AlternateIdentifiers != null && ma.AlternateIdentifiers.Count > 0)
+                {
+                    var altId = personFilter.AlternateIdentifiers[0];
 
+                    if (altId.Domain != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.2");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Domain);
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.3");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), "ISO");
+                    }
+                    if (altId.Identifier != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.1");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.Identifier);
+                    }
+                    if (altId.AssigningAuthority != null)
+                    {
+                        terser.Set(String.Format("/QPD-3({0})-1", qpdRep), "@PID.21.4.1");
+                        terser.Set(String.Format("/QPD-3({0})-2", qpdRep++), altId.AssigningAuthority);
+                    }
+
+                }
+            }
             return retVal;
         }
 

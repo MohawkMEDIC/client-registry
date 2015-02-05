@@ -24,6 +24,8 @@ using System.ServiceModel;
 using System.ServiceModel.Syndication;
 using System.ServiceModel.Web;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
+using System.IO;
+using MARC.HI.EHRS.CR.Messaging.Admin.Contract;
 
 namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
@@ -34,6 +36,26 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
     [XmlSerializerFormat]
     public interface IClientRegistryAdminInterface
     {
+
+
+        /// <summary>
+        /// Get all logfiles
+        /// </summary>
+        /// <returns></returns>
+        [OperationContract(Action = "GetLogfiles")]
+        List<LogInfo> GetLogFiles();
+
+        /// <summary>
+        /// Get the log
+        /// </summary>
+        [OperationContract(Action = "GetLog")]
+        String GetLog(String id);
+
+        /// <summary>
+        /// Get services
+        /// </summary>
+        [OperationContract(Action = "GetServices")]
+        List<ServiceStatus> GetServices();
 
         /// <summary>
         /// Get all registrations in the system matching a key
@@ -70,6 +92,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// </summary>
         [OperationContract(Action = "Resolve")]
         void Resolve(decimal sourceId);
+
+        /// <summary>
+        /// Get a list of configured OIDs
+        /// </summary>
+        [OperationContract(Action = "GetOids")]
+        List<OidInfo> GetOids();
 
     }
 }

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="ClientRegistryAdminInterface" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="http://localhost:8080/admin?xsd=xsd0" namespace="http://tempuri.org/" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IClientRegistryAdminInterface_GetLogFiles_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLogFiles" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetLogFiles_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLogFilesResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLog" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetServices_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServices" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetServices_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServicesResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRegistrations_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetRegistrations" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRegistrations_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetRegistrationsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRegistrationEvent_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetRegistrationEvent" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRegistrationEvent_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetRegistrationEventResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetConflicts_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetConflicts" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetConflicts_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetConflictsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetConflict_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetConflict" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetConflict_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetConflictResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_Merge_InputMessage">
+    <wsdl:part name="parameters" element="tns:Merge" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_Merge_OutputMessage">
+    <wsdl:part name="parameters" element="tns:MergeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_Resolve_InputMessage">
+    <wsdl:part name="parameters" element="tns:Resolve" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_Resolve_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ResolveResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetOids_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetOids" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetOids_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetOidsResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IClientRegistryAdminInterface">
+    <wsdl:operation name="GetLogFiles">
+      <wsdl:input wsaw:Action="GetLogfiles" message="tns:IClientRegistryAdminInterface_GetLogFiles_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetLogFilesResponse" message="tns:IClientRegistryAdminInterface_GetLogFiles_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLog">
+      <wsdl:input wsaw:Action="GetLog" message="tns:IClientRegistryAdminInterface_GetLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetLogResponse" message="tns:IClientRegistryAdminInterface_GetLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServices">
+      <wsdl:input wsaw:Action="GetServices" message="tns:IClientRegistryAdminInterface_GetServices_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetServicesResponse" message="tns:IClientRegistryAdminInterface_GetServices_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRegistrations">
+      <wsdl:input wsaw:Action="GetRegistrations" message="tns:IClientRegistryAdminInterface_GetRegistrations_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationsResponse" message="tns:IClientRegistryAdminInterface_GetRegistrations_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRegistrationEvent">
+      <wsdl:input wsaw:Action="GetRegistration" message="tns:IClientRegistryAdminInterface_GetRegistrationEvent_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationEventResponse" message="tns:IClientRegistryAdminInterface_GetRegistrationEvent_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetConflicts">
+      <wsdl:input wsaw:Action="GetConflicts" message="tns:IClientRegistryAdminInterface_GetConflicts_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetConflictsResponse" message="tns:IClientRegistryAdminInterface_GetConflicts_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetConflict">
+      <wsdl:input wsaw:Action="GetConflict" message="tns:IClientRegistryAdminInterface_GetConflict_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetConflictResponse" message="tns:IClientRegistryAdminInterface_GetConflict_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Merge">
+      <wsdl:input wsaw:Action="Merge" message="tns:IClientRegistryAdminInterface_Merge_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/MergeResponse" message="tns:IClientRegistryAdminInterface_Merge_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Resolve">
+      <wsdl:input wsaw:Action="Resolve" message="tns:IClientRegistryAdminInterface_Resolve_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/ResolveResponse" message="tns:IClientRegistryAdminInterface_Resolve_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOids">
+      <wsdl:input wsaw:Action="GetOids" message="tns:IClientRegistryAdminInterface_GetOids_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetOidsResponse" message="tns:IClientRegistryAdminInterface_GetOids_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IClientRegistryAdminInterface" type="tns:IClientRegistryAdminInterface">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetLogFiles">
+      <soap:operation soapAction="GetLogfiles" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLog">
+      <soap:operation soapAction="GetLog" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServices">
+      <soap:operation soapAction="GetServices" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRegistrations">
+      <soap:operation soapAction="GetRegistrations" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRegistrationEvent">
+      <soap:operation soapAction="GetRegistration" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetConflicts">
+      <soap:operation soapAction="GetConflicts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetConflict">
+      <soap:operation soapAction="GetConflict" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Merge">
+      <soap:operation soapAction="Merge" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Resolve">
+      <soap:operation soapAction="Resolve" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOids">
+      <soap:operation soapAction="GetOids" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ClientRegistryAdminInterface">
+    <wsdl:port name="BasicHttpBinding_IClientRegistryAdminInterface" binding="tns:BasicHttpBinding_IClientRegistryAdminInterface">
+      <soap:address location="http://localhost:8080/admin" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

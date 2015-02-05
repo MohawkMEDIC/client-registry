@@ -39,22 +39,37 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     public class MessageUtil
     {
 
+        private static Dictionary<String, MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse?> s_v2TelUseConvert = new Dictionary<string, MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse?>()
+        {
+            { "ASN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.AnsweringService },
+            { "BPN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.Pager },
+            { "EMR", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.EmergencyContact },
+            { "PRN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.PrimaryHome },
+            { "VHN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.VacationHome },
+            { "WPN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.WorkPlace }
+        };
+
+
         /// <summary>
         /// Transform a telephone number
         /// </summary>
-        public static MARC.Everest.DataTypes.TEL TelFromXTN(NHapi.Model.V231.Datatype.XTN v2XTN)
+        public static TelecommunicationsAddress TelFromXTN(NHapi.Model.V231.Datatype.XTN v2XTN)
         {
             Regex re = new Regex(@"([+0-9A-Za-z]{1,4})?\((\d{3})\)?(\d{3})\-(\d{4})X?(\d{1,6})?");
+            MARC.Everest.DataTypes.TEL retVal = new Everest.DataTypes.TEL();
 
             if (v2XTN.Get9999999X99999CAnyText.Value == null)
             {
                 StringBuilder sb = new StringBuilder("tel:");
                 if (v2XTN.CountryCode.Value != null)
                     sb.AppendFormat("{0}-", v2XTN.CountryCode);
+                if (!v2XTN.PhoneNumber.Value.Contains("-"))
+                    v2XTN.PhoneNumber.Value = v2XTN.PhoneNumber.Value.Insert(3, "-");
                 sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
                 if (v2XTN.Extension.Value != null)
                     sb.AppendFormat(";ext={0}", v2XTN.Extension);
-                return sb.ToString();
+                retVal = sb.ToString();
+                
             }
             else
             {
@@ -67,8 +82,43 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!string.IsNullOrEmpty(match.Groups[5].Value))
                     sb.AppendFormat(";ext={0}", match.Groups[5].Value);
 
-                return sb.ToString();
+                retVal = sb.ToString();
             }
+
+            // Use code conversion
+            MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse? use = null;
+            if (!String.IsNullOrEmpty(v2XTN.TelecommunicationUseCode.Value) && !s_v2TelUseConvert.TryGetValue(v2XTN.TelecommunicationUseCode.Value, out use))
+                throw new InvalidOperationException(string.Format("{0} is not a known use code", v2XTN.TelecommunicationUseCode.Value));
+
+            // Capability
+            retVal.Capabilities = new Everest.DataTypes.SET<Everest.DataTypes.CS<Everest.DataTypes.Interfaces.TelecommunicationCabability>>();
+            switch (v2XTN.TelecommunicationEquipmentType.Value)
+            {
+                case "BP":
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Text);
+                    break;
+                case "CP":
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.SMS);
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Voice);
+                    break;
+                case "FX":
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Fax);
+                    break;
+                case "PH":
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Voice);
+                    break;
+                case "X.400":
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Text);
+                    retVal.Capabilities.Add(MARC.Everest.DataTypes.Interfaces.TelecommunicationCabability.Data);
+                    break;
+            }
+
+            return new TelecommunicationsAddress()
+            {
+                Capability = Util.ToWireFormat(retVal.Capabilities),
+                Use = Util.ToWireFormat(retVal.Use),
+                Value = retVal.Value
+            };
         }
 
         /// <summary>
@@ -131,7 +181,19 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             instance.TelephoneNumber.Value = sb.ToString();
 
-            
+            // Tel use
+            if (tel.Use != null)
+                foreach (var tcu in s_v2TelUseConvert)
+                    if (tcu.Value.Value == tel.Use.First.Code)
+                        instance.TelecommunicationUseCode.Value = tcu.Key;
+            if (tel.Capabilities != null)
+            {
+                String cap = Util.ToWireFormat(tel.Capabilities);
+                if (cap.Contains("sms"))
+                    instance.TelecommunicationEquipmentType.Value = "CP";
+                else if (cap.Contains("voice"))
+                    instance.TelecommunicationEquipmentType.Value = "PH";
+            }
         }
 
         /// <summary>
@@ -466,7 +528,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     sb.Append(comps[i]);
                     instance.CountryCode.Value = comps[i];
                 }
-                else if (sb.Length == 0 && comps.Length == 3 ||
+                else if (sb.Length == 0 && comps.Length <= 3 ||
                     comps.Length == 4 && i == 1) // area code?
                 {
                     sb.AppendFormat("({0})", comps[i]);
@@ -475,7 +537,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 else if (i != comps.Length - 1)
                 {
                     sb.AppendFormat("{0}-", comps[i]);
-                    phone.AppendFormat("{0}-", comps[i]);
+                    phone.AppendFormat("{0}", comps[i]);
                 }
                 else
                 {

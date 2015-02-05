@@ -91,7 +91,7 @@
     <Compile Include="Persisters\RegistrationEventRecordPersister.cs" />
     <Compile Include="Persisters\IComponentPersister.cs" />
     <Compile Include="Persisters\RepositoryDevicePersister.cs" />
-    <Compile Include="Persisters\ServiceDeliveryLocationPersister.cs" />
+    <Compile Include="Persisters\PlacePersister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryUtil.cs" />
     <Compile Include="ClientRegistryOids.cs" />

@@ -715,7 +715,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // location
             if (controlActEvent.Location != null && controlActEvent.Location.NullFlavor == null)
             {
-                ServiceDeliveryLocation loc = CreateLocationComponent(controlActEvent.Location.ServiceDeliveryLocation, dtls);
+                Place loc = CreateLocationComponent(controlActEvent.Location.ServiceDeliveryLocation, dtls);
                 if (loc != null)
                 {
                     changeSummary.Add(loc, "LOC", HealthServiceRecordSiteRoleType.PlaceOfRecord, loc.AlternateIdentifiers);
@@ -729,7 +729,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // data entry location
             if (controlActEvent.DataEntryLocation != null && controlActEvent.DataEntryLocation.NullFlavor == null)
             {
-                ServiceDeliveryLocation loc = CreateLocationComponent(controlActEvent.DataEntryLocation.ServiceDeliveryLocation, dtls);
+                Place loc = CreateLocationComponent(controlActEvent.DataEntryLocation.ServiceDeliveryLocation, dtls);
                 if (loc != null)
                 {
                     changeSummary.Add(loc, "DTL", HealthServiceRecordSiteRoleType.PlaceOfEntry, loc.AlternateIdentifiers);
@@ -864,7 +864,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // location
             if (controlActEvent.Location != null && controlActEvent.Location.NullFlavor == null)
             {
-                ServiceDeliveryLocation loc = CreateLocationComponent(controlActEvent.Location.ServiceDeliveryLocation, dtls);
+                Place loc = CreateLocationComponent(controlActEvent.Location.ServiceDeliveryLocation, dtls);
                 if (loc != null)
                     retVal.Add(loc, "LOC", HealthServiceRecordSiteRoleType.PlaceOfOccurence, loc.AlternateIdentifiers);
                 else
@@ -874,7 +874,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // data entry location
             if (controlActEvent.DataEntryLocation != null && controlActEvent.DataEntryLocation.NullFlavor == null)
             {
-                ServiceDeliveryLocation loc = CreateLocationComponent(controlActEvent.DataEntryLocation.ServiceDeliveryLocation, dtls);
+                Place loc = CreateLocationComponent(controlActEvent.DataEntryLocation.ServiceDeliveryLocation, dtls);
                 if (loc != null)
                     retVal.Add(loc, "DTL", HealthServiceRecordSiteRoleType.PlaceOfEntry, loc.AlternateIdentifiers);
                 else

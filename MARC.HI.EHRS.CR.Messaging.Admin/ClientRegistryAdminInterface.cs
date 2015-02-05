@@ -30,6 +30,11 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.Threading;
 using System.ServiceModel.Channels;
 using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.SVC.Core.Logging;
+using System.IO;
+using MARC.HI.EHRS.CR.Messaging.Admin.Contract;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
@@ -571,5 +576,123 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         }
 
         #endregion
+
+        /// <summary>
+        /// Get all log files
+        /// </summary>
+        public List<LogInfo> GetLogFiles()
+        {
+            // Get all log files
+            foreach (var tl in Trace.Listeners)
+            {
+                if (tl is RollOverTextWriterTraceListener)
+                {
+                    var fname = (tl as RollOverTextWriterTraceListener).FileName;
+                    List<LogInfo> retVal = new List<LogInfo>();
+                    foreach (var fn in Directory.GetFiles(Path.GetDirectoryName(fname), Path.GetFileNameWithoutExtension(fname) + "*.*"))
+                    {
+                        FileInfo fi = new FileInfo(fn);
+                        LogInfo itm = new LogInfo()
+                        {
+                            Id = Path.GetFileNameWithoutExtension(fn),
+                            LastModified = fi.LastWriteTime,
+                            Size = fi.Length
+                        };
+                        retVal.Add(itm);
+                    }
+                    return retVal;
+                }
+            }
+            return new List<LogInfo>();
+        }
+
+        /// <summary>
+        /// Get the specified log file
+        /// </summary>
+        public String GetLog(string id)
+        {
+            RollOverTextWriterTraceListener traceListener = null;
+            foreach (var tl in Trace.Listeners)
+            {
+                if (tl is RollOverTextWriterTraceListener)
+                    traceListener = tl as RollOverTextWriterTraceListener;
+            }
+
+            if (traceListener == null)
+                return null;
+            else
+            {
+                try {
+                    using (FileStream fs = File.Open(Path.ChangeExtension(Path.Combine(Path.GetDirectoryName(traceListener.FileName), id), Path.GetExtension(traceListener.FileName)), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (StreamReader sw = new StreamReader(fs))
+                        return sw.ReadToEnd();
+                }
+                catch(Exception e)
+                {
+                    Trace.TraceError(e.ToString());
+                }
+                return null; 
+            }
+
+        }
+
+        /// <summary>
+        /// Services loaded
+        /// </summary>
+        public List<ServiceStatus> GetServices()
+        {
+            // First get all services
+            List<ServiceStatus> stats = new List<ServiceStatus>();
+            stats.Add(new ServiceStatus()
+            {
+                Contract = "MARC-HI Client Registry Core",
+                Class = "Core Implementation CR",
+                Version = Assembly.GetEntryAssembly().GetName().Version.ToString()
+            });
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(o => { try { return Path.GetDirectoryName(o.Location) == Path.GetDirectoryName(Assembly.GetEntryAssembly().Location); } catch { return false; } }))
+                foreach (var typ in asm.GetTypes().Where(o => o.IsInterface))
+                {
+                    if (typ.GetInterface(typeof(IUsesHostContext).FullName) != null ||
+                        typ.Namespace != null && typ.Namespace.EndsWith("Services"))
+                    {
+                        string typName = typ.Name;
+                        var desc = typ.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                        if (desc.Length > 0)
+                            typName = (desc[0] as DescriptionAttribute).Description;
+
+                        var stat = new ServiceStatus() { Contract = typName };
+                        var obj = ApplicationContext.CurrentContext.GetService(typ);
+                        if (obj != null)
+                        {
+                            typName = obj.GetType().FullName;
+                            desc = obj.GetType().GetCustomAttributes(typeof(DescriptionAttribute), false);
+                            if (desc.Length > 0)
+                                typName = (desc[0] as DescriptionAttribute).Description;
+
+                            stat.Class = typName;
+                        }
+
+                        stat.Version = asm.GetName().Version.ToString();
+                        stats.Add(stat);
+                    }
+                }
+            return stats;
+
+            
+        }
+
+        /// <summary>
+        /// Get OIDS
+        /// </summary>
+        public List<OidInfo> GetOids()
+        {
+            List<OidInfo> retVal = new List<OidInfo>();
+            var conf = ApplicationContext.CurrentContext.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
+            foreach (MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData data in conf.OidRegistrar)
+            {
+                retVal.Add(new OidInfo(data));
+            }
+            return retVal;
+        }
     }
 }

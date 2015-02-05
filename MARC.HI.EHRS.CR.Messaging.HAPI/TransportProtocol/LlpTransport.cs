@@ -87,6 +87,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
             this.m_timeout = handler.Definition.ReceiveTimeout;
             this.m_listener = new TcpListener(bind);
+            
             this.m_listener.Start();
             Trace.TraceInformation("LLP Transport bound to {0}", bind);
             

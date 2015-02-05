@@ -35,6 +35,7 @@ using MARC.Everest.Formatters.XML.Datatypes.R1;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.Connectors;
+using MARC.HI.EHRS.CR.Notification.PixPdq.Queue;
 
 namespace MARC.HI.EHRS.CR.Notification.PixPdq
 {
@@ -69,6 +70,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         public PixNotifier()
         {
             this.m_threadPool = new WaitThreadPool(s_configuration.ConcurrencyLevel);
+            //Hl7MessageQueue.Current.Restore();
         }
 
         /// <summary>
@@ -128,7 +130,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         public void NotifyUpdate(Core.ComponentModel.RegistrationEvent evt)
         {
-            
             this.m_threadPool.QueueUserWorkItem(NotifyInternal, new NotificationQueueWorkItem(evt, ActionType.Update));
         }
 
@@ -184,6 +185,14 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// </summary>
         public void Dispose()
         {
+            // Dispose notifiers
+            foreach (var cnf in s_configuration.Targets)
+                if (cnf.Notifier is IDisposable)
+                    (cnf.Notifier as IDisposable).Dispose();
+
+            // Flush the queue
+            Hl7MessageQueue.Current.Flush();
+
             if (m_threadPool != null)
                 m_threadPool.Dispose();
         }

@@ -39,6 +39,5 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
         /// Notify the remote system
         /// </summary>
         void Notify(NotificationQueueWorkItem workItem);
-
     }
 }

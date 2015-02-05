@@ -172,15 +172,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     pid = this.m_clientRegistryMerge.FindFuzzyConflicts(regEvent);
                 }
 
+                Trace.TraceInformation("Matched with {0} records (fuzzy={1}, autoOn={2}, updateEx={3})",
+                       pid.Count(), fuzzy, this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge,
+                       this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists);
                 // If the configuration allows, merge
                 if (pid.Count() == 1 && 
                     (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge ||
                     !fuzzy && this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists))
                 {
-                    Trace.TraceInformation("Matched with {0} records (fuzzy={1}, autoOn={2}, updateEx={3})",
-                        pid.Count(), fuzzy, this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge,
-                        this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists);
-                    
                     // Update
                     regEvent.AlternateIdentifier = pid.First();
                     return this.UpdateContainer(regEvent, mode);
@@ -394,7 +393,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         tx.Rollback();
 
                   
-
                     return retVal;
                 }
                 catch (Exception e)
@@ -542,7 +540,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public VersionedDomainIdentifier[] QueryRecord(IComponent queryParameters)
         {
-
+            Trace.TraceInformation("Querying for records");
             // TODO: Store consent policy override if applicable
             List<VersionedDomainIdentifier> retVal = new List<VersionedDomainIdentifier>(10);
             ISystemConfigurationService configService = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
