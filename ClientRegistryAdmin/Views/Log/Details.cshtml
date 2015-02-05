@@ -1,10 +1,23 @@
 ﻿@model ClientRegistryAdmin.Models.ViewLogModel
 @{
     ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
 }
 
-<h2>Log Detail - @Model.Id</h2>
-<em>Note that log files larger than 5MB will not be shown in this viewer.</em>
-<pre class="pre-scrollable" style="height:600px; max-height:700px">
-@Model.Log
-</pre>
+@section AdminView
+{
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Log Detail - @Model.Id</h3>
+    </div>
+    <div class="panel-body">
+        <em>Note that log files larger than 5MB will not be shown in this viewer.</em>
+        <pre class="pre-scrollable" style="height:600px; max-height:700px">
+        @Model.Log
+        </pre>
+        @Html.ActionLink("Download Log", "Download", new { id = Model.Id })
+    </div>
+    
+</div>
+}

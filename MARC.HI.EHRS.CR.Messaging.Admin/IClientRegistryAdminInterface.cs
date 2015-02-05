@@ -26,6 +26,7 @@ using System.ServiceModel.Web;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.IO;
 using MARC.HI.EHRS.CR.Messaging.Admin.Contract;
+using MARC.HI.EHRS.SVC.Core.DataTypes;
 
 namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
@@ -62,6 +63,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// </summary>
         [OperationContract(Action = "GetRegistrations")]
         RegistrationEventCollection GetRegistrations(Person queryPrototype);
+
+        /// <summary>
+        /// Get all registrations in the system matching a key
+        /// </summary>
+        [OperationContract(Action = "RecentActivity")]
+        RegistrationEventCollection GetRecentActivity(TimestampSet range);
 
         /// <summary>
         /// Get registration event

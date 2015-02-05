@@ -29,7 +29,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Person registration record reference
     /// </summary>
-    [XmlType("PersonRegistrationRef")]
+    [XmlType("PersonRegistrationRef", Namespace = "urn:marc-hi:svc:componentModel")]
     [Serializable]
     public class PersonRegistrationRef : CrHealthServiceRecordContainer
     {

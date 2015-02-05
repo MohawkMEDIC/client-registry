@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Query parameters 
     /// </summary>
     [Serializable]
-    [XmlType("QueryParameters")]
+    [XmlType("QueryParameters", Namespace = "urn:marc-hi:svc:componentModel")]
     public class QueryParameters : HealthServiceRecordComponent
     {
 

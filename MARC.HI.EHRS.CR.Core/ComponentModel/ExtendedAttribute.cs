@@ -64,7 +64,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Represents a component which is an extension to the existing data model
     /// </summary>
     [Serializable]
-    [XmlType("Extension")]
+    [XmlType("Extension", Namespace = "urn:marc-hi:svc:componentModel")]
     public class ExtendedAttribute : CrHealthServiceRecordContainer
     {
 

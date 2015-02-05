@@ -28,7 +28,8 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Indicates a reason for performing a task
     /// </summary>
-    [Serializable][XmlType("Reason")]
+    [Serializable]
+    [XmlType("Reason", Namespace = "urn:marc-hi:svc:componentModel")]
     public class Reason : HealthServiceRecordComponent
     {
         /// <summary>

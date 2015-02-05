@@ -134,6 +134,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\OidController.cs" />
@@ -213,6 +214,7 @@
     <Content Include="Content\themes\base\minified\jquery.ui.slider.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
+    <Content Include="Content\XSL\RegistrationEvent.xslt" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -244,9 +246,9 @@
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.LogInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
+    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
+    </None>
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -271,6 +273,19 @@
     <Content Include="Views\Patient\Index.cshtml" />
     <Content Include="Views\Patient\View.cshtml" />
     <Content Include="Views\Oid\Index.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Log\Index.cshtml" />
+    <Content Include="Views\Oid\View.cshtml" />
+    <Content Include="Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Views\Shared\_PatientLayout.cshtml" />
+    <Content Include="Views\Patient\Search.cshtml" />
+    <None Include="Service References\ClientRegistryAdminService\admin.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ClientRegistryAdminService\admin1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdminInterface.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -283,10 +298,6 @@
     <None Include="fonts\glyphicons-halflings-regular.ttf" />
     <None Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Views\Home\Index.cshtml" />
-    <None Include="Service References\ClientRegistryAdminService\admin.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdminInterface.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

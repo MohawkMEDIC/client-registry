@@ -1,0 +1,28 @@
+﻿@model ClientRegistryAdmin.Models.RegistryStatusModel
+@{
+    ViewBag.Title = "Log Files";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section AdminView
+{
+    @if (Model.ClientRegistryOnline)
+    {
+        var logGrid = new WebGrid(Model.ClientRegistryLogs, canPage: true, rowsPerPage: 30, defaultSort: "id", selectionFieldName: "Identification");
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Log Files</h3>
+            </div>
+            <div class="panel-body">
+                @logGrid.GetHtml(
+             columns: logGrid.Columns(
+             logGrid.Column("lastModified", "Last Write Date", style: "width:15%"),
+             logGrid.Column("id", "Identification", style: "width:70%", format: @<text>@Html.ActionLink((string)item.Id,
+                "Details", "Log", new { id = item.id.Replace("_", "-") }, null)</text>),
+              logGrid.Column("size", "Size (KB)", style: "width:15%", format: o => (String.Format("{0:#,###}", o.size / 1024)))
+                 ), htmlAttributes: new { @class = "table-striped", style = "width:100%" })
+            </div>
+        </div>
+    }
+}

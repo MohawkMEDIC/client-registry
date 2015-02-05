@@ -30,7 +30,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Represents a versioned domain identifier that occurred as a result of a query
     /// </summary>
     [Serializable]
-    [XmlType("VersionedResultIdentifier")]
+    [XmlType("VersionedResultIdentifier", Namespace = "urn:marc-hi:svc:componentModel")]
     public class VersionedResultIdentifier : VersionedDomainIdentifier
     {
 

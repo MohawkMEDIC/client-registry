@@ -1,43 +1,30 @@
-﻿@model ClientRegistryAdmin.ClientRegistryAdminService.OidInfo
+﻿@model ClientRegistryAdmin.Models.RegistryStatusModel
 @{
     ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
 }
 
-<h2>Oid Details (@Model.key)</h2>
+@section AdminView
+{
+    @if (Model.ClientRegistryOnline)
+    {
+        var oidGrid = new WebGrid(Model.Oids, canPage: true, rowsPerPage: 30, defaultSort: "name", selectionFieldName: "oid");
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">OIDs</h3>
+            </div>
+            <div class="panel-body">
+                @oidGrid.GetHtml(
+                columns: oidGrid.Columns(
+             oidGrid.Column("key", "Key", style: "width:20%"),
+              oidGrid.Column("oid", "OID", style: "width:20%",
+                 format: item => Html.ActionLink((String)item.oid.ToString(), "View", "Oid", new { id = item.oid }, new object())
+                 ),
+              oidGrid.Column("Text", "Description", style: "width:40%")
+                 ), htmlAttributes: new { @class = "table-striped", style = "width:100%" })
+            </div>
+        </div>
 
-
-<table border="1" style="width:80%" class="infotable">
-    <tr>
-        <th>KEY</th>
-        <td>@Model.key</td>
-    </tr>
-    <tr>
-        <th>OID</th>
-        <td>@Model.oid</td>
-    </tr>
-    <tr>
-        <th>URI</th>
-        <td>@Model.url</td>
-    </tr>
-    <tr>
-        <th>Description</th>
-        <td>@Model.Text</td>
-    </tr>
-    @if(Model.attribute != null)
-    { 
-        <tr>
-            <th colspan="2" style="text-align:center">Attributes</th>
-        </tr>
-        <tr>
-            <th style="text-align:center">Key</th>
-            <th style="text-align:center">Value</th>
-        </tr>
-        foreach(var att in Model.attribute)
-        {
-            <tr>
-                <td>@att.key</td>
-                <td>@att.value</td>
-            </tr>
-        }
     }
-</table>
+}

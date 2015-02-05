@@ -33,7 +33,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Represents a person in the client registry
     /// </summary>
     [Serializable]
-    [XmlType("Person")]
+    [XmlType("Person", Namespace = "urn:marc-hi:svc:componentModel")]
     public class Person : CrHealthServiceRecordContainer
     {
         /// <summary>
@@ -48,6 +48,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// Ethnic groups
         /// </summary>
+        [XmlElement("ethnicGroup")]
         public List<CodeValue> EthnicGroup { get; set; }
 
         /// <summary>
@@ -172,7 +173,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// Identifies the birth order of the person 
         /// </summary>
-        [XmlElement("birth")]
+        [XmlElement("birthOrder")]
         [Description("Birth order")]
         public int? BirthOrder { get; set; }
 

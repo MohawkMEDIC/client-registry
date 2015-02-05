@@ -23,9 +23,6 @@ namespace ClientRegistryAdmin.Controllers
                 // Client to the CR admin interface
                 ClientRegistryAdminService.ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminService.ClientRegistryAdminInterfaceClient();
 
-                model.ServiceStats = client.GetServices();
-                model.ClientRegistryLogs = client.GetLogFiles();
-                model.Oids = client.GetOids();
                 model.ClientRegistryOnline = true;
             }
             catch(Exception e)

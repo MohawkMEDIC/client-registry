@@ -29,6 +29,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Language type
     /// </summary>
+    [XmlType("LanguageType", Namespace = "urn:marc-hi:svc:componentModel")]
     public enum LanguageType
     {
         Written = 1,
@@ -42,7 +43,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Identifies a language component
     /// </summary>
     [Serializable]
-    [XmlType("PersonLanguage")]
+    [XmlType("PersonLanguage", Namespace = "urn:marc-hi:svc:componentModel")]
     public class PersonLanguage
     {
 
@@ -61,6 +62,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// Identifies ISO639-1 code 
         /// </summary>
+        [XmlAttribute("code")]
         public String Language { get; set; }
     }
 }
