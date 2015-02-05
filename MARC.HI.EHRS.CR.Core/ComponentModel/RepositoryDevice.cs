@@ -30,10 +30,16 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Repository device
     /// </summary>
-    [Serializable][XmlType("RepositoryDevice")]
+    [Serializable]
+    [XmlType("RepositoryDevice", Namespace = "urn:marc-hi:svc:componentModel")]
     public class RepositoryDevice : HealthServiceRecordComponent
     {
 
+        /// <summary>
+        /// ID of the repository 
+        /// </summary>
+        [XmlAttribute("id")]
+        public decimal Id { get; set; }
         /// <summary>
         /// Gets or sets the domain identifier for the device
         /// </summary>

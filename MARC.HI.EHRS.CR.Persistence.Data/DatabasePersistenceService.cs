@@ -564,7 +564,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
 
-                    string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
+                         string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
                         
                         cmd.CommandText = queryFilterString;
 
@@ -575,6 +575,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         {
                             using (IDataReader rdr = cmd.ExecuteReader())
                             {
+                                Trace.TraceInformation("{0} records returned by query", rdr.RecordsAffected);
                                 // Read all results
                                 while (rdr.Read())
                                 {
@@ -591,6 +592,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                                 }
                             }
+
                         }
                         catch
                         {
@@ -610,6 +612,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
 
             //retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
+            Trace.TraceInformation("{0} records returned by function", retVal.Count);
             return retVal.ToArray();
         }
         

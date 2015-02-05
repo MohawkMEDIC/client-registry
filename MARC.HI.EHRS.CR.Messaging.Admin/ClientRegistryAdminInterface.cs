@@ -694,5 +694,84 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
             }
             return retVal;
         }
+
+
+        /// <summary>
+        /// Get recent activity
+        /// </summary>
+        public RegistrationEventCollection GetRecentActivity(TimestampSet timeRange)
+        {
+            // Get all Services
+            IAuditorService auditSvc = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
+            IDataRegistrationService regSvc = ApplicationContext.CurrentContext.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
+            IDataPersistenceService repSvc = ApplicationContext.CurrentContext.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+
+            // Audit message
+            AuditData audit = this.ConstructAuditData(ActionType.Read, EventIdentifierType.Export);
+            audit.EventTypeCode = new CodeValue("ADM_GetRegistrations");
+
+            try
+            {
+                // Result identifiers
+                VersionedDomainIdentifier[] vids = null;
+                var dummyQuery = new RegistrationEvent() { EventClassifier = RegistrationEventType.Register };
+                dummyQuery.EffectiveTime = timeRange;
+                vids = regSvc.QueryRecord(dummyQuery);
+
+                RegistrationEventCollection retVal = new RegistrationEventCollection();
+                Object syncLock = new object();
+
+                // Now fetch each one asynchronously
+                WaitThreadPool thdPool = new WaitThreadPool();
+                foreach (var id in vids)
+                    thdPool.QueueUserWorkItem(
+                        delegate(object state)
+                        {
+                            try
+                            {
+                                var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
+                                lock (syncLock)
+                                    retVal.Event.Add(itm as RegistrationEvent);
+                            }
+                            catch (Exception e)
+                            {
+                                Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
+                            }
+                        }
+                        , id);
+
+                // Wait until fetch is done
+                thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
+                retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+                // Add audit data
+                foreach (var res in retVal.Event)
+                    audit.AuditableObjects.Add(new AuditableObject()
+                    {
+                        IDTypeCode = AuditableObjectIdType.ReportNumber,
+                        LifecycleType = AuditableObjectLifecycle.Export,
+                        ObjectId = String.Format("{0}^^^&{1}&ISO", res.AlternateIdentifier.Identifier, res.AlternateIdentifier.Domain),
+                        Role = AuditableObjectRole.MasterFile,
+                        Type = AuditableObjectType.SystemObject,
+                        QueryData = "loadFast=true"
+                    });
+                return retVal;
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError("Could not execute GetRegistrations : {0}", e.ToString());
+                audit.Outcome = OutcomeIndicator.EpicFail;
+#if DEBUG
+                throw new FaultException(new FaultReason(e.ToString()), new FaultCode(e.GetType().Name));
+
+#else
+                throw new FaultException(new FaultReason(e.Message), new FaultCode(e.GetType().Name));
+#endif
+            }
+            finally
+            {
+                if (auditSvc != null)
+                    auditSvc.SendAudit(audit);
+            }
+        }
     }
 }

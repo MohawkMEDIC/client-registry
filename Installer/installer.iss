@@ -3,15 +3,15 @@
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
-AppVerName = MEDIC Client Registry 0.6
+AppVerName = MEDIC Client Registry 1.0 CTP
 #ifdef BUNDLED
 #ifdef x64
-OutputBaseFilename = cr-setup-bundled-x64
+OutputBaseFilename = cr-setup-bundled-x64-1.0-ctp
 #else
-OutputBaseFilename = cr-setup-bundled
+OutputBaseFilename = cr-setup-bundled-1.0-ctp
 #endif
 #else
-OutputBaseFilename = cr-setup-standalone
+OutputBaseFilename = cr-setup-standalone-1.0-ctp
 #endif
 LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
@@ -26,7 +26,7 @@ Compression = none
 Compression = lzma2 
 #endif
 SolidCompression = false
-AppCopyright = Copyright (C) 2011-2013 Mohawk College of Applied Arts and Technology
+AppCopyright = Copyright (C) 2010-2015 Mohawk College of Applied Arts and Technology
 Uninstallable = true
 #ifdef x64
 ArchitecturesAllowed = x64
@@ -121,6 +121,7 @@ Name: full; Description: Complete Installation
 Name: ca; Description: pan-Canadian Client Registry
 Name: pix; Description: PIX Manager & PDQ Supplier (HL7v2.x)
 Name: pixv3; Description: PIX Manager & PDQ Supplier (HL7v3)
+Name: pdqm; Description: PDQ Supplier (PDQm)
 Name: pixall; Description: PIX Manager & PDQ Supplier (All)
 Name: custom; Description: Custom Installation; Flags: iscustom
 
@@ -132,7 +133,7 @@ Name: msg\pixv3; Description: PIXv3/PDQv3 Interface;  Types: full pixv3 pixall
 Name: msg\ca; Description: HL7v3 pan-Canadian Interface;  Types: full ca 
 Name: msg\admin; Description: Administrative Interface;  Types: full
 Name: msg\rss; Description: Subscription Interface;  Types: full
-Name: msg\fhir; Description: HL7 FHIR 0.11
+Name: msg\fhir; Description: HL7 FHIR DSTU; Types: full pdqm pixall
 Name: notif; Description: PIXv3 Notifications;  Types: full pix pixv3 pixall
 Name: src; Description: Source Code; 
 
@@ -152,6 +153,7 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.Everest.Con
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Core.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Messaging.Admin.dll"" /nologo /silent" ; Components:msg\admin; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Admin"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Messaging.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Everest"; Flags:runhidden
+Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Messaging.FHIR.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Everest"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Messaging.HL7.dll"" /nologo /silent" ; Components:msg\hl7; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.HL7"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll"" /nologo /silent" ; Components:msg\hl7; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.PixPdqv2"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.CR.Notification.PixPdq.dll"" /nologo /silent" ; Components:notif; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.CR.Core.Notification.PixPdq"; Flags:runhidden
@@ -170,6 +172,7 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.HealthWorkerIdentity"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Localization.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Localization"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Messaging.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Messaging.Everest"; Flags:runhidden
+Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Messaging.FHIR.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Messaging.Everest"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Messaging.Multi.dll"" /nologo /silent" ; Components:msg\hl7 msg\pixv3 msg\rss msg\admin msg\ca; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Messaging.Multi"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.Messaging.Persistence.Data"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "uninstall ""{app}\MARC.HI.EHRS.SVC.PolicyEnforcement.dll"" /nologo /silent" ; Components:core; StatusMsg: "Removing Native Assembly : MARC.HI.EHRS.SVC.PolicyEnforcement"; Flags:runhidden
@@ -189,6 +192,7 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.Everest.Conne
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Core.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Messaging.Admin.dll"" /nologo /silent" ; Components:msg\admin; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Admin"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Messaging.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Everest"; Flags:runhidden
+Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Messaging.FHIR.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.Everest"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Messaging.HL7.dll"" /nologo /silent" ; Components:msg\hl7; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.HL7"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll"" /nologo /silent" ; Components:msg\hl7; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Messaging.PixPdqv2"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.CR.Notification.PixPdq.dll"" /nologo /silent" ; Components:notif; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.CR.Core.Notification.PixPdq"; Flags:runhidden
@@ -207,6 +211,7 @@ Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.D
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.HealthWorkerIdentity.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.HealthWorkerIdentity"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Localization.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Localization"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Messaging.Everest.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Messaging.Everest"; Flags:runhidden
+Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Messaging.FHIR.dll"" /nologo /silent" ; Components:msg\ca msg\pixv3; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Messaging.Everest"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Messaging.Multi.dll"" /nologo /silent" ; Components:msg\hl7 msg\pixv3 msg\rss msg\admin msg\ca; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Messaging.Multi"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.Messaging.Persistence.Data.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.Messaging.Persistence.Data"; Flags:runhidden
 Filename: "{dotnet40}\ngen.exe"; Parameters: "install ""{app}\MARC.HI.EHRS.SVC.PolicyEnforcement.dll"" /nologo /silent" ; Components:core; StatusMsg: "Generating Native Assembly : MARC.HI.EHRS.SVC.PolicyEnforcement"; Flags:runhidden

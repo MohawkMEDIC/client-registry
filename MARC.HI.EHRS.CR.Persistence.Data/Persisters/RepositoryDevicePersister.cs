@@ -90,7 +90,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 Domain = Convert.ToString(rdr["dev_root"])
                             },
                             Jurisdiction = rdr["dev_jur"] != DBNull.Value ? Convert.ToString(rdr["dev_jur"]) : null,
-                            Name = rdr["dev_name"] != DBNull.Value ? Convert.ToString(rdr["dev_name"]) : null
+                            Name = rdr["dev_name"] != DBNull.Value ? Convert.ToString(rdr["dev_name"]) : null,
+                            Id = identifier
                         };
             }
             return null;

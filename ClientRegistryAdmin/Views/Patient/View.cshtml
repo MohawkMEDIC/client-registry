@@ -1,12 +1,129 @@
 ﻿@model ClientRegistryAdmin.Models.PatientMatch
 @{
     ViewBag.Title = "View";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ViewTitle = string.Format("Viewing Patient {0}, {1}", Model.FamilyName, Model.GivenName);
 }
 
-<h2>Viewing Patient @Model.Id</h2>
 
-<h3>Original Record</h3>
-<em>The original record as it appears in the Client Registry persistence store</em>
-<pre class="pre-scrollable" style="height:600px; max-height:700px">
+@section PatientView
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Demographic Information</h3>
+        </div>
+        <div class="panel-body">
+            <table>
+                <tr>
+                    <th>Name: </th>
+                    <td>@Model.FamilyName, @Model.GivenName</td>
+                    <th>Gender:</th>
+                    <td>@Model.Gender</td>
+                </tr>
+                <tr>
+                    <th>Mother's Name</th>
+                    <td colspan="3">@Model.MothersName</td>
+                </tr>
+                <tr>
+                    <th>DOB:</th>
+                    <td>@Model.DateOfBirth.ToString("yyyy-MMM-dd")</td>
+                    <th>Telecom:</th>
+                    <td>
+                        @if(Model.OriginalData.telecom != null)
+                        {
+                            <ul>
+                                @foreach(var tel in Model.OriginalData.telecom)
+                                {
+                                    <li>@tel.value (@tel.use)</li>
+                                }
+                            </ul>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th valign="top">Primary Registered Address:</th>
+                    <td colspan="3">
+                        <table id="addressTable" border="1">
+                            <tr>
+                                <th>(Address)</th>
+                                <td>@Model.Address</td>
+                            </tr>
+                            <tr>
+                                <th>(City)</th>
+                                <td>@Model.City</td>
+                            </tr>
+                            <tr>
+                                <th>(County/District)</th>
+                                <td>@Model.County</td>
+                            </tr>
+                            <tr>
+                                <th>(State/Province/Region)</th>
+                                <td>@Model.State</td>
+                            </tr>
+                            <tr>
+                                <th>(Country)</th>
+                                <td>@Model.Country</td>
+                            </tr>
+                            <tr>
+                                <th>(Postal/Zip Code)</th>
+                                <td>@Model.PostCode</td>
+                            </tr>
+                            <tr>
+                                <th>(Census Region)</th>
+                                <td>@Model.CensusTract</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Identifiers</h3>
+        </div>
+        <div class="panel-body">
+            <table style="width: 100%" class="table-striped">
+                <tr>
+                    <th>Assigning Authority</th>
+                    <th>Identifier</th>
+                </tr>
+                @foreach(var id in Model.OtherIds)
+                {
+                    <tr>
+                        <td>@Html.ActionLink(id.Key, "View", "Oid", new { id = id.Key }, new { })</td>
+                        <td>@id.Value</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Original Registration Event</h3>
+        </div>
+        <div class="panel-body">
+            <em>The original record as it appears in the Client Registry persistence store</em>
+                <div class="container-fluid">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="pretty">
+                            <div style="overflow: auto; padding: 2px" class="panel panel-default">
+                                @Model.OriginalHtml
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="raw">
+                            <pre class="pre-scrollable" style="position: relative;">
 @Model.OriginalXml
-</pre>
+                            </pre>
+                        </div>
+                    </div>
+                    <ul class="nav nav-tabs" style="border-bottom: none; border-top: solid 1px #ddd">
+                        <li class="active"><a href="#pretty" data-toggle="tab">HTML</a></li>
+                        <li><a href="#raw" data-toggle="tab">XML</a></li>
+                    </ul>
+
+                </div>
+        </div>
+    </div>
+
+}

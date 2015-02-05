@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-title">
+    <h1>Patient Administration</h1>
+</div>
+<div class="container-fluid" style="height:auto;">
+    <div id="side-nav" class="col-md-3">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="/Patient"><span class="glyphicon glyphicon-time"></span> Most Recent</a></li>
+                <li><a href="/Patient/Search"><span class="glyphicon glyphicon-search"></span> Search</a></li>
+                <li><a href="/Patient/Conflict"><span class="glyphicon glyphicon-resize-small"></span> Conflicts</a></li>
+            </ul>
+    </div>
+    <div class="col-md-9 panel panel-default" style="overflow:auto;" >
+        <h4 id="viewTitle">@ViewBag.ViewTitle</h4>
+        @RenderSection("PatientView", true)
+    </div>
+</div>

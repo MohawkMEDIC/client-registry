@@ -14,13 +14,28 @@ namespace ClientRegistryAdmin.Controllers
         // GET: /Patient/
         public ActionResult Index()
         {
-            return View(new PatientSearchModel());
+            PatientSearchModel model = new PatientSearchModel();
+            try
+            {
+                if (!ModelState.IsValid)
+                    model.IsError = true;
+                else
+                {
+                    model.Outcome = CrUtil.GetRecentActivity(new TimeSpan(1, 0, 0, 0));
+                    model.IsError = model.Outcome == null;
+                }
+            }
+            catch (Exception e)
+            {
+                model.IsError = true;
+
+            }
+            return View(model);
         }
 
         /// <summary>
         /// /Patient/Search
         /// </summary>
-        [HttpPost]
         public ActionResult Search(PatientSearchModel model)
         {
             try
@@ -38,7 +53,7 @@ namespace ClientRegistryAdmin.Controllers
                 model.IsError = true;
                 
             }
-            return View("Index", model);
+            return View(model);
         }
 
         /// <summary>

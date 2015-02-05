@@ -3,6 +3,7 @@
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import schemaLocation="http://localhost:8080/admin?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://localhost:8080/admin?xsd=xsd1" namespace="urn:marc-hi:svc:componentModel" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="IClientRegistryAdminInterface_GetLogFiles_InputMessage">
@@ -28,6 +29,12 @@
   </wsdl:message>
   <wsdl:message name="IClientRegistryAdminInterface_GetRegistrations_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetRegistrationsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRecentActivity_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetRecentActivity" />
+  </wsdl:message>
+  <wsdl:message name="IClientRegistryAdminInterface_GetRecentActivity_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetRecentActivityResponse" />
   </wsdl:message>
   <wsdl:message name="IClientRegistryAdminInterface_GetRegistrationEvent_InputMessage">
     <wsdl:part name="parameters" element="tns:GetRegistrationEvent" />
@@ -81,6 +88,10 @@
     <wsdl:operation name="GetRegistrations">
       <wsdl:input wsaw:Action="GetRegistrations" message="tns:IClientRegistryAdminInterface_GetRegistrations_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationsResponse" message="tns:IClientRegistryAdminInterface_GetRegistrations_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRecentActivity">
+      <wsdl:input wsaw:Action="RecentActivity" message="tns:IClientRegistryAdminInterface_GetRecentActivity_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IClientRegistryAdminInterface/GetRecentActivityResponse" message="tns:IClientRegistryAdminInterface_GetRecentActivity_OutputMessage" />
     </wsdl:operation>
     <wsdl:operation name="GetRegistrationEvent">
       <wsdl:input wsaw:Action="GetRegistration" message="tns:IClientRegistryAdminInterface_GetRegistrationEvent_InputMessage" />
@@ -138,6 +149,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetRegistrations">
       <soap:operation soapAction="GetRegistrations" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRecentActivity">
+      <soap:operation soapAction="RecentActivity" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>

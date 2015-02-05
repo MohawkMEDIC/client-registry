@@ -50,7 +50,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         {
             ISystemConfigurationService config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             ILocalizationService locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
-
+            
             // Get the message type
             IMessage response = null;
             if (e.Message.Version == "2.5")

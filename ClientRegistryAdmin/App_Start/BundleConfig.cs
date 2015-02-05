@@ -28,10 +28,9 @@ namespace ClientRegistryAdmin
             bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/site.css"));
 
             bundles.Add(new StyleBundle("~/Content/bootstrap").Include(
-                "~/Content/themes/base/bootstrap*",
-                "~/Content/themes/base/bootstrap-theme*"
+                      "~/Content/themes/base/bootstrap.css",
+                      "~/Content/themes/base/select2.css"));
 
-                ));
             bundles.Add(new StyleBundle("~/Content/themes/base/css").Include(
                         "~/Content/themes/base/jquery.ui.core.css",
                         "~/Content/themes/base/jquery.ui.resizable.css",

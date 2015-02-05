@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-title">
+    <h1>Administrative Information</h1>
+</div>
+<div class="container-fluid" style="height:auto;">
+    <div id="side-nav" class="col-md-3">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="/Admin/"><span class="glyphicon glyphicon-cog"></span> Service Status</a></li>
+                <li><a href="/Log"><span class="glyphicon glyphicon-list-alt"></span> Server Logs</a></li>
+                <li><a href="/Oid"><span class="glyphicon glyphicon-barcode"></span> Assigning Authorities</a></li>
+            </ul>
+    </div>
+    <div class="col-md-9 panel panel-default" style="overflow:auto;" >
+        <h4 id="viewTitle">@ViewBag.ViewTitle</h4>
+        @RenderSection("AdminView", true)
+    </div>
+</div>

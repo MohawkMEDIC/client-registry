@@ -21,12 +21,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
     /// <summary>
     /// Confidence type
     /// </summary>
+    [XmlType("MatchAlgorithm", Namespace = "urn:marc-hi:svc:componentModel")]
     public enum MatchAlgorithm
     {
         /// <summary>

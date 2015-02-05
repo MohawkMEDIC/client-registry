@@ -340,7 +340,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             eld.CodeIdentifyingError.Text.Value = locale.GetString(String.Format("HL7{0}", errCode));
             eld.CodeIdentifyingError.AlternateText.Value = dtl.Message;
             eld.CodeIdentifyingError.Identifier.Value = errCode;
-
+            
             if (dtl.Location != null && dtl.Location.Contains("^"))
             {
                 var cmp = dtl.Location.Split('^');

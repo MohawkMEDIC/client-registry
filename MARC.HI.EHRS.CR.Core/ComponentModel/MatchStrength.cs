@@ -21,12 +21,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
     /// <summary>
     /// Matching strength
     /// </summary>
+    [XmlType("MatchStrength", Namespace = "urn:marc-hi:svc:componentModel")]
     public enum MatchStrength
     {
         /// <summary>

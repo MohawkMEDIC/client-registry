@@ -324,9 +324,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // De-persist older versions
                 if (!loadFast && rplcVersionId != default(decimal))
                 {
-                    var oldVersion = DePersist(conn, identifier, rplcVersionId, retVal, HealthServiceRecordSiteRoleType.OlderVersionOf, false);
+                    var oldVersion = DePersist(conn, identifier, rplcVersionId, retVal, HealthServiceRecordSiteRoleType.OlderVersionOf, loadFast);
                     if (oldVersion != null)
+                    {
                         (oldVersion.Site as HealthServiceRecordSite).SiteRoleType = HealthServiceRecordSiteRoleType.OlderVersionOf;
+                        retVal.Add(oldVersion);
+                    }
                 }
 
                 if (roleType.HasValue && (roleType.Value & HealthServiceRecordSiteRoleType.ReplacementOf) == HealthServiceRecordSiteRoleType.ReplacementOf)
@@ -486,7 +489,22 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Matching?
             StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified') ");
             sb.AppendFormat("AND HSR_ID IN (SELECT HSR_ID FROM HSR_TBL WHERE HSR_CLS IN (4, 8)) "); // only registrations
-            
+
+            if (hsr.EffectiveTime != null)
+            {
+                // Before and after
+                TimestampPart low = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.LowBound),
+                    high = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.HighBound),
+                    stand = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.Standlone);
+                if (low != null && high != null)
+                    sb.AppendFormat(" AND CRTN_UTC BETWEEN '{0:yyyy-MM-dd HH:mm:ssz}' AND '{1:yyyy-MM-dd HH:mm:ssz}' ", low.Value, high.Value);
+                else if (stand != null)
+                    sb.AppendFormat(" AND CRTN_UTC = '{0:yyyy-MM-dd HH:mm:ssZ}' ", stand.Value);
+                else if(low != null)
+                    sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", low.Value);
+                else if(high != null)
+                    sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", high.Value);
+            }
             return sb.ToString();
 
         }

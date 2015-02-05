@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Xml.Serialization;
 
 namespace MARC.HI.EHRS.CR.Core.ComponentModel
 {
@@ -25,6 +26,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Identifies a type of record
     /// </summary>
     [Flags]
+    [XmlType("RegistrationEventType", Namespace = "urn:marc-hi:svc:componentModel")]
     public enum RegistrationEventType
     {
         /// <summary>

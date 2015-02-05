@@ -29,8 +29,9 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// <summary>
     /// Represents a specific version of a health services record event
     /// </summary>
-    [Serializable][XmlType("HealthServiceRecord")]
-    [XmlRoot("HealthServiceRecord")]
+    [Serializable]
+    [XmlType("HealthServiceRecord", Namespace = "urn:marc-hi:svc:componentModel")]
+    [XmlRoot("HealthServiceRecord", Namespace="urn:marc-hi:svc:componentModel")]
     public class RegistrationEvent : CrHealthServiceRecordContainer, IIdentifiable
     {
 
@@ -144,5 +145,11 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
 
         #endregion
 
+        public override object Clone()
+        {
+            var retVal = base.Clone() as RegistrationEvent;
+            retVal.m_components = new List<System.ComponentModel.IComponent>(this.m_components);
+            return retVal;
+        }
     }
 }

@@ -1,4 +1,96 @@
-﻿table.infotable th {
-    background-color:gray;
-    color: white;
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+div.centerstatus
+{
+	margin:auto auto;
+	width: 50%;
+	height: 50%;
+	border:1px solid #ddd;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	padding: 12px;
+}
+
+.datepicker-pointer[readonly=readonly]
+{
+	background-color:white; cursor:default;
+}
+.datepicker-pointer[readonly=readonly][disabled]
+{
+	background-color:lightgrey; cursor:not-allowed;
+}
+
+    #side-nav .nav>.active>a, #side-nav .nav>.active:hover>a, #side-nav .nav>.active:focus>a {
+        padding-left: 18px;
+        font-weight: 700;
+        color: #563d7c;
+        background-color: transparent;
+        border-left: 2px solid #563d7c;
+    }
+    #side-nav .nav .nav>.active>a, #side-nav .nav .nav>.active:hover>a, #side-nav .nav .nav>.active:focus>a {
+        font-weight: 500;
+        padding-left: 28px;
+    }
+ 
+    #side-nav .nav>li>a {
+        display: block;
+        font-size: 13px;
+        font-weight: 400;
+        color: #999;
+        padding: 4px 20px;
+    }
+    #side-nav .nav .nav {
+        padding-bottom: 10px;
+		padding-left: 20px;
+    }
+    #side-nav .nav>.active>.nav {
+        display: block;
+        padding-bottom: 10px;
+    }
+
+.centerglyph
+{
+	margin:auto;
+	width:15px;
+}
+
+.glyphicon-large
+{
+	text-align: center;
+	font-size: 20px;
+	display:block;
+	width:100%;
+}
+
+ul.chart-legend
+{
+	list-style: none;
+}
+
+#addressTable th
+{
+    font-weight:normal;
+    font-style:italic;
+    padding: 4px;
+}
+
+#addressTable td
+{
+    font-weight:normal;
+    padding: 4px;
+}
+
+th 
+{
+    padding:0px 4px;
 }
