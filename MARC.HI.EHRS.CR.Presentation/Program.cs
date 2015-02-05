@@ -93,7 +93,7 @@ namespace MARC.HI.EHRS.CR.Presentation.Console
         private static void ShowCopyright()
         {
             console.WriteLine("MARC-HI Service Host Console v{0}", Assembly.GetEntryAssembly().GetName().Version);
-            console.WriteLine("Copyright (C) 2010, Mohawk College of Applied Arts and Technology");
+            console.WriteLine("Copyright (C) 2010 - 2015, Mohawk College of Applied Arts and Technology");
         }
     }
 }

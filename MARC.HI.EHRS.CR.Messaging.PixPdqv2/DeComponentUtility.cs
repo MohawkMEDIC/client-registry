@@ -416,7 +416,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 qak.QueryResponseStatus.Value = "OK";
                 qak.HitCount.Value = result.TotalResults.ToString();
                 qak.ThisPayload.Value = result.Results.Length.ToString();
-                qak.HitsRemaining.Value = (result.TotalResults - result.StartRecordNumber).ToString();
+                //qak.HitsRemaining.Value = (result.TotalResults - result.StartRecordNumber).ToString();
                 foreach (var res in result.Results)
                 {
                     var pid = retVal.GetQUERY_RESPONSE(retVal.QUERY_RESPONSERepetitionsUsed);

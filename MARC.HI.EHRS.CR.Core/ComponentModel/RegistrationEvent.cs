@@ -144,5 +144,11 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
 
         #endregion
 
+        public override object Clone()
+        {
+            var retVal = base.Clone() as RegistrationEvent;
+            retVal.m_components = new List<System.ComponentModel.IComponent>(this.m_components);
+            return retVal;
+        }
     }
 }

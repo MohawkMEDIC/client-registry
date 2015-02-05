@@ -32,6 +32,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
     /// </summary>
     [Profile(ProfileId = "pdqm", Name = "Patient Demographics Query Mobile")]
     [ResourceProfile(Resource = typeof(Patient), Name = "Patient Demographics Query for Mobile patient profile")]
+    [ExtensionProfile(ExtensionClass = typeof(ExtensionUtil))]
     public class PatientMessageProcessor : MessageProcessorBase, IFhirMessageProcessor
     {
         #region IFhirMessageProcessor Members
@@ -625,7 +626,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Now add as a personal relationship
                 if(relativeResource.Relationship != null)
                 {
-                    Coding relationshipKind = relativeResource.Relationship.GetCoding(typeof(PersonalRelationshipRoleType).GetValueSetDefinition());
+                    Coding relationshipKind = relativeResource.Relationship.GetPrimaryCode();
                     if (relationshipKind != null)
                         relationship.RelationshipKind = relationshipKind.Code;
                     else
@@ -646,6 +647,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             }
 
             // TODO: Communication lanugage
+            psn.Language = new List<PersonLanguage>();
             foreach (var lang in resPatient.Language)
             {
                 var termService = ApplicationContext.CurrentContext.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -670,7 +672,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 else
                     pl.Language = languageCode.Code;
 
-                pl.Type = 0;
+                pl.Type = LanguageType.Preferred;
 
                 // Add
                 psn.Language.Add(pl);

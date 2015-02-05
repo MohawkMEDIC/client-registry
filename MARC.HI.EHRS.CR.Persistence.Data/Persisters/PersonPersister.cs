@@ -72,7 +72,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else
                 {
                     // Start by persisting the person component
-                    if (isUpdate)
+                    if (isUpdate || psn.Id != default(decimal))
                     {
                         // validate
                         if (psn.Id == default(decimal))
@@ -844,8 +844,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 Identifier = domainIdentifier.Identifier,
                                 Version = replacesVersion.ToString()
                             }, loadFast);
-                            if(olderVersionPerson != null)
+                            if (olderVersionPerson != null)
+                            {
                                 retVal.Add(olderVersionPerson, "RPLC", HealthServiceRecordSiteRoleType.ReplacementOf, null);
+                                if (!loadFast)
+                                    DbUtil.DePersistComponents(conn, olderVersionPerson, this, loadFast);
+                            }
                         }
                         return retVal;
                     }
@@ -1151,8 +1155,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Domain = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid,
                 Identifier = identifier.ToString()
             }, false);
-
-            // TODO: Prior versions of this person
 
             // De-persist components
             DbUtil.DePersistComponents(conn, person, this, loadFast);
@@ -1583,7 +1585,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else if (cmp is PersonalRelationship)
                 {
                     var oldPsnRltnshp = cmp as PersonalRelationship;
-                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)) || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName != null && (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1));
+                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => 
+                        (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && 
+                        (
+                            ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)) || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName != null && (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1) ||
+                            PersonalRelationshipPersister.NON_DUPLICATE_REL.Contains(oldPsnRltnshp.RelationshipKind)
+                        )
+                    );
                     if (newPsnRltnshpMatch == null) // Need to copy?
                         newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
                     else if((newPsnRltnshpMatch as PersonalRelationship).Id == default(Decimal) )// HACK: Massage the IDs

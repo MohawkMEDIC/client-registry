@@ -42,6 +42,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
     {
         #region IComponentPersister Members
 
+        public static readonly List<String> NON_DUPLICATE_REL = new List<string>() {
+            "MTH", "FTH" 
+        };
 
         /// <summary>
         /// Gets the type of component that this persister handles
@@ -110,7 +113,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 foreach (var id in candidateId)
                 {
                     var candidate = persister.GetPerson(conn, tx, id, true);
-                    if (candidate.Names.Exists(n => n.SimilarityTo(pr.LegalName) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+                    if (NON_DUPLICATE_REL.Contains(pr.RelationshipKind))
+                    {
+                        relationshipPerson = candidate;
+                        break;
+                    }
+                    else if (candidate.Names.Exists(n => n.SimilarityTo(pr.LegalName) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
                     {
                         relationshipPerson = candidate;
                         break;
@@ -142,14 +150,43 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                 registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
-
                 // Persist or merge?
                 new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
                 //var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
             }
+            else
+            {
+                var updatedPerson = new Person()
+                {
+                    Id = relationshipPerson.Id,
+                    AlternateIdentifiers = pr.AlternateIdentifiers,
+                    Names = new List<NameSet>() { pr.LegalName },
+                    Addresses = new List<AddressSet>() {  },
+                    GenderCode = pr.GenderCode,
+                    BirthTime = pr.BirthTime,
+                    TelecomAddresses = pr.TelecomAddresses,
+                    Status = StatusType.Active,
+                    RoleCode = relationshipPerson.RoleCode
+                };
+
+                if (pr.PerminantAddress != null)
+                    updatedPerson.Addresses.Add(pr.PerminantAddress);
+
+                persister.MergePersons(updatedPerson, relationshipPerson, true);
+                relationshipPerson = updatedPerson;
+                var registrationEvent = DbUtil.GetRegistrationEvent(pr).Clone() as RegistrationEvent;
+                registrationEvent.Id = default(decimal);
+                registrationEvent.EventClassifier = RegistrationEventType.ComponentEvent;
+                registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
+                registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+                // Persist or merge?
+                // Persist or merge?
+                new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
+            }
 
             // Validate
-            if (pr.AlternateIdentifiers.Count == 0 && !relationshipPerson.Names.Exists(o => QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
+            if (!NON_DUPLICATE_REL.Contains(pr.RelationshipKind) && pr.AlternateIdentifiers.Count == 0 && !relationshipPerson.Names.Exists(o => QueryUtil.MatchName(pr.LegalName, o) >= DatabasePersistenceService.ValidationSettings.PersonNameMatch))
                 throw new DataException(ApplicationContext.LocaleService.GetString("DBCF00A"));
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
@@ -165,6 +202,34 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     Domain = configService.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid,
                     Identifier = pr.Id.ToString()
                 };
+        }
+
+        /// <summary>
+        /// Create a registration event version linking to the person reflecting a change
+        /// </summary>
+        private RegistrationEvent GetRegistrationEvent(IDbConnection conn, IDbTransaction tx, Person psn)
+        {
+            // First, get the registration version for the person id
+            decimal regEvtVrsn = 0,
+                regEvtId = 0;
+            using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+            {
+                cmd.CommandText = "get_psn_hsr_evt";
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id", DbType.Decimal, psn.Id));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id", DbType.Decimal, psn.VersionId));
+
+                // Get the registration version
+                using (IDataReader rdr = cmd.ExecuteReader())
+                {
+                    if (!rdr.Read())
+                        throw new ConstraintException("Cannot determine the registration event");
+                    regEvtVrsn = Convert.ToDecimal(rdr["hsr_vrsn_id"]);
+                    regEvtId = Convert.ToDecimal(rdr["hsr_id"]);
+                }
+            }
+
+            // Load and return
+            return new RegistrationEventPersister().DePersist(conn, regEvtId, regEvtVrsn, null, null, true) as RegistrationEvent;
         }
 
         /// <summary>

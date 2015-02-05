@@ -70,7 +70,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             { "3", AddressPart.AddressPartType.City },
             { "4", AddressPart.AddressPartType.State },
             { "5", AddressPart.AddressPartType.PostalCode },
-            { "6", AddressPart.AddressPartType.Country }
+            { "6", AddressPart.AddressPartType.Country },
+            { "8", AddressPart.AddressPartType.DeliveryInstallationQualifier },
+            { "9", AddressPart.AddressPartType.County },
+            { "10", AddressPart.AddressPartType.CensusTract }
         };
 
         // XPN Type Maps
@@ -627,6 +630,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                         });
                                     }
                                     break;
+                                case "PID.33": // last update time
+                                    {
+                                        
+                                        var tsqip = (MARC.Everest.DataTypes.TS)qip2;
+                                        filter.EffectiveTime = new TimestampSet();
+                                        if (tsqip.DateValuePrecision < MARC.Everest.DataTypes.DatePrecision.Second)
+                                        {
+                                            var ivlqip = tsqip.ToIVL();
+                                            filter.EffectiveTime.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.LowBound, ivlqip.Low.DateValue, TS_PREC_MAP[MARC.Everest.DataTypes.DatePrecision.Full]));
+                                            filter.EffectiveTime.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.HighBound, ivlqip.High.DateValue, TS_PREC_MAP[MARC.Everest.DataTypes.DatePrecision.Full]));
+                                        }
+                                        else
+                                            filter.EffectiveTime.Parts.Add(new TimestampPart(TimestampPart.TimestampPartType.Standlone, tsqip.DateValue, TS_PREC_MAP[tsqip.DateValuePrecision.Value]));
+                                        break;
+                                    }
                                 default:
                                     throw new ArgumentException("Could not understand query parameter");
                             }
@@ -734,9 +752,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             else
                 retVal.QueryTag = retVal.QueryId;
 
+            
             retVal.IsSummary = false;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
-
+            
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 return QueryData.Empty;
             return retVal;
@@ -1056,20 +1075,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             else
                 retVal.Use = use.Value;
             // Components 
-            if (!String.IsNullOrEmpty(xad.City.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.City.Value, PartType = AddressPart.AddressPartType.City });
-            if (!String.IsNullOrEmpty(xad.Country.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.Country.Value, PartType = AddressPart.AddressPartType.Country });
-            if (!String.IsNullOrEmpty(xad.CountyParishCode.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.CountyParishCode.Value, PartType = AddressPart.AddressPartType.County });
-            if (!String.IsNullOrEmpty(xad.OtherDesignation.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.OtherDesignation.Value, PartType = AddressPart.AddressPartType.AdditionalLocator });
-            if (!String.IsNullOrEmpty(xad.StateOrProvince.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StateOrProvince.Value, PartType = AddressPart.AddressPartType.State });
-            if (!String.IsNullOrEmpty(xad.StreetAddress.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.StreetAddress.Value, PartType = AddressPart.AddressPartType.AddressLine });
-            if (!String.IsNullOrEmpty(xad.ZipOrPostalCode.Value))
-                retVal.Parts.Add(new AddressPart() { AddressValue = xad.ZipOrPostalCode.Value, PartType = AddressPart.AddressPartType.PostalCode });
+            for(int i = 0; i < xad.Components.Length; i++)
+            {
+                var pt = xad.Components[i];
+                AddressPart.AddressPartType? type = null;
+                if (AD_MAP.TryGetValue((i + 1).ToString(), out type))
+                {
+                    if (pt is AbstractPrimitive)
+                    {
+                        string value = (pt as AbstractPrimitive).Value;
+                        if (!String.IsNullOrEmpty(value))
+                            retVal.Parts.Add(new AddressPart() { AddressValue = value, PartType = type.Value });
+                    }
+                }
+            }
+
             return retVal;
         }
 
