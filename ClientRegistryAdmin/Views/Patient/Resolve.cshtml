@@ -1,0 +1,129 @@
+﻿@model ClientRegistryAdmin.Models.ConflictPatientMatch
+@{
+    ViewBag.Title = "Resolve Conflict";
+    //    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ViewTitle = string.Format("Resolving Conflicts with {0}, {1}", Model.Patient.FamilyName, Model.Patient.GivenName);
+}
+
+
+@*@section PatientView
+    {*@
+<h2>Merge Records</h2>
+<div class="container-fluid">
+
+    <div class="row">
+
+        <div class="col-md-12" id="help">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <a href="#instructions" data-toggle="collapse" data-parent="help"><span class="glyphicon glyphicon-question-sign"></span> Instructions</a>
+                    </h3>
+                </div>
+                <div id="instructions" class="panel-body panel-collapse collapse">
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <form method="post" id="mergeForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="mrgEvtId" value="@Model.Patient.RegistrationId" />
+            <input type="hidden" name="mrgPid" id="mrgPidId" value="@Model.Patient.Id" />
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-saved"></span> source (survivor) patient record</h3>
+                    </div>
+                    <div class="panel-body">
+                        <em>The original record as it appears in the Client Registry persistence store</em>
+                        <div class="container-fluid">
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="source_pretty">
+                                    <div style="overflow: auto; padding: 2px" class="panel panel-default">
+                                        @Model.Patient.OriginalHtml
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="source_raw">
+                                    <pre class="pre-scrollable" style="position: relative;">
+                        @Model.Patient.OriginalXml
+                    </pre>
+                                </div>
+                            </div>
+                            <ul class="nav nav-tabs" style="border-bottom: none; border-top: solid 1px #ddd">
+                                <li class="active"><a href="#source_pretty" data-toggle="tab">HTML</a></li>
+                                <li><a href="#source_raw" data-toggle="tab">XML</a></li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel-group" id="conflicts">
+                    @foreach (var conflict in Model.Matching)
+                    {
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <input name="mrg" onchange="$('@String.Format("#{0}_view", conflict.RegistrationId)').collapse('hide');" value="@conflict.RegistrationId" id="@String.Format("mrg{0}", conflict.RegistrationId)" type="checkbox" />
+                                    <label for="@String.Format("mrg{0}", conflict.RegistrationId)">
+                                        <a data-toggle="collapse" data-parent="conflicts" href="@String.Format("#{0}_view", conflict.RegistrationId)">
+                                            <span class="glyphicon glyphicon-import"></span> Merge with registration #@conflict.RegistrationId
+                                        </a>
+                                    </label>
+                                </h3>
+                            </div>
+                            <div class="panel-body collapse panel-collapse" id="@String.Format("{0}_view", conflict.RegistrationId)">
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="@String.Format("{0}_pretty", conflict.RegistrationId)">
+                                        <div style="overflow: auto; padding: 2px" class="panel panel-default">
+                                            @conflict.OriginalHtml
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="@String.Format("{0}_raw", conflict.RegistrationId)">
+                                        <pre class="pre-scrollable" style="position: relative;">
+                            @conflict.OriginalXml
+                                        </pre>
+                                    </div>
+                                </div>
+                                <ul class="nav nav-tabs" style="border-bottom: none; border-top: solid 1px #ddd">
+                                    <li class="active"><a href="@String.Format("#{0}_pretty", conflict.RegistrationId)" data-toggle="tab">HTML</a></li>
+                                    <li><a href="@String.Format("#{0}_raw", conflict.RegistrationId)" data-toggle="tab">XML</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group" style="float:right">
+                            <input type="hidden" id="mergeAction" name="action" value="cancel" />
+                            <button onclick="$('#mergeAction').attr('value','cancel'); $('#mergeForm').submit()" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Cancel Merge</button>
+                            <button onclick="if (confirmMerge()) { $('#mergeAction').attr('value', 'merge'); $('#mergeForm').submit(); }" type="button" name="action" value="merge" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Merge &amp; Resolve</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </form>
+</div>
+
+</div>
+@*}*@
+@section Scripts {
+    <script type="text/javascript">
+        function confirmMerge() {
+            var id = $("#mrgEvtId").attr('value'),
+                ecid = $("#mrgPidId").attr('value');
+            var confirmMessage = "You are about to perform a non-reversable action against patient with enterprise patient ID #" + ecid
+                                + "(registration event id #" + id + "). If you click 'ok' this action cannot be undone!";
+            return confirm(confirmMessage);
+        }
+    </script>
+}
+}

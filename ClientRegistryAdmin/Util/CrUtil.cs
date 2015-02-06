@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using ClientRegistryAdmin.ClientRegistryAdminService;
 using MARC.Everest.DataTypes;
+using ClientRegistryAdmin.Models;
 
 namespace ClientRegistryAdmin.Util
 {
@@ -176,20 +177,23 @@ namespace ClientRegistryAdmin.Util
             }
 
             // Relationships
-            var mother = psn.Items.Where(o => o.hsrSite.roleType == HealthServiceRecordSiteRoleType.RepresentitiveOf)
-                .Select(o => o as PersonalRelationship).FirstOrDefault(o => o.kind == "MTH");
-            if (mother != null)
+            if (psn.Items != null)
             {
-                pm.MothersId = mother.id.ToString();
-                familyNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Family);
-                givenNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Given);
-                if (familyNamePart != null)
-                    pm.MothersName = familyNamePart.value  + ", ";
-                if (givenNamePart != null)
-                    pm.MothersName += givenNamePart.value;
+                var mother = psn.Items.Where(o => o.hsrSite.roleType == HealthServiceRecordSiteRoleType.RepresentitiveOf)
+                    .Select(o => o as PersonalRelationship).FirstOrDefault(o => o.kind == "MTH");
+                if (mother != null)
+                {
+                    pm.MothersId = mother.id.ToString();
+                    familyNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Family);
+                    givenNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Given);
+                    if (familyNamePart != null)
+                        pm.MothersName = familyNamePart.value + ", ";
+                    if (givenNamePart != null)
+                        pm.MothersName += givenNamePart.value;
 
-                if (pm.MothersName.EndsWith(", "))
-                    pm.MothersName = pm.MothersName.Substring(0, pm.MothersName.Length - 2);
+                    if (pm.MothersName.EndsWith(", "))
+                        pm.MothersName = pm.MothersName.Substring(0, pm.MothersName.Length - 2);
+                }
             }
             return pm;
         }
@@ -208,6 +212,57 @@ namespace ClientRegistryAdmin.Util
 
                 return ConvertRegistrationEvent(regEvent);
 
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get conflicts
+        /// </summary>
+        public static List<Models.ConflictPatientMatch> GetConflicts()
+        {
+            try
+            {
+                ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
+                var conflicts = client.GetConflicts();
+                List<Models.ConflictPatientMatch> retVal = new List<ConflictPatientMatch>();
+                foreach(var itm in conflicts)
+                {
+                    ConflictPatientMatch match = new ConflictPatientMatch();
+                    match.Patient = ConvertRegistrationEvent(itm.source);
+                    match.Matching = new List<PatientMatch>();
+                    foreach (var m in itm.matches)
+                        match.Matching.Add(ConvertRegistrationEvent(m));
+                    retVal.Add(match);
+                }
+                return retVal;
+                
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get a particular conflict
+        /// </summary>
+        public static ConflictPatientMatch GetConflict(decimal id)
+        {
+            try
+            {
+                ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
+                var conflicts = client.GetConflict(id);
+                var conflict = conflicts[0];
+                ConflictPatientMatch retVal = new ConflictPatientMatch();
+                retVal.Patient = ConvertRegistrationEvent(conflict.source);
+                retVal.Matching = new List<PatientMatch>();
+                foreach (var m in conflict.matches)
+                    retVal.Matching.Add(ConvertRegistrationEvent(m));
+                return retVal;
             }
             catch (Exception e)
             {

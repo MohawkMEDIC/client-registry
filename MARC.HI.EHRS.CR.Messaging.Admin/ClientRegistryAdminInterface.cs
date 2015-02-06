@@ -100,6 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                             try
                             {
                                 var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
+                                
                                 lock (syncLock)
                                     retVal.Event.Add(itm as RegistrationEvent);
                             }

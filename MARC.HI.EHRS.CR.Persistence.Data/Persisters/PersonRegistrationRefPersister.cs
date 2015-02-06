@@ -57,7 +57,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Is this a replacement
             var pp = new PersonPersister();
             PersonRegistrationRef refr = data as PersonRegistrationRef;
-            Person psn = pp.GetPerson(conn, tx, refr.AlternateIdentifiers[0], false);
+            Person psn = pp.GetPerson(conn, tx, refr.AlternateIdentifiers[0], true);
             Person cntrPsn = data.Site.Container as Person;
 
             if (psn == null || cntrPsn == null)

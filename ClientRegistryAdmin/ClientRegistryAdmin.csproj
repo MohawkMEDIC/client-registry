@@ -142,6 +142,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ConflictPatientMatch.cs" />
+    <Compile Include="Models\ConflictListModel.cs" />
     <Compile Include="Models\PatientMatch.cs" />
     <Compile Include="Models\PatientSearchModel.cs" />
     <Compile Include="Models\RegistryStatusModel.cs" />
@@ -286,6 +288,8 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdminInterface.wsdl" />
+    <Content Include="Views\Patient\Conflict.cshtml" />
+    <Content Include="Views\Patient\Resolve.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

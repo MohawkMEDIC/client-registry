@@ -6,41 +6,66 @@
 
 @section PatientView
 {
-    @using (Html.BeginForm("Search", "Patient", FormMethod.Post, new { @class = "form-horizontal" }))
-    {
-        @Html.AntiForgeryToken();
-        Html.EnableClientValidation();
-        
-        <div class="form-group">
-            @Html.LabelFor(m => m.FamilyName)
-            @Html.TextBoxFor(m => m.FamilyName, new { @class = "form-control" })
-            @Html.ValidationMessageFor(m => m.FamilyName)
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Patient Search</h3>
         </div>
-        <div class="form-group">
-            @Html.LabelFor(m => m.GivenName)
-            @Html.TextBoxFor(m => m.GivenName, new { @class = "form-control" })
-            @Html.ValidationMessageFor(m => m.GivenName)
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(m => m.DateOfBirth)
-            @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "datepicker datepicker-pointer form-control", @id = "dateOfBirth" })
-            @Html.ValidationMessageFor(m => m.DateOfBirth)
-        </div>
-        <button class="btn btn-primary" style="float:right"><span class="glyphicon glyphicon-search"></span> Search</button>
-    }
+        <div class="panel-body">
+            @using (Html.BeginForm("Search", "Patient", FormMethod.Get, new { @class = "form-horizontal" }))
+            {
+                Html.EnableClientValidation();
 
-    @if (Model.IsError)
-    {
-        <div class="alert alert-danger">
-            An error occurred executing the search against the Client Registry
-        </div>
-    }
-    else if(Model.Outcome != null)
-    {
-        var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
-        grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
+                <div class="container-fluid">
+                    <div class="form-group row">
+                        <div class="col-md-2">
+                            @Html.LabelFor(m => m.FamilyName)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.TextBoxFor(m => m.FamilyName, new { @class = "form-control" })
+                        </div>
+                        <div class="col-md-2">
+                            @Html.ValidationMessageFor(m => m.FamilyName)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.LabelFor(m => m.GivenName)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.TextBoxFor(m => m.GivenName, new { @class = "form-control" })
 
-        @grid.GetHtml(
+                        </div>
+                        <div class="col-md-2">
+                            @Html.ValidationMessageFor(m => m.GivenName)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.LabelFor(m => m.DateOfBirth)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "datepicker datepicker-pointer form-control", @id = "dateOfBirth" })
+                        </div>
+                        <div class="col-md-2">
+                            @Html.ValidationMessageFor(m => m.DateOfBirth)
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="float:right"><span class="glyphicon glyphicon-search"></span> Search</button>
+                </div>
+            }
+
+            @if (Model.IsError)
+            {
+                <div class="alert alert-danger">
+                    An error occurred executing the search against the Client Registry
+                </div>
+            }
+            else if (Model.Outcome != null)
+            {
+                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
+                grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
+
+                @grid.GetHtml(
             tableStyle: "table table-striped",
             mode: WebGridPagerModes.Numeric,
             footerStyle: "grid-footer",
@@ -78,5 +103,7 @@
                 )
             )
         )
-    }
+            }
+        </div>
+    </div>
 }

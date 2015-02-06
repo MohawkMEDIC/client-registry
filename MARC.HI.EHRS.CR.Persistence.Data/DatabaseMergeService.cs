@@ -86,6 +86,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 EventClassifier = RegistrationEventType.Register,
                 LanguageCode = survivorRegistrationEvent.LanguageCode
             };
+            mergeRegistrationEvent.EventType = new CodeValue("ADMIN_MRG");
             mergeRegistrationEvent.Add(new ChangeSummary()
             {
                 ChangeType = new CodeValue("ADMIN_MRG"),

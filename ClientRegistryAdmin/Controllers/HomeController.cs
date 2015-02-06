@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace ClientRegistryAdmin.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         //

@@ -1,0 +1,68 @@
+﻿@model ClientRegistryAdmin.Models.ConflictListModel
+@{
+    ViewBag.Title = "Conflict Administration";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+}
+
+@section PatientView
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Detected Conflicts</h3>
+        </div>
+        <div class="panel-body">
+            <em>The following conflicts were detected by the Client Registry and require manual resolution</em>
+            @{
+                var grid = new System.Web.Helpers.WebGrid(Model.Patients, defaultSort: "Patient", rowsPerPage: 20, selectionFieldName: "Id");
+                grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
+
+                @grid.GetHtml(
+            tableStyle: "table table-striped",
+            mode: WebGridPagerModes.Numeric,
+            footerStyle: "grid-footer",
+            headerStyle: "grid-header",
+            htmlAttributes: new { id = "resultTable" },
+            columns: grid.Columns(
+                grid.Column(
+                    columnName: "SourceId",
+                    header: "Source ID",
+                    style: "width:20%",
+                    format: item => Html.ActionLink((String)item.Patient.Id.ToString(), "Resolve", "Patient", new { id = item.Patient.RegistrationId }, new object())
+                ),
+                grid.Column(
+                    columnName: "SourceName",
+                    header: "Source Name",
+                    style: "width:30%",
+                    format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.Patient.FamilyName, item.Patient.GivenName), "Resolve", "Patient", new { id = item.Patient.RegistrationId }, new object())
+                ),
+                grid.Column(
+                    columnName: "SourceDateOfBirth",
+                    header: "Source DOB",
+                    style: "width:30%",
+                        format: item => new HtmlString((String)item.Patient.DateOfBirth.ToString("yyyy-MMM-dd"))
+                    ),
+                grid.Column(
+                    columnName: "Gender",
+                    header: "Gender",
+                    style: "width:10%",
+                    format: item => new HtmlString((String)item.Patient.Gender)
+                ),
+                grid.Column(
+                    columnName: "Conflicts",
+                    header: "Conflicts With",
+                    style: "width:30%",
+                    format: item => {
+                        System.Text.StringBuilder retVal = new System.Text.StringBuilder();
+                        foreach(var m in item.Matching)
+                            retVal.AppendFormat("{0}, {1} ({2:yyyy-MMM-dd} - {3})<br/>", m.FamilyName, m.GivenName, m.DateOfBirth, m.Gender);
+                        return new HtmlString(retVal.ToString());
+                    }
+                )
+            )
+        )
+
+            }
+        </div>
+    </div>
+}
+

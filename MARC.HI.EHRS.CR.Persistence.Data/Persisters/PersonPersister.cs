@@ -58,7 +58,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             try
             {
-
+                
                 // Older version of, don't persist just return a record
                 if (psn.Site != null && (psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
                 {
@@ -846,9 +846,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             }, loadFast);
                             if (olderVersionPerson != null)
                             {
-                                retVal.Add(olderVersionPerson, "RPLC", HealthServiceRecordSiteRoleType.ReplacementOf, null);
-                                if (!loadFast)
-                                    DbUtil.DePersistComponents(conn, olderVersionPerson, this, loadFast);
+                                retVal.Add(olderVersionPerson, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.OlderVersionOf, null);
+                                //if (!loadFast)
+                                //    DbUtil.DePersistComponents(conn, olderVersionPerson, this, loadFast);
                             }
                         }
                         return retVal;
@@ -1615,7 +1615,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Identifier = identifier.ToString(),
                 Version = versionId.ToString()
             }, loadFast);
-            DbUtil.DePersistComponents(conn, person, this, loadFast);
+            DbUtil.DePersistComponents(conn, person, this, true);
             return person;
         }
 

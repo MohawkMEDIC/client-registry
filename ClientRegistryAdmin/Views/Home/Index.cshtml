@@ -3,4 +3,36 @@
     ViewBag.Title = "MEDIC Client Registry Adminsitration";
 }
 
-<h2>Index</h2>
+<div class="jumbotron">
+    <div class="container">
+        <h1>Welcome!</h1>
+        <p>Welcome to the MEDIC Client Registry administrative interface.</p>
+        <small>You may use this tool to administer the data contained in the MEDIC Client Registry RI</small>
+    </div>
+</div>
+<div class="container container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <h3><a href="/Patient/Search">Search Patients</a></h3>
+            <p>This interface allows you to search patient data within the client registry database. The views presented
+            in the search tool are administrative and contain a complete "dump" of the component model contained within the 
+            client registry</p>
+        </div>
+        <div class="col-md-4">
+            <h3><a href="/Patient/Conflict">View Conflicts</a></h3>
+            <p>
+                If your instance is setup to not auto-merge duplicates, or if a merge condition was detected with more than 
+                one client (ambiguous merge), you may use the conflicts tool to view and resolve the conflicts.
+            </p>
+        </div>
+        <div class="col-md-4">
+            <h3><a href="/Patient">Recent Activity</a></h3>
+            <p>
+                You may also view records that have been modified in the past day. 
+            </p>
+        </div>
+
+
+    </div>
+
+</div>
