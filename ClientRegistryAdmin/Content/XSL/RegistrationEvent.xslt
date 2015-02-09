@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
           <strong>Event ID(s): </strong>
         </div>
         <div class="col-md-9">

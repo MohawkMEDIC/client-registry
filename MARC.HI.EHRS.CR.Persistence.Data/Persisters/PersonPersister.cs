@@ -1303,7 +1303,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 foreach (var name in newPerson.Names)
                 {
-                    if (name.UpdateMode == UpdateModeType.Remove) continue;
+                    if (name == null || name.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
                     if (candidateOtherName.Count == 1)
                     {
@@ -1361,6 +1361,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //        name.UpdateMode = UpdateModeType.Remove;
                 //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
                 //newPerson.Names.RemoveAll(o => o.Key < 0);
+                newPerson.Names.RemoveAll(o => o == null);
             }
 
             // Birth time
