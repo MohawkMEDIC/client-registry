@@ -139,6 +139,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         private void btnChooseCert_Click(object sender, EventArgs e)
         {
             var cert = ConfigurationSectionHandler.ChooseCertificate((StoreName)cbxStore.SelectedItem, (StoreLocation)cbxStoreLocation.SelectedItem, true);
+            if (cert == null) return;
             txtCertificate.Text = cert.Thumbprint;
             txtCertificate.Tag = cert;
         }
@@ -170,6 +171,19 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 this.DialogResult = System.Windows.Forms.DialogResult.OK;
                 this.Close();
             }
+        }
+
+        private void chkValidateIssuer_CheckedChanged(object sender, EventArgs e)
+        {
+            grpServerSSL.Enabled = chkValidateIssuer.Checked;
+        }
+
+        private void btnChooseServerCert_Click(object sender, EventArgs e)
+        {
+            var cert = ConfigurationSectionHandler.ChooseCertificate((StoreName)cbxServerStore.SelectedItem, (StoreLocation)cbxServerStoreLocation.SelectedItem, true);
+            if (cert == null) return;
+            txtServerCert.Text = cert.Thumbprint;
+            txtServerCert.Tag = cert;
         }
 
     }

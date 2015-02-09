@@ -155,6 +155,10 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 else
                     targ.Configuration.ConnectionString = targ.Address.ToString();
 
+                // Clear add node
+                addNode.RemoveAll();
+
+
                 // Certificate info
                 XmlElement certificateNode = addNode.SelectSingleNode("./*[local-name() = 'trustedIssuerCertificate']") as XmlElement;
                 if (targ.ServerCertificate != null)
@@ -194,9 +198,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
                 }
                 else if (certificateNode != null)
                     certificateNode.ParentNode.RemoveChild(certificateNode);
-
-                // Clear add node
-                addNode.RemoveAll();
 
                 // Setup core attribute
                 addNode.Attributes.Append(configurationDom.CreateAttribute("connectionString"));
