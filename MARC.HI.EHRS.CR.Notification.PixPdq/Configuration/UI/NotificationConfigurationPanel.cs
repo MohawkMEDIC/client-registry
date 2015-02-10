@@ -560,7 +560,6 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
         /// </summary>
         public bool Validate(System.Xml.XmlDocument configurationDom)
         {
-
             return true;
         }
 
