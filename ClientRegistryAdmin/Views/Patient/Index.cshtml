@@ -20,7 +20,7 @@
             }
             else if(Model.Outcome != null)
             {
-                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
+                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, canSort:false, selectionFieldName: "Id");
                 grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
 
                 @grid.GetHtml(

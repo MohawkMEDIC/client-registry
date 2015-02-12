@@ -280,7 +280,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// <summary>
         /// Get all merge candidates
         /// </summary>
-        public ConflictCollection GetConflicts()
+        public ConflictCollection GetConflicts(int offset, int count, bool identifierOnly)
         {
             // Get all Services
             IAuditorService auditSvc = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
@@ -299,40 +299,52 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 var retVal = new ConflictCollection();
 
                 // Loop and load
-                foreach (var merge in mergeResults)
+                foreach (var merge in mergeResults.Skip(offset).Take(count))
                 {
                     // Construct the return, and load match
-                    Conflict conf = new Conflict()
-                    {
-                        Source = repSvc.GetContainer(merge, true) as RegistrationEvent
-                    };
+                    Conflict conf = new Conflict();
 
-                    // Add audit data
-                    audit.AuditableObjects.Add(new AuditableObject()
+                    if (!identifierOnly)
                     {
-                        IDTypeCode = AuditableObjectIdType.ReportNumber,
-                        LifecycleType = AuditableObjectLifecycle.Export,
-                        ObjectId = String.Format("{0}^^^&{1}&ISO", conf.Source.AlternateIdentifier.Identifier, conf.Source.AlternateIdentifier.Domain),
-                        Role = AuditableObjectRole.MasterFile,
-                        Type = AuditableObjectType.SystemObject,
-                        QueryData = "loadFast=false"
-                    });
-
-                    // Load the matches
-                    foreach (var match in mergeSvc.GetConflicts(merge))
-                    {
-                        var matchRecord = repSvc.GetContainer(match, true) as RegistrationEvent;
-                        conf.Match.Add(matchRecord);
+                        conf.Source = repSvc.GetContainer(merge, true) as RegistrationEvent;
                         // Add audit data
                         audit.AuditableObjects.Add(new AuditableObject()
                         {
                             IDTypeCode = AuditableObjectIdType.ReportNumber,
                             LifecycleType = AuditableObjectLifecycle.Export,
-                            ObjectId = String.Format("{0}^^^&{1}&ISO", matchRecord.AlternateIdentifier.Identifier, matchRecord.AlternateIdentifier.Domain),
+                            ObjectId = String.Format("{0}^^^&{1}&ISO", conf.Source.AlternateIdentifier.Identifier, conf.Source.AlternateIdentifier.Domain),
                             Role = AuditableObjectRole.MasterFile,
                             Type = AuditableObjectType.SystemObject,
                             QueryData = "loadFast=false"
                         });
+                    }
+                    else
+                        conf.Source = new RegistrationEvent() { AlternateIdentifier = merge };
+
+
+                    // Load the matches
+                    foreach (var match in mergeSvc.GetConflicts(merge))
+                    {
+                        if (!identifierOnly)
+                        {
+                            var matchRecord = repSvc.GetContainer(match, true) as RegistrationEvent;
+                            conf.Match.Add(matchRecord);
+                            // Add audit data
+                            audit.AuditableObjects.Add(new AuditableObject()
+                            {
+                                IDTypeCode = AuditableObjectIdType.ReportNumber,
+                                LifecycleType = AuditableObjectLifecycle.Export,
+                                ObjectId = String.Format("{0}^^^&{1}&ISO", matchRecord.AlternateIdentifier.Identifier, matchRecord.AlternateIdentifier.Domain),
+                                Role = AuditableObjectRole.MasterFile,
+                                Type = AuditableObjectType.SystemObject,
+                                QueryData = "loadFast=false"
+                            });
+                        }
+                        else
+                            conf.Match.Add(new RegistrationEvent()
+                            {
+                                AlternateIdentifier = match
+                            });
                     }
 
                     retVal.Conflict.Add(conf);
@@ -700,7 +712,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// <summary>
         /// Get recent activity
         /// </summary>
-        public RegistrationEventCollection GetRecentActivity(TimestampSet timeRange)
+        public RegistrationEventCollection GetRecentActivity(TimestampSet timeRange, int offset, int count, bool identifierOnly)
         {
             // Get all Services
             IAuditorService auditSvc = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
@@ -723,38 +735,52 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 Object syncLock = new object();
 
                 // Now fetch each one asynchronously
-                WaitThreadPool thdPool = new WaitThreadPool();
-                foreach (var id in vids)
-                    thdPool.QueueUserWorkItem(
-                        delegate(object state)
-                        {
-                            try
+                if (!identifierOnly)
+                {
+                    WaitThreadPool thdPool = new WaitThreadPool();
+                    foreach (var id in vids.Skip(offset).Take(count))
+                        thdPool.QueueUserWorkItem(
+                            delegate(object state)
                             {
-                                var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
-                                lock (syncLock)
-                                    retVal.Event.Add(itm as RegistrationEvent);
+                                try
+                                {
+                                    var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
+                                    lock (syncLock)
+                                        retVal.Event.Add(itm as RegistrationEvent);
+                                }
+                                catch (Exception e)
+                                {
+                                    Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
+                                }
                             }
-                            catch (Exception e)
-                            {
-                                Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
-                            }
-                        }
-                        , id);
+                            , id);
 
-                // Wait until fetch is done
-                thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
-                retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
-                // Add audit data
-                foreach (var res in retVal.Event)
-                    audit.AuditableObjects.Add(new AuditableObject()
-                    {
-                        IDTypeCode = AuditableObjectIdType.ReportNumber,
-                        LifecycleType = AuditableObjectLifecycle.Export,
-                        ObjectId = String.Format("{0}^^^&{1}&ISO", res.AlternateIdentifier.Identifier, res.AlternateIdentifier.Domain),
-                        Role = AuditableObjectRole.MasterFile,
-                        Type = AuditableObjectType.SystemObject,
-                        QueryData = "loadFast=true"
-                    });
+                    // Wait until fetch is done
+                    thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
+                    retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+                    // Add audit data
+                    foreach (var res in retVal.Event)
+                        audit.AuditableObjects.Add(new AuditableObject()
+                        {
+                            IDTypeCode = AuditableObjectIdType.ReportNumber,
+                            LifecycleType = AuditableObjectLifecycle.Export,
+                            ObjectId = String.Format("{0}^^^&{1}&ISO", res.AlternateIdentifier.Identifier, res.AlternateIdentifier.Domain),
+                            Role = AuditableObjectRole.MasterFile,
+                            Type = AuditableObjectType.SystemObject,
+                            QueryData = "loadFast=true"
+                        });
+                }
+                else
+                {
+                    foreach(var id in vids)
+                        retVal.Event.Add(new RegistrationEvent() {
+                            AlternateIdentifier = new VersionedDomainIdentifier() {
+                                Domain = id.Domain,
+                                Identifier = id.Identifier,
+                                Version = id.Version
+                                }
+                        });
+                }
                 return retVal;
             }
             catch (Exception e)

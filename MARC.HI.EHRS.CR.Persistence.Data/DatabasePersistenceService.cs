@@ -379,6 +379,21 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     {
                         tx.Commit();
                         tx = null;
+
+                        // Mark conflicts if any are outstanding pointing at the old versionj
+                        if (this.m_clientRegistryMerge != null)
+                        {
+                            var existingConflicts = this.m_clientRegistryMerge.GetConflicts(oldHsrEvent.AlternateIdentifier);
+                            this.m_clientRegistryMerge.MarkResolved(oldHsrEvent.AlternateIdentifier);
+
+                            var pid = this.m_clientRegistryMerge.FindFuzzyConflicts(hsrEvent);
+
+                            Trace.TraceInformation("Post-Update Record matched with {0} records", pid.Count());
+                            if(pid.Count() > 0)
+                                this.m_clientRegistryMerge.MarkConflicts(retVal, pid);
+
+                        }
+
                         // Notify register
                         if (this.m_notificationService != null)
                         {
@@ -568,7 +583,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         
                         cmd.CommandText = queryFilterString;
 
-                    
                         Trace.TraceInformation(cmd.CommandText);
                         cmd.CommandType = CommandType.Text;
                         try

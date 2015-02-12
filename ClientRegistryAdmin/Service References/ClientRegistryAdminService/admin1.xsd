@@ -33,12 +33,12 @@
       <xs:extension base="tns:HealthServiceRecordContainer">
         <xs:sequence>
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
             <xs:element minOccurs="0" maxOccurs="1" name="personRegRef" type="tns:PersonRegistrationRef" />
-            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
             <xs:element minOccurs="0" maxOccurs="1" name="registration" type="tns:HealthServiceRecord" />
+            <xs:element minOccurs="0" maxOccurs="1" name="crQueryParameters" type="tns:QueryParameters" />
             <xs:element minOccurs="0" maxOccurs="1" name="repositoryDevice" type="tns:RepositoryDevice" />
             <xs:element minOccurs="0" maxOccurs="1" name="extension" type="tns:Extension" />
+            <xs:element minOccurs="0" maxOccurs="1" name="person" type="tns:Person" />
           </xs:choice>
         </xs:sequence>
       </xs:extension>

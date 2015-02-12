@@ -198,6 +198,7 @@
     </Content>
     <Content Include="EverestConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="HL7Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

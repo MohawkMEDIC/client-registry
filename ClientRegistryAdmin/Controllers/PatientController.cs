@@ -27,7 +27,19 @@ namespace ClientRegistryAdmin.Controllers
                     model.IsError = true;
                 else
                 {
-                    model.Outcome = CrUtil.GetRecentActivity(new TimeSpan(1, 0, 0, 0));
+                    int page = 1;
+                    if (Request.QueryString["page"] != null)
+                        page = Int32.Parse(Request.QueryString["page"]);
+                    int recentActivityCount = CrUtil.CountRecentActivity(new TimeSpan(1, 0, 0, 0));
+                    var recent = CrUtil.GetRecentActivity(new TimeSpan(1, 0, 0, 0), (page - 1) * 10, 10);
+                    model.Outcome = new List<PatientMatch>();
+                    for (int i = 0; i < recentActivityCount; i++)
+                        if (i >= (page - 1) * 10 && i < page * 10)
+                            model.Outcome.Add(recent[i - (page - 1) * 10]);
+                        else
+                            model.Outcome.Add(new PatientMatch() { Id = "0", RegistrationId = 0 });
+
+                    //model.Outcome = new List<PatientMatch>(tResults);
                     model.IsError = model.Outcome == null;
                 }
             }
@@ -84,9 +96,21 @@ namespace ClientRegistryAdmin.Controllers
         /// </summary>
         public ActionResult Conflict(ConflictListModel model)
         {
+
             try
             {
-                model.Patients = CrUtil.GetConflicts();
+                int page = 1;
+                if (Request.QueryString["page"] != null)
+                    page = Int32.Parse(Request.QueryString["page"]);
+                int recentActivityCount = CrUtil.CountConflicts();
+                var recent = CrUtil.GetConflicts((page - 1) * 10, 10);
+                model.Patients = new List<ConflictPatientMatch>();
+                for (int i = 0; i < recentActivityCount; i++)
+                    if (i >= (page - 1) * 10 && i < page * 10)
+                        model.Patients.Add(recent[i - (page - 1) * 10]);
+                    else
+                        model.Patients.Add(new ConflictPatientMatch() { Patient = new PatientMatch() { Id = "0", RegistrationId = 0 }, Matching = new List<PatientMatch>() }); 
+                
                 model.IsError = false;
             }
             catch

@@ -17,7 +17,7 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Get recent changes
         /// </summary>
-        public static List<Models.PatientMatch> GetRecentActivity(TimeSpan since)
+        public static List<Models.PatientMatch> GetRecentActivity(TimeSpan since, int offset, int count)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace ClientRegistryAdmin.Util
                     }
                 };
 
-                var registrations = client.GetRecentActivity(sinceRange);
+                var registrations = client.GetRecentActivity(sinceRange, offset, count, false);
                 List<ClientRegistryAdmin.Models.PatientMatch> retVal = new List<Models.PatientMatch>();
                 foreach (var reg in registrations)
                 {
@@ -137,7 +137,8 @@ namespace ClientRegistryAdmin.Util
                     pm.GivenName = givenNamePart.value;
             }
 
-            pm.DateOfBirth = psn.birthTime.value;
+            if(psn.birthTime != null)
+                pm.DateOfBirth = psn.birthTime.value;
             pm.Gender = psn.genderCode;
 
             pm.Id = psn.id.ToString();
@@ -222,12 +223,12 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Get conflicts
         /// </summary>
-        public static List<Models.ConflictPatientMatch> GetConflicts()
+        public static List<Models.ConflictPatientMatch> GetConflicts(int offset, int count)
         {
             try
             {
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
-                var conflicts = client.GetConflicts();
+                var conflicts = client.GetConflicts(offset, count, false);
                 List<Models.ConflictPatientMatch> retVal = new List<ConflictPatientMatch>();
                 foreach(var itm in conflicts)
                 {
@@ -267,6 +268,53 @@ namespace ClientRegistryAdmin.Util
             catch (Exception e)
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Count recent activity
+        /// </summary>
+        public static int CountRecentActivity(TimeSpan since)
+        {
+            try
+            {
+                ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
+                DateTime high = DateTime.Now,
+                    low = DateTime.Now.Subtract(since);
+
+                TimestampSet sinceRange = new TimestampSet()
+                {
+                    part = new TimestampPart[] {
+                        new TimestampPart() { value = low, type = TimestampPartType.LowBound },
+                        new TimestampPart() { value = high, type = TimestampPartType.HighBound }
+                    }
+                };
+
+                return client.GetRecentActivity(sinceRange, 0, 0, true).Count();
+                
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Count conflicts
+        /// </summary>
+        /// <returns></returns>
+        public static int CountConflicts()
+        {
+            try
+            {
+                ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
+            
+                return client.GetConflicts(0, Int32.MaxValue, true).Count();
+
+            }
+            catch (Exception e)
+            {
+                return 0;
             }
         }
     }

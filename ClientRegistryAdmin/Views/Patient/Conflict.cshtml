@@ -13,7 +13,7 @@
         <div class="panel-body">
             <em>The following conflicts were detected by the Client Registry and require manual resolution</em>
             @{
-                var grid = new System.Web.Helpers.WebGrid(Model.Patients, defaultSort: "Patient", rowsPerPage: 20, selectionFieldName: "Id");
+                var grid = new System.Web.Helpers.WebGrid(Model.Patients, defaultSort: "Patient", rowsPerPage: 10, canSort: false, selectionFieldName: "Id");
                 grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
 
                 @grid.GetHtml(

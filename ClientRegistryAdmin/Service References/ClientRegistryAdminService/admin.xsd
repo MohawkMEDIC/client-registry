@@ -80,6 +80,9 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element xmlns:q3="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="range" type="q3:TimestampSet" />
+        <xs:element minOccurs="1" maxOccurs="1" name="start" type="xs:int" />
+        <xs:element minOccurs="1" maxOccurs="1" name="count" type="xs:int" />
+        <xs:element minOccurs="1" maxOccurs="1" name="identifierOnly" type="xs:boolean" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -105,7 +108,13 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="GetConflicts">
-    <xs:complexType />
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="1" name="start" type="xs:int" />
+        <xs:element minOccurs="1" maxOccurs="1" name="count" type="xs:int" />
+        <xs:element minOccurs="1" maxOccurs="1" name="identifierOnly" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
   </xs:element>
   <xs:element name="GetConflictsResponse">
     <xs:complexType>
