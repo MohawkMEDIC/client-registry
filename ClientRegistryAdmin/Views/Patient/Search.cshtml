@@ -14,40 +14,58 @@
             @using (Html.BeginForm("Search", "Patient", FormMethod.Get, new { @class = "form-horizontal" }))
             {
                 Html.EnableClientValidation();
-
+                @Html.HiddenFor(m => m.WasSubmitted)
+                @Html.ValidationSummary()
                 <div class="container-fluid">
                     <div class="form-group row">
-                        <div class="col-md-2">
-                            @Html.LabelFor(m => m.FamilyName)
+                        <div class="col-md-3">
+                            @Html.LabelFor(m => m.FamilyName) 
                         </div>
                         <div class="col-md-8">
                             @Html.TextBoxFor(m => m.FamilyName, new { @class = "form-control" })
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
+                            <span class="glyphicon-question-sign glyphicon" data-toggle="tooltip" data-placement="left" title="The family name of the patient. May use wildcards (SM*). Matches may be based on phonetic matches or name variants if configured (example: Connell may match McConnell and O'Connell')"></span>
                             @Html.ValidationMessageFor(m => m.FamilyName)
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             @Html.LabelFor(m => m.GivenName)
                         </div>
                         <div class="col-md-8">
                             @Html.TextBoxFor(m => m.GivenName, new { @class = "form-control" })
 
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             @Html.ValidationMessageFor(m => m.GivenName)
+                            <span class="glyphicon-question-sign glyphicon" data-toggle="tooltip" data-placement="left" title="The given name of the patient. May use wildcards (JO*). Matches may be based on phonetic matches or name variants if configured (example: John matches Johnny and Johnathon)"></span>
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             @Html.LabelFor(m => m.DateOfBirth)
                         </div>
                         <div class="col-md-8">
                             @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "datepicker datepicker-pointer form-control", @id = "dateOfBirth" })
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
+                            <span class="glyphicon-question-sign glyphicon" data-toggle="tooltip" data-placement="left" title="Date of birth or range in format (YYYYMMDD). Examples: 2015 matches anyone born in 2015, 201501 matches anyone born in January 2015 and 20150101 matches anyone born on January 1, 2015"></span>
+
                             @Html.ValidationMessageFor(m => m.DateOfBirth)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.LabelFor(m => m.Identifier)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.TextBoxFor(m => m.Identifier, new { @class = "form-control" })
+                        </div>
+                        <div class="col-md-1">
+                            <span class="glyphicon-question-sign glyphicon" data-toggle="tooltip" data-placement="left" title="Matches any identifier of a patient regardless of domain"></span>
+
+                            @Html.ValidationMessageFor(m => m.Identifier)
                         </div>
                     </div>
                     <button class="btn btn-primary" style="float:right"><span class="glyphicon glyphicon-search"></span> Search</button>
@@ -74,7 +92,7 @@
             columns: grid.Columns(
             grid.Column(
             columnName: "Id",
-            header: "Id",
+            header: "ECID",
             style: "width:20%",
             format: item => Html.ActionLink((String)item.Id.ToString(), "View", "Patient", new { id = item.RegistrationId }, new object())
             ),

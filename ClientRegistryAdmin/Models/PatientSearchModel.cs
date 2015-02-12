@@ -33,6 +33,11 @@ namespace ClientRegistryAdmin.Models
         [Display(Name = "Date of Birth")]
         public String DateOfBirth { get; set; }
         /// <summary>
+        /// Identifier
+        /// </summary>
+        [Display(Name = "Identifier")]
+        public String Identifier { get; set; }
+        /// <summary>
         /// Result list
         /// </summary>
         public List<PatientMatch> Outcome { get; set; }
@@ -40,5 +45,7 @@ namespace ClientRegistryAdmin.Models
         /// Gets or sets the error code
         /// </summary>
         public Boolean IsError { get; set; }
+
+        public bool WasSubmitted { get; set; }
     }
 }

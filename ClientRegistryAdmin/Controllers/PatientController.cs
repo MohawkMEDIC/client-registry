@@ -60,11 +60,14 @@ namespace ClientRegistryAdmin.Controllers
             {
                 if (!ModelState.IsValid)
                     model.IsError = true;
-                else if(model.FamilyName != null || model.GivenName != null || model.DateOfBirth != null)
+                else if (model.FamilyName != null || model.GivenName != null || model.DateOfBirth != null || model.Identifier != null)
                 {
-                    model.Outcome = CrUtil.Search(model.FamilyName, model.GivenName, model.DateOfBirth);
+                    model.Outcome = CrUtil.Search(model.FamilyName, model.GivenName, model.DateOfBirth, model.Identifier);
                     model.IsError = model.Outcome == null;
                 }
+                else if(model.WasSubmitted)
+                    ModelState.AddModelError(String.Empty, "Must provide at least one search parameter");
+                model.WasSubmitted = true;
             }
             catch (Exception e)
             {

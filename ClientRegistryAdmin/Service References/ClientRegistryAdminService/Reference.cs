@@ -202,7 +202,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         private AttributeData[] attributeField;
         
-        private string[] textField;
+        private string textField;
         
         private string oidField;
         
@@ -224,7 +224,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlTextAttribute()]
-        public string[] Text {
+        public string Text {
             get {
                 return this.textField;
             }

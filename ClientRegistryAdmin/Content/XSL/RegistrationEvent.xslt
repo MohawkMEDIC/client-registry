@@ -66,7 +66,7 @@
           <div class="col-md-9">
             <xsl:for-each select="marc:altId">
               <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-11">
                   <xsl:call-template name="id"/>
                 </div>
               </div>
@@ -187,7 +187,7 @@
           <div class="col-md-9">
             <xsl:for-each select="marc:altId">
               <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-11">
                   <xsl:call-template name="id"/>
                 </div>
               </div>
@@ -401,7 +401,7 @@
           <div class="col-md-9">
             <xsl:for-each select="marc:altId">
               <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-11">
                   <xsl:call-template name="id"/>
                 </div>
               </div>
@@ -523,10 +523,12 @@
   </xsl:template>
 
   <xsl:template name="id">
-    <xsl:value-of select="@uid"/>
-    (Domain <a  target="_blank" href="/oid/view/{@domain}">
-      <xsl:value-of select="@domain"/>
-    </a>)
+    <div class="well well-sm">
+      <xsl:value-of select="@uid"/>
+      (Domain <a  target="_blank" href="/oid/view/{@domain}">
+        <xsl:value-of select="@domain"/>
+      </a>)
+    </div>
   </xsl:template>
 
   <xsl:template name="role">

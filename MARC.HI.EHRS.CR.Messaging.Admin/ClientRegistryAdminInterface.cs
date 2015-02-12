@@ -122,7 +122,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                         ObjectId = String.Format("{0}^^^&{1}&ISO", res.AlternateIdentifier.Identifier, res.AlternateIdentifier.Domain),
                         Role = AuditableObjectRole.MasterFile,
                         Type = AuditableObjectType.SystemObject,
-                        QueryData = "loadFast=true"
+                        QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=true"))
                     });
                 return retVal;
             }
@@ -173,7 +173,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                     ObjectId = String.Format("{0}^^^&{1}&ISO", retVal.AlternateIdentifier.Identifier, retVal.AlternateIdentifier.Domain),
                     Role = AuditableObjectRole.MasterFile,
                     Type = AuditableObjectType.SystemObject,
-                    QueryData = "loadFast=false"
+                    QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                 });
                 return retVal;
             }
@@ -235,7 +235,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                     ObjectId = String.Format("{0}^^^&{1}&ISO", conf.Source.AlternateIdentifier.Identifier, conf.Source.AlternateIdentifier.Domain),
                     Role = AuditableObjectRole.MasterFile,
                     Type = AuditableObjectType.SystemObject,
-                    QueryData = "loadFast=false"
+                    QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                 });
 
                 // Load the matches
@@ -251,7 +251,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                         ObjectId = String.Format("{0}^^^&{1}&ISO", matchRecord.AlternateIdentifier.Identifier, matchRecord.AlternateIdentifier.Domain),
                         Role = AuditableObjectRole.MasterFile,
                         Type = AuditableObjectType.SystemObject,
-                        QueryData = "loadFast=false"
+                        QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                     });
                 }
 
@@ -315,7 +315,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                             ObjectId = String.Format("{0}^^^&{1}&ISO", conf.Source.AlternateIdentifier.Identifier, conf.Source.AlternateIdentifier.Domain),
                             Role = AuditableObjectRole.MasterFile,
                             Type = AuditableObjectType.SystemObject,
-                            QueryData = "loadFast=false"
+                            QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                         });
                     }
                     else
@@ -337,7 +337,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                                 ObjectId = String.Format("{0}^^^&{1}&ISO", matchRecord.AlternateIdentifier.Identifier, matchRecord.AlternateIdentifier.Domain),
                                 Role = AuditableObjectRole.MasterFile,
                                 Type = AuditableObjectType.SystemObject,
-                                QueryData = "loadFast=false"
+                                QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                             });
                         }
                         else
@@ -382,6 +382,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 NetworkAccessPointId = OperationContext.Current.IncomingMessageHeaders.To.ToString(),
                 NetworkAccessPointType = NetworkAccessPointType.IPAddress,
                 UserName = Environment.UserName,
+                UserIdentifier = Environment.UserName,
                 UserIsRequestor = false,
                 ActorRoleCode = new List<CodeValue>() {
                             new  CodeValue("110152", "DCM") { DisplayName = "Destination" }
@@ -392,6 +393,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 NetworkAccessPointId = (OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty).Address,
                 NetworkAccessPointType = NetworkAccessPointType.IPAddress,
                 UserIsRequestor = true,
+                UserIdentifier = (OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty).Address,
                 ActorRoleCode = new List<CodeValue>() {
                             new  CodeValue("110153", "DCM") { DisplayName = "Source" }
                         }, 
@@ -767,7 +769,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                             ObjectId = String.Format("{0}^^^&{1}&ISO", res.AlternateIdentifier.Identifier, res.AlternateIdentifier.Domain),
                             Role = AuditableObjectRole.MasterFile,
                             Type = AuditableObjectType.SystemObject,
-                            QueryData = "loadFast=true"
+                            QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=true"))
                         });
                 }
                 else

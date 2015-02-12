@@ -53,7 +53,7 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Search 
         /// </summary>
-        public static List<Models.PatientMatch> Search(string familyName, string givenName, string dob)
+        public static List<Models.PatientMatch> Search(string familyName, string givenName, string dob, string identifier)
         {
             ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
 
@@ -83,6 +83,8 @@ namespace ClientRegistryAdmin.Util
             if (name.part.Length > 0)
                 queryPrototype.name = new NameSet[] { name };
 
+            if (identifier != null)
+                queryPrototype.altId = new DomainIdentifier[] { new DomainIdentifier() { uid = identifier } };
             // dob
             if (dob != null)
             {
