@@ -62,7 +62,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// Get all registrations in the system matching a key
         /// </summary>
         [OperationContract(Action = "GetRegistrations")]
-        RegistrationEventCollection GetRegistrations(Person queryPrototype);
+        RegistrationEventCollection GetRegistrations(Person queryPrototype, int start, int count);
 
         /// <summary>
         /// Get all registrations in the system matching a key

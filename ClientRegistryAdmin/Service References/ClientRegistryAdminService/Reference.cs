@@ -17,70 +17,77 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         [System.ServiceModel.OperationContractAttribute(Action="GetLogfiles", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetLogFilesResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.LogInfo[] GetLogFiles();
         
         [System.ServiceModel.OperationContractAttribute(Action="GetLog", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetLogResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         string GetLog(string id);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetServices", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetServicesResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus[] GetServices();
         
-        // CODEGEN: Parameter 'GetRegistrationsResult' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlArrayItemAttribute'.
         [System.ServiceModel.OperationContractAttribute(Action="GetRegistrations", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsResponse GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsRequest request);
+        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype, int start, int count);
         
-        // CODEGEN: Parameter 'GetRecentActivityResult' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlArrayItemAttribute'.
         [System.ServiceModel.OperationContractAttribute(Action="RecentActivity", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRecentActivityResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityResponse GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityRequest request);
+        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet1 range, int start, int count, bool identifierOnly);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetRegistration", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationEventResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord GetRegistrationEvent(decimal id);
         
-        // CODEGEN: Parameter 'GetConflictsResult' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlArrayItemAttribute'.
         [System.ServiceModel.OperationContractAttribute(Action="GetConflicts", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetConflictsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsResponse GetConflicts(ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsRequest request);
+        ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflicts(int start, int count, bool identifierOnly);
         
-        // CODEGEN: Parameter 'GetConflictResult' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlArrayItemAttribute'.
         [System.ServiceModel.OperationContractAttribute(Action="GetConflict", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetConflictResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetConflictResponse GetConflict(ClientRegistryAdmin.ClientRegistryAdminService.GetConflictRequest request);
+        ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflict(decimal id);
         
         [System.ServiceModel.OperationContractAttribute(Action="Merge", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/MergeResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord Merge(decimal[] sourceIds, decimal targetId);
         
         [System.ServiceModel.OperationContractAttribute(Action="Resolve", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/ResolveResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         void Resolve(decimal sourceId);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetOids", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetOidsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.OidInfo[] GetOids();
@@ -285,7 +292,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public partial class ConflictedVersionIdentifier : object, System.ComponentModel.INotifyPropertyChanged {
         
         private HealthServiceRecord sourceField;
@@ -1440,8 +1447,8 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(RepositoryDevice))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryParameters))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(MaskingIndicator))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryRestriction))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(MaskingIndicator))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ServiceDeliveryLocation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordContainer))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CrHealthServiceRecordContainer))]
@@ -1450,9 +1457,9 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonalRelationship))]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
@@ -1795,29 +1802,6 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
-    public partial class MaskingIndicator : HealthServiceRecordComponent {
-        
-        private CodeValue codeField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public CodeValue code {
-            get {
-                return this.codeField;
-            }
-            set {
-                this.codeField = value;
-                this.RaisePropertyChanged("code");
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public partial class QueryRestriction : HealthServiceRecordComponent {
         
         private TimestampPart amendDateField;
@@ -1845,6 +1829,29 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
             set {
                 this.mostRecentByTypeField = value;
                 this.RaisePropertyChanged("mostRecentByType");
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class MaskingIndicator : HealthServiceRecordComponent {
+        
+        private CodeValue codeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public CodeValue code {
+            get {
+                return this.codeField;
+            }
+            set {
+                this.codeField = value;
+                this.RaisePropertyChanged("code");
             }
         }
     }
@@ -1963,9 +1970,9 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonalRelationship))]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
@@ -3073,6 +3080,261 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class ConflictCollection : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        private ConflictedVersionIdentifier[] conflictField;
+        
+        private int countField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("conflict", Order=0)]
+        public ConflictedVersionIdentifier[] conflict {
+            get {
+                return this.conflictField;
+            }
+            set {
+                this.conflictField = value;
+                this.RaisePropertyChanged("conflict");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int count {
+            get {
+                return this.countField;
+            }
+            set {
+                this.countField = value;
+                this.RaisePropertyChanged("count");
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(TimestampPart1))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(TimestampSet1))]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(TypeName="Datatype", Namespace="http://tempuri.org/")]
+    public abstract partial class Datatype1 : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        private decimal keyField;
+        
+        private UpdateModeType1 updateModeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public decimal key {
+            get {
+                return this.keyField;
+            }
+            set {
+                this.keyField = value;
+                this.RaisePropertyChanged("key");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public UpdateModeType1 updateMode {
+            get {
+                return this.updateModeField;
+            }
+            set {
+                this.updateModeField = value;
+                this.RaisePropertyChanged("updateMode");
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(TypeName="UpdateModeType", Namespace="http://tempuri.org/")]
+    public enum UpdateModeType1 {
+        
+        /// <remarks/>
+        Add,
+        
+        /// <remarks/>
+        AddOrUpdate,
+        
+        /// <remarks/>
+        Update,
+        
+        /// <remarks/>
+        Remove,
+        
+        /// <remarks/>
+        Ignore,
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampPart", Namespace="http://tempuri.org/")]
+    public partial class TimestampPart1 : Datatype1 {
+        
+        private System.DateTime valueField;
+        
+        private TimestampPartType1 typeField;
+        
+        private string precisionField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public System.DateTime value {
+            get {
+                return this.valueField;
+            }
+            set {
+                this.valueField = value;
+                this.RaisePropertyChanged("value");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public TimestampPartType1 type {
+            get {
+                return this.typeField;
+            }
+            set {
+                this.typeField = value;
+                this.RaisePropertyChanged("type");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string precision {
+            get {
+                return this.precisionField;
+            }
+            set {
+                this.precisionField = value;
+                this.RaisePropertyChanged("precision");
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampPartType", Namespace="http://tempuri.org/")]
+    public enum TimestampPartType1 {
+        
+        /// <remarks/>
+        LowBound,
+        
+        /// <remarks/>
+        HighBound,
+        
+        /// <remarks/>
+        Width,
+        
+        /// <remarks/>
+        Standlone,
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampSet", Namespace="http://tempuri.org/")]
+    public partial class TimestampSet1 : Datatype1 {
+        
+        private TimestampPart1[] partField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
+        public TimestampPart1[] part {
+            get {
+                return this.partField;
+            }
+            set {
+                this.partField = value;
+                this.RaisePropertyChanged("part");
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class RegistrationEventCollection : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        private HealthServiceRecord[] registrationField;
+        
+        private int countField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("registration", Order=0)]
+        public HealthServiceRecord[] registration {
+            get {
+                return this.registrationField;
+            }
+            set {
+                this.registrationField = value;
+                this.RaisePropertyChanged("registration");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int count {
+            get {
+                return this.countField;
+            }
+            set {
+                this.countField = value;
+                this.RaisePropertyChanged("count");
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.34230")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
     public partial class ServiceStatus : object, System.ComponentModel.INotifyPropertyChanged {
         
@@ -3128,166 +3390,6 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
     }
     
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetRegistrations", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetRegistrationsRequest {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype;
-        
-        public GetRegistrationsRequest() {
-        }
-        
-        public GetRegistrationsRequest(ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype) {
-            this.queryPrototype = queryPrototype;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetRegistrationsResponse", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetRegistrationsResponse {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        [System.Xml.Serialization.XmlArrayItemAttribute("registration", IsNullable=false)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRegistrationsResult;
-        
-        public GetRegistrationsResponse() {
-        }
-        
-        public GetRegistrationsResponse(ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRegistrationsResult) {
-            this.GetRegistrationsResult = GetRegistrationsResult;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetRecentActivity", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetRecentActivityRequest {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet range;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=1)]
-        public int start;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=2)]
-        public int count;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=3)]
-        public bool identifierOnly;
-        
-        public GetRecentActivityRequest() {
-        }
-        
-        public GetRecentActivityRequest(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet range, int start, int count, bool identifierOnly) {
-            this.range = range;
-            this.start = start;
-            this.count = count;
-            this.identifierOnly = identifierOnly;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetRecentActivityResponse", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetRecentActivityResponse {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        [System.Xml.Serialization.XmlArrayItemAttribute("registration", IsNullable=false)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRecentActivityResult;
-        
-        public GetRecentActivityResponse() {
-        }
-        
-        public GetRecentActivityResponse(ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRecentActivityResult) {
-            this.GetRecentActivityResult = GetRecentActivityResult;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetConflicts", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetConflictsRequest {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        public int start;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=1)]
-        public int count;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=2)]
-        public bool identifierOnly;
-        
-        public GetConflictsRequest() {
-        }
-        
-        public GetConflictsRequest(int start, int count, bool identifierOnly) {
-            this.start = start;
-            this.count = count;
-            this.identifierOnly = identifierOnly;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetConflictsResponse", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetConflictsResponse {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        [System.Xml.Serialization.XmlArrayItemAttribute("conflict", IsNullable=false)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflictsResult;
-        
-        public GetConflictsResponse() {
-        }
-        
-        public GetConflictsResponse(ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflictsResult) {
-            this.GetConflictsResult = GetConflictsResult;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetConflict", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetConflictRequest {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        public decimal id;
-        
-        public GetConflictRequest() {
-        }
-        
-        public GetConflictRequest(decimal id) {
-            this.id = id;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetConflictResponse", WrapperNamespace="http://tempuri.org/", IsWrapped=true)]
-    public partial class GetConflictResponse {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://tempuri.org/", Order=0)]
-        [System.Xml.Serialization.XmlArrayItemAttribute("conflict", IsNullable=false)]
-        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflictResult;
-        
-        public GetConflictResponse() {
-        }
-        
-        public GetConflictResponse(ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflictResult) {
-            this.GetConflictResult = GetConflictResult;
-        }
-    }
-    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface IClientRegistryAdminInterfaceChannel : ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface, System.ServiceModel.IClientChannel {
     }
@@ -3327,61 +3429,24 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
             return base.Channel.GetServices();
         }
         
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsResponse ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface.GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsRequest request) {
-            return base.Channel.GetRegistrations(request);
+        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype, int start, int count) {
+            return base.Channel.GetRegistrations(queryPrototype, start, count);
         }
         
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype) {
-            ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsRequest inValue = new ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsRequest();
-            inValue.queryPrototype = queryPrototype;
-            ClientRegistryAdmin.ClientRegistryAdminService.GetRegistrationsResponse retVal = ((ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface)(this)).GetRegistrations(inValue);
-            return retVal.GetRegistrationsResult;
-        }
-        
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityResponse ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface.GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityRequest request) {
-            return base.Channel.GetRecentActivity(request);
-        }
-        
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord[] GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet range, int start, int count, bool identifierOnly) {
-            ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityRequest inValue = new ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityRequest();
-            inValue.range = range;
-            inValue.start = start;
-            inValue.count = count;
-            inValue.identifierOnly = identifierOnly;
-            ClientRegistryAdmin.ClientRegistryAdminService.GetRecentActivityResponse retVal = ((ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface)(this)).GetRecentActivity(inValue);
-            return retVal.GetRecentActivityResult;
+        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet1 range, int start, int count, bool identifierOnly) {
+            return base.Channel.GetRecentActivity(range, start, count, identifierOnly);
         }
         
         public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord GetRegistrationEvent(decimal id) {
             return base.Channel.GetRegistrationEvent(id);
         }
         
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsResponse ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface.GetConflicts(ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsRequest request) {
-            return base.Channel.GetConflicts(request);
+        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflicts(int start, int count, bool identifierOnly) {
+            return base.Channel.GetConflicts(start, count, identifierOnly);
         }
         
-        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflicts(int start, int count, bool identifierOnly) {
-            ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsRequest inValue = new ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsRequest();
-            inValue.start = start;
-            inValue.count = count;
-            inValue.identifierOnly = identifierOnly;
-            ClientRegistryAdmin.ClientRegistryAdminService.GetConflictsResponse retVal = ((ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface)(this)).GetConflicts(inValue);
-            return retVal.GetConflictsResult;
-        }
-        
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        ClientRegistryAdmin.ClientRegistryAdminService.GetConflictResponse ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface.GetConflict(ClientRegistryAdmin.ClientRegistryAdminService.GetConflictRequest request) {
-            return base.Channel.GetConflict(request);
-        }
-        
-        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier[] GetConflict(decimal id) {
-            ClientRegistryAdmin.ClientRegistryAdminService.GetConflictRequest inValue = new ClientRegistryAdmin.ClientRegistryAdminService.GetConflictRequest();
-            inValue.id = id;
-            ClientRegistryAdmin.ClientRegistryAdminService.GetConflictResponse retVal = ((ClientRegistryAdmin.ClientRegistryAdminService.IClientRegistryAdminInterface)(this)).GetConflict(inValue);
-            return retVal.GetConflictResult;
+        public ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflict(decimal id) {
+            return base.Channel.GetConflict(id);
         }
         
         public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord Merge(decimal[] sourceIds, decimal targetId) {

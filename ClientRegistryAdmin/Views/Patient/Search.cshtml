@@ -80,12 +80,12 @@
             }
             else if (Model.Outcome != null)
             {
-                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
+                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, canSort: false, rowsPerPage: 10, selectionFieldName: "Id");
                 grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
 
                 @grid.GetHtml(
             tableStyle: "table table-striped",
-            mode: WebGridPagerModes.Numeric,
+            mode: WebGridPagerModes.All,
             footerStyle: "grid-footer",
             headerStyle: "grid-header",
             htmlAttributes: new { id = "resultTable" },
@@ -100,7 +100,7 @@
             columnName: "Name",
             header: "Name",
             style: "width:30%",
-                        format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName), "View", "Patient", new { id = item.RegistrationId }, new object())
+                        format: item => new HtmlString((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName))
                 ),
                 grid.Column(
                     columnName: "DateOfBirth",
@@ -121,6 +121,12 @@
                 )
             )
         )
+    <div class="row">
+        <div class="col-md-12">
+            <strong>Total Records:</strong> @String.Format("{0:#,###,###} results", Model.Outcome.Length)
+        </div>
+    </div>
+
             }
         </div>
     </div>

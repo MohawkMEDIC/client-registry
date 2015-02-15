@@ -169,12 +169,20 @@
           </a>
         </h5>
       </div>
-      <div class="panel-body panel-collapse collapse" id="body{./marc:hsrSite/@name}">
+      <div id="body{./marc:hsrSite/@name}">
+        <xsl:choose>
+          <xsl:when test="marc:hsrSite/@roleType = 'SubjectOf'">
+            <xsl:attribute name="class">panel-body panel-collapse collapse in</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="class">panel-body panel-collapse collapse</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
         <xsl:call-template name="role"/>
         <xsl:call-template name="status"/>
         <div class="row">
           <div class="col-md-3">
-            <strong>Timestamp</strong>
+            <strong>Created On:</strong>
           </div>
           <div class="col-md-9">
             <xsl:value-of select="@timestamp"/>

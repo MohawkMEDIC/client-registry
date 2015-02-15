@@ -14,7 +14,7 @@ namespace ClientRegistryAdmin.Models
         /// <summary>
         /// Patients 
         /// </summary>
-        public List<ConflictPatientMatch> Patients { get; set; }
+        public ConflictPatientMatch[] Patients { get; set; }
 
 
         public bool IsError { get; set; }

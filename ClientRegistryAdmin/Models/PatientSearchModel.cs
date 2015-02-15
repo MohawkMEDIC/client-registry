@@ -40,12 +40,11 @@ namespace ClientRegistryAdmin.Models
         /// <summary>
         /// Result list
         /// </summary>
-        public List<PatientMatch> Outcome { get; set; }
+        public PatientMatch[] Outcome { get; set; }
         /// <summary>
         /// Gets or sets the error code
         /// </summary>
         public Boolean IsError { get; set; }
-
         public bool WasSubmitted { get; set; }
     }
 }

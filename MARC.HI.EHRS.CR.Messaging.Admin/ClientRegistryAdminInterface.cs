@@ -41,6 +41,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
     /// <summary>
     /// Client registry interface
     /// </summary>
+    [ServiceBehavior()]
     public class ClientRegistryAdminInterface : IClientRegistryAdminInterface, IMessageHandlerService
     {
 
@@ -66,7 +67,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// <summary>
         /// Get all registrations matching the query prototype
         /// </summary>
-        public RegistrationEventCollection GetRegistrations(Person queryPrototype)
+        public RegistrationEventCollection GetRegistrations(Person queryPrototype, int offset, int count)
         {
             // Get all Services
             IAuditorService auditSvc = ApplicationContext.CurrentContext.GetService(typeof(IAuditorService)) as IAuditorService;
@@ -90,30 +91,32 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
 
                 RegistrationEventCollection retVal = new RegistrationEventCollection();
                 Object syncLock = new object();
-
+                retVal.Count = vids.Length;
                 // Now fetch each one asynchronously
-                WaitThreadPool thdPool = new WaitThreadPool();
-                foreach (var id in vids)
-                    thdPool.QueueUserWorkItem(
-                        delegate(object state)
-                        {
-                            try
+                using (WaitThreadPool thdPool = new WaitThreadPool(Environment.ProcessorCount * 2))
+                {
+                    foreach (var id in vids.Skip(offset).Take(count))
+                        thdPool.QueueUserWorkItem(
+                            delegate(object state)
                             {
-                                var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
-                                
-                                lock (syncLock)
-                                    retVal.Event.Add(itm as RegistrationEvent);
+                                try
+                                {
+                                    var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
+
+                                    lock (syncLock)
+                                        retVal.Event.Add(itm as RegistrationEvent);
+                                }
+                                catch (Exception e)
+                                {
+                                    Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
+                                }
                             }
-                            catch(Exception e)
-                            {
-                                Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
-                            }
-                        }
-                        , id);
-            
-                // Wait until fetch is done
-                thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
-                retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+                            , id);
+
+                    // Wait until fetch is done
+                    thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
+                }
+                //retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
                 // Add audit data
                 foreach(var res in retVal.Event)
                     audit.AuditableObjects.Add(new AuditableObject() {
@@ -297,6 +300,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 var mergeResults = mergeSvc.GetOutstandingConflicts();
 
                 var retVal = new ConflictCollection();
+                retVal.Count = mergeResults.Count();
 
                 // Loop and load
                 foreach (var merge in mergeResults.Skip(offset).Take(count))
@@ -318,9 +322,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                             QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
                         });
                     }
-                    else
-                        conf.Source = new RegistrationEvent() { AlternateIdentifier = merge };
-
+                
 
                     // Load the matches
                     foreach (var match in mergeSvc.GetConflicts(merge))
@@ -736,30 +738,34 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 RegistrationEventCollection retVal = new RegistrationEventCollection();
                 Object syncLock = new object();
 
+                retVal.Count = vids.Length;
+
                 // Now fetch each one asynchronously
                 if (!identifierOnly)
                 {
-                    WaitThreadPool thdPool = new WaitThreadPool();
-                    foreach (var id in vids.Skip(offset).Take(count))
-                        thdPool.QueueUserWorkItem(
-                            delegate(object state)
-                            {
-                                try
+                    using (WaitThreadPool thdPool = new WaitThreadPool(Environment.ProcessorCount * 2))
+                    {
+                        foreach (var id in vids.Skip(offset).Take(count))
+                            thdPool.QueueUserWorkItem(
+                                delegate(object state)
                                 {
-                                    var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
-                                    lock (syncLock)
-                                        retVal.Event.Add(itm as RegistrationEvent);
+                                    try
+                                    {
+                                        var itm = repSvc.GetContainer(state as VersionedDomainIdentifier, true);
+                                        lock (syncLock)
+                                            retVal.Event.Add(itm as RegistrationEvent);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
+                                    }
                                 }
-                                catch (Exception e)
-                                {
-                                    Trace.TraceError("Could not fetch result {0} : {1}", (state as VersionedDomainIdentifier).Identifier, e.ToString());
-                                }
-                            }
-                            , id);
+                                , id);
 
-                    // Wait until fetch is done
-                    thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
-                    retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+                        // Wait until fetch is done
+                        thdPool.WaitOne(new TimeSpan(0, 0, 30), false);
+                    }
+                    //retVal.Event.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
                     // Add audit data
                     foreach (var res in retVal.Event)
                         audit.AuditableObjects.Add(new AuditableObject()
@@ -770,17 +776,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                             Role = AuditableObjectRole.MasterFile,
                             Type = AuditableObjectType.SystemObject,
                             QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=true"))
-                        });
-                }
-                else
-                {
-                    foreach(var id in vids)
-                        retVal.Event.Add(new RegistrationEvent() {
-                            AlternateIdentifier = new VersionedDomainIdentifier() {
-                                Domain = id.Domain,
-                                Identifier = id.Identifier,
-                                Version = id.Version
-                                }
                         });
                 }
                 return retVal;

@@ -61,35 +61,73 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element xmlns:q1="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="queryPrototype" type="q1:Person" />
+        <xs:element minOccurs="1" maxOccurs="1" name="start" type="xs:int" />
+        <xs:element minOccurs="1" maxOccurs="1" name="count" type="xs:int" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="GetRegistrationsResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="GetRegistrationsResult" type="tns:RegistrationEventCollection" />
+        <xs:element xmlns:q2="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="GetRegistrationsResult" type="q2:RegistrationEventCollection" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:complexType name="RegistrationEventCollection">
-    <xs:sequence>
-      <xs:element xmlns:q2="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="unbounded" name="registration" type="q2:HealthServiceRecord" />
-    </xs:sequence>
-  </xs:complexType>
   <xs:element name="GetRecentActivity">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q3="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="range" type="q3:TimestampSet" />
+        <xs:element minOccurs="0" maxOccurs="1" name="range" type="tns:TimestampSet" />
         <xs:element minOccurs="1" maxOccurs="1" name="start" type="xs:int" />
         <xs:element minOccurs="1" maxOccurs="1" name="count" type="xs:int" />
         <xs:element minOccurs="1" maxOccurs="1" name="identifierOnly" type="xs:boolean" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:complexType name="TimestampSet">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="part" type="tns:TimestampPart" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Datatype" abstract="true">
+    <xs:attribute name="key" type="xs:decimal" use="required" />
+    <xs:attribute name="updateMode" type="tns:UpdateModeType" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="UpdateModeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Add" />
+      <xs:enumeration value="AddOrUpdate" />
+      <xs:enumeration value="Update" />
+      <xs:enumeration value="Remove" />
+      <xs:enumeration value="Ignore" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="TimestampPart">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Datatype">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="value" type="xs:dateTime" />
+        </xs:sequence>
+        <xs:attribute name="type" type="tns:TimestampPartType" use="required" />
+        <xs:attribute name="precision" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="TimestampPartType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LowBound" />
+      <xs:enumeration value="HighBound" />
+      <xs:enumeration value="Width" />
+      <xs:enumeration value="Standlone" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:element name="GetRecentActivityResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="GetRecentActivityResult" type="tns:RegistrationEventCollection" />
+        <xs:element xmlns:q3="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="GetRecentActivityResult" type="q3:RegistrationEventCollection" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -119,21 +157,10 @@
   <xs:element name="GetConflictsResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="GetConflictsResult" type="tns:ConflictCollection" />
+        <xs:element xmlns:q5="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="GetConflictsResult" type="q5:ConflictCollection" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:complexType name="ConflictCollection">
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="conflict" type="tns:ConflictedVersionIdentifier" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ConflictedVersionIdentifier">
-    <xs:sequence>
-      <xs:element xmlns:q5="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="source" type="q5:HealthServiceRecord" />
-      <xs:element xmlns:q6="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="unbounded" name="matches" type="q6:HealthServiceRecord" />
-    </xs:sequence>
-  </xs:complexType>
   <xs:element name="GetConflict">
     <xs:complexType>
       <xs:sequence>
@@ -144,7 +171,7 @@
   <xs:element name="GetConflictResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="GetConflictResult" type="tns:ConflictCollection" />
+        <xs:element xmlns:q6="urn:marc-hi:svc:componentModel" minOccurs="0" maxOccurs="1" name="GetConflictResult" type="q6:ConflictCollection" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

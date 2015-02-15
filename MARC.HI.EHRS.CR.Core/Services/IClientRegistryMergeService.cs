@@ -31,6 +31,11 @@ namespace MARC.HI.EHRS.CR.Core.Services
         void MarkResolved(VersionedDomainIdentifier recordId);
 
         /// <summary>
+        /// Obsoletes (removes) all pointers to the specified record id because the event has been updated
+        /// </summary>
+        void ObsoleteConflicts(VersionedDomainIdentifier oldIdentifier);
+
+        /// <summary>
         /// Get exact match conflicts
         /// </summary>
         IEnumerable<VersionedDomainIdentifier> FindIdConflicts(RegistrationEvent registration);

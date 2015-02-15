@@ -133,6 +133,16 @@ namespace ClientRegistryAdmin.Models
         public ClientRegistryAdminService.HealthServiceRecord HealthServiceEvent { get; set; }
 
         /// <summary>
+        /// Status
+        /// </summary>
+        public String Status { get; set; }
+
+        /// <summary>
+        /// Version identifier
+        /// </summary>
+        public String VersionId { get; set; }
+
+        /// <summary>
         /// Get the original XML as a nice HTML string
         /// </summary>
         public HtmlString OriginalHtml

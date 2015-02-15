@@ -149,12 +149,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 registrationEvent.EventClassifier = RegistrationEventType.ComponentEvent;
                 registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                 registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-
+                registrationEvent.Status = StatusType.Completed;
+                
                 // Persist or merge?
                 new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
                 //var clientIdentifier = persister.Persist(conn, tx, relationshipPerson, isUpdate); // Should persist
             }
-            else
+            else if(relationshipPerson.RoleCode != PersonRole.PAT)
             {
                 var updatedPerson = new Person()
                 {
@@ -174,15 +175,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 persister.MergePersons(updatedPerson, relationshipPerson, true);
                 relationshipPerson = updatedPerson;
+
                 var registrationEvent = DbUtil.GetRegistrationEvent(pr).Clone() as RegistrationEvent;
                 registrationEvent.Id = default(decimal);
                 registrationEvent.EventClassifier = RegistrationEventType.ComponentEvent;
                 registrationEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                 registrationEvent.Add(relationshipPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-
-                // Persist or merge?
-                // Persist or merge?
+                registrationEvent.Status = StatusType.Completed;
                 new RegistrationEventPersister().Persist(conn, tx, registrationEvent, isUpdate);
+
             }
 
             // Validate
@@ -191,7 +192,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // If the container for this personal relationship is a client, then we'll need to link that
             // personal relationship with the client to whom they have a relation with.
             if (clientContainer != null) // We need to do some linking
-                pr.Id = LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind, pr.Status.ToString());
+                pr.Id = LinkClients(conn, tx, relationshipPerson.Id, clientContainer.Id, pr.RelationshipKind, pr.Status);
             else if (clientContainer == null) // We need to do some digging to find out "who" this person is related to (the record target)
                 throw new ConstraintException(ApplicationContext.LocaleService.GetString("DBCF003"));
                             
@@ -235,7 +236,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Link two clients together
         /// </summary>
-        private decimal LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind, string status)
+        private decimal LinkClients(System.Data.IDbConnection conn, System.Data.IDbTransaction tx, decimal source, decimal target, string kind, StatusType status)
         {
             IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx);
             try
@@ -243,7 +244,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 cmd.CommandText = "crt_psn_rltnshp";
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "src_psn_id_in", DbType.Decimal, source));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "trg_psn_id_in", DbType.Decimal, target));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.StringFixedLength, status));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, (int)status));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "kind_in", DbType.StringFixedLength, kind));
 
                 // Insert
@@ -347,7 +348,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 if (registrationEvent.EventClassifier == RegistrationEventType.Register || registrationEvent.EventClassifier == RegistrationEventType.Replace)
                     return ""; // We don't discriminate against registration events based on who they're related to
                 else
-                    sb.Append("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) INNER JOIN PSN_RLTNSHP_TBL ON (PSN_VRSN_TBL.PSN_ID = PSN_RLTNSHP_TBL.TRG_PSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_VRSN_TBL.PSN_VRSN_ID BETWEEN PSN_RLTNSHP_TBL.EFFT_VRSN_ID AND COALESCE(PSN_RLTNSHP_TBL.OBSLT_VRSN_ID, PSN_VRSN_TBL.PSN_VRSN_ID) ");
+                    sb.Append("SELECT DISTINCT REG_VRSN_ID FROM PSN_VRSN_TBL INNER JOIN PSN_RLTNSHP_TBL ON (PSN_VRSN_TBL.PSN_ID = PSN_RLTNSHP_TBL.TRG_PSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL AND PSN_VRSN_TBL.PSN_VRSN_ID BETWEEN PSN_RLTNSHP_TBL.EFFT_VRSN_ID AND COALESCE(PSN_RLTNSHP_TBL.OBSLT_VRSN_ID, PSN_VRSN_TBL.PSN_VRSN_ID) ");
             }
             else
                 sb.Append("SELECT DISTINCT TRG_PSN_ID AS PSN_ID FROM PSN_RLTNSHP_TBL WHERE OBSLT_UTC IS NULL ");

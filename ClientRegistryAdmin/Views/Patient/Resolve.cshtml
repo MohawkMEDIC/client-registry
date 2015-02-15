@@ -33,9 +33,9 @@
             <input type="hidden" name="id" id="mrgEvtId" value="@Model.Patient.RegistrationId" />
             <input type="hidden" name="mrgPid" id="mrgPidId" value="@Model.Patient.Id" />
             <div class="col-md-6">
-                <div class="panel panel-default">
+                <div class="panel panel-default" style="border-color:black">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-saved"></span> source (survivor) patient record</h3>
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-user"></span> Source (survivor) patient record</h3>
                     </div>
                     <div class="panel-body">
                         <em>The original record as it appears in the Client Registry persistence store</em>
@@ -66,10 +66,10 @@
                 <div class="panel-group" id="conflicts">
                     @foreach (var conflict in Model.Matching)
                     {
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" style="border-color:black">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
-                                    <input name="mrg" onchange="$('@String.Format("#{0}_view", conflict.RegistrationId)').collapse('hide');" value="@conflict.RegistrationId" id="@String.Format("mrg{0}", conflict.RegistrationId)" type="checkbox" />
+                                    <input name="mrg" onchange="changeMergeStatus(this, @conflict.RegistrationId);" value="@conflict.RegistrationId" id="@String.Format("mrg{0}", conflict.RegistrationId)" type="checkbox" />
                                     <label for="@String.Format("mrg{0}", conflict.RegistrationId)">
                                         <a data-toggle="collapse" data-parent="conflicts" href="@String.Format("#{0}_view", conflict.RegistrationId)">
                                             <span class="glyphicon glyphicon-import"></span> Merge with registration #@conflict.RegistrationId
@@ -98,20 +98,83 @@
                         </div>
 
                     }
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="btn-group" style="float:right">
-                            <input type="hidden" id="mergeAction" name="action" value="cancel" />
-                            <button onclick="$('#mergeAction').attr('value','cancel'); $('#mergeForm').submit()" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Cancel Merge</button>
-                            <button onclick="if (confirmMerge()) { $('#mergeAction').attr('value', 'merge'); $('#mergeForm').submit(); }" type="button" name="action" value="merge" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Merge &amp; Resolve</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group pull-right">
+                                <input type="hidden" id="mergeAction" name="action" value="cancel" />
+                                <button onclick="$('#mergeAction').attr('value','cancel'); $('#mergeForm').submit()" class="btn btn-danger" title="Leaves this screen without performing any operations"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+                                <button data-toggle="modal" data-target="#confirm" type="button" name="action" value="merge" class="btn btn-success" title="Merges the two records together and resolves the conflict"><span class="glyphicon glyphicon-ok"></span> Resolve</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-
             </div>
     </form>
 </div>
+
+    <div class="modal modal-fade" id="confirm">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Confirm Conflict Resolution</h3>
+                </div>
+                <div class="modal-body">
+
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <em>If you select "Confirm" the following merge actions will occur:</em>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-striped" style="width:100%">
+                                    <tr>
+                                        <th style="width:20%">Action</th>
+                                        <th>Patient</th>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="glyphicon glyphicon-user"></span> (Survive)</td>
+                                        <td>(ID# @Model.Patient.Id) @Html.ActionLink(String.Format("{0}, {1}", Model.Patient.FamilyName, Model.Patient.GivenName), "View", new { id = Model.Patient.RegistrationId }, new { target = "_blank" }) , gender @Model.Patient.Gender, born @Model.Patient.DateOfBirth.ToString("yyyy-MMM-dd")</td>
+
+                                    </tr>
+                                    @foreach (var match in Model.Matching)
+                                    {
+                                        <tr>
+                                            <td id="@String.Format("{0}_desc", match.RegistrationId)"><span class="glyphicon glyphicon-unchecked"></span> (Ignore)</td>
+                                            <td>(ID# @match.Id) @Html.ActionLink(String.Format("{0}, {1}", match.FamilyName, match.GivenName), "View", new { id = match.RegistrationId }, new { target = "_blank" }) , gender @match.Gender, born @match.DateOfBirth.ToString("yyyy-MMM-dd")</td>
+                                        </tr>
+                                    }
+
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <span class="glyphicon glyphicon-warning-sign"></span> This action cannot be undone!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group pull-right">
+                                    <input type="hidden" id="mergeAction" name="action" value="cancel" />
+                                    <button data-dismiss="modal" class="btn btn-default">Cancel</button>
+                                    <button onclick="$('#mergeAction').attr('value', 'merge'); $('#mergeForm').submit();" type="button" name="action" value="merge" class="btn btn-primary">Confirm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
 
 </div>
 @*}*@
@@ -123,6 +186,17 @@
             var confirmMessage = "You are about to perform a non-reversable action against patient with enterprise patient ID #" + ecid
                                 + "(registration event id #" + id + "). If you click 'ok' this action cannot be undone!";
             return confirm(confirmMessage);
+        }
+        function changeMergeStatus(sender, id)
+        {
+            if (sender.checked)
+                $('#' + id + '_desc').html("<span class=\"glyphicon glyphicon-log-in\"></span> (Merge)");
+            else
+                $('#' + id + '_desc').html("<span class=\"glyphicon glyphicon-unchecked\"></span> (Ignore)");
+
+
+
+            $('#' + id + '_view').collapse('hide');
         }
     </script>
 }

@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MARC.Everest, Version=1.5.0.0, Culture=neutral, PublicKeyToken=ba5b2480018546af, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.Everest.dll</HintPath>
+    </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.ClientIdentity">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.ClientIdentity.dll</HintPath>
     </Reference>
@@ -109,6 +113,11 @@
     <None Include="Configuration\marc.hi.ehrs.cr.persistence.data.xsd">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="SQL\PSQL9\Updates\CR-001-CLEAN.SQL" />
+    <Content Include="SQL\PSQL9\Updates\CR-001.SQL" />
+    <Content Include="SQL\PSQL9\Updates\index.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Configuration\UI\pnlConfigureDatabase.resx">

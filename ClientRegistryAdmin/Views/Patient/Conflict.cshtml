@@ -12,13 +12,24 @@
         </div>
         <div class="panel-body">
             <em>The following conflicts were detected by the Client Registry and require manual resolution</em>
-            @{
-                var grid = new System.Web.Helpers.WebGrid(Model.Patients, defaultSort: "Patient", rowsPerPage: 10, canSort: false, selectionFieldName: "Id");
-                grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
+
+            @if (Model.Patients == null)
+            {
+                <div class="row">
+                    <div class="col-md-8">
+                        <strong>No pending conflicts</strong>
+                    </div>
+                </div>
+            }
+            else
+            {
+                
+
+                var grid = new System.Web.Helpers.WebGrid(Model.Patients, rowsPerPage: 10, canSort: false, selectionFieldName: "Id");
 
                 @grid.GetHtml(
             tableStyle: "table table-striped",
-            mode: WebGridPagerModes.Numeric,
+            mode: WebGridPagerModes.All,
             footerStyle: "grid-footer",
             headerStyle: "grid-header",
             htmlAttributes: new { id = "resultTable" },
@@ -60,8 +71,12 @@
                 )
             )
         )
-
             }
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>Total:</strong> @String.Format("{0:#,###,###} conflicts", Model.Patients.Length)
+                </div>
+            </div>
         </div>
     </div>
 }

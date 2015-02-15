@@ -17,7 +17,7 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Get recent changes
         /// </summary>
-        public static List<Models.PatientMatch> GetRecentActivity(TimeSpan since, int offset, int count)
+        public static Models.PatientMatch[] GetRecentActivity(TimeSpan since, int offset, int count)
         {
             try
             {
@@ -26,21 +26,21 @@ namespace ClientRegistryAdmin.Util
                 DateTime high = DateTime.Now,
                     low = DateTime.Now.Subtract(since);
 
-                TimestampSet sinceRange = new TimestampSet()
+                TimestampSet1 sinceRange = new TimestampSet1()
                 {
-                    part = new TimestampPart[] {
-                        new TimestampPart() { value = low, type = TimestampPartType.LowBound },
-                        new TimestampPart() { value = high, type = TimestampPartType.HighBound }
+                    part = new TimestampPart1[] {
+                        new TimestampPart1() { value = low, type = TimestampPartType1.LowBound },
+                        new TimestampPart1() { value = high, type = TimestampPartType1.HighBound }
                     }
                 };
 
                 var registrations = client.GetRecentActivity(sinceRange, offset, count, false);
-                List<ClientRegistryAdmin.Models.PatientMatch> retVal = new List<Models.PatientMatch>();
-                foreach (var reg in registrations)
+                ClientRegistryAdmin.Models.PatientMatch[] retVal = new PatientMatch[registrations.count];
+                for(int i = 0; i < registrations.registration.Length; i++)
                 {
-                    ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(reg);
+                    ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(registrations.registration[i]);
                     // Address?
-                    retVal.Add(pm);
+                    retVal[offset + i] = pm;
                 }
                 return retVal;
             }
@@ -53,7 +53,7 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Search 
         /// </summary>
-        public static List<Models.PatientMatch> Search(string familyName, string givenName, string dob, string identifier)
+        public static Models.PatientMatch[] Search(string familyName, string givenName, string dob, string identifier, int offset, int count)
         {
             ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
 
@@ -102,14 +102,15 @@ namespace ClientRegistryAdmin.Util
 
             try
             {
-                var registrations = client.GetRegistrations(queryPrototype);
-                List<ClientRegistryAdmin.Models.PatientMatch> retVal = new List<Models.PatientMatch>();
-                foreach (var reg in registrations)
+                var registrations = client.GetRegistrations(queryPrototype, offset, count);
+                ClientRegistryAdmin.Models.PatientMatch[] retVal = new PatientMatch[registrations.count];
+                for (int i = 0; i < registrations.registration.Length; i++)
                 {
-                    ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(reg);
+                    ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(registrations.registration[i]);
                     // Address?
-                    retVal.Add(pm);
+                    retVal[offset + i] = pm;
                 }
+
                 return retVal;
             }
             catch
@@ -127,7 +128,8 @@ namespace ClientRegistryAdmin.Util
             ClientRegistryAdmin.Models.PatientMatch pm = new Models.PatientMatch();
             NamePart familyNamePart = null,
                 givenNamePart = null;
-
+            pm.Status = psn.status.ToString();
+            pm.VersionId = psn.verId.ToString();
             // Name
             if (psn.name != null)
             {
@@ -225,21 +227,21 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Get conflicts
         /// </summary>
-        public static List<Models.ConflictPatientMatch> GetConflicts(int offset, int count)
+        public static Models.ConflictPatientMatch[] GetConflicts(int offset, int count)
         {
             try
             {
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
                 var conflicts = client.GetConflicts(offset, count, false);
-                List<Models.ConflictPatientMatch> retVal = new List<ConflictPatientMatch>();
-                foreach(var itm in conflicts)
+                Models.ConflictPatientMatch[] retVal = new ConflictPatientMatch[conflicts.count];
+                for (int i = 0; i < conflicts.conflict.Length; i++)
                 {
                     ConflictPatientMatch match = new ConflictPatientMatch();
-                    match.Patient = ConvertRegistrationEvent(itm.source);
+                    match.Patient = ConvertRegistrationEvent(conflicts.conflict[i].source);
                     match.Matching = new List<PatientMatch>();
-                    foreach (var m in itm.matches)
+                    foreach (var m in conflicts.conflict[i].matches)
                         match.Matching.Add(ConvertRegistrationEvent(m));
-                    retVal.Add(match);
+                    retVal[offset + i] = match;
                 }
                 return retVal;
                 
@@ -258,7 +260,7 @@ namespace ClientRegistryAdmin.Util
             try
             {
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
-                var conflicts = client.GetConflict(id);
+                var conflicts = client.GetConflict(id).conflict;
                 var conflict = conflicts[0];
                 ConflictPatientMatch retVal = new ConflictPatientMatch();
                 retVal.Patient = ConvertRegistrationEvent(conflict.source);
@@ -284,15 +286,15 @@ namespace ClientRegistryAdmin.Util
                 DateTime high = DateTime.Now,
                     low = DateTime.Now.Subtract(since);
 
-                TimestampSet sinceRange = new TimestampSet()
+                TimestampSet1 sinceRange = new TimestampSet1()
                 {
-                    part = new TimestampPart[] {
-                        new TimestampPart() { value = low, type = TimestampPartType.LowBound },
-                        new TimestampPart() { value = high, type = TimestampPartType.HighBound }
+                    part = new TimestampPart1[] {
+                        new TimestampPart1() { value = low, type = TimestampPartType1.LowBound },
+                        new TimestampPart1() { value = high, type = TimestampPartType1.HighBound }
                     }
                 };
 
-                return client.GetRecentActivity(sinceRange, 0, 0, true).Count();
+                return client.GetRecentActivity(sinceRange, 0, 0, true).count;
                 
             }
             catch (Exception e)
@@ -311,7 +313,7 @@ namespace ClientRegistryAdmin.Util
             {
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
             
-                return client.GetConflicts(0, Int32.MaxValue, true).Count();
+                return client.GetConflicts(0, Int32.MaxValue, true).count;
 
             }
             catch (Exception e)

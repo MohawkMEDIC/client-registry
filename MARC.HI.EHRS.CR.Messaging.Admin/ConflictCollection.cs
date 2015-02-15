@@ -9,8 +9,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
     /// <summary>
     /// Conflict collection
     /// </summary>
-    [XmlType("ConflictCollection")]
-    [XmlRoot("conflictCollection")]
+    [XmlType("ConflictCollection", Namespace = "urn:marc-hi:svc:componentModel")]
+    [XmlRoot("conflictCollection", Namespace = "urn:marc-hi:svc:componentModel")]
     public class ConflictCollection
     {
 
@@ -22,6 +22,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
             this.Conflict = new List<Conflict>();
         }
 
+        /// <summary>
+        /// Count of results
+        /// </summary>
+        [XmlAttribute("count")]
+        public int Count { get; set; }
         /// <summary>
         /// Conflict items
         /// </summary>

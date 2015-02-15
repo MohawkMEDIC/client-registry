@@ -103,7 +103,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Parameters
             // classifier = 0x400 = Change Summary
-            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "hsr_cls_in", DbType.Decimal, (int)0x400));
+            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "hsr_cls_in", DbType.Decimal, RegistrationEventType.ComponentEvent | RegistrationEventType.Revise));
             // event type code
             cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "evt_typ_cd_id_in", DbType.Decimal, DbUtil.CreateCodedValue(conn, tx, hsr.ChangeType)));
             // refuted indicator
@@ -115,7 +115,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTimeId == null ? (object)DBNull.Value : efftTimeId.Value));
             // status code
-            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, hsr.Status == null ? (object)DBNull.Value : hsr.Status.ToString()));
+            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, hsr.Status == null ? (object)DBNull.Value : (int)hsr.Status));
             // authored time
             cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "aut_utc_in", DbType.DateTime, hsr.Timestamp == default(DateTime) ? (object)DBNull.Value : hsr.Timestamp));
             // language code
@@ -181,7 +181,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     };
                     retVal.LanguageCode = reader["lang_cs"].ToString();
                     retVal.Timestamp = DateTime.Parse(Convert.ToString(reader["aut_utc"]));
-                    retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), Convert.ToString(reader["status_cs"]));
+                    retVal.Status = (StatusType)Convert.ToDecimal(reader["status_cs_id"]);
                     tsId = reader["efft_ts_set_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["efft_ts_set_id"]);
                     cdId =  Convert.ToDecimal(reader["evt_typ_cd_id"]);
                     rplcVersionId = reader["rplc_vrsn_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["rplc_vrsn_id"]);
