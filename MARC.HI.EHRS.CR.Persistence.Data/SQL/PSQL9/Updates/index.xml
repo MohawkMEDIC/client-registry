@@ -5,5 +5,8 @@
     <install file="CR-001.SQL"/>
     <ununstall file="CR-001-CLEAN.SQL"/>
   </update>
-  
+  <update id="CR-002" from="1.0.0.0" to="1.0.1.0">
+    <description>Fixes issues with merging in large deployments</description>
+    <install file="CR-001.SQL"/>
+  </update>
 </updateLog>

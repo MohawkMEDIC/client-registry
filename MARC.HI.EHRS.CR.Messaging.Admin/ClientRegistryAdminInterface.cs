@@ -169,15 +169,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
                 }, false) as RegistrationEvent;
 
                 // Add audit data
-                audit.AuditableObjects.Add(new AuditableObject()
+                if (retVal != null)
                 {
-                    IDTypeCode = AuditableObjectIdType.ReportNumber,
-                    LifecycleType = AuditableObjectLifecycle.Export,
-                    ObjectId = String.Format("{0}^^^&{1}&ISO", retVal.AlternateIdentifier.Identifier, retVal.AlternateIdentifier.Domain),
-                    Role = AuditableObjectRole.MasterFile,
-                    Type = AuditableObjectType.SystemObject,
-                    QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
-                });
+                    audit.AuditableObjects.Add(new AuditableObject()
+                    {
+                        IDTypeCode = AuditableObjectIdType.ReportNumber,
+                        LifecycleType = AuditableObjectLifecycle.Export,
+                        ObjectId = String.Format("{0}^^^&{1}&ISO", retVal.AlternateIdentifier.Identifier, retVal.AlternateIdentifier.Domain),
+                        Role = AuditableObjectRole.MasterFile,
+                        Type = AuditableObjectType.SystemObject,
+                        QueryData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("loadFast=false"))
+                    });
+                }
                 return retVal;
             }
             catch (Exception e)

@@ -795,10 +795,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         if (ccomp++ < queryContainer.Components.Count)
                         {
                             string subFilter = BuildQueryFilter(comp, context, forceExact);
+                            
                             if (!String.IsNullOrEmpty(subFilter))
                             {
                                 if (retVal.Length > 0)
                                 {
+                                    // Scrub multi column selects that some comps do
+                                    subFilter = subFilter.Replace("HSR_ID, HSR_VRSN_ID", "HSR_VRSN_ID");
                                     retVal.AppendFormat(" {0} ", verb);
                                     needsClose = true;
                                 }

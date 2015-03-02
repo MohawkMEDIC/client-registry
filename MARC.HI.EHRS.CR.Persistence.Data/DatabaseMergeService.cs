@@ -134,6 +134,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 tx = conn.BeginTransaction();
 
                 foreach (var id in victimIds)
+                {
                     using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
                     {
                         cmd.CommandText = "mrg_cand";
@@ -141,7 +142,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "to_id_in", DbType.Decimal, Decimal.Parse(survivorId.Identifier)));
                         cmd.ExecuteNonQuery();
                     }
+                    // Obsolete the victim identifier merges
+                    using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                    {
+                        cmd.CommandText = "obslt_mrg";
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "from_id_in", DbType.Decimal, Decimal.Parse(id.Identifier)));
+                        cmd.ExecuteNonQuery();
+                    }
 
+                }
                 tx.Commit();
             }
             catch (Exception e)

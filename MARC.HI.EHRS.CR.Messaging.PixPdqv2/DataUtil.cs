@@ -630,7 +630,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
 
                     // Persist the query
-                    if (this.m_queryPersistence != null)
+                    if (this.m_queryPersistence != null && recordIds.Length > filter.Quantity)
                     {
                         this.m_queryPersistence.RegisterQuerySet(filter.QueryId, recordIds, filter);
                         this.m_queryPersistence.GetQueryResults(filter.QueryId, -1, filter.Quantity);

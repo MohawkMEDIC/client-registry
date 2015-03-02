@@ -116,6 +116,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.Configuration
 
                 if (Validation.DefaultMatchAlgorithms == 0)
                     Validation.DefaultMatchAlgorithms = MatchAlgorithm.Default;
+                Trace.TraceInformation("Match algorithms {0} and strength of {1}", Validation.DefaultMatchAlgorithms, Validation.DefaultMatchStrength);
             }
             // Connection manager configuration
             if (connectionManagerConfig.Attributes["connection"] != null)

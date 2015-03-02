@@ -76,7 +76,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             pp.MergePersons(dbCntrPsn, cntrPsn);
             
             // Load the components for the person
+#if DEBUG
             Trace.TraceInformation("Registration reference {0} > {1}", psn.Id, dbCntrPsn.Id);
+#endif
             DbUtil.DePersistComponents(conn, psn, this, true);
 
             if (psn == null || dbCntrPsn == null)
@@ -100,8 +102,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Hard replace = Merge the new and old record and then replace them
                 if (!symbolic)
                 {
-
+#if DEBUG
                     Trace.TraceInformation("Performing an administrative migration of identifiers and information from {0} > {1}", psn.Id, dbCntrPsn.Id);
+#endif
                     // Now to copy the components of the current version down
                     //foreach (IComponent cmp in refr.Site.Container.Components)
                     //    if (cmp != refr)
@@ -227,7 +230,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Now update the person
                 //psn.Site = refr.Site;
                 //pp.Persist(conn, tx, psn, true); // update the person record
+#if DEBUG
                 Trace.TraceInformation("Step 1 : Prepare update to person #{0}", psn.Id, cntrPsn.Id, !symbolic);
+#endif
                 var regEvent = this.GetRegistrationEvent(conn, tx, psn); // get the registration event
                 var changeSummary = DbUtil.GetRegistrationEvent(refr).FindComponent(HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf) as ChangeSummary;
                 if (changeSummary != null)
@@ -248,7 +253,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 regEvent.RemoveAllFromRole(HealthServiceRecordSiteRoleType.SubjectOf);
                 regEvent.Add(psn, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
+#if DEBUG
                 Trace.TraceInformation("Step 2 : Perform update to person #{0}", psn.Id);
+#endif
                 new RegistrationEventPersister().Persist(conn, tx, regEvent, true);
 
                 refr.AlternateIdentifiers.Clear();
@@ -265,7 +272,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // if we de-persist the most recent version (to reflect changes made)
                 // Store the merged new record
 
+#if DEBUG
                 Trace.TraceInformation("Step 3 : Perform update to person #{0}", dbCntrPsn.Id);
+#endif
                 pp.CreatePersonVersion(conn, tx, dbCntrPsn);
 
                 // Components
@@ -275,7 +284,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             }
 
             // Create the link
+#if DEBUG
             Trace.TraceInformation("Creating link between persons {0} > {1}", psn.Id, dbCntrPsn.Id);
+#endif
             using (var cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "crt_psn_lnk";

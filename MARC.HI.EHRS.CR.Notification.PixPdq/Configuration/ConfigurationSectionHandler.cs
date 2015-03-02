@@ -97,7 +97,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration
         {
             // throw new NotImplementedException();
             var targetsElement = section.SelectNodes("./*[local-name() = 'targets']/*[local-name() = 'add']");
-            var retVal = new NotificationConfiguration(1);
+            var retVal = new NotificationConfiguration(Environment.ProcessorCount);
 
             // Targets element not found
             if (targetsElement == null || targetsElement.Count == 0)

@@ -520,10 +520,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Adding only permitted for authorized ids
             var oidData = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(altId.Domain);
+#if DEBUG
             if (oidData == null || !oidData.Attributes.Exists(a => a.Key == "GloballyAssignable" && Boolean.Parse(a.Value)))
                 Trace.TraceInformation("Registering new globally assignable identifier from domain {0}", altId.Domain);
             else if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
                 throw new ConstraintException("Cannot register an ID without appropriate assigning authority!");
+#endif
 
             // Add id
             if (altId.UpdateMode != UpdateModeType.Remove)
@@ -726,7 +728,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         internal Person GetPerson(IDbConnection conn, IDbTransaction tx, DomainIdentifier domainIdentifier, bool loadFast)
         {
+#if DEBUG
             Trace.TraceInformation("Get person {0}@{1}", domainIdentifier.Identifier, domainIdentifier.Domain);
+#endif
             return GetPerson(conn, tx, new VersionedDomainIdentifier()
             {
                 Domain = domainIdentifier.Domain,
@@ -1651,9 +1655,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 };
 
 
+            
             // Matching?
             StringBuilder sb = new StringBuilder();
-            if(registrationEvent != null)
+            if(registrationEvent != null) // There should be no query parameters added
                 sb.Append("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM PSN_VRSN_TBL INNER JOIN HSR_VRSN_TBL ON (HSR_VRSN_TBL.HSR_VRSN_ID = PSN_VRSN_TBL.REG_VRSN_ID) ");
             else
                 sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL ");
@@ -1687,10 +1692,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (personFilter.TelecomAddresses != null && personFilter.TelecomAddresses.Count > 0)
                 subqueryParms.Push(BuildFilterTelecom(personFilter.TelecomAddresses));
 
-            // Addresses
-            if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
-                subqueryParms.Push(BuildFilterAddress(personFilter.Addresses));
-
 
             // is this a simple query?
             if (subqueryParms.Count(o => o.Contains(" UNION ") || o.Contains(" INTERSECT ")) > 0) // Complex
@@ -1699,7 +1700,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Fallback to old ways
                 sb.Append("  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
                 while (subqueryParms.Count > 0)
-                    sb.AppendFormat(" AND PSN_ID IN ({0}) ", subqueryParms.Pop());
+                    sb.AppendFormat(" AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", subqueryParms.Pop());
             }
             else
             {
@@ -1732,6 +1733,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             #region Filter Parameters
 
+
             if (personFilter.Status == StatusType.Unknown)
                 sb.Append("AND PSN_VRSN_TBL.STATUS_CS_ID NOT IN (16,64) ");
             else
@@ -1743,6 +1745,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 sb.Remove(sb.Length - 1, 1);
                 sb.Append(") ");
             }
+
+
+            // Addresses
+            if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
+                sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", BuildFilterAddress(personFilter.Addresses));
 
             if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
                 sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
@@ -1810,16 +1817,29 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     continue;
                 // Build the filter
                 StringBuilder filterString = new StringBuilder(),
-                    cmpTypeString = new StringBuilder();
+                    cmpTypeString = new StringBuilder(),
+                    addrStateCondition = new StringBuilder();
+
+
+                int ncf = 0;
                 foreach (var cmp in addr.Parts)
                 {
-                    filterString.AppendFormat("{0}{1}", cmp.AddressValue, cmp == addr.Parts.Last() ? "" : ",");
-                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : ",");
+                    if(cmp.PartType == AddressPart.AddressPartType.State || cmp.PartType == AddressPart.AddressPartType.Country)
+                    {
+                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
+                        continue;
+                    }
+                    ncf++;
+                    filterString.AppendFormat("(ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1}) {2} ", cmp.AddressValue.Replace("'", "''"), (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : "OR");
                 }
+                if (filterString.ToString().EndsWith("OR "))
+                    filterString.Remove(filterString.Length - 3, 3);
 
                 // Match strength & algorithms
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_ADDR_SET('{{{0}}}','{{{1}}}', {2})",
-                    filterString.Replace("'","''"), cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
+                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND {0} AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
+                    filterString, addr.Use == AddressSet.AddressSetUse.Search ? null : String.Format("AND ADDR_SET_USE = {0}", (int)addr.Use), 
+                    ncf,
+                    addrStateCondition);
 
                 if (addr != addresses.Last())
                     retVal.AppendFormat(" UNION ");

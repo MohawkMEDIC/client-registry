@@ -60,7 +60,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         private IServiceProvider m_hostContext;
 
         // Matcher wtp
-        private WaitThreadPool m_threadPool = new WaitThreadPool(2);
+        private WaitThreadPool m_threadPool = new WaitThreadPool(Environment.ProcessorCount);
         // Disposed?
         private bool m_disposed = false;
 
@@ -598,7 +598,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         {
             if (m_disposed) throw new ObjectDisposedException("DatabasePersistenceService");
 
-            Trace.TraceInformation("Querying for records");
             // TODO: Store consent policy override if applicable
             List<VersionedDomainIdentifier> retVal = new List<VersionedDomainIdentifier>(30);
 
@@ -626,9 +625,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = queryFilterString;
-                    int count = 0;
+
+#if DEBUG
                     Trace.TraceInformation(cmd.CommandText);
-                    
+#endif           
                     try
                     {
                         using (IDataReader rdr = cmd.ExecuteReader())
@@ -670,7 +670,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
 
             //retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
+#if DEBUG
             Trace.TraceInformation("{0} records returned by function", retVal.Count);
+#endif
             return retVal.ToArray();
         }
 

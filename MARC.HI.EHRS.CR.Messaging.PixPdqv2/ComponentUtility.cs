@@ -274,6 +274,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         Identifier = msh.MessageControlID.Value
                     }
                 },
+                Quantity = 1,
                 ResponseMessageType = "RSP_K23"
             };
 
