@@ -424,7 +424,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             for (int i = 0; i < retVal.Length; i++)
                 recordFetch.Add(recordIds[i]);
 
-            int maxWorkerBees = Environment.ProcessorCount * 4,
+            int maxWorkerBees = recordFetch.Count < Environment.ProcessorCount * 2 ? recordFetch.Count : Environment.ProcessorCount * 2,
                 nResults = 0;
             //List<Thread> workerBees = new List<Thread>(maxWorkerBees);  // Worker bees
             var wtp = new MARC.Everest.Threading.WaitThreadPool(maxWorkerBees);
@@ -630,7 +630,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     //retVal.Sort((a, b) => b.Id.CompareTo(a.Id)); // Default sort by id
 
                     // Persist the query
-                    if (this.m_queryPersistence != null)
+                    if (this.m_queryPersistence != null && recordIds.Length > filter.Quantity)
                     {
                         this.m_queryPersistence.RegisterQuerySet(filter.QueryId, recordIds, filter);
                         this.m_queryPersistence.GetQueryResults(filter.QueryId, -1, filter.Quantity);

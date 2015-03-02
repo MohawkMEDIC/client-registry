@@ -788,17 +788,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     bool needsClose = false;
                     foreach (HealthServiceRecordComponent comp in queryContainer.Components)
                     {
-                        string verb = " AND HSR_ID IN (";
+                        string verb = " AND HSR_VRSN_ID IN (";
                         if (queryContainer.FindAllComponents((comp.Site as HealthServiceRecordSite).SiteRoleType).Count > 1)
-                            verb = " OR HSR_ID IN (";
+                            verb = " OR HSR_VRSN_ID IN (";
 
                         if (ccomp++ < queryContainer.Components.Count)
                         {
                             string subFilter = BuildQueryFilter(comp, context, forceExact);
+                            
                             if (!String.IsNullOrEmpty(subFilter))
                             {
-                                retVal.AppendFormat(" {0} {1} ", verb, subFilter);
-                                needsClose = true;
+                                if (retVal.Length > 0)
+                                {
+                                    // Scrub multi column selects that some comps do
+                                    subFilter = subFilter.Replace("HSR_ID, HSR_VRSN_ID", "HSR_VRSN_ID");
+                                    retVal.AppendFormat(" {0} ", verb);
+                                    needsClose = true;
+                                }
+                                retVal.AppendFormat(" {0} ", subFilter);
+                                //needsClose = true;
                             }
                         }
                         else
@@ -809,7 +817,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     }
 
                     // Clean up 
-                    if (retVal.ToString().EndsWith(" AND HSR_ID IN ( "))
+                    if (retVal.ToString().EndsWith(" AND HSR_VRSN_ID IN ( "))
                         retVal.Remove(retVal.Length - 11, 11);
 
                     if(needsClose)

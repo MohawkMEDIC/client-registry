@@ -8,6 +8,10 @@ using System.Diagnostics;
 
 namespace ClientRegistryAdmin.Controllers
 {
+#if !DEBUG
+     [Authorize(Roles = "Administrators,CR Administrators")]
+     [RequireHttps]
+#endif
     public class LogController : Controller
     {
         //
@@ -39,6 +43,7 @@ namespace ClientRegistryAdmin.Controllers
             {
                 ClientRegistryAdminService.ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminService.ClientRegistryAdminInterfaceClient();
                 model.Log = client.GetLog(id.Replace("-", "_"));
+                Trace.TraceInformation("Got a log of {0} bytes", model.Log.Length);
 
             }
             catch

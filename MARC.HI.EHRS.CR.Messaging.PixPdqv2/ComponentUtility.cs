@@ -274,6 +274,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         Identifier = msh.MessageControlID.Value
                     }
                 },
+                Quantity = 1,
                 ResponseMessageType = "RSP_K23"
             };
 
@@ -795,7 +796,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             RepositoryDevice dev = new RepositoryDevice();
             dev.Name = request.MSH.SendingApplication.NamespaceID.Value;
             dev.Jurisdiction = request.MSH.SendingFacility.NamespaceID.Value; 
-            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingFacility, dtls);
+            dev.AlternateIdentifier = this.CreateDomainIdentifier(request.MSH.SendingApplication, dtls);
             if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
                 dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
             retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);

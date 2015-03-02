@@ -20,32 +20,32 @@
             }
             else if(Model.Outcome != null)
             {
-                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, selectionFieldName: "Id");
+                var grid = new System.Web.Helpers.WebGrid(Model.Outcome, defaultSort: "DateOfBirth", rowsPerPage: 10, canSort:false, selectionFieldName: "Id");
                 grid.Pager(WebGridPagerModes.All, "First", "Previous", "Next", "Last");
 
                 @grid.GetHtml(
                     tableStyle: "table table-striped",
-                    mode: WebGridPagerModes.Numeric,
+                    mode: WebGridPagerModes.All,
                     footerStyle: "grid-footer",
                     headerStyle: "grid-header",
                     htmlAttributes: new { id = "resultTable" },
                     columns: grid.Columns(
                     grid.Column(
                     columnName: "Id",
-                    header: "Event Id",
-                    style: "width:20%",
-                    format: item => Html.ActionLink((String)item.Id.ToString(), "View", "Patient", new { id = item.RegistrationId }, new object())
+                    header: "ECID/Version",
+                    style: "width:10%",
+                    format: item => Html.ActionLink((String)String.Format("{0}/{1}", item.Id.ToString(), item.VersionId.ToString()), "View", "Patient", new { id = item.RegistrationId }, new object())
                     ),
                     grid.Column(
                     columnName: "Name",
-                    header: "Name",
+                    header: "Subject Name",
                     style: "width:30%",
                                 format: item => Html.ActionLink((String)String.Format("{0}, {1}", item.FamilyName, item.GivenName), "View", "Patient", new { id = item.RegistrationId }, new object())
                         ),
                         grid.Column(
                             columnName: "DateOfBirth",
-                        header: "DOB",
-                        style: "width:30%",
+                        header: "Subject DOB",
+                        style: "width:20%",
                             format: item => new HtmlString((String)item.DateOfBirth.ToString("yyyy-MMM-dd"))
                             ),
                             grid.Column(
@@ -56,12 +56,24 @@
                         grid.Column(
                         columnName: "Address",
                         header: "Address",
-                        style: "width:30%",
+                        style: "width:20%",
                             format: item => new HtmlString(String.Format("{0}, {1}", item.City, item.State))
-                        )
+                        ),
+                        grid.Column(
+                columnName: "Status",
+                header: "Status",
+                style: "width:10%",
+                    format: item => new HtmlString(String.Format("<span class=\"label label-info\">{0}</span>", item.Status))
+                )
                     )
                 )
+                <div class="row">
+                    <div class="col-md-12">
+                        <strong>Total Records:</strong> @String.Format("{0:#,###,###} registrations", Model.Outcome.Length)
+                    </div>
+                </div>
             }
+            
         </div>
     </div>
 }

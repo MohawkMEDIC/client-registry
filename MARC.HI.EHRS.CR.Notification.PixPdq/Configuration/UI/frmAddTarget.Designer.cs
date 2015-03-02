@@ -52,8 +52,7 @@
             this.errMain = new System.Windows.Forms.ErrorProvider(this.components);
             this.cbxAuthority = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.grpServerSSL = new System.Windows.Forms.GroupBox();
             this.btnChooseServerCert = new System.Windows.Forms.Button();
             this.txtServerCert = new System.Windows.Forms.TextBox();
             this.cbxServerStoreLocation = new System.Windows.Forms.ComboBox();
@@ -63,8 +62,7 @@
             this.label12 = new System.Windows.Forms.Label();
             this.grpSSL.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errMain)).BeginInit();
-            this.groupBox1.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.grpServerSSL.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtAddress
@@ -257,6 +255,7 @@
             this.chkValidateIssuer.TabIndex = 10;
             this.chkValidateIssuer.Text = "Validate service\'s certificate against trusted issuer";
             this.chkValidateIssuer.UseVisualStyleBackColor = true;
+            this.chkValidateIssuer.CheckedChanged += new System.EventHandler(this.chkValidateIssuer_CheckedChanged);
             // 
             // label7
             // 
@@ -302,46 +301,39 @@
             this.label8.TabIndex = 21;
             this.label8.Text = "Authority:";
             // 
-            // groupBox1
+            // grpServerSSL
             // 
-            this.groupBox1.Controls.Add(this.panel1);
-            this.groupBox1.Location = new System.Drawing.Point(19, 304);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(324, 115);
-            this.groupBox1.TabIndex = 22;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Trusted Issuer for Server";
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnChooseServerCert);
-            this.panel1.Controls.Add(this.txtServerCert);
-            this.panel1.Controls.Add(this.cbxServerStoreLocation);
-            this.panel1.Controls.Add(this.label10);
-            this.panel1.Controls.Add(this.cbxServerStore);
-            this.panel1.Controls.Add(this.label11);
-            this.panel1.Controls.Add(this.label12);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 17);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(318, 95);
-            this.panel1.TabIndex = 13;
+            this.grpServerSSL.Controls.Add(this.btnChooseServerCert);
+            this.grpServerSSL.Controls.Add(this.txtServerCert);
+            this.grpServerSSL.Controls.Add(this.cbxServerStoreLocation);
+            this.grpServerSSL.Controls.Add(this.label12);
+            this.grpServerSSL.Controls.Add(this.label10);
+            this.grpServerSSL.Controls.Add(this.label11);
+            this.grpServerSSL.Controls.Add(this.cbxServerStore);
+            this.grpServerSSL.Enabled = false;
+            this.grpServerSSL.Location = new System.Drawing.Point(19, 304);
+            this.grpServerSSL.Name = "grpServerSSL";
+            this.grpServerSSL.Size = new System.Drawing.Size(324, 119);
+            this.grpServerSSL.TabIndex = 22;
+            this.grpServerSSL.TabStop = false;
+            this.grpServerSSL.Text = "Trusted Issuer for Server";
             // 
             // btnChooseServerCert
             // 
             this.btnChooseServerCert.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChooseServerCert.Location = new System.Drawing.Point(272, 66);
+            this.btnChooseServerCert.Location = new System.Drawing.Point(271, 82);
             this.btnChooseServerCert.Name = "btnChooseServerCert";
             this.btnChooseServerCert.Size = new System.Drawing.Size(33, 20);
             this.btnChooseServerCert.TabIndex = 16;
             this.btnChooseServerCert.Text = "...";
             this.btnChooseServerCert.UseVisualStyleBackColor = true;
+            this.btnChooseServerCert.Click += new System.EventHandler(this.btnChooseServerCert_Click);
             // 
             // txtServerCert
             // 
             this.txtServerCert.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtServerCert.Location = new System.Drawing.Point(98, 66);
+            this.txtServerCert.Location = new System.Drawing.Point(97, 82);
             this.txtServerCert.Name = "txtServerCert";
             this.txtServerCert.ReadOnly = true;
             this.txtServerCert.Size = new System.Drawing.Size(168, 20);
@@ -353,7 +345,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbxServerStoreLocation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxServerStoreLocation.FormattingEnabled = true;
-            this.cbxServerStoreLocation.Location = new System.Drawing.Point(98, 12);
+            this.cbxServerStoreLocation.Location = new System.Drawing.Point(97, 28);
             this.cbxServerStoreLocation.Name = "cbxServerStoreLocation";
             this.cbxServerStoreLocation.Size = new System.Drawing.Size(207, 21);
             this.cbxServerStoreLocation.TabIndex = 13;
@@ -361,7 +353,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(13, 15);
+            this.label10.Location = new System.Drawing.Point(12, 31);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(79, 13);
             this.label10.TabIndex = 12;
@@ -373,7 +365,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cbxServerStore.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxServerStore.FormattingEnabled = true;
-            this.cbxServerStore.Location = new System.Drawing.Point(98, 39);
+            this.cbxServerStore.Location = new System.Drawing.Point(97, 55);
             this.cbxServerStore.Name = "cbxServerStore";
             this.cbxServerStore.Size = new System.Drawing.Size(207, 21);
             this.cbxServerStore.TabIndex = 14;
@@ -381,7 +373,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(35, 69);
+            this.label11.Location = new System.Drawing.Point(34, 85);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(57, 13);
             this.label11.TabIndex = 11;
@@ -390,7 +382,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(7, 42);
+            this.label12.Location = new System.Drawing.Point(6, 58);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(85, 13);
             this.label12.TabIndex = 10;
@@ -404,7 +396,7 @@
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(361, 458);
             this.ControlBox = false;
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.grpServerSSL);
             this.Controls.Add(this.cbxAuthority);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.txtOid);
@@ -426,9 +418,8 @@
             this.grpSSL.ResumeLayout(false);
             this.grpSSL.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errMain)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.grpServerSSL.ResumeLayout(false);
+            this.grpServerSSL.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -459,8 +450,7 @@
         private System.Windows.Forms.ErrorProvider errMain;
         private System.Windows.Forms.ComboBox cbxAuthority;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.GroupBox grpServerSSL;
         private System.Windows.Forms.Button btnChooseServerCert;
         private System.Windows.Forms.TextBox txtServerCert;
         private System.Windows.Forms.ComboBox cbxServerStoreLocation;

@@ -484,7 +484,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                             });
                         else
                             result.Results.Add(resource);
-                        container = hsrc.FindComponent(HealthServiceRecordSiteRoleType.ReplacementOf) as IContainer;
+                        container = hsrc.FindComponent(HealthServiceRecordSiteRoleType.OlderVersionOf) as IContainer;
                     }
                 else // Some version
                     while (container != null)

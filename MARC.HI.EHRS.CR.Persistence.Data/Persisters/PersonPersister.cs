@@ -58,7 +58,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             try
             {
-
+                
                 // Older version of, don't persist just return a record
                 if (psn.Site != null && (psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
                 {
@@ -132,7 +132,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Set parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "reg_vrsn_id_in", DbType.Decimal, regEvt.VersionIdentifier));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.String, psn.Status.ToString()));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.Decimal, (int)psn.Status));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime == null || psn.BirthTime.UpdateMode == UpdateModeType.Ignore ? DBNull.Value : (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null)));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "mb_ord_in", DbType.Decimal, psn.BirthOrder.HasValue ? (object)psn.BirthOrder.Value : DBNull.Value));
@@ -319,7 +319,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_cs_in", DbType.String, cit.CountryCode));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "ntn_name_in", DbType.String, cit.CountryName));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTsId.HasValue ? (object)efftTsId.Value : DBNull.Value));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, cit.Status.ToString()));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, (int)cit.Status));
 
                     // Execute
                     cmd.ExecuteNonQuery();
@@ -364,7 +364,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, psn.VersionId));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "emp_cd_id", DbType.Decimal, occupationId.HasValue ? (object)occupationId.Value : DBNull.Value));
                     cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTsId.HasValue ? (object)efftTsId.Value : DBNull.Value));
-                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, emp.Status.ToString()));
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, (int)emp.Status));
 
                     // Execute
                     cmd.ExecuteNonQuery();
@@ -520,10 +520,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Adding only permitted for authorized ids
             var oidData = ApplicationContext.ConfigurationService.OidRegistrar.GetOid(altId.Domain);
+#if DEBUG
             if (oidData == null || !oidData.Attributes.Exists(a => a.Key == "GloballyAssignable" && Boolean.Parse(a.Value)))
                 Trace.TraceInformation("Registering new globally assignable identifier from domain {0}", altId.Domain);
             else if (altId.UpdateMode == UpdateModeType.Add && !(altId is AuthorityAssignedDomainIdentifier))
                 throw new ConstraintException("Cannot register an ID without appropriate assigning authority!");
+#endif
 
             // Add id
             if (altId.UpdateMode != UpdateModeType.Remove)
@@ -673,7 +675,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Set parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, psn.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "reg_vrsn_id_in", DbType.Decimal, regEvt.VersionIdentifier));
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.String, psn.Status.ToString()));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_in", DbType.Decimal, (int)psn.Status));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "gndr_in", DbType.String, psn.GenderCode));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "brth_ts_in", DbType.Decimal, psn.BirthTime != null && psn.BirthTime.UpdateMode != UpdateModeType.Ignore ? (object)DbUtil.CreateTimestamp(conn, tx, psn.BirthTime, null) : DBNull.Value));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "dcsd_ts_in", DbType.Decimal, psn.DeceasedTime != null && psn.DeceasedTime.UpdateMode != UpdateModeType.Ignore ? (object)DbUtil.CreateTimestamp(conn, tx, psn.DeceasedTime, null) : DBNull.Value));
@@ -726,6 +728,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// </summary>
         internal Person GetPerson(IDbConnection conn, IDbTransaction tx, DomainIdentifier domainIdentifier, bool loadFast)
         {
+#if DEBUG
+            Trace.TraceInformation("Get person {0}@{1}", domainIdentifier.Identifier, domainIdentifier.Domain);
+#endif
             return GetPerson(conn, tx, new VersionedDomainIdentifier()
             {
                 Domain = domainIdentifier.Domain,
@@ -775,7 +780,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         Person retVal = new Person();
                         retVal.Id = Convert.ToDecimal(rdr["psn_id"]);
                         retVal.VersionId = Convert.ToDecimal(rdr["psn_vrsn_id"]);
-                        retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), rdr["status"].ToString());
+                        retVal.Status = (StatusType)Convert.ToInt32(rdr["status_cs_id"]);
                         retVal.GenderCode = rdr["gndr_cs"] == DBNull.Value ? null : Convert.ToString(rdr["gndr_cs"]);
                         retVal.BirthOrder = (int?)(rdr["mb_ord"] == DBNull.Value ? (object)null : Convert.ToInt32(rdr["mb_ord"]));
                         retVal.Timestamp = Convert.ToDateTime(rdr["crt_utc"]);
@@ -846,11 +851,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             }, loadFast);
                             if (olderVersionPerson != null)
                             {
-                                retVal.Add(olderVersionPerson, "RPLC", HealthServiceRecordSiteRoleType.ReplacementOf, null);
-                                if (!loadFast)
-                                    DbUtil.DePersistComponents(conn, olderVersionPerson, this, loadFast);
+                                retVal.Add(olderVersionPerson, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.OlderVersionOf, null);
+                                DbUtil.DePersistComponents(conn, olderVersionPerson, this, loadFast);
                             }
                         }
+
+                        
                         return retVal;
                     }
                     else
@@ -1181,6 +1187,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         internal void MergePersons(Person newPerson, Person oldPerson, bool newerOnly)
         {
 
+            Trace.TraceInformation("Copy person {0}v{1} into {2}", oldPerson.Id, oldPerson.VersionId, newPerson.Id);
             // Start the merging process for addresses
             // For each of the addresses in the new person record, determine if
             // they are additions (new addresses), modifications (old addresses 
@@ -1303,7 +1310,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 foreach (var name in newPerson.Names)
                 {
-                    if (name.UpdateMode == UpdateModeType.Remove) continue;
+                    if (name == null || name.UpdateMode == UpdateModeType.Remove) continue;
                     var candidateOtherName = oldPerson.Names.FindAll(o => o.Use == name.Use);
                     if (candidateOtherName.Count == 1)
                     {
@@ -1361,6 +1368,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 //        name.UpdateMode = UpdateModeType.Remove;
                 //newPerson.Names.AddRange(oldPerson.Names.FindAll(o => o.UpdateMode == UpdateModeType.Remove));
                 //newPerson.Names.RemoveAll(o => o.Key < 0);
+                newPerson.Names.RemoveAll(o => o == null);
             }
 
             // Birth time
@@ -1615,7 +1623,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 Identifier = identifier.ToString(),
                 Version = versionId.ToString()
             }, loadFast);
-            DbUtil.DePersistComponents(conn, person, this, loadFast);
+            DbUtil.DePersistComponents(conn, person, this, true);
             return person;
         }
 
@@ -1647,59 +1655,104 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 };
 
 
+            
             // Matching?
             StringBuilder sb = new StringBuilder();
-            if(registrationEvent != null)
-                sb.Append("SELECT DISTINCT HSR_ID FROM HSR_VRSN_TBL INNER JOIN PSN_VRSN_TBL ON (PSN_VRSN_TBL.REG_VRSN_ID = HSR_VRSN_TBL.HSR_VRSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+            if(registrationEvent != null) // There should be no query parameters added
+                sb.Append("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM PSN_VRSN_TBL INNER JOIN HSR_VRSN_TBL ON (HSR_VRSN_TBL.HSR_VRSN_ID = PSN_VRSN_TBL.REG_VRSN_ID) ");
             else
-                sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL WHERE OBSLT_UTC IS NULL ");
+                sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL ");
 
-            if (personFilter.Status == StatusType.Unknown)
-                sb.Append("AND STATUS NOT IN ('Obsolete','Nullified') ");
-            else
-            {
-                sb.Append("AND STATUS IN (");
-                foreach (var fi in Enum.GetValues(typeof(StatusType)))
-                    if ((personFilter.Status & (StatusType)fi) != 0)
-                        sb.AppendFormat("'{0}',", fi.ToString());
-                sb.Remove(sb.Length - 1, 1);
-                sb.Append(") ");
-            }
-
-            if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
-                sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
+            Stack<String> subqueryParms = new Stack<string>();
 
             // Identifiers
             if (personFilter.Id != default(decimal))
             {
-                sb.AppendFormat("AND PSN_ID = {0} ", personFilter.Id);
+                sb.AppendFormat(" WHERE PSN_ID = {0} ", personFilter.Id);
                 return sb.ToString();
             }
             else if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.AlternateIdentifiers, registrationEvent == null || registrationEvent.EventClassifier == RegistrationEventType.Query ? "UNION" : "INTERSECT"));
+                subqueryParms.Push(BuildFilterIdentifiers(personFilter.AlternateIdentifiers, registrationEvent == null || registrationEvent.EventClassifier == RegistrationEventType.Query ? "UNION" : "INTERSECT"));
 
-            #region Match Parameters
+            #region Join Parameters Conditions
+
             // Match names
             if (personFilter.Names != null && personFilter.Names.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterNames(personFilter.Names, !forceExact ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
-
-            // Match birth time
-            if (personFilter.BirthTime != null)
-            {
-                sb.AppendFormat("AND PSN_ID IN (SELECT PSN_ID FROM FIND_PSN_BY_BRTH_TS('{0:yyyy-MM-dd HH:mm:sszz}','{1}')) ", personFilter.BirthTime.Value, personFilter.BirthTime.Precision);
-            }
+                subqueryParms.Push(BuildFilterNames(personFilter.Names, !forceExact ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
 
             // Other Identifiers
             if (personFilter.OtherIdentifiers != null && personFilter.OtherIdentifiers.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterIdentifiers(personFilter.OtherIdentifiers));
+                subqueryParms.Push(BuildFilterIdentifiers(personFilter.OtherIdentifiers));
 
-            // Addresses
-            if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterAddress(personFilter.Addresses));
+            // Match birth time
+            if (personFilter.BirthTime != null)
+                subqueryParms.Push(String.Format("SELECT PSN_ID FROM FIND_PSN_BY_BRTH_TS('{0:yyyy-MM-dd HH:mm:sszz}','{1}')", personFilter.BirthTime.Value, personFilter.BirthTime.Precision));
 
             // Telecom Addresses
             if (personFilter.TelecomAddresses != null && personFilter.TelecomAddresses.Count > 0)
-                sb.AppendFormat("AND PSN_ID IN ({0}) ", BuildFilterTelecom(personFilter.TelecomAddresses));
+                subqueryParms.Push(BuildFilterTelecom(personFilter.TelecomAddresses));
+
+
+            // is this a simple query?
+            if (subqueryParms.Count(o => o.Contains(" UNION ") || o.Contains(" INTERSECT ")) > 0) // Complex
+            {
+                Trace.TraceWarning("PERFORMANCE: QUERY CONTAINS UNION/INTERSECT (OR/AND SEMANTICS) WHICH FORCES THE QUERY ANALYZER TO USE A SLOWER QUERY MECHANISM");
+                // Fallback to old ways
+                sb.Append("  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+                while (subqueryParms.Count > 0)
+                    sb.AppendFormat(" AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", subqueryParms.Pop());
+            }
+            else
+            {
+                Trace.TraceInformation("PERFORMANCE: USING FAST QUERY SEMANTICS");
+                bool hasSubquery = subqueryParms.Count > 0;
+                string closeBrace = "";
+                if (hasSubquery)
+                    sb.Append(" INNER JOIN (");
+
+                // build the join condition
+                while (subqueryParms.Count > 0)
+                {
+                    string subQueryCondition = subqueryParms.Pop();
+
+                    if (subqueryParms.Count > 0) //more so we want to join internal?
+                    {
+                        sb.AppendFormat("{0}, ARRAY(", subQueryCondition.Substring(0, subQueryCondition.Length - 1));
+                        closeBrace += "))";
+                    }
+                    else
+                        sb.AppendFormat("{0}{1}", subQueryCondition, closeBrace);
+                }
+
+                // finish join
+                if (hasSubquery)
+                    sb.Append(") AS SUBQ ON (SUBQ.PSN_ID = PSN_VRSN_TBL.PSN_ID)  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+            }
+
+            #endregion
+
+            #region Filter Parameters
+
+
+            if (personFilter.Status == StatusType.Unknown)
+                sb.Append("AND PSN_VRSN_TBL.STATUS_CS_ID NOT IN (16,64) ");
+            else
+            {
+                sb.Append("AND PSN_VRSN_TBL.STATUS_CS_ID IN (");
+                foreach (var fi in Enum.GetValues(typeof(StatusType)))
+                    if ((personFilter.Status & (StatusType)fi) != 0)
+                        sb.AppendFormat("{0},", (int)fi);
+                sb.Remove(sb.Length - 1, 1);
+                sb.Append(") ");
+            }
+
+
+            // Addresses
+            if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
+                sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", BuildFilterAddress(personFilter.Addresses));
+
+            if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
+                sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
 
             // Mutliple
             if (personFilter.BirthOrder.HasValue)
@@ -1707,12 +1760,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Gender
             if (!String.IsNullOrEmpty(personFilter.GenderCode))
-                sb.AppendFormat("AND PSN_ID IN (SELECT PSN_ID FROM FIND_PSN_BY_GNDR_CS('{0}')) ", personFilter.GenderCode);
+                sb.AppendFormat("AND GNDR_CS = '{0}' ", personFilter.GenderCode.Replace("'","''"));
+
             #endregion 
 
-            if(registrationEvent == null)
+            if(data.Site == null)
                 sb.Append(" ORDER BY PSN_VRSN_ID DESC");
 
+            // Now output the query
             return sb.ToString();
         }
 
@@ -1762,16 +1817,29 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     continue;
                 // Build the filter
                 StringBuilder filterString = new StringBuilder(),
-                    cmpTypeString = new StringBuilder();
+                    cmpTypeString = new StringBuilder(),
+                    addrStateCondition = new StringBuilder();
+
+
+                int ncf = 0;
                 foreach (var cmp in addr.Parts)
                 {
-                    filterString.AppendFormat("{0}{1}", cmp.AddressValue, cmp == addr.Parts.Last() ? "" : ",");
-                    cmpTypeString.AppendFormat("{0}{1}", (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : ",");
+                    if(cmp.PartType == AddressPart.AddressPartType.State || cmp.PartType == AddressPart.AddressPartType.Country)
+                    {
+                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
+                        continue;
+                    }
+                    ncf++;
+                    filterString.AppendFormat("(ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1}) {2} ", cmp.AddressValue.Replace("'", "''"), (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : "OR");
                 }
+                if (filterString.ToString().EndsWith("OR "))
+                    filterString.Remove(filterString.Length - 3, 3);
 
                 // Match strength & algorithms
-                retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_ADDR_SET('{{{0}}}','{{{1}}}', {2})",
-                    filterString.Replace("'","''"), cmpTypeString, addr.Use == AddressSet.AddressSetUse.Search ? (object)"NULL" : (decimal)addr.Use);
+                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND {0} AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
+                    filterString, addr.Use == AddressSet.AddressSetUse.Search ? null : String.Format("AND ADDR_SET_USE = {0}", (int)addr.Use), 
+                    ncf,
+                    addrStateCondition);
 
                 if (addr != addresses.Last())
                     retVal.AppendFormat(" UNION ");
@@ -1782,7 +1850,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Build filter identifiers
         /// </summary>
-        private object BuildFilterIdentifiers(List<KeyValuePair<CodeValue, DomainIdentifier>> identifiers)
+        private string BuildFilterIdentifiers(List<KeyValuePair<CodeValue, DomainIdentifier>> identifiers)
         {
             StringBuilder retVal = new StringBuilder();
             foreach (var id in identifiers)
@@ -1867,7 +1935,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     if (String.IsNullOrEmpty(id.Identifier))
                         retVal.AppendFormat("SELECT PSN_ID FROM PSN_TBL");
                     else if (Decimal.TryParse(id.Identifier, out localId))
-                        retVal.AppendFormat("SELECT {0}", localId); // look for one id
+                        retVal.AppendFormat("SELECT {0} AS PSN_ID", localId); // look for one id
                     else
                         throw new InvalidOperationException("Invalid CR_CID domain identifier");
                 }

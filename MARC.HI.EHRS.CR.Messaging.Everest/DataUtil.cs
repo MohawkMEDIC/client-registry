@@ -601,7 +601,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             for(int i = 0; i < retVal.Length; i++)
                 recordFetch.Add(recordIds[i]);
 
-            int maxWorkerBees = Environment.ProcessorCount,
+            int maxWorkerBees = recordFetch.Count < Environment.ProcessorCount * 2 ? recordFetch.Count : Environment.ProcessorCount * 2,
                 nResults = 0;
             //List<Thread> workerBees = new List<Thread>(maxWorkerBees);  // Worker bees
             var wtp = new MARC.Everest.Threading.WaitThreadPool(maxWorkerBees);

@@ -7,8 +7,8 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Admin
 {
-    [XmlRoot("registrationEventCollection")]
-    [XmlType("RegistrationEventCollection")]
+    [XmlRoot("registrationEventCollection", Namespace = "urn:marc-hi:svc:componentModel")]
+    [XmlType("RegistrationEventCollection", Namespace = "urn:marc-hi:svc:componentModel")]
     public class RegistrationEventCollection 
     {
 
@@ -19,6 +19,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         {
             this.Event = new List<RegistrationEvent>();
         }
+
+        /// <summary>
+        /// Gets or sets count
+        /// </summary>
+        [XmlAttribute("count")]
+        public int Count { get; set; }
 
         /// <summary>
         /// Registration event collection

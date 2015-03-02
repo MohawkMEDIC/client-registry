@@ -244,6 +244,33 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         }
 
         /// <summary>
+        /// Gets mothers name (shortcut method)
+        /// </summary>
+        [XmlIgnore]
+        public NameSet MothersName
+        {
+            get {
+                var relatives = this.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf);
+                if (relatives == null) return null;
+                var mom = relatives.Find(o => o is PersonalRelationship && (o as PersonalRelationship).RelationshipKind == "MTH") as PersonalRelationship;
+                if (mom == null) return null;
+                return mom.LegalName;
+            }
+            set
+            {
+                var mom = new PersonalRelationship() { LegalName = value , RelationshipKind = "MTH" };
+                var relatives = this.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf);
+                if (relatives == null) this.Add(mom, "PRS-MTH", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                else
+                {
+                    var existingMom = relatives.Find(o => o is PersonalRelationship && (o as PersonalRelationship).RelationshipKind == "MTH") as PersonalRelationship;
+                    if (existingMom == null) this.Add(mom, "PRS-MTH", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+                    else existingMom.LegalName = value;
+                }
+
+            }
+        }
+        /// <summary>
         /// Gets or sets the citizenships of the person
         /// </summary>
         [XmlElement("citizenship")]

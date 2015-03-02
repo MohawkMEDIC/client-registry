@@ -61,6 +61,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (v2XTN.Get9999999X99999CAnyText.Value == null)
             {
                 StringBuilder sb = new StringBuilder("tel:");
+
                 if (v2XTN.CountryCode.Value != null)
                     sb.AppendFormat("{0}-", v2XTN.CountryCode);
                 if (!v2XTN.PhoneNumber.Value.Contains("-"))
@@ -68,7 +69,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
                 if (v2XTN.Extension.Value != null)
                     sb.AppendFormat(";ext={0}", v2XTN.Extension);
-                retVal = sb.ToString();
+
+                if (sb.ToString().EndsWith("tel:"))
+                    retVal = v2XTN.AnyText.Value;
+                else
+                    retVal = sb.ToString();
                 
             }
             else
@@ -134,7 +139,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var match = re.Match(tel.Value);
             if (match.Groups[1].Value != "tel:")
             {
-                instance.TelephoneNumber.Value = tel.Value;
+                instance.AnyText.Value = tel.Value;
+                //instance.TelephoneNumber.Value = tel.Value;
                 return;
             }
 
@@ -508,58 +514,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// </summary>
         public static void XTNFromTel(Everest.DataTypes.TEL tel, NHapi.Model.V231.Datatype.XTN instance)
         {
-            Regex re = new Regex(@"^(?<s1>(?<s0>[^:/\?#]+):)?(?<a1>//(?<a0>[^/\;#]*))?(?<p0>[^\;#]*)(?<q1>\;(?<q0>[^#]*))?(?<f1>#(?<f0>.*))?");
+            NHapi.Model.V25.Datatype.XTN v25instance = new NHapi.Model.V25.Datatype.XTN(instance.Message); 
+            XTNFromTel(tel, v25instance);
+            for (int i = 0; i < v25instance.Components.Length; i++)
+                if(v25instance.Components[i] is AbstractPrimitive)
+                    (instance.Components[i] as AbstractPrimitive).Value = (v25instance.Components[i] as AbstractPrimitive).Value;
 
-            // Match 
-            var match = re.Match(tel.Value);
-            if (match.Groups[1].Value != "tel:")
-            {
-                instance.Get9999999X99999CAnyText.Value = tel.Value;
-                return;
-            }
-
-            // Telephone
-            string[] comps = match.Groups[5].Value.Split('-');
-            StringBuilder sb = new StringBuilder(),
-                phone = new StringBuilder();
-            for (int i = 0; i < comps.Length; i++)
-                if (i == 0 && comps[i].Contains("+"))
-                {
-                    sb.Append(comps[i]);
-                    instance.CountryCode.Value = comps[i];
-                }
-                else if (sb.Length == 0 && comps.Length <= 3 ||
-                    comps.Length == 4 && i == 1) // area code?
-                {
-                    sb.AppendFormat("({0})", comps[i]);
-                    instance.AreaCityCode.Value = comps[i];
-                }
-                else if (i != comps.Length - 1)
-                {
-                    sb.AppendFormat("{0}-", comps[i]);
-                    phone.AppendFormat("{0}", comps[i]);
-                }
-                else
-                {
-                    sb.Append(comps[i]);
-                    phone.Append(comps[i]);
-                }
-
-            instance.PhoneNumber.Value = phone.ToString();
-
-            // Extension?
-            string[] parms = match.Groups[7].Value.Split(';');
-            foreach (var parm in parms)
-            {
-                string[] pData = parm.Split('=');
-                if (pData[0] == "extension" || pData[0] == "ext")
-                {
-                    sb.AppendFormat("X{0}", pData[1]);
-                    instance.Extension.Value = pData[1];
-                }
-            }
-
-            instance.Get9999999X99999CAnyText.Value = sb.ToString();
         }
     }
 }

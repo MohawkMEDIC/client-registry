@@ -9,6 +9,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using System.Data;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
+using System.Diagnostics;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -86,6 +87,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 EventClassifier = RegistrationEventType.Register,
                 LanguageCode = survivorRegistrationEvent.LanguageCode
             };
+            mergeRegistrationEvent.EventType = new CodeValue("ADMIN_MRG");
             mergeRegistrationEvent.Add(new ChangeSummary()
             {
                 ChangeType = new CodeValue("ADMIN_MRG"),
@@ -132,6 +134,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 tx = conn.BeginTransaction();
 
                 foreach (var id in victimIds)
+                {
                     using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
                     {
                         cmd.CommandText = "mrg_cand";
@@ -139,7 +142,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "to_id_in", DbType.Decimal, Decimal.Parse(survivorId.Identifier)));
                         cmd.ExecuteNonQuery();
                     }
+                    // Obsolete the victim identifier merges
+                    using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
+                    {
+                        cmd.CommandText = "obslt_mrg";
+                        cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "from_id_in", DbType.Decimal, Decimal.Parse(id.Identifier)));
+                        cmd.ExecuteNonQuery();
+                    }
 
+                }
                 tx.Commit();
             }
             catch (Exception e)
@@ -231,6 +242,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         public IEnumerable<VersionedDomainIdentifier> FindFuzzyConflicts(RegistrationEvent registration)
         {
             var registrationService = this.Context.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
+            var persistenceService = this.Context.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
+
             var clientRegistryConfigService = this.Context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService;
 
             VersionedDomainIdentifier[] pid = null;
@@ -242,6 +255,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 MatchingAlgorithm = MatchAlgorithm.Exact,
                 MatchStrength = MatchStrength.Exact
             };
+            if (subject.Status != StatusType.Active)
+                return pid;
 
             var patientQuery = new RegistrationEvent();
             patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
@@ -260,6 +275,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             // Now, look for all with an assigning authority
             if (pid.Length > 0)
             {
+                pid = pid.Where(o => !(o.Identifier == registration.Id.ToString() && o.Domain == ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)).ToArray();
                 // Load each match quickly and ensure that they don't already have a 
                 // different identifier from an assigning authority (not CR_CID) provided 
                 // in the registration method. For example, if John Smith, Male, 1984-05-22, 123 Main Street West is
@@ -267,18 +283,31 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 // is received from system X with ID 104, it is pretty much assured they aren't the same person. If however the
                 // latter message came from system Y with ID 104, then the two should be considered a match.
                 ssubject.AlternateIdentifiers = new List<DomainIdentifier>();
+                List<VersionedDomainIdentifier> exclude = new List<VersionedDomainIdentifier>();
                 foreach (var altId in subject.AlternateIdentifiers)
-                    if(altId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
-                        ssubject.AlternateIdentifiers.Add(new DomainIdentifier() { Domain = altId.Domain });
-                var excludePids = registrationService.QueryRecord(patientQuery);
+                    if (altId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)
+                    {
+                        var oidData = ApplicationContext.ConfigurationService.OidRegistrar.FindData(altId.Domain);
+                        if (oidData == null ||
+                            oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value == null ||
+                            Boolean.Parse(oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value))
+                        {
+                            ssubject.AlternateIdentifiers.Add(new DomainIdentifier() { Domain = altId.Domain });
+                        }
+                    }
+                
 
-                if (excludePids.Length > 0) // Found exclusion PIDs
+                foreach(var p in pid)
                 {
-                    List<VersionedDomainIdentifier> tPidCollection = new List<VersionedDomainIdentifier>(pid);
-                    foreach (var exp in excludePids)
-                        tPidCollection.RemoveAll(o => o.Identifier == exp.Identifier);
-                    pid = tPidCollection.ToArray();
+                    var re = persistenceService.GetContainer(p, true) as RegistrationEvent;
+                    var pat = re.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    if (pat.Id == subject.Id || pat.Status != StatusType.Active ) // same person
+                        exclude.Add(re.AlternateIdentifier);
+                    else if (pat.AlternateIdentifiers.Exists(o => ssubject.AlternateIdentifiers.Exists(r => r.Domain == o.Domain)))
+                        exclude.Add(re.AlternateIdentifier);
                 }
+
+                pid = pid.Where(o => !exclude.Exists(i => i.Domain == o.Domain && i.Identifier == o.Identifier)).ToArray();
             }
             return pid;
         }
@@ -374,5 +403,35 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Update conflict records
+        /// </summary>
+        /// <param name="oldIdentifier">The old HSR event id</param>
+        /// <param name="recordId">The new HSR event id</param>
+        public void ObsoleteConflicts(VersionedDomainIdentifier recordId)
+        {
+            // First, we load the survivor
+            if (recordId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
+                throw new ArgumentException(String.Format("Must be drawn from the '{0}' domain", ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid), "recordId");
+
+            // Now persist the replacement
+            IDbConnection conn = DatabasePersistenceService.ConnectionManager.GetConnection();
+            try
+            {
+                using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, null))
+                {
+                    cmd.CommandText = "obslt_mrg";
+                    cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "old_hsr_id_in", DbType.Decimal, Decimal.Parse(recordId.Identifier)));
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            finally
+            {
+                DatabasePersistenceService.ConnectionManager.ReleaseConnection(conn);
+            }
+            
+        }
     }
 }

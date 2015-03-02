@@ -142,6 +142,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ConflictPatientMatch.cs" />
+    <Compile Include="Models\ConflictListModel.cs" />
     <Compile Include="Models\PatientMatch.cs" />
     <Compile Include="Models\PatientSearchModel.cs" />
     <Compile Include="Models\RegistryStatusModel.cs" />
@@ -214,8 +216,12 @@
     <Content Include="Content\themes\base\minified\jquery.ui.slider.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
-    <Content Include="Content\XSL\RegistrationEvent.xslt" />
-    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Content\XSL\RegistrationEvent.xslt">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
@@ -237,21 +243,25 @@
     <Content Include="Scripts\npm.js" />
     <Content Include="Scripts\_references.js" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ConflictedVersionIdentifier.datasource">
+    <None Include="Service References\ClientRegistryAdminService\admin.disco" />
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord.datasource">
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.LogInfo.datasource">
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.LogInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus.datasource">
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
     <None Include="Service References\ClientRegistryAdminService\configuration91.svcinfo" />
     <None Include="Service References\ClientRegistryAdminService\configuration.svcinfo" />
     <None Include="Service References\ClientRegistryAdminService\Reference.svcmap">
@@ -279,6 +289,8 @@
     <Content Include="Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\Shared\_PatientLayout.cshtml" />
     <Content Include="Views\Patient\Search.cshtml" />
+    <Content Include="Views\Patient\Conflict.cshtml" />
+    <Content Include="Views\Patient\Resolve.cshtml" />
     <None Include="Service References\ClientRegistryAdminService\admin.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -294,9 +306,15 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fonts\glyphicons-halflings-regular.eot" />
-    <None Include="fonts\glyphicons-halflings-regular.ttf" />
-    <None Include="fonts\glyphicons-halflings-regular.woff" />
+    <None Include="fonts\glyphicons-halflings-regular.eot">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="fonts\glyphicons-halflings-regular.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="fonts\glyphicons-halflings-regular.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>

@@ -36,10 +36,9 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.SVC.Core.Exceptions;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.HI.EHRS.SVC.Core.Services;
-using MARC.HI.EHRS.CR.Persistence.Data.Configuration;
-using MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister;
 using System.Text;
 using MARC.HI.EHRS.CR.Core.Services;
+using MARC.Everest.Threading;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -53,14 +52,18 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
     /// and build the result set in memory.
     /// </remarks>
     [Description("ADO.NET Persistence Service")]
-    public class DatabasePersistenceService : IDataPersistenceService, IDataRegistrationService
+    public class DatabasePersistenceService : IDataPersistenceService, IDataRegistrationService, IDisposable
     {
         /// <summary>
         /// Host context for instance
         /// </summary>
         private IServiceProvider m_hostContext;
 
-        // Client registry configuration
+        // Matcher wtp
+        private WaitThreadPool m_threadPool = new WaitThreadPool(Environment.ProcessorCount);
+        // Disposed?
+        private bool m_disposed = false;
+
         private IClientRegistryMergeService m_clientRegistryMerge;
 
         // Notification service
@@ -102,9 +105,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             IComponentPersister pPersister = null;
             if (m_persisters.TryGetValue(forType, out pPersister))
                 return pPersister;
-            #if DEBUG
+#if DEBUG
             Trace.TraceWarning("Can't find a persister for '{0}'", forType);
-            #endif
+#endif
             return null;
         }
 
@@ -147,16 +150,39 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 IComponentPersister instance = ci.Invoke(null) as IComponentPersister;
                 m_persisters.Add(instance.HandlesComponent, instance);
             }
-            
+
         }
-        
+
+        /// <summary>
+        /// Aync mark conflicts code
+        /// </summary>
+        private void MarkConflictsAsync(object state)
+        {
+            Trace.TraceInformation("Performing fuzzy conflict check asynchronously");
+            try
+            {
+                VersionedDomainIdentifier vid = state as VersionedDomainIdentifier;
+                RegistrationEvent hsrEvent = this.GetContainer(vid, true) as RegistrationEvent;
+                var pid = this.m_clientRegistryMerge.FindFuzzyConflicts(hsrEvent);
+
+                Trace.TraceInformation("Post-Update Record matched with {0} records", pid.Count());
+                if (pid.Count() > 0)
+                    this.m_clientRegistryMerge.MarkConflicts(hsrEvent.AlternateIdentifier, pid);
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError(e.ToString());
+            }
+        }
         #region IDataPersistenceService Members
+
 
         /// <summary>
         /// Store a container
         /// </summary>
         public VersionedDomainIdentifier StoreContainer(System.ComponentModel.IContainer storageData, DataPersistenceMode mode)
         {
+            if (m_disposed) throw new ObjectDisposedException("DatabasePersistenceService");
 
             // Merge
             IEnumerable<VersionedDomainIdentifier> pid = null;
@@ -166,26 +192,37 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                 bool fuzzy = false;
                 pid = this.m_clientRegistryMerge.FindIdConflicts(regEvent);
+                
+                
+                // Do we have a match?
                 if (pid.Count() == 0) // if we didn't find any id conflicts go to fuzzy mode
                 {
-                    fuzzy = true;
-                    pid = this.m_clientRegistryMerge.FindFuzzyConflicts(regEvent);
+                    if (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge) // we have to do this now :(
+                    {
+                        fuzzy = true;
+                        pid = this.m_clientRegistryMerge.FindFuzzyConflicts(regEvent);
+                        if (pid.Count() == 1)
+                        {
+                            regEvent.AlternateIdentifier = pid.First();
+                            Trace.TraceInformation("Matched with {0} records (fuzzy={1}, autoOn={2}, updateEx={3})",
+                                   pid.Count(), fuzzy, this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge,
+                                   this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists);
+                            return this.UpdateContainer(regEvent, mode);
+                        }
+                    }
                 }
-
-                Trace.TraceInformation("Matched with {0} records (fuzzy={1}, autoOn={2}, updateEx={3})",
-                       pid.Count(), fuzzy, this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge,
-                       this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists);
-                // If the configuration allows, merge
-                if (pid.Count() == 1 && 
-                    (this.m_clientRegistryConfiguration.Configuration.Registration.AutoMerge ||
-                    !fuzzy && this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists))
+                else if(this.m_clientRegistryConfiguration.Configuration.Registration.UpdateIfExists)
                 {
                     // Update
-                    regEvent.AlternateIdentifier = pid.First();
-                    return this.UpdateContainer(regEvent, mode);
+                    if (pid.Count() == 1)
+                    {
+                        Trace.TraceInformation("Updating record {0} because it matched by identifier", regEvent.Id);
+                        regEvent.AlternateIdentifier = pid.First();
+                        return this.UpdateContainer(regEvent, mode);
+                    }
                 }
             }
-            else 
+            else
                 pid = new List<VersionedDomainIdentifier>();
 
             //// do a sanity check, have we already persisted this record?
@@ -227,7 +264,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                         tx = null;
 
                         // Notify that reconciliation is required and mark merge candidates 
-                        if (this.m_clientRegistryMerge != null)
+                        if (pid.Count() > 0)
                         {
                             this.m_clientRegistryMerge.MarkConflicts(retVal, pid);
                             if (this.m_notificationService != null && pid.Count() != 0)
@@ -236,6 +273,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                                 this.m_notificationService.NotifyReconciliationRequired(list);
                             }
                         }
+                        else if (this.m_clientRegistryMerge != null)
+                            this.m_threadPool.QueueUserWorkItem(this.MarkConflictsAsync, retVal);
 
                         // Notify register
                         if (this.m_notificationService != null && storageData is RegistrationEvent)
@@ -276,6 +315,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public VersionedDomainIdentifier UpdateContainer(System.ComponentModel.IContainer storageData, DataPersistenceMode mode)
         {
+            if (m_disposed) throw new ObjectDisposedException("DatabasePersistenceService");
 
             if (storageData == null)
                 throw new ArgumentNullException("storageData");
@@ -303,7 +343,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     bool isDirectUpdate = false;
 
                     // Is there no event identifier ?
-                    if(hsrEvent.AlternateIdentifier != null && !Decimal.TryParse(hsrEvent.AlternateIdentifier.Identifier, out tryDec))
+                    if (hsrEvent.AlternateIdentifier != null && !Decimal.TryParse(hsrEvent.AlternateIdentifier.Identifier, out tryDec))
                         throw new ArgumentException(String.Format("The identifier '{0}' is not a valid identifier for this repository", hsrEvent.AlternateIdentifier.Identifier));
                     else if (hsrEvent.AlternateIdentifier == null) // The alternate identifier is null ... so we need to look up the registration event to version ... interesting....
                     {
@@ -317,11 +357,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                     // Validate and duplicate the components that are to be loaded as part of the new version
                     var oldHsrEvent = GetContainer(hsrEvent.AlternateIdentifier, true) as RegistrationEvent; // Get the old container
-                    if(oldHsrEvent == null)
+                    if (oldHsrEvent == null)
                         throw new MissingPrimaryKeyException(String.Format("Record {1}^^^&{0}&ISO does not exist", hsrEvent.AlternateIdentifier.Domain, hsrEvent.AlternateIdentifier.Identifier));
 
                     PersonPersister cp = new PersonPersister();
-                    
+
                     // Validate the old record target
                     Person oldRecordTarget = oldHsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person,
                         newRecordTarget = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
@@ -329,6 +369,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     Person verifyRecordTarget = null;
                     if (!isDirectUpdate)
                     {
+                        Trace.TraceInformation("Not Direct update, enriching the Patient Data");
                         int idCheck = 0;
                         while (verifyRecordTarget == null || idCheck > newRecordTarget.AlternateIdentifiers.Count)
                             verifyRecordTarget = cp.GetPerson(conn, null, newRecordTarget.AlternateIdentifiers[idCheck++], true);
@@ -351,14 +392,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
                     // Are we performing a component update? If so the only two components we want freshened are the CommentOn (for adding comments)
                     // and the ReasonFor | OlderVersionOf comment for change summaries
-                    if((hsrEvent.EventClassifier & RegistrationEventType.ComponentEvent) != 0)
+                    if ((hsrEvent.EventClassifier & RegistrationEventType.ComponentEvent) != 0)
                     {
                         for (int i = hsrEvent.XmlComponents.Count - 1; i >= 0; i--)
                             if (((hsrEvent.XmlComponents[i].Site as HealthServiceRecordSite).SiteRoleType & (HealthServiceRecordSiteRoleType.CommentOn | HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf | HealthServiceRecordSiteRoleType.TargetOf)) == 0)
                                 hsrEvent.Remove(hsrEvent.XmlComponents[i]);
                     }
 
-                    
+
                     // Copy over any components that aren't already specified or updated in the new record
                     // Merge the old and new. Sets the update mode appropriately
                     cp.MergePersons(newRecordTarget, oldRecordTarget);
@@ -379,10 +420,23 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     {
                         tx.Commit();
                         tx = null;
+
+                        // Mark conflicts if any are outstanding pointing at the old versionj
+                        if (this.m_clientRegistryMerge != null)
+                        {
+                            var existingConflicts = this.m_clientRegistryMerge.GetConflicts(oldHsrEvent.AlternateIdentifier);
+                            if (existingConflicts.Count() > 0)
+                            {
+                                Trace.TraceInformation("Obsoleting existing conlflicts resolved");
+                                this.m_clientRegistryMerge.ObsoleteConflicts(oldHsrEvent.AlternateIdentifier);
+                            }
+                            this.m_threadPool.QueueUserWorkItem(this.MarkConflictsAsync, retVal);
+                        }
+
                         // Notify register
                         if (this.m_notificationService != null)
                         {
-                            
+
                             if (hsrEvent.Mode == RegistrationEventType.Replace)
                                 this.m_notificationService.NotifyDuplicatesResolved(hsrEvent);
                             else
@@ -392,7 +446,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     else
                         tx.Rollback();
 
-                  
+
                     return retVal;
                 }
                 catch (Exception e)
@@ -432,7 +486,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             subject = new Person()
             {
                 AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
-                Status = StatusType.Normal 
+                Status = StatusType.Normal
             };
             RegistrationEvent query = new RegistrationEvent();
             query.Status = StatusType.Active | StatusType.Obsolete;
@@ -460,11 +514,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             // Get the persister that will handle the HealthServiceRecord type
 
             var persister = m_persisters.Values.FirstOrDefault(o => o is IQueryComponentPersister && (o as IQueryComponentPersister).ComponentTypeOid == containerId.Domain);
-            if(persister == null)
+            if (persister == null)
                 persister = GetPersister(typeof(RegistrationEvent));
 
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
-            
+
             DbUtil.ClearPersistedCache();
 
             if (persister != null)
@@ -478,7 +532,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     //if (containerId.Domain != null && !containerId.Domain.Equals(configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid))
                     //    throw new ArgumentException(String.Format("The record OID '{0}' cannot be retrieved by this repository, expecting OID '{1}'",
                     //        containerId.Domain, configService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid));
-                    if(persister == null)
+                    if (persister == null)
                         throw new ArgumentException(String.Format("The record type OID '{0}' cannot be retrieved by this repository",
                             containerId.Domain));
                     decimal tryDec = default(decimal);
@@ -528,9 +582,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public bool RegisterRecord(IComponent recordComponent, DataPersistenceMode mode)
         {
-            #if DEBUG
+            if (m_disposed) throw new ObjectDisposedException("DatabasePersistenceService");
+
+#if DEBUG
             Trace.TraceInformation("This client registration system does not require registration");
-            #endif
+#endif
 
             return true;
         }
@@ -540,9 +596,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         public VersionedDomainIdentifier[] QueryRecord(IComponent queryParameters)
         {
-            Trace.TraceInformation("Querying for records");
+            if (m_disposed) throw new ObjectDisposedException("DatabasePersistenceService");
+
             // TODO: Store consent policy override if applicable
-            List<VersionedDomainIdentifier> retVal = new List<VersionedDomainIdentifier>(10);
+            List<VersionedDomainIdentifier> retVal = new List<VersionedDomainIdentifier>(30);
+
             ISystemConfigurationService configService = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Get the subject of the query
@@ -564,41 +622,41 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
 
-                         string queryFilterString = String.Format("{0};", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
-                        
-                        cmd.CommandText = queryFilterString;
+                    string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = queryFilterString;
 
-                    
-                        Trace.TraceInformation(cmd.CommandText);
-                        cmd.CommandType = CommandType.Text;
-                        try
+#if DEBUG
+                    Trace.TraceInformation(cmd.CommandText);
+#endif           
+                    try
+                    {
+                        using (IDataReader rdr = cmd.ExecuteReader())
                         {
-                            using (IDataReader rdr = cmd.ExecuteReader())
+                            // Read all results
+                            while (rdr.Read())
                             {
-                                Trace.TraceInformation("{0} records returned by query", rdr.RecordsAffected);
-                                // Read all results
-                                while (rdr.Read())
+
+                                // Id
+                                var id = new VersionedResultIdentifier()
                                 {
-
-                                    // Id
-                                    var id = new VersionedResultIdentifier()
-                                    {
-                                        Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
-                                        Identifier = Convert.ToString(rdr[0]),
-                                        Version = Convert.ToString(rdr[1])
-                                    };
-                                    // Add the ID
-                                    retVal.Add(id);
-
-                                }
+                                    Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
+                                    Identifier = Convert.ToString(rdr[0]),
+                                    Version = Convert.ToString(rdr[1])
+                                };
+                                // Add the ID
+                                retVal.Add(id);
+                                if (retVal.Count % 30 == 29)
+                                    retVal.Capacity += 30;
                             }
+                        }
 
-                        }
-                        catch
-                        {
-                            Trace.TraceInformation("Query in error: {0}", queryFilterString);
-                            throw;
-                        }
+                    }
+                    catch
+                    {
+                        Trace.TraceInformation("Query in error: {0}", queryFilterString);
+                        throw;
+                    }
 
                 }
             }
@@ -612,12 +670,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             }
 
             //retVal.Sort((a, b) => b.Identifier.CompareTo(a.Identifier));
+#if DEBUG
             Trace.TraceInformation("{0} records returned by function", retVal.Count);
+#endif
             return retVal.ToArray();
         }
-        
+
         #endregion
-        
+
         /// <summary>
         /// Get the register
         /// </summary>
@@ -631,6 +691,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             Trace.TraceError("Can't find register for '{0}'", forType);
 #endif
             return null;
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        public void Dispose()
+        {
+            this.m_threadPool.Dispose();
+            this.m_disposed = true;
+
         }
     }
 }

@@ -62,13 +62,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// Get all registrations in the system matching a key
         /// </summary>
         [OperationContract(Action = "GetRegistrations")]
-        RegistrationEventCollection GetRegistrations(Person queryPrototype);
+        RegistrationEventCollection GetRegistrations(Person queryPrototype, int start, int count);
 
         /// <summary>
         /// Get all registrations in the system matching a key
         /// </summary>
         [OperationContract(Action = "RecentActivity")]
-        RegistrationEventCollection GetRecentActivity(TimestampSet range);
+        RegistrationEventCollection GetRecentActivity(TimestampSet range, int start, int count, bool identifierOnly);
 
         /// <summary>
         /// Get registration event
@@ -80,7 +80,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
         /// Get conflicts 
         /// </summary>
         [OperationContract(Action = "GetConflicts")]
-        ConflictCollection GetConflicts();
+        ConflictCollection GetConflicts(int start, int count, bool identifierOnly);
 
         /// <summary>
         /// Get conflicts 

@@ -103,6 +103,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
                 else
                 {
+
                     hsr.VersionIdentifier = CreateHSRVersion(conn, tx, hsr);
                     hsr.AlternateIdentifier.Version = hsr.VersionIdentifier.ToString();
                 }
@@ -188,7 +189,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Parameters
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, (object)hsrEfftTsId ?? DBNull.Value));            
-                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.StringFixedLength, hsr.Status == StatusType.Unknown ? (object)DBNull.Value : hsr.Status.ToString()));
+                cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, hsr.Status == StatusType.Unknown ? (object)DBNull.Value : (int)hsr.Status));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "aut_utc_in", DbType.DateTime, hsr.Timestamp == default(DateTime) ? (object)DBNull.Value : hsr.Timestamp));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "lang_cs_in", DbType.StringFixedLength, (object)hsr.LanguageCode ?? DBNull.Value));
 
@@ -235,7 +236,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "efft_ts_set_id_in", DbType.Decimal, efftTimeId == null ? (object)DBNull.Value : efftTimeId.Value));
             // status code
-            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.String, hsr.Status == null ? (object)DBNull.Value : hsr.Status.ToString()));
+            cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "status_cs_in", DbType.Decimal, hsr.Status == null ? (object)DBNull.Value : (int)hsr.Status));
             // authored time
             cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "aut_utc_in", DbType.DateTime, hsr.Timestamp == default(DateTime) ? (object)DBNull.Value : hsr.Timestamp));
             // language code
@@ -303,7 +304,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     retVal.EventClassifier = (RegistrationEventType)Convert.ToDecimal(reader["hsr_cls"]);
                     retVal.Refuted = Convert.ToBoolean(reader["refuted_ind"]);
                     retVal.Timestamp = DateTime.Parse(Convert.ToString(reader["aut_utc"]));
-                    retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), Convert.ToString(reader["status_cs"]));
+                    retVal.Status = (StatusType)Convert.ToDecimal(reader["status_cs_id"]);
                     tsId = Convert.ToDecimal(reader["efft_ts_set_id"]);
                     cdId = Convert.ToDecimal(reader["evt_typ_cd_id"]);
                     rplcVersionId = reader["rplc_vrsn_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["rplc_vrsn_id"]);
@@ -422,7 +423,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     retVal.EventClassifier = (RegistrationEventType)Convert.ToDecimal(reader["hsr_cls"]);
                     retVal.Refuted = Convert.ToBoolean(reader["refuted_ind"]);
                     retVal.Timestamp = DateTime.Parse(Convert.ToString(reader["aut_utc"]));
-                    retVal.Status = (StatusType)Enum.Parse(typeof(StatusType), Convert.ToString(reader["status_cs"]));
+                    retVal.Status = (StatusType)Convert.ToInt32(reader["status_cs_id"]);
                     rplcVersionId = reader["rplc_vrsn_id"] == DBNull.Value ? default(decimal) : Convert.ToDecimal(reader["rplc_vrsn_id"]);
                     tsId = Convert.ToDecimal(reader["efft_ts_set_id"]);
                     cdId = Convert.ToDecimal(reader["evt_typ_cd_id"]);
@@ -486,27 +487,33 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Get the subject of the query
             //var subjectOfQuery = (data as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
             var hsr = data as RegistrationEvent;
-            // Matching?
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL WHERE OBSLT_UTC IS NULL AND STATUS_CS NOT IN ('Obsolete','Nullified') ");
-            sb.AppendFormat("AND HSR_ID IN (SELECT HSR_ID FROM HSR_TBL WHERE HSR_CLS IN (4, 8)) "); // only registrations
 
+            // Are we actually doing anything with this?
             if (hsr.EffectiveTime != null)
             {
-                // Before and after
-                TimestampPart low = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.LowBound),
-                    high = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.HighBound),
-                    stand = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.Standlone);
-                if (low != null && high != null)
-                    sb.AppendFormat(" AND CRTN_UTC BETWEEN '{0:yyyy-MM-dd HH:mm:ssz}' AND '{1:yyyy-MM-dd HH:mm:ssz}' ", low.Value, high.Value);
-                else if (stand != null)
-                    sb.AppendFormat(" AND CRTN_UTC = '{0:yyyy-MM-dd HH:mm:ssZ}' ", stand.Value);
-                else if(low != null)
-                    sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", low.Value);
-                else if(high != null)
-                    sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", high.Value);
-            }
-            return sb.ToString();
+                // Matching?
+                StringBuilder sb = new StringBuilder("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM HSR_VRSN_TBL INNER JOIN HSR_TBL USING (HSR_ID) WHERE OBSLT_UTC IS NULL AND STATUS_CS_ID NOT IN (16,64) ");
+                sb.AppendFormat("AND HSR_CLS IN (4, 8) "); // only registrations
 
+                if (hsr.EffectiveTime != null)
+                {
+                    // Before and after
+                    TimestampPart low = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.LowBound),
+                        high = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.HighBound),
+                        stand = hsr.EffectiveTime.Parts.Find(o => o.PartType == TimestampPart.TimestampPartType.Standlone);
+                    if (low != null && high != null)
+                        sb.AppendFormat(" AND CRTN_UTC BETWEEN '{0:yyyy-MM-dd HH:mm:ssz}' AND '{1:yyyy-MM-dd HH:mm:ssz}' ", low.Value, high.Value);
+                    else if (stand != null)
+                        sb.AppendFormat(" AND CRTN_UTC = '{0:yyyy-MM-dd HH:mm:ssZ}' ", stand.Value);
+                    else if (low != null)
+                        sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", low.Value);
+                    else if (high != null)
+                        sb.AppendFormat(" AND CRTN_UTC > '{0:yyyy-MM-dd HH:mm:ssZ}' ", high.Value);
+                }
+                return sb.ToString();
+            }
+            else
+                return string.Empty;
         }
 
         #endregion
