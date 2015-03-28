@@ -39,6 +39,7 @@ using MARC.HI.EHRS.SVC.Core.Services;
 using System.Text;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.Everest.Threading;
+using MARC.HI.EHRS.CR.Core;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data
 {
@@ -483,11 +484,25 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             // Create a query based on the person 
             Person subject = hsrEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
-            subject = new Person()
-            {
-                AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
-                Status = StatusType.Normal
-            };
+
+            if (subject.AlternateIdentifiers.Exists(o => o.Domain == configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid))
+                subject = new Person()
+                {
+                    AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers.FindAll(o => o.Domain == configService.OidRegistrar.GetOid(ClientRegistryOids.CLIENT_CRID).Oid)),
+                    Status = StatusType.Normal
+                };
+            else if (subject.AlternateIdentifiers.Exists(o => o is AuthorityAssignedDomainIdentifier))
+                subject = new Person()
+                {
+                    AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers.FindAll(o => o is AuthorityAssignedDomainIdentifier)),
+                    Status = StatusType.Normal
+                };
+            else
+                subject = new Person()
+                {
+                    AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
+                    Status = StatusType.Normal
+                };
             RegistrationEvent query = new RegistrationEvent();
             query.Status = StatusType.Active | StatusType.Obsolete;
             query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);

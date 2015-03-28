@@ -1661,14 +1661,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if(registrationEvent != null) // There should be no query parameters added
                 sb.Append("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM PSN_VRSN_TBL INNER JOIN HSR_VRSN_TBL ON (HSR_VRSN_TBL.HSR_VRSN_ID = PSN_VRSN_TBL.REG_VRSN_ID) ");
             else
-                sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL ");
+                sb.Append("SELECT DISTINCT PSN_VRSN_TBL.PSN_ID, PSN_VRSN_TBL.PSN_VRSN_ID FROM PSN_VRSN_TBL ");
 
             Stack<String> subqueryParms = new Stack<string>();
 
             // Identifiers
             if (personFilter.Id != default(decimal))
             {
-                sb.AppendFormat(" WHERE PSN_ID = {0} ", personFilter.Id);
+                sb.AppendFormat(" WHERE PSN_VRSN_TBL.PSN_ID = {0} ", personFilter.Id);
                 return sb.ToString();
             }
             else if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
