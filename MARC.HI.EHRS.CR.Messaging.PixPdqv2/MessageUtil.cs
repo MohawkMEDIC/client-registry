@@ -62,16 +62,21 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 StringBuilder sb = new StringBuilder("tel:");
 
-                if (v2XTN.CountryCode.Value != null)
-                    sb.AppendFormat("{0}-", v2XTN.CountryCode);
-                if (!v2XTN.PhoneNumber.Value.Contains("-"))
-                    v2XTN.PhoneNumber.Value = v2XTN.PhoneNumber.Value.Insert(3, "-");
-                sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
-                if (v2XTN.Extension.Value != null)
-                    sb.AppendFormat(";ext={0}", v2XTN.Extension);
-
-                if (sb.ToString().EndsWith("tel:"))
-                    retVal = v2XTN.AnyText.Value;
+                try
+                {
+                    if (v2XTN.CountryCode.Value != null)
+                        sb.AppendFormat("{0}-", v2XTN.CountryCode);
+                    if (v2XTN.PhoneNumber != null && v2XTN.PhoneNumber.Value != null && !v2XTN.PhoneNumber.Value.Contains("-"))
+                        v2XTN.PhoneNumber.Value = v2XTN.PhoneNumber.Value.Insert(3, "-");
+                    sb.AppendFormat("{0}-{1}", v2XTN.AreaCityCode, v2XTN.PhoneNumber);
+                    if (v2XTN.Extension.Value != null)
+                        sb.AppendFormat(";ext={0}", v2XTN.Extension);
+                }
+                catch { }
+                
+                if (sb.ToString().EndsWith("tel:") ||
+                    sb.ToString()== "tel:-")
+                    retVal = "tel:" + v2XTN.AnyText.Value;
                 else
                     retVal = sb.ToString();
                 
@@ -517,7 +522,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             NHapi.Model.V25.Datatype.XTN v25instance = new NHapi.Model.V25.Datatype.XTN(instance.Message); 
             XTNFromTel(tel, v25instance);
             for (int i = 0; i < v25instance.Components.Length; i++)
-                if(v25instance.Components[i] is AbstractPrimitive)
+                if(v25instance.Components[i] is AbstractPrimitive && i < instance.Components.Length)
                     (instance.Components[i] as AbstractPrimitive).Value = (v25instance.Components[i] as AbstractPrimitive).Value;
 
         }

@@ -291,16 +291,16 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                 }
 
             // Telecom addresses
-            if(subject.TelecomAddresses != null)
-                foreach (var tel in subject.TelecomAddresses)
-                    if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
-                        MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
-                    else if (tel.Use == "HP")
-                        pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
-                    else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
-                        MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
-                    else if (tel.Use == "WP")
-                        pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
+            //if(subject.TelecomAddresses != null)
+            //    foreach (var tel in subject.TelecomAddresses)
+            //        if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
+            //            MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed));
+            //        else if (tel.Use == "HP")
+            //            pid.GetPhoneNumberHome(pid.PhoneNumberHomeRepetitionsUsed).EmailAddress.Value = tel.Value;
+            //        else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
+            //            MessageUtil.XTNFromTel((MARC.Everest.DataTypes.TEL)tel.Value, pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed));
+            //        else if (tel.Use == "WP")
+            //            pid.GetPhoneNumberBusiness(pid.PhoneNumberBusinessRepetitionsUsed).EmailAddress.Value = tel.Value;
    
             
         }
