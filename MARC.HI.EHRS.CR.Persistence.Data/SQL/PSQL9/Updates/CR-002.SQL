@@ -1,6 +1,6 @@
 ﻿/**
  * Update: CR-002
- * Applies to: 1.0.0.0 
+ * Applies to: 1.1.0.0 
  * Notes:
  *	- Add performance indexes to key merge tables
  *	- Order merge candidates

@@ -1680,10 +1680,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (personFilter.Names != null && personFilter.Names.Count > 0)
                 subqueryParms.Push(BuildFilterNames(personFilter.Names, !forceExact ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
 
-            // Other Identifiers
-            if (personFilter.OtherIdentifiers != null && personFilter.OtherIdentifiers.Count > 0)
-                subqueryParms.Push(BuildFilterIdentifiers(personFilter.OtherIdentifiers));
-
             // Match birth time
             if (personFilter.BirthTime != null)
                 subqueryParms.Push(String.Format("SELECT PSN_ID FROM FIND_PSN_BY_BRTH_TS('{0:yyyy-MM-dd HH:mm:sszz}','{1}')", personFilter.BirthTime.Value, personFilter.BirthTime.Precision));
@@ -1751,6 +1747,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
                 sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", BuildFilterAddress(personFilter.Addresses));
 
+            // Other Identifiers
+            if (personFilter.OtherIdentifiers != null && personFilter.OtherIdentifiers.Count > 0)
+                sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0})", BuildFilterIdentifiers(personFilter.OtherIdentifiers));
+
+
             if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
                 sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
 
@@ -1796,9 +1797,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else
                     retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_TEL('{0}',", tel.Value.Replace("'","''"));
                 if (tel.Use != null)
-                    retVal.AppendFormat("'{0}') ", tel.Use);
+                    retVal.AppendFormat("'{0}')", tel.Use);
                 else
-                    retVal.AppendFormat("NULL) ");
+                    retVal.AppendFormat("NULL)");
                 if (!tel.Equals(telecoms.Last()))
                     retVal.AppendFormat(" UNION ");
             }
