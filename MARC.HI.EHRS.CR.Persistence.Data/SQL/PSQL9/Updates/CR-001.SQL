@@ -579,7 +579,7 @@ CREATE INDEX hsr_tbl_hsr_cls_idx ON hsr_tbl(hsr_cls);
 CREATE OR REPLACE FUNCTION GET_SCH_VER() RETURNS VARCHAR AS
 $$
 BEGIN
-	RETURN '1.0.1.0';
+	RETURN '1.1.0.0';
 END;
 $$ LANGUAGE plpgsql;
 

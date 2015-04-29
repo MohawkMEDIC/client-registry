@@ -131,7 +131,7 @@ namespace ClientRegistryAdmin.Util
             pm.Status = psn.status.ToString();
             pm.VersionId = psn.verId.ToString();
             // Name
-            if (psn.name != null)
+            if (psn.name != null && psn.name[0].part != null)
             {
                 familyNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Family);
                 givenNamePart = psn.name[0].part.FirstOrDefault(o => o.type == NamePartType.Given);
@@ -189,8 +189,14 @@ namespace ClientRegistryAdmin.Util
                 if (mother != null)
                 {
                     pm.MothersId = mother.id.ToString();
-                    familyNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Family);
-                    givenNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Given);
+                    if (mother.legalName != null && mother.legalName.part != null)
+                    {
+                        familyNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Family);
+                        givenNamePart = mother.legalName.part.FirstOrDefault(o => o.type == NamePartType.Given);
+                    }
+                    else
+                        familyNamePart = givenNamePart = new NamePart();
+
                     if (familyNamePart != null)
                         pm.MothersName = familyNamePart.value + ", ";
                     if (givenNamePart != null)
@@ -234,6 +240,8 @@ namespace ClientRegistryAdmin.Util
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
                 var conflicts = client.GetConflicts(offset, count, false);
                 Models.ConflictPatientMatch[] retVal = new ConflictPatientMatch[conflicts.count];
+                if (conflicts == null || conflicts.conflict == null)
+                    return retVal;
                 for (int i = 0; i < conflicts.conflict.Length; i++)
                 {
                     ConflictPatientMatch match = new ConflictPatientMatch();

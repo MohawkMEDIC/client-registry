@@ -82,6 +82,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
             // OID Extensions used
             OidRegistrar.ExtendedAttributes.Add("IsUniqueIdentifier", typeof(bool));
             OidRegistrar.ExtendedAttributes.Add("GloballyAssignable", typeof(bool));
+            OidRegistrar.ExtendedAttributes.Add("IsMergeSurvivor", typeof(bool));
             this.UpdateIfExists = true;
             this.AutoMerge = false;
             this.DefaultMatchStrength = "Strong";

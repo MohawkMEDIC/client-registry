@@ -1661,14 +1661,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if(registrationEvent != null) // There should be no query parameters added
                 sb.Append("SELECT DISTINCT HSR_ID, HSR_VRSN_ID FROM PSN_VRSN_TBL INNER JOIN HSR_VRSN_TBL ON (HSR_VRSN_TBL.HSR_VRSN_ID = PSN_VRSN_TBL.REG_VRSN_ID) ");
             else
-                sb.Append("SELECT DISTINCT PSN_ID, PSN_VRSN_ID FROM PSN_VRSN_TBL ");
+                sb.Append("SELECT DISTINCT PSN_VRSN_TBL.PSN_ID, PSN_VRSN_TBL.PSN_VRSN_ID FROM PSN_VRSN_TBL ");
 
             Stack<String> subqueryParms = new Stack<string>();
 
             // Identifiers
             if (personFilter.Id != default(decimal))
             {
-                sb.AppendFormat(" WHERE PSN_ID = {0} ", personFilter.Id);
+                sb.AppendFormat(" WHERE PSN_VRSN_TBL.PSN_ID = {0} ", personFilter.Id);
                 return sb.ToString();
             }
             else if (personFilter.AlternateIdentifiers != null && personFilter.AlternateIdentifiers.Count > 0)
@@ -1679,10 +1679,6 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Match names
             if (personFilter.Names != null && personFilter.Names.Count > 0)
                 subqueryParms.Push(BuildFilterNames(personFilter.Names, !forceExact ? queryFilter : new QueryParameters() { MatchingAlgorithm = MatchAlgorithm.Exact }));
-
-            // Other Identifiers
-            if (personFilter.OtherIdentifiers != null && personFilter.OtherIdentifiers.Count > 0)
-                subqueryParms.Push(BuildFilterIdentifiers(personFilter.OtherIdentifiers));
 
             // Match birth time
             if (personFilter.BirthTime != null)
@@ -1751,6 +1747,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (personFilter.Addresses != null && personFilter.Addresses.Count > 0)
                 sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", BuildFilterAddress(personFilter.Addresses));
 
+            // Other Identifiers
+            if (personFilter.OtherIdentifiers != null && personFilter.OtherIdentifiers.Count > 0)
+                sb.AppendFormat("AND PSN_VRSN_TBL.PSN_ID IN ({0})", BuildFilterIdentifiers(personFilter.OtherIdentifiers));
+
+
             if (personFilter.RoleCode != (PersonRole.PAT | PersonRole.PRS))
                 sb.AppendFormat("AND ROL_CS = '{0}' ", personFilter.RoleCode.ToString());
 
@@ -1796,9 +1797,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else
                     retVal.AppendFormat("SELECT PSN_ID FROM FIND_PSN_BY_TEL('{0}',", tel.Value.Replace("'","''"));
                 if (tel.Use != null)
-                    retVal.AppendFormat("'{0}') ", tel.Use);
+                    retVal.AppendFormat("'{0}')", tel.Use);
                 else
-                    retVal.AppendFormat("NULL) ");
+                    retVal.AppendFormat("NULL)");
                 if (!tel.Equals(telecoms.Last()))
                     retVal.AppendFormat(" UNION ");
             }

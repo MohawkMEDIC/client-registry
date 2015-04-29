@@ -518,7 +518,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
                 if(ma.AlternateIdentifiers != null && ma.AlternateIdentifiers.Count > 0)
                 {
-                    var altId = personFilter.AlternateIdentifiers[0];
+                    var altId = ma.AlternateIdentifiers[0];
 
                     if (altId.Domain != null)
                     {

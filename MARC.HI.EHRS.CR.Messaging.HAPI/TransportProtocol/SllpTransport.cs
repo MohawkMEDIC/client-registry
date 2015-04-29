@@ -338,6 +338,13 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             try
             {
 
+                // Setup local and remote receive endpoint data for auditing
+                var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
+                Uri localEndpoint = new Uri(String.Format("sllp://{0}:{1}", localEp.Address, localEp.Port));
+                Uri remoteEndpoint = new Uri(String.Format("sllp://{0}:{1}", remoteEp.Address, remoteEp.Port));
+                Trace.TraceInformation("Accepted TCP connection from {0} > {1}", remoteEndpoint, localEndpoint);
+
                 stream.AuthenticateAsServer(this.m_configuration.ServerCertificate, this.m_configuration.EnableClientCertNegotiation, System.Security.Authentication.SslProtocols.Tls, this.m_configuration.CheckCrl);
                 
                 // Now read to a string
@@ -361,7 +368,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                     if (llpByte != START_TX) // first byte must be HT
                     {
-                        Trace.TraceWarning("Invalid LLP First Byte expected 0x{0:x} got 0x{1:x}", START_TX, llpByte);
+                        Trace.TraceWarning("Invalid LLP First Byte expected 0x{0:x} got 0x{1:x} from {2}", START_TX, llpByte, remoteEndpoint);
                         break;
                     }
 //                        throw new InvalidOperationException("Invalid LLP First Byte");
@@ -404,11 +411,6 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
 
                         var message = parser.Parse(messageData.ToString());
 
-                        // Setup local and remote receive endpoint data for auditing
-                        var localEp = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                        var remoteEp = tcpClient.Client.RemoteEndPoint as IPEndPoint;
-                        Uri localEndpoint = new Uri(String.Format("sllp://{0}:{1}", localEp.Address, localEp.Port));
-                        Uri remoteEndpoint = new Uri(String.Format("sllp://{0}:{1}", remoteEp.Address, remoteEp.Port));
 #if DEBUG
                         Trace.TraceInformation("Received message from sllp://{0} : {1}", tcpClient.Client.RemoteEndPoint, messageData.ToString());
 #endif

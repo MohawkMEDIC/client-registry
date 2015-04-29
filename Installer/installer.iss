@@ -3,15 +3,15 @@
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
-AppVerName = MEDIC Client Registry 1.0 CTP
+AppVerName = MEDIC Client Registry 1.1
 #ifdef BUNDLED
 #ifdef x64
-OutputBaseFilename = cr-setup-bundled-x64-1.0-ctp
+OutputBaseFilename = cr-setup-bundled-x64-1.1
 #else
-OutputBaseFilename = cr-setup-bundled-1.0-ctp
+OutputBaseFilename = cr-setup-bundled-1.1
 #endif
 #else
-OutputBaseFilename = cr-setup-standalone-1.0-ctp
+OutputBaseFilename = cr-setup-standalone-1.1
 #endif
 LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
@@ -112,10 +112,10 @@ Source: ..\bin\release\DefaultOids.xml; DestDir: {app}; Flags:ignoreversion; Com
 Source: ..\bin\release\ClientRegistry.en.xml; DestDir: {app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
 Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
-Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin; Components: src
+Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin, obj; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
 Source: ..\MARC.HI.EHRS.CR.Presentation\License.rtf; DestDir: {app};
-
+Source: ..\bin\admin\*.*; DestDir: {app}\admin; Flags: recursesubdirs; Components: opadmin
 [Types]
 Name: full; Description: Complete Installation
 Name: ca; Description: pan-Canadian Client Registry
@@ -136,6 +136,7 @@ Name: msg\rss; Description: Subscription Interface;  Types: full
 Name: msg\fhir; Description: HL7 FHIR DSTU; Types: full pdqm pixall
 Name: notif; Description: PIXv3 Notifications;  Types: full pix pixv3 pixall
 Name: src; Description: Source Code; 
+Name: opadmin; Description: Operations Console; Types: full
 
 [Icons]
 Name: {group}\Client Registry Configuration; FileName: {app}\Configurator.exe; Components:core

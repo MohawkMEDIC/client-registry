@@ -130,7 +130,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         bool isPrivate = false;
                         var oidData = ApplicationContext.ConfigurationService.OidRegistrar.FindData(id.Domain);
                         if (oidData != null)
-                            isPrivate = oidData.Attributes.Exists(o => o.Key == "IsUniqueIdentifier") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value);
+                            isPrivate = !(oidData.Attributes.Exists(o => o.Key == "IsMergeSurvivor") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsMergeSurvivor").Value));
 
                         // Add to alternate identifiers
                         dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         bool isPrivate = false;
                         var oidData = ApplicationContext.ConfigurationService.OidRegistrar.FindData(id.Domain);
                         if (oidData != null)
-                            isPrivate = oidData.Attributes.Exists(o => o.Key == "IsUniqueIdentifier") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsUniqueIdentifier").Value);
+                            isPrivate = !(oidData.Attributes.Exists(o => o.Key == "IsMergeSurvivor") && Convert.ToBoolean(oidData.Attributes.Find(o => o.Key == "IsMergeSurvivor").Value));
 
                         dbCntrPsn.AlternateIdentifiers.Add(new SVC.Core.DataTypes.DomainIdentifier()
                         {
