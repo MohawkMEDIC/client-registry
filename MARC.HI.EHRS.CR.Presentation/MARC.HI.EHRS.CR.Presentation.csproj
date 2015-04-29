@@ -132,13 +132,6 @@
     <Reference Include="NauckIT.PostgreSQLProvider">
       <HintPath>..\Solution Items\NauckIT.PostgreSQLProvider.dll</HintPath>
     </Reference>
-    <Reference Include="Npgsql, Version=2.0.11.91, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Solution Items\Npgsql.dll</HintPath>
-    </Reference>
-    <Reference Include="policy.2.0.Npgsql">
-      <HintPath>..\Solution Items\policy.2.0.Npgsql.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core">

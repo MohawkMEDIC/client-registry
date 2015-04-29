@@ -264,7 +264,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var config = context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             IMessage ack = errType.GetConstructor(Type.EmptyTypes).Invoke(null) as IMessage;
-            
+
+            Trace.TraceError("Validation Errors:");
+            errors.ForEach(o => Trace.TraceError("\t{0} : {1}", o.Type, o.Message));
+
             Terser terser = new Terser(ack);
             MessageUtil.UpdateMSH(terser, request, config);
             int errLevel = 0;

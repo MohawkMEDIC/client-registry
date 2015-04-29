@@ -106,6 +106,24 @@
         <xsl:call-template name="role"/>
         <div class="row">
           <div class="col-md-3">
+            <strong>Identifier:</strong>
+          </div>
+          <div class="col-md-9">
+              <xsl:for-each select="marc:altId">
+                <xsl:call-template name="id"/>
+              </xsl:for-each>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <strong>Created On:</strong>
+          </div>
+          <div class="col-md-9">
+            <xsl:value-of select="marc:effectiveTime/marc:part[@type='Standlone']/marc:value/text()"/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
             <strong>Change Type:</strong>
           </div>
           <div class="col-md-9">
@@ -114,6 +132,7 @@
             </span>
           </div>
         </div>
+
         <xsl:if test="./*[@id and ./marc:hsrSite]">
           <div class="row">
             <div class="col-md-12">
