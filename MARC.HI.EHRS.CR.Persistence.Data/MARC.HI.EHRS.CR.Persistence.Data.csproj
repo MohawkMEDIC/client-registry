@@ -71,6 +71,12 @@
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
+    <Compile Include="Configuration\UI\frmDatabaseUpdateConfirmation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Configuration\UI\frmDatabaseUpdateConfirmation.Designer.cs">
+      <DependentUpon>frmDatabaseUpdateConfirmation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Configuration\UI\PersistenceConfigurationPanel.cs" />
     <Compile Include="Configuration\UI\pnlConfigureDatabase.cs">
       <SubType>UserControl</SubType>
@@ -119,16 +125,26 @@
     <Content Include="SQL\PSQL9\Updates\CR-001.SQL">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SQL\PSQL9\Updates\CR-001.update.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SQL\PSQL9\Updates\CR-002.SQL">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="SQL\PSQL9\Updates\CR-003.SQL" />
-    <Content Include="SQL\PSQL9\Updates\cr.xml">
-      <SubType>Designer</SubType>
+    <Content Include="SQL\PSQL9\Updates\CR-002.update.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\Updates\CR-003.SQL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\PSQL9\Updates\CR-003.update.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Configuration\UI\frmDatabaseUpdateConfirmation.resx">
+      <DependentUpon>frmDatabaseUpdateConfirmation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Configuration\UI\pnlConfigureDatabase.resx">
       <DependentUpon>pnlConfigureDatabase.cs</DependentUpon>
     </EmbeddedResource>

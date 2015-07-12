@@ -45,7 +45,7 @@ Source: .\installsupp\postgresql-9.2.4-1-windows-x64.exe; DestDir: {tmp}; Flags:
 Source: .\installsupp\postgresql-9.2.4-1-windows.exe; DestDir: {tmp}; Flags:dontcopy
 #endif
 #endif
-Source: .\installsupp\dotNetFx40_Full_setup.exe; DestDir: {tmp} ; Flags: dontcopy
+Source: .\installsupp\dotNetFx45_Full_setup.exe; DestDir: {tmp} ; Flags: dontcopy
 
 ; SetupMARC.Everest.Connectors.WCF.dll
 Source: ..\bin\release\Config\Everest\PDQ.etpl; DestDir: {app}\config\everest; Flags:ignoreversion; Components:msg\pixv3
@@ -232,7 +232,7 @@ var
   txtPostgresSU, txtPostgresSUPass : TEdit;
 
 const
-  dotnetRedistURL = '{tmp}\dotNetFx40_Full_setup.exe';
+  dotnetRedistURL = '{tmp}\dotNetFx45_Full_setup.exe';
   // local system for testing...
   // dotnetRedistURL = 'http://192.168.1.1/dotnetfx.exe';
 
@@ -245,13 +245,13 @@ begin
   dotNetNeeded := false;
 
   
-  if(not DirExists(ExpandConstant('{win}\Microsoft.NET\Framework\v4.0.30319'))) then begin
+  if(not DirExists(ExpandConstant('{dotnet40}'))) then begin
     dotNetNeeded := true;
     if (not IsAdminLoggedOn()) then begin
-      MsgBox('GPMR needs the Microsoft .NET Framework 4 to be installed by an Administrator', mbInformation, MB_OK);
+      MsgBox('Client Registry needs the Microsoft .NET Framework 4.5 to be installed by an Administrator', mbInformation, MB_OK);
       Result := false;
     end else begin
-      memoDependenciesNeeded := memoDependenciesNeeded + '      .NET Framework 4' #13;
+      memoDependenciesNeeded := memoDependenciesNeeded + '      .NET Framework 4.5' #13;
     end;
   end;
 
@@ -286,15 +286,15 @@ begin
       end;
     #endif
     if (Result = '') and (dotNetNeeded = true) then begin
-      ExtractTemporaryFile('dotNetFx40_Full_setup.exe');
+      ExtractTemporaryFile('dotNetFx45_Full_setup.exe');
       if Exec(ExpandConstant(dotnetRedistURL), '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
           // handle success if necessary; ResultCode contains the exit code
           if not (ResultCode = 0) then begin
-            Result := '.NET Framework 4 is Required';
+            Result := '.NET Framework 4.5 is Required';
           end;
         end else begin
           // handle failure if necessary; ResultCode contains the error code
-            Result := '.NET Framework 4 is Required';
+            Result := '.NET Framework 4.5 is Required';
         end;
     end;
 

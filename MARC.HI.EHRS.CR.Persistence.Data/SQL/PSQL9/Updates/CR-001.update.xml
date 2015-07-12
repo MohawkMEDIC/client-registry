@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<update xmlns="urn:marc-hi:svc:configuration" verFunction="get_sch_ver" id="CR-001" from="1.0.0.0" to="1.1.0.0">
+  <description>General update from 1.0.0.0 of the ClientRegistry to 1.1.0.0</description>
+  <install file="CR-001.SQL"/>
+  <uninstall file="CR-001-CLEAN.SQL"/>
+</update>
+

@@ -179,7 +179,7 @@
     <Content Include="install-small.bmp" />
     <Content Include="install.bmp" />
     <Content Include="installer.iss" />
-    <Content Include="installsupp\dotNetFx40_Full_setup.exe" />
+    <Content Include="installsupp\dotNetFx45_Full_setup.exe" />
     <Content Include="installsupp\postgresql-9.2.4-1-windows-x64.exe" />
     <Content Include="installsupp\postgresql-9.2.4-1-windows.exe" />
   </ItemGroup>

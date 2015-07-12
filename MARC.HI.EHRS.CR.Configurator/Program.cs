@@ -53,6 +53,7 @@ namespace MARC.HI.EHRS.CR.Configurator
 
                 StringBuilder argString = new StringBuilder();
 
+#if !DEBUG
                 WindowsIdentity identity = WindowsIdentity.GetCurrent();
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
@@ -66,6 +67,7 @@ namespace MARC.HI.EHRS.CR.Configurator
                     Application.Exit();
                     return;
                 }
+#endif 
 
                 // Scan for configuration options
                 ScanAndLoadPluginFiles();
