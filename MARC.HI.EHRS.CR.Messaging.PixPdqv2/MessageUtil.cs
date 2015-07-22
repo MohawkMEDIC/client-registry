@@ -30,6 +30,7 @@ using NHapi.Base.validation.impl;
 using NHapi.Base.Parser;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {

@@ -20,20 +20,14 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Gets a list of details 
         /// </summary>
-        public List<IResultDetail> Detals { get; private set; }
-
-        /// <summary>
-        /// Issues detected
-        /// </summary>
-        public List<DetectedIssue> Issues { get; private set; }
+        public List<IResultDetail> Details { get; private set; }
 
         /// <summary>
         /// Registry result
         /// </summary>
         public RegistryResult()
         {
-            this.Detals = new List<IResultDetail>();
-            this.Issues = new List<DetectedIssue>();
+            this.Details = new List<IResultDetail>();
         }
     }
 
@@ -57,7 +51,7 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Gets or sets the results for the query
         /// </summary>
-        public RegistrationEvent[] Results { get; set; }
+        public List<RegistrationEvent> Results { get; set; }
         /// <summary>
         /// Gets or sets the total results for the query
         /// </summary>
@@ -122,8 +116,8 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Specifies the maximum number of query results to return fro mthe ffunction
         /// </summary>
-        [XmlAttribute("qty")]
-        public int Quantity { get; set; }
+        [XmlAttribute("limit")]
+        public int Limit { get; set; }
 
         /// <summary>
         /// Represents the original query component that is being used to query
@@ -142,6 +136,13 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// </summary>
         [XmlIgnore]
         public List<VersionedDomainIdentifier> RecordIds { get; set; }
+
+        /// <summary>
+        /// Offset of the query result
+        /// </summary>
+        [XmlAttribute("offset")]
+        public int Offset { get; set; }
+
 
         /// <summary>
         /// Represent the QD as string
@@ -165,6 +166,7 @@ namespace MARC.HI.EHRS.CR.Core.Services
             sr.Close();
             return retVal;
         }
+
     }
 
     /// <summary>
@@ -172,6 +174,10 @@ namespace MARC.HI.EHRS.CR.Core.Services
     /// </summary>
     public class RegistryStoreResult : RegistryResult
     {
+        /// <summary>
+        /// Gets or sets the version identifier created
+        /// </summary>
+        public VersionedDomainIdentifier VersionId { get; set; }
     }
 
     /// <summary>
@@ -199,12 +205,27 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Merge the registry store data together
         /// </summary>
-        RegistryStoreResult Merge(RegistrationEvent survivor, List<RegistrationEvent> obsolete, DataPersistenceMode mode);
+        /// <remarks>
+        /// Performs the necessary steps to link the subject of the mergeEvent to the obsolete records. The structure 
+        /// of these components shall be:
+        /// 
+        /// RegistrationEvent
+        ///  -- (subjectOf) -> Person
+        ///                      -- (replacementOf) -> PersonRegistrationRef
+        ///                      -- (replacementOf) -> PersonRegistrationRef
+        ///  -- (subjectOf) -> Person
+        ///                      -- (replacementOf) -> PersonRegistrationRef
+        ///                      -- (replacementOf) -> PersonRegistrationRef
+        /// </remarks>
+        RegistryStoreResult Merge(RegistrationEvent mergeEvent, DataPersistenceMode mode);
 
         /// <summary>
         /// Unmerge the registry store
         /// </summary>
-        RegistryStoreResult UnMerge(RegistrationEvent evt, DataPersistenceMode mode);
+        /// <remarks>
+        /// Separates the subjectOf in the unmergeEvent from an original version association on a person object in the client registry database 
+        /// </remarks>
+        RegistryStoreResult UnMerge(RegistrationEvent unmergeEvent, DataPersistenceMode mode);
 
     }
 }

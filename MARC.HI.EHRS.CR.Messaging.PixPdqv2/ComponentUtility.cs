@@ -32,6 +32,8 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Text.RegularExpressions;
 using MARC.HI.EHRS.CR.Core;
 using System.Diagnostics;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -243,7 +245,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create query components for the specified request
         /// </summary>
-        internal QueryData CreateQueryComponents(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
+        internal RegistryQueryRequest CreateQueryComponents(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
         {
             // Validate the segments
             var msh = request.MSH;
@@ -263,7 +265,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PIX Query", false, "QPD^1"));
 
             // Return value
-            QueryData retVal = new QueryData()
+            RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
                 QueryRequest = new RegistrationEvent()
                 {
@@ -274,7 +276,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         Identifier = msh.MessageControlID.Value
                     }
                 },
-                Quantity = 1,
+                Limit = 1,
+                Offset = 0,
                 ResponseMessageType = "RSP_K23"
             };
 
@@ -345,22 +348,20 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 retVal.QueryTag = retVal.QueryId;
 
 
-            retVal.Quantity = 100;
+            retVal.Limit = 100;
             retVal.IsSummary = true;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
             
-
-
-
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return QueryData.Empty;
+                return null;
+
             return retVal;
         }
 
         /// <summary>
         /// Create query components for the PDQ message
         /// </summary>
-        internal QueryData CreateQueryComponentsPdq(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
+        internal RegistryQueryRequest CreateQueryComponentsPdq(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
         {
             // Validate the segments
             var msh = request.MSH;
@@ -382,7 +383,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             
             // Return value
-            QueryData retVal = new QueryData()
+            RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
                 QueryRequest = new RegistrationEvent()
                 {
@@ -489,7 +490,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                                 if (qip2 != "ISO")
                                                 {
                                                     dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE05B"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
-                                                    return QueryData.Empty;
+                                                    return null;
                                                 }
                                                 break;
                                         }
@@ -517,7 +518,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                                 if (qip2 != "ISO")
                                                 {
                                                     dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE05B"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
-                                                    return QueryData.Empty;
+                                                    return null;
                                                 }
                                                 break;
                                         }
@@ -729,11 +730,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
 
             // Get RCP which controls the initial quantity
-            retVal.Quantity = 100;
+            retVal.Limit = 100;
             if (rcp != null)
             {
                 if (!String.IsNullOrEmpty(rcp.QuantityLimitedRequest.Quantity.Value))
-                    retVal.Quantity = Int32.Parse(rcp.QuantityLimitedRequest.Quantity.Value);
+                    retVal.Limit = Int32.Parse(rcp.QuantityLimitedRequest.Quantity.Value);
                  
             }
 
@@ -744,6 +745,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 retVal.QueryId = dsc.ContinuationPointer.Value;
                 retVal.IsContinue = true;
+                retVal.Offset = -1;
             }
             else
                 retVal.QueryId = Guid.NewGuid().ToString();
@@ -758,7 +760,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
             
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return QueryData.Empty;
+                return null;
             return retVal;
         }
 
@@ -1232,8 +1234,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 // Add to subject
                 retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-            }
 
+                break;
+            }
 
             // Add author information (facility)
             RepositoryDevice dev = new RepositoryDevice();
@@ -1243,7 +1246,6 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
                 dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
             retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
-
 
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 return null;

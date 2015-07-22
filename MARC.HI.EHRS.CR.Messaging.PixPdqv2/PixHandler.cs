@@ -33,6 +33,8 @@ using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using MARC.HI.EHRS.CR.Core.Services;
 using NHapi.Model.V25.Message;
 using NHapi.Base.Parser;
+using MARC.HI.EHRS.CR.Core.Data;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -156,6 +158,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var dataService = this.Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -170,7 +173,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 return null;
 
             // Data controller
-            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            //DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            AuditUtil auditUtil = new AuditUtil() { Context = this.Context };
+
             // Construct appropriate audit
             List<AuditData> audit = new List<AuditData>();
             try
@@ -183,9 +188,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data == null)
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                // Merge
+                var result = dataService.Merge(data, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
 
-                if (vid == null)
+                if (result == null || result.VersionId == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
 
                 List<VersionedDomainIdentifier> deletedRecordIds = new List<VersionedDomainIdentifier>(),
@@ -207,8 +213,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
 
                 // Now audit
-                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.Success, evt, deletedRecordIds));
-                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Update, OutcomeIndicator.Success, evt, updatedRecordIds));
+                audit.Add(auditUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.Success, evt, deletedRecordIds));
+                audit.Add(auditUtil.CreateAuditData("ITI-8", ActionType.Update, OutcomeIndicator.Success, evt, updatedRecordIds));
                 // Now process the result
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
@@ -221,7 +227,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
-                audit.Add(dataUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty));
+                audit.Add(auditUtil.CreateAuditData("ITI-8", ActionType.Delete, OutcomeIndicator.EpicFail, evt, new List<VersionedDomainIdentifier>()));
             }
             finally
             {
@@ -241,6 +247,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var dataService = this.Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -255,7 +262,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 return null;
 
             // Data controller
-            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            //DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            AuditUtil auditUtil = new AuditUtil() { Context = this.Context };
+
             // Construct appropriate audit
             AuditData audit = null;
             try
@@ -268,12 +277,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data == null)
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                var vid = dataUtil.Update(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                var result = dataService.Update(data, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
 
-                if (vid == null)
+                if (result == null || result.VersionId == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
 
-                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
+                dtls.AddRange(result.Details);
+                audit = auditUtil.CreateAuditData("ITI-8", result.VersionId.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { result.VersionId });
                 // Now process the result
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
                 MessageUtil.UpdateMSH(new NHapi.Base.Util.Terser(response), request, config);
@@ -286,7 +296,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
-                audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+                audit = auditUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, new List<VersionedDomainIdentifier>());
             }
             finally
             {
@@ -305,7 +315,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
-
+            var dataService = this.Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
 
@@ -319,7 +329,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 return null;
 
             // Data controller
-            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            AuditUtil auditUtil = new AuditUtil() { Context = this.Context };
+            //DataUtil dataUtil = new DataUtil() { Context = this.Context };
+
             // Construct appropriate audit
             AuditData audit = null;
             try
@@ -332,12 +344,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (data == null)
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
-                var vid = dataUtil.Register(data, dtls, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
-
-                if (vid == null)
+                var result = dataService.Register(data, request.MSH.ProcessingID.ProcessingID.Value == "P" ? DataPersistenceMode.Production : DataPersistenceMode.Debugging);
+                if (result == null || result.VersionId == null)
                     throw new InvalidOperationException(locale.GetString("DTPE001"));
-              
-                audit = dataUtil.CreateAuditData("ITI-8", vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { vid });
+
+                dtls.AddRange(result.Details);
+
+                audit = auditUtil.CreateAuditData("ITI-8", result.VersionId.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create, OutcomeIndicator.Success, evt, new List<VersionedDomainIdentifier>() { result.VersionId });
 
                 // Now process the result
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
@@ -351,7 +364,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 if (!dtls.Exists(o => o.Message == e.Message || o.Exception == e))
                     dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
                 response = MessageUtil.CreateNack(request, dtls, this.Context, typeof(NHapi.Model.V231.Message.ACK));
-                audit = dataUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+                audit = auditUtil.CreateAuditData("ITI-8", ActionType.Create, OutcomeIndicator.EpicFail, evt, new List<VersionedDomainIdentifier>());
             }
             finally
             {
@@ -371,6 +384,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var dataService = this.Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -388,7 +402,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             AuditData audit = null;
 
             // Data controller
-            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            AuditUtil auditUtil = new AuditUtil() { Context = this.Context };
+            //DataUtil dataUtil = new DataUtil() { Context = this.Context };
 
             try
             {
@@ -398,12 +413,13 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
                 var data = cu.CreateQueryComponents(request, dtls);
                 
-                if (data.Equals(QueryData.Empty))
+                if (data == null)
                     throw new InvalidOperationException(locale.GetString("MSGE00A"));
 
                 
-                QueryResultData result = dataUtil.Query(data, dtls);
-                audit = dataUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.Success, evt, result);
+                RegistryQueryResult result = dataService.Query(data);
+                dtls.AddRange(result.Details);
+                audit = auditUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result
                 response = dcu.CreateRSP_K23(result, dtls);
@@ -447,7 +463,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 errTerser.Set("/QAK-2", "AE");
                 errTerser.Set("/MSA-1", "AE");
                 errTerser.Set("/QAK-1", request.QPD.QueryTag.Value);
-                audit = dataUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+                audit = auditUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.EpicFail, evt, new List<VersionedDomainIdentifier>());
             }
             finally
             {

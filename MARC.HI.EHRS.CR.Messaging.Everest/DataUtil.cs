@@ -130,13 +130,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             // Target (filter) identifiers for clients
             private List<DomainIdentifier> m_targetIds;
 
-
             /// <summary>
             /// True if the query is a summary query
             /// </summary>
             [XmlAttribute]
             public bool IsSummary { get; set; }
-
             
             /// <summary>
             /// Gets or sets the query id for the query 
