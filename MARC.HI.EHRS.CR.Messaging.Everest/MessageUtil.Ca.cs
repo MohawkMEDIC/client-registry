@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 4-9-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -37,6 +37,8 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Issues;
 using MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA;
 using MARC.HI.EHRS.SVC.Core;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -237,8 +239,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
             if (sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Sender information is missing from message", null));
-            else if (!config.IsRegisteredDevice(new DomainIdentifier() { Domain = sndr.Device.Id.Root, Identifier = sndr.Device.Id.Extension }))
-                dtls.Add(new UnrecognizedSenderResultDetail(sndr));
+            else {
+                var sndrId = new DomainIdentifier() { Domain = sndr.Device.Id.Root, Identifier = sndr.Device.Id.Extension };
+                if (!config.IsRegisteredDevice(sndrId))
+                    dtls.Add(new UnrecognizedSenderResultDetail(sndrId));
+            }
 
         }
 
@@ -261,14 +266,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create query data structure 
         /// </summary>
-        public static DataUtil.QueryData CreateQueryData<T>(QueryByParameter<T> queryByParameter, string originator)
+        public static RegistryQueryRequest CreateQueryData<T>(QueryByParameter<T> queryByParameter, string originator)
         {
-            return  new DataUtil.QueryData()
+            return new RegistryQueryRequest()
             {
                 QueryId = String.Format("{1}^^^&{0}&ISO", queryByParameter.QueryId.Root, queryByParameter.QueryId.Extension),
-                IncludeHistory = false,
-                IncludeNotes = false,
-                Quantity = (int)(queryByParameter.InitialQuantity ?? new INT(100)),
+                IsSummary = true,
+                Limit = (int)(queryByParameter.InitialQuantity ?? new INT(100)),
                 Originator = originator
             };
         }

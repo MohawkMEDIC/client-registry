@@ -334,7 +334,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (retVal.TargetDomain == null) retVal.TargetDomain = new List<DomainIdentifier>();
                     var dmn = CreateDomainIdentifier(rid, dtls);
                     if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
-                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale));
+                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale, "QPD^1^4^"));
                     retVal.TargetDomain.Add(dmn);
                 }
             }
@@ -724,7 +724,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (retVal.TargetDomain == null) retVal.TargetDomain = new List<DomainIdentifier>();
                     var dmn = CreateDomainIdentifier(rid, dtls);
                     if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p => p.Key.Equals("AssigningAuthorityName")))
-                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale));
+                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale, "QPD^1^4^"));
                     retVal.TargetDomain.Add(dmn);
                 }
             }

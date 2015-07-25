@@ -1,4 +1,22 @@
-﻿using System;
+﻿/**
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you 
+ * may not use this file except in compliance with the License. You may 
+ * obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ * 
+ * User: Justin
+ * Date: 22-7-2015
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +33,8 @@ using System.Security;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using System.Threading;
+using System.Diagnostics;
+using MARC.HI.EHRS.SVC.Core.Issues;
 
 namespace MARC.HI.EHRS.CR.Core.Data
 {
@@ -41,7 +61,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
         private ISystemConfigurationService m_configService; // config service
         private IClientRegistryConfigurationService m_clientRegistryConfigService;
         private ISubscriptionManagementService m_subscriptionService;
-
+        
         /// <summary>
         /// Gets or sets the context of the host
         /// </summary>
@@ -83,7 +103,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
 
 
                 // Read the record from the DB
-                var result = this.m_persistenceService.GetContainer(recordId, true) as RegistrationEvent;
+                var result = this.m_persistenceService.GetContainer(recordId, qd.IsSummary) as RegistrationEvent;
 
                 // Does this result match what we're looking for?
                 if (result == null)
@@ -122,7 +142,8 @@ namespace MARC.HI.EHRS.CR.Core.Data
                         dtls.Add(new DetectedIssueResultDetail(
                                     ResultDetailType.Warning,
                                     itm.Text,
-                                    (string)null));
+                                    (string)null,
+                                    itm));
                 }
 
                 return result;
@@ -167,7 +188,8 @@ namespace MARC.HI.EHRS.CR.Core.Data
                                 dtls.Add(new DetectedIssueResultDetail(
                                     itm.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : itm.Priority == SVC.Core.Issues.IssuePriorityType.Warning ? ResultDetailType.Warning : ResultDetailType.Information,
                                     itm.Text,
-                                    (string)null));
+                                    (string)null, 
+                                    itm));
 
                         var result = this.GetRecord(parm as VersionedDomainIdentifier, mDtls, qd);
 
@@ -181,7 +203,8 @@ namespace MARC.HI.EHRS.CR.Core.Data
                                     dtls.Add(new DetectedIssueResultDetail(
                                         itm.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : itm.Priority == SVC.Core.Issues.IssuePriorityType.Warning ? ResultDetailType.Warning : ResultDetailType.Information,
                                         itm.Text,
-                                        (String)null));
+                                        (String)null,
+                                        itm));
 
                             // Add to the results
                             lock (this.m_syncLock)
@@ -196,7 +219,14 @@ namespace MARC.HI.EHRS.CR.Core.Data
                             dtls.Add(new DetectedIssueResultDetail(
                                 ResultDetailType.Warning,
                                 String.Format("Record '{1}^^^&{0}&ISO' will not be retrieved", id.Domain, (parm as VersionedDomainIdentifier).Identifier),
-                                (string)null));
+                                (string)null,
+                                new DetectedIssue()
+                                {
+                                    Priority = IssuePriorityType.Warning,
+                                    Severity = IssueSeverityType.Moderate,
+                                    Text = String.Format("Record '{1}^^^&{0}&ISO' will not be retrieved", id.Domain, (parm as VersionedDomainIdentifier).Identifier),
+                                    Type = IssueType.DetectedIssue
+                                }));
 
                         // Are we disclosing this record?
                         if (result == null || result.IsMasked)
@@ -256,6 +286,8 @@ namespace MARC.HI.EHRS.CR.Core.Data
 
                     // Validate the sender
                     RegistryQueryRequest queryTag = (RegistryQueryRequest)this.m_queryPersistence.GetQueryTag(query.QueryId);
+
+                    retVal.OriginalRequestId = queryTag.OriginalMessageQueryId;
                     if (query.Originator != queryTag.Originator)
                     {
                         retVal.Details.Add(new UnrecognizedSenderResultDetail(new DomainIdentifier() { Domain = query.Originator }));
@@ -321,24 +353,243 @@ namespace MARC.HI.EHRS.CR.Core.Data
             }
         }
 
+        /// <summary>
+        /// Register a patient in the client registry data persistence layer
+        /// </summary>
         public RegistryStoreResult Register(ComponentModel.RegistrationEvent evt, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            RegistryStoreResult retVal = new RegistryStoreResult();
+            try
+            {
+
+                // Can't find persistence
+                if (this.m_persistenceService == null)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Couldn't locate an implementation of a PersistenceService object, storage is aborted", null));
+                    return null;
+                }
+                else if (evt == null)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Can't register null health service record data", null));
+                    return null;
+                }
+                else if (retVal.Details.Count(o => o.Type == ResultDetailType.Error) > 0)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist invalid message", null));
+                    return null;
+                }
+
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    foreach (var iss in this.m_decisionSupportService.RecordPersisting(evt))
+                        retVal.Details.Add(new ResultDetail(iss.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : ResultDetailType.Warning, iss.Text, null, null));
+
+                // Any errors?
+                if (retVal.Details.Count(o => o.Type == ResultDetailType.Error) > 0)
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist message due to detected issues", null));
+
+                // Persist
+                retVal.VersionId = this.m_persistenceService.StoreContainer(evt, mode);
+                retVal.VersionId.UpdateMode = UpdateModeType.Add;
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    this.m_decisionSupportService.RecordPersisted(evt);
+
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(evt);
+
+                // Register the document set if it is a document
+                if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(evt, mode))
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
+
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (ConstraintException ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            return retVal;
         }
 
+        /// <summary>
+        /// Update the registration event
+        /// </summary>
         public RegistryStoreResult Update(ComponentModel.RegistrationEvent evt, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            RegistryStoreResult retVal = new RegistryStoreResult();
+
+
+            try
+            {
+
+                // Can't find persistence
+                if (this.m_persistenceService == null)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Couldn't locate an implementation of a PersistenceService object, storage is aborted", null));
+                    return null;
+                }
+                else if (evt == null)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Can't register null health service record data", null));
+                    return null;
+                }
+                else if (retVal.Details.Count(o => o.Type == ResultDetailType.Error) > 0)
+                {
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist invalid message", null));
+                    return null;
+                }
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    foreach (var iss in this.m_decisionSupportService.RecordPersisting(evt))
+                        retVal.Details.Add(new DetectedIssueResultDetail(iss.Priority == SVC.Core.Issues.IssuePriorityType.Error ? ResultDetailType.Error : ResultDetailType.Warning, iss.Text, (string)null, iss));
+
+                // Any errors?
+                if (retVal.Details.Count(o => o.Type == ResultDetailType.Error) > 0)
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, "Won't attempt to persist message due to detected issues", null));
+
+                // Persist
+                retVal.VersionId = this.m_persistenceService.UpdateContainer(evt, mode);
+
+                retVal.VersionId.UpdateMode = UpdateModeType.Update;
+
+                // Call the dss
+                if (this.m_decisionSupportService != null)
+                    this.m_decisionSupportService.RecordPersisted(evt);
+
+                // Call sub
+                if (this.m_subscriptionService != null)
+                    this.m_subscriptionService.PublishContainer(evt);
+
+                // Register the document set if it is a document
+                if (retVal != null && this.m_registrationService != null && !this.m_registrationService.RegisterRecord(evt, mode))
+                    retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Warning, "Wasn't able to register event in the event registry, event exists in repository but not in registry. You may not be able to query for this event", null));
+
+            }
+            catch (DuplicateNameException ex) // Already persisted stuff
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (MissingPrimaryKeyException ex) // Already persisted stuff
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (ConstraintException ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, m_localeService.GetString("DTPE005"), ex));
+            }
+            catch (Exception ex)
+            {
+                retVal.Details.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            return retVal;
         }
 
+        /// <summary>
+        /// Ensures an update event is properly represented for a merge
+        /// </summary>
         public RegistryStoreResult Merge(ComponentModel.RegistrationEvent mergeEvent, SVC.Core.Services.DataPersistenceMode mode)
         {
-            throw new NotImplementedException();
+            mergeEvent.EventClassifier = RegistrationEventType.Register;
+            mergeEvent.Mode = RegistrationEventType.Replace;
+
+            // A merge must have at least one subjectOf
+            var subjectOf = mergeEvent.FindAllComponents(HealthServiceRecordSiteRoleType.SubjectOf);
+            if (subjectOf.Count == 0)
+                throw new ArgumentException("mergeEvent", "Merge event must have at least one subjectOf component");
+
+            // Each subjectOf shall have a replacement
+            foreach(Person cntr in subjectOf)
+            {
+                var rplc = cntr.FindAllComponents(HealthServiceRecordSiteRoleType.ReplacementOf).OfType<PersonRegistrationRef>();
+                if (rplc.Count() == 0)
+                    throw new InvalidOperationException("Merge subjectOf has no replacement marker");
+            }
+
+            return this.Update(mergeEvent, mode);
         }
 
         public RegistryStoreResult UnMerge(ComponentModel.RegistrationEvent evt, SVC.Core.Services.DataPersistenceMode mode)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Get discrete records by id
+        /// </summary>
+        public RegistryQueryResult Get(VersionedDomainIdentifier[] regEvtIds, RegistryQueryRequest qd)
+        {
+
+            RegistryQueryResult retVal = new RegistryQueryResult();
+
+            try
+            {
+
+                List<VersionedDomainIdentifier> retRecordId = new List<VersionedDomainIdentifier>(100);
+                // Query continuation
+                if (this.m_queryPersistence != null && this.m_queryPersistence.IsRegistered(qd.QueryId.ToLower()))
+                {
+                    throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the QUQI_IN000003CA interaction", qd.QueryId));
+                }
+                else
+                {
+
+                    retVal.Results = this.GetRecordsAsync(regEvtIds, retRecordId, qd, retVal.Details);
+
+                    // Get the count of not-included records
+                    retVal.Results.RemoveAll(o => o == null);
+
+                    // Persist the query
+                    if (this.m_queryPersistence != null)
+                        this.m_queryPersistence.RegisterQuerySet(qd.QueryId.ToLower(), regEvtIds, qd);
+
+                    // Return query data
+                    retVal.TotalResults = retRecordId.Count(o => o != null);
+                }
+
+            }
+            catch (TimeoutException ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            catch (DbException ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            catch (DataException ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new PersistenceResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                retVal.Details.Add(new ResultDetail(ResultDetailType.Error, ex.Message, ex));
+            }
+            return retVal;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2013-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2012-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 19-2-2013
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -26,6 +26,7 @@ using MARC.HI.EHRS.CR.Notification.PixPdq.Configuration;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.DataTypes;
+
 using System.Reflection;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;

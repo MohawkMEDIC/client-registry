@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 4-9-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -29,6 +29,8 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.Everest.RMIM.CA.R020402.Vocabulary;
 using MARC.Everest.Connectors;
 using MARC.Everest.DataTypes;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 {
@@ -50,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// <summary>
         /// Creates filter data from the request
         /// </summary>
-        public DataUtil.QueryData CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
+        public RegistryQueryRequest CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
         {
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
             
@@ -69,10 +71,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     rqst.Sender.Device.Id.Root,
                     rqst.Sender.Device.Id.Extension)
                 );
-            filter.OriginalMessageQuery = request;
+            filter.OriginalMessageQueryId = String.Format("{1}^^^&{0}&ISO", request.Id.Root, request.Id.Extension);
             filter.QueryRequest = queryData;
-            filter.TargetDomains = ids;
-            filter.IncludeHistory = true;
+            filter.TargetDomain = ids;
+            filter.IsSummary = false;
 
             return filter;
         }
@@ -80,7 +82,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// <summary>
         /// Create the interaction
         /// </summary>
-        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, DataUtil.QueryResultData results, List<MARC.Everest.Connectors.IResultDetail> details, List<SVC.Core.Issues.DetectedIssue> issues)
+        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, RegistryQueryResult results, List<MARC.Everest.Connectors.IResultDetail> details)
         {
             // GEt the config services
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -135,14 +137,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     rqst.controlActEvent.QueryByParameter.QueryId,
                     results.TotalResults == 0 ? QueryResponse.NoDataFound : (AcknowledgementType)response.Acknowledgement.TypeCode == AcknowledgementType.ApplicationAcknowledgementError ? QueryResponse.ApplicationError : QueryResponse.DataFound,
                     results.TotalResults,
-                    results.Results.Length,
-                    results.TotalResults - results.Results.Length - results.StartRecordNumber
+                    results.Results.Count,
+                    results.TotalResults - results.Results.Count - results.StartRecordNumber
                 ),
                 rqst.controlActEvent.QueryByParameter
             );
             response.controlActEvent.LanguageCode = MessageUtil.GetDefaultLanguageCode(this.Context);
-            if (issues.Count > 0)
-                response.controlActEvent.SubjectOf.AddRange(MessageUtil.CreateDetectedIssueEventsQuery(issues));
+            if (details.Count(o=>o is DetectedIssueResultDetail) > 0)
+                response.controlActEvent.SubjectOf.AddRange(MessageUtil.CreateDetectedIssueEventsQuery(details.Where(o=>o is DetectedIssueResultDetail).Select(o=>(o as DetectedIssueResultDetail).Issue).ToList()));
             response.controlActEvent.Subject.AddRange(retHl7v3);
 
             return response;

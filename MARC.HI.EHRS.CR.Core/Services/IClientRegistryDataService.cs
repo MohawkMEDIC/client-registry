@@ -56,7 +56,12 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// Gets or sets the total results for the query
         /// </summary>
         public int TotalResults { get; set; }
-       
+
+        /// <summary>
+        /// Original request identifier to be loaded form message persistence
+        /// </summary>
+        public String OriginalRequestId { get; set; }
+
     }
 
     /// <summary>
@@ -66,6 +71,14 @@ namespace MARC.HI.EHRS.CR.Core.Services
     [Serializable]
     public class RegistryQueryRequest
     {
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public RegistryQueryRequest()
+        {
+            this.MatchingAlgorithm = MatchAlgorithm.Default;
+        }
 
         /// <summary>
         /// The minimum degree of match
@@ -82,6 +95,12 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// </summary>
         [XmlAttribute("isSummary")]
         public bool IsSummary { get; set; }
+
+        /// <summary>
+        /// Matching algorithms
+        /// </summary>
+        [XmlAttribute("matchAlgorithm")]
+        public MatchAlgorithm MatchingAlgorithm { get; set; }
 
         /// <summary>
         /// True if the query data constructed is a continu
@@ -142,8 +161,7 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// </summary>
         [XmlAttribute("offset")]
         public int Offset { get; set; }
-
-
+        
         /// <summary>
         /// Represent the QD as string
         /// </summary>
@@ -191,6 +209,11 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// Query the underlying data model based on the registry query request data
         /// </summary>
         RegistryQueryResult Query(RegistryQueryRequest query);
+
+        /// <summary>
+        /// Retrieve a registration record by id
+        /// </summary>
+        RegistryQueryResult Get(VersionedDomainIdentifier[] regEvtId, RegistryQueryRequest qd);
 
         /// <summary>
         /// Register the store result

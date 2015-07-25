@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 4-9-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -74,13 +74,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         {
             // Setup the lists of details and issues
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
-            List<DetectedIssue> issues = new List<DetectedIssue>();
 
             // System configuration service
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Localization service
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            
+            // Data Service
+            IClientRegistryDataService dataSvc = Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Do basic check and add common validation errors
             MessageUtil.ValidateTransportWrapperUv(receivedMessage.Structure as IInteraction, configService, dtls);
@@ -117,7 +119,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Create the support classes
             AuditData audit = null;
 
-            IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
+            IheAuditUtil dataUtil = new IheAuditUtil() { Context = this.Context };
             
             // Try to execute the record
             try
@@ -128,14 +130,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                 // Construct the canonical data structure
                 GetIdentifiersQueryResponseFactory fact = new GetIdentifiersQueryResponseFactory() { Context = this.Context };
-                DataUtil.QueryData filter = fact.CreateFilterData(request, dtls);
+                RegistryQueryRequest filter = fact.CreateFilterData(request, dtls);
 
                 if (filter.QueryRequest == null)
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
                 
                 // Query
-                var results = dataUtil.Query(filter, dtls, issues);
-                
+                var results = dataSvc.Query(filter);
+                dtls.AddRange(results.Details);
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-45",
@@ -148,7 +150,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 );
 
 
-                response = fact.Create(request, results, dtls, issues) as PRPA_IN201310UV02;
+                response = fact.Create(request, results, dtls) as PRPA_IN201310UV02;
             }
             catch (Exception ex)
             {
@@ -178,7 +180,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             response.VersionCode = HL7StandardVersionCode.Version3_Prerelease1;
             response.AcceptAckCode = AcknowledgementCondition.Never;
             response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(dtls.ToArray()));
-            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(issues.ToArray()));
             return response;
         }
 
@@ -189,13 +190,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         {
             // Setup the lists of details and issues
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
-            List<DetectedIssue> issues = new List<DetectedIssue>();
-
+            
             // System configuration service
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Localization service
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Data Service
+            IClientRegistryDataService dataSvc = Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Do basic check and add common validation errors
             MessageUtil.ValidateTransportWrapperUv(receivedMessage.Structure as IInteraction, configService, dtls);
@@ -229,7 +232,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Create the support classes
             List<AuditData> audits = new List<AuditData>();
 
-            IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
+            IheAuditUtil dataUtil = new IheAuditUtil() { Context = this.Context };
 
             // Try to execute the record
             try
@@ -247,11 +250,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store 
-                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var result = dataSvc.Merge(data, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
-                if(vid == null)
+                if(result == null || result.VersionId == null)
                     throw new Exception(locale.GetString("DTPE001"));
 
+                dtls.AddRange(result.Details);
                
                 // prepare the delete audit
                 var person = data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
@@ -279,7 +283,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     dtls.Exists(r => r.Type == ResultDetailType.Error) ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success,
                     e,
                     receivedMessage,
-                    new List<VersionedDomainIdentifier>() { vid },
+                    new List<VersionedDomainIdentifier>() { result.VersionId },
                     data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
                 ));
 
@@ -318,7 +322,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             response.VersionCode = HL7StandardVersionCode.Version3_Prerelease1;
             response.AcceptAckCode = AcknowledgementCondition.Never;
             response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(dtls.ToArray()));
-            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(issues.ToArray()));
             return response;
         }
 
@@ -329,13 +332,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         {
             // Setup the lists of details and issues
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
-            List<DetectedIssue> issues = new List<DetectedIssue>();
 
             // System configuration service
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Localization service
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Data Service
+            IClientRegistryDataService dataSvc = Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Do basic check and add common validation errors
             MessageUtil.ValidateTransportWrapperUv(receivedMessage.Structure as IInteraction, configService, dtls);
@@ -368,7 +373,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Create the support classes
             AuditData audit = null;
-            IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
+            IheAuditUtil dataUtil = new IheAuditUtil() { Context = this.Context };
 
             // Try to execute the record
             try
@@ -386,18 +391,20 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     throw new MessageValidationException(locale.GetString("MSGE00A"), receivedMessage.Structure);
 
                 // Store 
-                var vid = dataUtil.Update(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var result = dataSvc.Update(data, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
-                if (vid == null)
+                if (result == null || result.VersionId == null)
                     throw new Exception(locale.GetString("DTPE001"));
+                
+                dtls.AddRange(result.Details);
 
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",
-                    vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create,
+                    result.VersionId.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create,
                     dtls.Exists(r => r.Type == ResultDetailType.Error) ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success,
                     e,
                     receivedMessage,
-                    new List<VersionedDomainIdentifier>() { vid },
+                    new List<VersionedDomainIdentifier>() { result.VersionId },
                     data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
                 );
 
@@ -435,7 +442,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             response.VersionCode = HL7StandardVersionCode.Version3_Prerelease1;
             response.AcceptAckCode = AcknowledgementCondition.Never;
             response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(dtls.ToArray()));
-            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(issues.ToArray()));
             return response;
 
 
@@ -449,13 +455,15 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Setup the lists of details and issues
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
-            List<DetectedIssue> issues = new List<DetectedIssue>(); 
 
             // System configuration service
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Localization service
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+
+            // Data Service
+            IClientRegistryDataService dataSvc = Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Do basic check and add common validation errors
             MessageUtil.ValidateTransportWrapperUv(receivedMessage.Structure as IInteraction, configService, dtls);
@@ -488,7 +496,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
             // Create the support classes
             AuditData audit = null;
-            IheDataUtil dataUtil = new IheDataUtil() { Context = this.Context };
+            IheAuditUtil dataUtil = new IheAuditUtil() { Context = this.Context };
 
             // Try to execute the record
             try
@@ -507,21 +515,22 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
 
                 // Store 
-                var vid = dataUtil.Register(data, dtls, issues, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
+                var result = dataSvc.Register(data, request.ProcessingCode != ProcessingID.Production ? DataPersistenceMode.Debugging : DataPersistenceMode.Production);
 
 
-                if (vid == null)
+                if (result == null || result.VersionId == null)
                     throw new Exception(locale.GetString("DTPE001"));
 
+                dtls.AddRange(result.Details);
 
               
                 // Prepare for audit
                 audit = dataUtil.CreateAuditData("ITI-44",
-                    vid.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create,
+                    result.VersionId.UpdateMode == UpdateModeType.Update ? ActionType.Update : ActionType.Create,
                     dtls.Exists(r => r.Type == ResultDetailType.Error) ? OutcomeIndicator.MinorFail : OutcomeIndicator.Success,
                     e,
                     receivedMessage,
-                    new List<VersionedDomainIdentifier>() { vid },
+                    new List<VersionedDomainIdentifier>() { result.VersionId },
                     data.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.AuthorOf) as HealthcareParticipant
                 );
 
@@ -559,7 +568,6 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             response.VersionCode = HL7StandardVersionCode.Version3_Prerelease1;
             response.AcceptAckCode = AcknowledgementCondition.Never;
             response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(dtls.ToArray()));
-            response.Acknowledgement[0].AcknowledgementDetail.AddRange(MessageUtil.CreateAckDetailsUv(issues.ToArray()));
             return response;
         }
 

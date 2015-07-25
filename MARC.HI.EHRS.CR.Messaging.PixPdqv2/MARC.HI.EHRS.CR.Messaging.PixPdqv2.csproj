@@ -87,7 +87,6 @@
   <ItemGroup>
     <Compile Include="AuditUtil.cs" />
     <Compile Include="ComponentUtility.cs" />
-    <Compile Include="DataUtil.cs" />
     <Compile Include="DeComponentUtility.cs" />
     <Compile Include="MessageUtil.cs" />
     <Compile Include="NotSupportedHandler.cs" />

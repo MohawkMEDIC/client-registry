@@ -419,6 +419,17 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 
                 RegistryQueryResult result = dataService.Query(data);
                 dtls.AddRange(result.Details);
+
+                // Update locations?
+                foreach (var dtl in dtls)
+                    if (dtl is PatientNotFoundResultDetail)
+                        dtl.Location = "QPD^1^3^1^1";
+                    else if (dtl is UnrecognizedPatientDomainResultDetail)
+                        dtl.Location = "QPD^1^3^1^4";
+                    else if (dtl is UnrecognizedTargetDomainResultDetail)
+                        dtl.Location = "QPD^1^4^";
+
+
                 audit = auditUtil.CreateAuditData("ITI-9", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result

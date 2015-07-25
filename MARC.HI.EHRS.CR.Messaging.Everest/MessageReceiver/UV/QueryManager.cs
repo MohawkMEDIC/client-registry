@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 20-7-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -32,6 +32,8 @@ using System.Security;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.Everest.Formatters.XML.ITS1;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -61,8 +63,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // GEt the core services needed for this operation
             IAuditorService auditService = Context.GetService(typeof(IAuditorService)) as IAuditorService;
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
-            IQueryPersistenceService queryService = Context.GetService(typeof(IQueryPersistenceService)) as IQueryPersistenceService;
             IMessagePersistenceService msgPersistenceService = Context.GetService(typeof(IMessagePersistenceService)) as IMessagePersistenceService;
+            IClientRegistryDataService dataSvc = Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             List<IResultDetail> dtls = new List<IResultDetail>(receivedMessage.Details);
             List<DetectedIssue> issues = new List<DetectedIssue>(10);
@@ -81,82 +83,56 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             // Try to process
             try
             {
-                DataUtil datUtil = new DataUtil();
 
                 // set the URI
                 if (request.Receiver.Count == 0)
                     request.Receiver.Add(new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.Receiver());
                 request.Receiver[0].Telecom = e.ReceiveEndpoint.ToString();
 
-                if (queryService == null)
-                    throw new InvalidOperationException("No query persistence service is registered with this service");
-                else if (msgPersistenceService == null)
-                    throw new InvalidOperationException("No message persistence service is registered with this service");
-                else if (!isValid)
+                if (!isValid)
                     throw new MessageValidationException("Cannot process invalid message", request);
+                else if (msgPersistenceService == null)
+                    throw new InvalidOperationException("Cannot perform query continuation on v3 messages without Message persistence turned on");
 
                 string queryId = String.Format("{1}^^^&{0}&ISO", request.controlActProcess.QueryContinuation.QueryId.Root, request.controlActProcess.QueryContinuation.QueryId.Extension);
 
-                // Determine if we can process the message
-                if (!queryService.IsRegistered(queryId.ToLower()))
+                RegistryQueryRequest queryData = new RegistryQueryRequest()
                 {
-                    dtls.Add(new PersistenceResultDetail(ResultDetailType.Error,
-                        String.Format("The query '{0}' has not been registered with the query service", queryId),
-                        null));
-                    throw new ArgumentException("Cannot continue query due to errors");
+                    QueryId = String.Format("{1}^^^&{0}&ISO", request.controlActProcess.QueryContinuation.QueryId.Root, request.controlActProcess.QueryContinuation.QueryId.Extension),
+                    Originator = String.Format("{1}^^^&{0}&ISO", request.Sender.Device.Id.First.Root, request.Sender.Device.Id.First.Extension),
+                    Offset = (int)request.controlActProcess.QueryContinuation.StartResultNumber,
+                    Limit = (int)request.controlActProcess.QueryContinuation.ContinuationQuantity,
+                    IsContinue = true,
+                    IsSummary = true
+                };
+
+                var result = dataSvc.Query(queryData);
+                dtls.AddRange(result.Details);
+
+                // Original request
+                using (XmlIts1Formatter fmtr = new XmlIts1Formatter() { ValidateConformance = false })
+                {
+                    fmtr.GraphAides.Add(new MARC.Everest.Formatters.XML.Datatypes.R1.Formatter() { CompatibilityMode = MARC.Everest.Formatters.XML.Datatypes.R1.DatatypeFormatterCompatibilityMode.Universal });
+                    fmtr.Settings = MARC.Everest.Formatters.XML.ITS1.SettingsType.DefaultMultiprocessor;
+
+                    var originalRequest = fmtr.Parse(msgPersistenceService.GetMessage(result.OriginalRequestId));
+
+                    if (originalRequest.Structure == null)
+                        throw new InvalidOperationException("Cannot deserialize the original request");
+                    // Ensure we can even create the required response type
+                    IQueryResponseFactory responseFactory = QueryResponseFactoryUtil.GetResponseFactory(originalRequest.Structure.GetType());
+                    if (responseFactory == null)
+                        throw new NotImplementedException("Cannot determine how to respond to this interaction");
+                    responseFactory.Context = this.Context;
+
+
+                    return responseFactory.Create(
+                        originalRequest.Structure as IInteraction,
+                        result, dtls
+                    );
+
                 }
 
-                // Continue the Query 
-                var recordIds = queryService.GetQueryResults(queryId.ToLower(),
-                    (int)request.controlActProcess.QueryContinuation.StartResultNumber,
-                    (int)request.controlActProcess.QueryContinuation.ContinuationQuantity
-                );
-                var qd = (MARC.HI.EHRS.CR.Messaging.Everest.DataUtil.QueryData)queryService.GetQueryTag(queryId.ToLower());
-
-                // Rules for Query Continuation
-                // 1. The Query Continuation must come from the originating system
-                if (request.Sender.Device == null || request.Sender.Device.Id == null ||
-                    request.Sender.Device.Id.IsNull || request.Sender.Device.Id.IsEmpty ||
-                    !String.Format("{1}^^^&{0}&ISO",
-                    request.Sender.Device.Id.First.Root,
-                    request.Sender.Device.Id.First.Extension).Equals(qd.Originator))
-                {
-                    dtls.Add(new UnrecognizedSenderResultDetail(request.Sender));
-                    throw new SecurityException("Cannot display results");
-                }
-                // 2. The original conversation that was used to fetch the original result set must be available
-                IGraphable originalRequest = qd.OriginalMessageQuery;
-                if (originalRequest == null)
-                    throw new InvalidOperationException("Cannot find the original query message in the message persistence store");
-
-
-                // Ensure we can even create the required response type
-                IQueryResponseFactory responseFactory = QueryResponseFactoryUtil.GetResponseFactory(originalRequest.GetType());
-                if (responseFactory == null)
-                    throw new NotImplementedException("Cannot determine how to respond to this interaction");
-                responseFactory.Context = this.Context;
-                // Assign the query request from the original data
-                qd.QueryRequest = responseFactory.CreateFilterData(originalRequest as IInteraction, dtls).QueryRequest;
-                qd.Quantity = (int)request.controlActProcess.QueryContinuation.ContinuationQuantity;
-
-                // De-persist the records
-                DataUtil du = new DataUtil();
-                du.Context = this.Context;
-                var records = du.GetRecordsAsync(recordIds, new List<VersionedDomainIdentifier>(), issues, dtls, qd);
-                responseFactory.Context = this.Context;
-
-                return responseFactory.Create(
-                    originalRequest as IInteraction,
-                    new DataUtil.QueryResultData()
-                    {
-                        Results = records.ToArray(),
-                        TotalResults = (int)queryService.QueryResultTotalQuantity(queryId.ToLower()),
-                        QueryId = queryId,
-                        StartRecordNumber = (int)request.controlActProcess.QueryContinuation.StartResultNumber
-                    },
-                    dtls,
-                    issues
-                );
             }
             catch (Exception ex)
             {
