@@ -172,5 +172,7 @@
     <add type="MARC.HI.EHRS.QM.Persistence.Data.AdoQueryPersistenceService, MARC.HI.EHRS.QM.Persistence.Data, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.CR.Core.ClientRegistryConfigurationProvider, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.SVC.Core.Timer.TimerService, MARC.HI.EHRS.SVC.Core.Timer, Version=1.0.0.0"/>
+    <add type="MARC.HI.EHRS.CR.Core.Data.ClientRegistryDataService, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
+
   </serviceProviders>
 </marc.hi.ehrs.svc.core>
