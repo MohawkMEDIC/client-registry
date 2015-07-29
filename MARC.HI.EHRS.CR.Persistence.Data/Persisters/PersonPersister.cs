@@ -964,8 +964,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                 IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
                                 UpdateMode = UpdateModeType.Ignore,
-                                EffectiveTime = Convert.ToDateTime(rdr["efft_utc"]),
-                                ObsoleteTime = rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
+                                EffectiveTime = !loadFast ? Convert.ToDateTime(rdr["efft_utc"]) : person.Timestamp,
+                                ObsoleteTime = !loadFast && rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
@@ -978,8 +978,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                     AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                     IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
                                     UpdateMode = UpdateModeType.Ignore,
-                                    EffectiveTime = Convert.ToDateTime(rdr["efft_utc"]),
-                                    ObsoleteTime = rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
+                                    EffectiveTime = !loadFast ? Convert.ToDateTime(rdr["efft_utc"]) : person.Timestamp,
+                                    ObsoleteTime = !loadFast && rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                                 })
                             );
                     }

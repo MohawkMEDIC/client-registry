@@ -413,7 +413,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     retVal.Parts.Add(part);
 
                     // Effective time
-                    if(retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
+                    if(!loadFast && retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
                     {
                         retVal.EffectiveTime = Convert.ToDateTime(reader["efft_utc"]);
                         if (reader["obslt_utc"] != DBNull.Value)
@@ -456,10 +456,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     retVal.Parts.Add(part);
 
                     // Effective time
-                    if (retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
+                    if (!loadFast && retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
                     {
                         retVal.EffectiveTime = Convert.ToDateTime(reader["efft_utc"]);
-                        if (reader["obslt_utc"] != DBNull.Value)
+                        if (!loadFast && reader["obslt_utc"] != DBNull.Value)
                             retVal.EffectiveTime = Convert.ToDateTime(reader["obslt_utc"]);
                     }
                 }
