@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<update xmlns="urn:marc-hi:svc:configuration" verFunction="get_sch_ver" id="CR-1.2-UPDATE" from="1.1.0.0" to="1.2.0.0">
+  <description>Upgrades the CR schema from 1.1.x series to 1.2.x series</description>
+  <install file="CR-1.2-UPGRADE.SQL"/>
+</update>
+
