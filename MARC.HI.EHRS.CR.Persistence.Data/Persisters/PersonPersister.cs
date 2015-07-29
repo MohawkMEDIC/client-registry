@@ -95,7 +95,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 if (psn.AlternateIdentifiers == null)
                     psn.AlternateIdentifiers = new List<DomainIdentifier>();
                 psn.AlternateIdentifiers.Clear();
-                GetPersonAlternateIdentifiers(conn, tx, psn);
+                GetPersonAlternateIdentifiers(conn, tx, psn, false);
                 
                 // If there is a person ref in this component then we may have to update our version identifier
 
@@ -828,9 +828,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             place.Site.Name = "BRTH";
                         }
                         // Load other properties
-                        GetPersonNames(conn, tx, retVal);
-                        GetPersonAlternateIdentifiers(conn, tx, retVal);
-                        GetPersonAddresses(conn, tx, retVal);
+                        GetPersonNames(conn, tx, retVal, loadFast);
+                        GetPersonAlternateIdentifiers(conn, tx, retVal, loadFast);
+                        GetPersonAddresses(conn, tx, retVal, loadFast);
                         GetPersonLanguages(conn, tx, retVal);
                         GetPersonRaces(conn, tx, retVal);
                         GetPersonTelecomAddresses(conn, tx, retVal);
@@ -932,7 +932,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get person's alternate identifier
         /// </summary>
-        private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 
 #if PERFMON
@@ -941,6 +941,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_alt_id";
+                if (!loadFast)
+                    cmd.CommandText += "_efft";
+
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
 
@@ -960,7 +963,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                 AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                 IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
-                                UpdateMode = UpdateModeType.Ignore
+                                UpdateMode = UpdateModeType.Ignore,
+                                EffectiveTime = Convert.ToDateTime(rdr["efft_utc"]),
+                                ObsoleteTime = rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
@@ -972,7 +977,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                     Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                     AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                     IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
-                                    UpdateMode = UpdateModeType.Ignore
+                                    UpdateMode = UpdateModeType.Ignore,
+                                    EffectiveTime = Convert.ToDateTime(rdr["efft_utc"]),
+                                    ObsoleteTime = rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                                 })
                             );
                     }
@@ -1067,7 +1074,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get a person's addresses
         /// </summary>
-        private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 #if PERFMON
             Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_addr_sets");
@@ -1095,8 +1102,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Detail load each address
                 foreach (var addr in person.Addresses)
                 {
-                    var dtl = DbUtil.GetAddress(conn, tx, addr.Key);
+                    var dtl = DbUtil.GetAddress(conn, tx, addr.Key, loadFast);
                     addr.Parts = dtl.Parts;
+                    addr.EffectiveTime = dtl.EffectiveTime;
+                    addr.ObsoleteTime = dtl.ObsoleteTime;
                 }
             }
 #if PERFMON
@@ -1107,7 +1116,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get person names
         /// </summary>
-        private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 #if PERFMON
             Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_name_sets");
@@ -1134,8 +1143,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Detail load each address
                 foreach (var name in person.Names)
                 {
-                    var dtl = DbUtil.GetName(conn, tx, name.Key);
+                    var dtl = DbUtil.GetName(conn, tx, name.Key, loadFast);
                     name.Parts = dtl.Parts;
+                    name.EffectiveTime = dtl.EffectiveTime;
+                    name.ObsoleteTime = dtl.ObsoleteTime;
                 }
             }
 #if PERFMON
