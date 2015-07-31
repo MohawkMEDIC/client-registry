@@ -9,6 +9,7 @@ using MARC.Everest.Connectors;
 using System.Xml.Serialization;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.IO;
+using MARC.HI.EHRS.SVC.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Core.Services
 {
@@ -51,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// <summary>
         /// Gets or sets the results for the query
         /// </summary>
-        public List<RegistrationEvent> Results { get; set; }
+        public List<HealthServiceRecordContainer> Results { get; set; }
         /// <summary>
         /// Gets or sets the total results for the query
         /// </summary>
@@ -142,7 +143,7 @@ namespace MARC.HI.EHRS.CR.Core.Services
         /// Represents the original query component that is being used to query
         /// </summary>
         [XmlIgnore]
-        public RegistrationEvent QueryRequest { get; set; }
+        public QueryEvent QueryRequest { get; set; }
 
         /// <summary>
         /// Original Request
@@ -150,11 +151,6 @@ namespace MARC.HI.EHRS.CR.Core.Services
         [XmlAttribute("originalConvo")]
         public string OriginalMessageQueryId { get; set; }
 
-        /// <summary>
-        /// Record Ids to be fetched
-        /// </summary>
-        [XmlIgnore]
-        public List<VersionedDomainIdentifier> RecordIds { get; set; }
 
         /// <summary>
         /// Offset of the query result

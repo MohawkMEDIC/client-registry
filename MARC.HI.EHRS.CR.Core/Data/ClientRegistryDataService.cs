@@ -90,7 +90,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
         /// <summary>
         /// Get record
         /// </summary>
-        private RegistrationEvent GetRecord(VersionedDomainIdentifier recordId, List<IResultDetail> dtls, RegistryQueryRequest qd)
+        private HealthServiceRecordContainer GetRecord(VersionedDomainIdentifier recordId, List<IResultDetail> dtls, RegistryQueryRequest qd)
         {
             try
             {
@@ -103,14 +103,18 @@ namespace MARC.HI.EHRS.CR.Core.Data
 
 
                 // Read the record from the DB
-                var result = this.m_persistenceService.GetContainer(recordId, qd.IsSummary) as RegistrationEvent;
+                var result = this.m_persistenceService.GetContainer(recordId, qd.IsSummary) as HealthServiceRecordContainer;
 
                 // Does this result match what we're looking for?
                 if (result == null)
                     return null; // next record
 
                 // Calculate the matching algorithm
-                var subject = result.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                Person subject;
+                if (result is Person)
+                    subject = result as Person;
+                else
+                    subject = result.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
                 // Remove all but the alternate identifiers specifed in the query
                 if (qd.TargetDomain != null && subject != null)
@@ -122,22 +126,23 @@ namespace MARC.HI.EHRS.CR.Core.Data
 
                 if (subject != null && qd.QueryRequest != null)
                 {
-                    var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.FilterOf);
-                    if (filter != null)
+                    var filter = qd.QueryRequest.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                    while (!(filter is Person) && filter != null)
                         filter = (filter as HealthServiceRecordContainer).FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                    
                     var confidence = (subject as Person).Confidence(filter as Person);
 
                     if (confidence.Confidence < qd.MinimumDegreeMatch)
                         return null;
 
-                    (subject as Person).Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
+                    subject.Add(confidence, "CONF", HealthServiceRecordSiteRoleType.ComponentOf | HealthServiceRecordSiteRoleType.CommentOn, null);
                 }
 
                 // Mask
                 if (this.m_policyService != null)
                 {
                     var dte = new List<SVC.Core.Issues.DetectedIssue>();
-                    result = this.m_policyService.ApplyPolicies(qd.QueryRequest, result, dte) as RegistrationEvent;
+                    result = this.m_policyService.ApplyPolicies(qd.QueryRequest, result, dte) as HealthServiceRecordContainer;
                     foreach (var itm in dte)
                         dtls.Add(new DetectedIssueResultDetail(
                                     ResultDetailType.Warning,
@@ -158,10 +163,10 @@ namespace MARC.HI.EHRS.CR.Core.Data
         /// <summary>
         /// Get records asynchronously 
         /// </summary>
-        private List<ComponentModel.RegistrationEvent> GetRecordsAsync(VersionedDomainIdentifier[] recordIds, List<VersionedDomainIdentifier> retRecordId, RegistryQueryRequest qd, List<IResultDetail> dtls)
+        private List<HealthServiceRecordContainer> GetRecordsAsync(VersionedDomainIdentifier[] recordIds, List<VersionedDomainIdentifier> retRecordId, RegistryQueryRequest qd, List<IResultDetail> dtls)
         {
             // Decision Support service
-            RegistrationEvent[] retVal = new RegistrationEvent[qd.Limit < recordIds.Length ? qd.Limit : recordIds.Length];
+            HealthServiceRecordContainer[] retVal = new HealthServiceRecordContainer[qd.Limit < recordIds.Length ? qd.Limit : recordIds.Length];
             retRecordId.AddRange(recordIds);
 
             List<VersionedDomainIdentifier> recordFetch = new List<VersionedDomainIdentifier>(retVal.Length);
@@ -254,7 +259,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
                 wtp.Dispose();
             }
 
-            return new List<RegistrationEvent>(retVal);
+            return new List<HealthServiceRecordContainer>(retVal);
         }
 
 
@@ -295,7 +300,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
                     }
 
                     // Return value
-                    retVal.Results = this.GetRecordsAsync(this.m_queryPersistence.GetQueryResults(query.QueryId, -1, query.Limit), returnedRecordIdentifiers, query, retVal.Details);
+                    retVal.Results = this.GetRecordsAsync(this.m_queryPersistence.GetQueryResults(query.QueryId, query.Offset, query.Limit), returnedRecordIdentifiers, query, retVal.Details);
 
                     // Return continued query
                     retVal.TotalResults = (int)this.m_queryPersistence.QueryResultTotalQuantity(query.QueryId);
@@ -305,18 +310,10 @@ namespace MARC.HI.EHRS.CR.Core.Data
                     throw new Exception(String.Format("The query '{0}' has already been registered. To continue this query use the appropriate interaction", query.QueryId));
                 else
                 {
-                    // Query the registry service
-                    var queryFilter = query.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf); // The outer filter is usually just parameter control
-
-                    VersionedDomainIdentifier[] recordIds = this.m_registrationService.QueryRecord(queryFilter as HealthServiceRecordComponent);
-                    retVal.Results = this.GetRecordsAsync(recordIds, returnedRecordIdentifiers, query, retVal.Details);
-                    if (retVal.Results.Count == 0 && query.IsSummary)
-                        retVal.Details.Add(new PatientNotFoundResultDetail(this.m_localeService));
-
-                    // Sort control? TODO: Support sort control
+                    VersionedDomainIdentifier[] recordIds = this.m_registrationService.QueryRecord(query.QueryRequest as QueryEvent);
 
                     // Persist the query
-                    if (this.m_queryPersistence != null && recordIds.Length > query.Limit)
+                    if (!String.IsNullOrEmpty(query.QueryId) && this.m_queryPersistence != null && recordIds.Length > query.Limit)
                     {
                         this.m_queryPersistence.RegisterQuerySet(query.QueryId, recordIds, query);
                         this.m_queryPersistence.GetQueryResults(query.QueryId, query.Offset, query.Limit);
@@ -324,6 +321,17 @@ namespace MARC.HI.EHRS.CR.Core.Data
 
                     retVal.TotalResults = recordIds.Length;
 
+                    // Get the results
+                    recordIds = recordIds.Skip(query.Offset).Take(query.Limit).ToArray();
+
+                    retVal.Results = this.GetRecordsAsync(recordIds, returnedRecordIdentifiers, query, retVal.Details);
+                    if (retVal.Results.Count == 0 && query.IsSummary)
+                        retVal.Details.Add(new PatientNotFoundResultDetail(this.m_localeService));
+
+                    // Sort control? TODO: Support sort control
+
+
+                    
                 }
 
                 retVal.ContinuationPtr = query.QueryId;

@@ -267,14 +267,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Return value
             RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
-                QueryRequest = new RegistrationEvent()
+                QueryRequest = new QueryEvent()
                 {
-                    EventClassifier = RegistrationEventType.Any,
                     Timestamp = DateTime.Now,
-                    AlternateIdentifier = new VersionedDomainIdentifier()
-                    {
-                        Identifier = msh.MessageControlID.Value
-                    }
                 },
                 Limit = 1,
                 Offset = 0,
@@ -299,9 +294,20 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
             });
 
+
+            // Registration event which is the informant to the 
+            retVal.QueryRequest.Add(new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Any,
+                AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Identifier = msh.MessageControlID.Value
+                }
+            }, "RSN", HealthServiceRecordSiteRoleType.ReasonFor, null);
+
             // Filter data
             RegistrationEvent filter = new RegistrationEvent(){ EventClassifier = RegistrationEventType.Query };
-            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.SubjectOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
@@ -385,18 +391,24 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Return value
             RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
-                QueryRequest = new RegistrationEvent()
+                QueryRequest = new QueryEvent()
                 {
-                    EventClassifier = RegistrationEventType.Any,
                     Timestamp = DateTime.Now,
-                    AlternateIdentifier = new VersionedDomainIdentifier()
-                    {
-                        Identifier = msh.MessageControlID.Value
-                    }
                 },
                 ResponseMessageType = "RSP_K21",
                 Originator = String.Format("{0}|{1}", msh.SendingApplication.NamespaceID.Value, msh.SendingFacility.NamespaceID.Value)
             };
+
+            // Reason for querying
+            retVal.QueryRequest.Add(new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Any,
+                Timestamp = DateTime.Now,
+                AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Identifier = msh.MessageControlID.Value
+                }
+            }, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
 
             // Add the author (null author role) to the return value (policy enforcement doesn't freak out)
             retVal.QueryRequest.Add(new HealthcareParticipant()
@@ -418,7 +430,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Filter data
             RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Query };
-            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.SubjectOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
@@ -705,7 +717,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new ResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE062"), "QPD^4", null));
                 float conf = (float)(Double.Parse(str.Data.ToString()) / 100.0d);
                 // Add QP
-                filter.Add(new QueryParameters()
+                retVal.QueryRequest.Add(new QueryParameters()
                 {
                     MatchingAlgorithm = algorithm,
                     MatchStrength = MatchStrength.Strong,

@@ -94,7 +94,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
             PRPA_IN101105CA rqst = request as PRPA_IN101105CA;
 
             // Convert results to HL7v3
-            foreach (var res in results.Results)
+            foreach (RegistrationEvent res in results.Results)
             {
                 var retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101106CA.IdentifiedEntity>(
                     dCompUtil.CreateRegistrationEventDetail(res, details)

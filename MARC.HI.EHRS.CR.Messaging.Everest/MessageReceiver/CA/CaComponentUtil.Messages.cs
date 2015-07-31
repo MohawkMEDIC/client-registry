@@ -890,7 +890,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match for find candidates
         /// </summary>
-        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
+        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -903,11 +903,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // REturn value
-            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList>(controlActEvent, dtls);
-            
+            QueryEvent retVal = new QueryEvent() { Timestamp = DateTime.Now };
+            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList>(controlActEvent, dtls);
+            retVal.Add(reasonFor, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
             // Filter
             RegistrationEvent filter = new RegistrationEvent();
-            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
             // Parameter list validation
             var parameterList = controlActEvent.QueryByParameter.parameterList;
@@ -1097,7 +1098,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match parameter for the get message
         /// </summary>
-        internal RegistrationEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
+        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
 
@@ -1110,11 +1111,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             }
 
             // REturn value
-            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList>(controlActEvent, dtls);
+            QueryEvent retVal = new QueryEvent() { Timestamp = DateTime.Now };
+            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList>(controlActEvent, dtls);
+            retVal.Add(reasonFor, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
 
             // Filter
             RegistrationEvent filter = new RegistrationEvent();
-            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.Add(filter, "QRY", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
             // Parameter list validation
             var parameterList = controlActEvent.QueryByParameter.parameterList;

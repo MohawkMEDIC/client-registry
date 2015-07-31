@@ -113,7 +113,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             Util.DataUtil.ClientRegistryFhirQuery retVal = base.ParseQuery(parameters, dtls);
 
             var subjectFilter = new Person();
-            RegistrationEvent queryFilter = new RegistrationEvent();
+            QueryEvent queryFilter = new QueryEvent();
             QueryParameters queryControl = new QueryParameters()
             {
                 MatchingAlgorithm = MatchAlgorithm.Exact
@@ -505,9 +505,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if(nameFilter != null)
                 subjectFilter.Names = new List<SVC.Core.DataTypes.NameSet>() { nameFilter };
 
-            queryFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            RegistrationEvent regFilter = new RegistrationEvent();
+            regFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             queryFilter.Add(queryControl, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            queryFilter.Add(regFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             retVal.Filter = queryFilter;
+    
 
             return retVal;
         }
@@ -811,13 +814,16 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Fetch by the primary id
                 var id = person.Id;
                 
-                var queryFilter = new RegistrationEvent();
-                queryFilter.Add(new Person() { Id = person.Id }, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                var queryFilter = new QueryEvent();
+                var registrationFilter = new RegistrationEvent();
+                registrationFilter.Add(new Person() { Id = person.Id }, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                queryFilter.Add(registrationFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
                 var regEvts = idq.QueryRecord(queryFilter);
                 if (regEvts.Length == 1)
                 {
-                    regEvt = idp.GetContainer(regEvts[0], true) as RegistrationEvent;
-                    person = regEvt.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    person = idp.GetContainer(regEvts[0], true) as Person;
+                    //person = regEvt.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 }
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, "Could not load related registration event. Data may be incomplete", null, null));

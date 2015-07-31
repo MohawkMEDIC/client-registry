@@ -30,6 +30,7 @@ using MARC.Everest.Connectors;
 using MARC.Everest.DataTypes;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core.Data;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -107,7 +108,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             PRPA_IN201309UV02 rqst = request as PRPA_IN201309UV02;
 
             // Convert results to HL7v3
-            foreach (var res in results.Results)
+            foreach (RegistrationEvent res in results.Results)
             {
                 var retRec = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201304UV02.Patient,object>(
                     false,

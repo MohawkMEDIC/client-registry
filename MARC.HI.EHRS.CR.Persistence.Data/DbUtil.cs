@@ -84,7 +84,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             // Get the HealthServiceRecord that this document belongs to
             IContainer hsrContainer = child.Site.Container;
-            while (!(hsrContainer is RegistrationEvent) && hsrContainer != null)
+            while (!(hsrContainer is RegistrationEvent) && hsrContainer != null && (hsrContainer as IComponent).Site != null)
                 hsrContainer = (hsrContainer as IComponent).Site.Container;
             return hsrContainer as RegistrationEvent;
 

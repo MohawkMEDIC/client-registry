@@ -484,10 +484,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 {
                     
                     // Registration Data for update
-                    var getResult = dataSvc.Get(new VersionedDomainIdentifier[] { result.VersionId }, new RegistryQueryRequest() { IsSummary = true, QueryId = Guid.NewGuid().ToString(), QueryRequest = components });
+                    var regurgQuery = new QueryEvent();
+                    regurgQuery.Add(components, "QRY", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                    var getResult = dataSvc.Get(new VersionedDomainIdentifier[] { result.VersionId }, new RegistryQueryRequest() { IsSummary = true, QueryId = Guid.NewGuid().ToString(), QueryRequest = regurgQuery });
                     dtls.AddRange(getResult.Details);
 
-                    var verified = getResult.Results.First();
+                    var verified = getResult.Results.First() as RegistrationEvent;
                     var verifiedPerson = verified.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
                     // Create the response

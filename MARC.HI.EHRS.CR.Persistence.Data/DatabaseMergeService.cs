@@ -221,9 +221,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 var data = config.OidRegistrar.FindData(id.Domain);
                 if (data == null || !data.Attributes.Exists(a => a.Key == "IsUniqueIdentifier" && Convert.ToBoolean(a.Value)))
                     continue;
-                var patientQuery = new RegistrationEvent();
+                var patientQuery = new QueryEvent();
+                var registrationEvent = new RegistrationEvent();
+                patientQuery.Add(registrationEvent, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                 patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
-                patientQuery.Add(new Person() { AlternateIdentifiers = new List<DomainIdentifier>() { id }}, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                registrationEvent.Add(new Person() { AlternateIdentifiers = new List<DomainIdentifier>() { id }}, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 // Perform the query
                 pid = registrationService.QueryRecord(patientQuery);
                 foreach (var result in pid)
@@ -258,14 +260,16 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             if (subject.Status != StatusType.Active)
                 return pid;
 
-            var patientQuery = new RegistrationEvent();
+            var patientQuery = new QueryEvent();
+            var registrationEvent = new RegistrationEvent();
+            patientQuery.Add(registrationEvent, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
             // Create merge filter for fuzzy match
             var ssubject = clientRegistryConfigService.CreateMergeFilter(subject);
 
             if (ssubject != null) // Minimum criteria was met
             {
-                patientQuery.Add(ssubject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                registrationEvent.Add(ssubject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                 pid = registrationService.QueryRecord(patientQuery);
             }
             else

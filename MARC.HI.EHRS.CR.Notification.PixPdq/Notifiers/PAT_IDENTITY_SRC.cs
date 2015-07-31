@@ -151,11 +151,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         MatchingAlgorithm = MatchAlgorithm.Exact,
                         MatchStrength = MatchStrength.Exact
                     };
+                    var queryEvent = new QueryEvent();
                     var patientQuery = new RegistrationEvent();
-                    patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                    queryEvent.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
                     patientQuery.Add(new Person() { AlternateIdentifiers = rplc.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                    queryEvent.Add(patientQuery, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                     // Perform the query
-                    var patientIdentifiers = registration.QueryRecord(patientQuery);
+                    var patientIdentifiers = registration.QueryRecord(queryEvent);
                     if (patientIdentifiers.Length == 0)
                         throw new InvalidOperationException();
                     var replacedPerson = (persistence.GetContainer(patientIdentifiers[0], true) as RegistrationEvent).FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;

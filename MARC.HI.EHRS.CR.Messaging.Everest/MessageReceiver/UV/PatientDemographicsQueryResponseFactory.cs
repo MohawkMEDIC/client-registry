@@ -137,7 +137,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             PRPA_IN201305UV02 rqst = request as PRPA_IN201305UV02;
 
             // Convert results to HL7v3
-            foreach (var res in results.Results)
+            foreach (RegistrationEvent res in results.Results)
             {
                 var retRec = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient, object>(
                     true, 

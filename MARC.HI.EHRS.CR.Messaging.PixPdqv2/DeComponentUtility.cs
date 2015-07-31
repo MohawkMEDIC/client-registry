@@ -100,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 // Create the pid
                 qak.QueryResponseStatus.Value = "OK";
-                UpdatePID(result.Results[0], retVal.QUERY_RESPONSE.PID, true);
+                UpdatePID(result.Results[0] as RegistrationEvent, retVal.QUERY_RESPONSE.PID, true);
             }
 
 
@@ -418,7 +418,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 qak.HitCount.Value = result.TotalResults.ToString();
                 qak.ThisPayload.Value = result.Results.Count.ToString();
                 //qak.HitsRemaining.Value = (result.TotalResults - result.StartRecordNumber).ToString();
-                foreach (var res in result.Results)
+                foreach (RegistrationEvent res in result.Results)
                 {
                     var pid = retVal.GetQUERY_RESPONSE(retVal.QUERY_RESPONSERepetitionsUsed);
                     UpdatePID(res, pid.PID, false);
@@ -436,7 +436,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
 
             // Actual query paramaeters
-            var regFilter = filter.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf) as RegistrationEvent;
+            var regFilter = filter.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as RegistrationEvent;
             var personFilter = regFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
             qpd.QueryTag.Value = filter.QueryTag;

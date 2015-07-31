@@ -222,9 +222,11 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     MatchingAlgorithm = MatchAlgorithm.Exact,
                     MatchStrength = MatchStrength.Exact
                 };
-                var patientQuery = new RegistrationEvent();
+                var patientQuery = new QueryEvent();
+                RegistrationEvent regEvent = new RegistrationEvent() { };
+                patientQuery.Add(regEvent, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
-                patientQuery.Add(new Person() { AlternateIdentifiers = rplc.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                regEvent.Add(new Person() { AlternateIdentifiers = rplc.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 // Perform the query
                 var pid = registration.QueryRecord(patientQuery);
                 if (pid.Length == 0)

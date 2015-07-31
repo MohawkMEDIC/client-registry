@@ -30,6 +30,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -1651,7 +1652,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Person filter
             var personFilter = data as Person;
             var registrationEvent = DbUtil.GetRegistrationEvent(data);
-            QueryParameters queryFilter = personFilter.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
+            var queryEvent = personFilter.Site.Container as HealthServiceRecordContainer;
+            while (!(queryEvent is QueryEvent) && queryEvent != null && queryEvent.Site != null)
+                queryEvent = queryEvent.Site.Container as HealthServiceRecordContainer;
+
+            QueryParameters queryFilter = queryEvent.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
 
             // Get the registration event's filter parameters (master filter specificity)
             if(registrationEvent != null && queryFilter == null)
@@ -1734,12 +1739,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // finish join
                 if (hasSubquery)
                     sb.Append(") AS SUBQ ON (SUBQ.PSN_ID = PSN_VRSN_TBL.PSN_ID)  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+                else
+                    sb.Append(" WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
             }
 
             #endregion
 
             #region Filter Parameters
-
 
             if (personFilter.Status == StatusType.Unknown)
                 sb.Append("AND PSN_VRSN_TBL.STATUS_CS_ID NOT IN (16,64) ");
