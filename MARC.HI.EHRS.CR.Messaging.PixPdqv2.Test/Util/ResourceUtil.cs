@@ -18,7 +18,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.Util
         /// <returns>The parsed message</returns>
         public static IMessage GetRequestMessage(String requestName)
         {
-            using(Stream resourceStream = typeof(ResourceUtil).Assembly.GetManifestResourceStream(String.Format("MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.Resources.{0}.txt", requestName)))
+            using(Stream resourceStream = typeof(ResourceUtil).Assembly.GetManifestResourceStream(String.Format("MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.Resources.Messages.{0}.txt", requestName)))
                 using(StreamReader sr = new StreamReader(resourceStream))
                     return new PipeParser().Parse(sr.ReadToEnd());
         }
