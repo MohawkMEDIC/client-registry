@@ -400,8 +400,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             if (((hsrEvent.XmlComponents[i].Site as HealthServiceRecordSite).SiteRoleType & (HealthServiceRecordSiteRoleType.CommentOn | HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf | HealthServiceRecordSiteRoleType.TargetOf)) == 0)
                                 hsrEvent.Remove(hsrEvent.XmlComponents[i]);
                     }
-
-
+                    
                     // Copy over any components that aren't already specified or updated in the new record
                     // Merge the old and new. Sets the update mode appropriately
                     cp.MergePersons(newRecordTarget, oldRecordTarget);
@@ -504,6 +503,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
                     Status = StatusType.Normal
                 };
+
             QueryEvent query = new QueryEvent();
             RegistrationEvent evt = new RegistrationEvent();
             query.Add(evt, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);

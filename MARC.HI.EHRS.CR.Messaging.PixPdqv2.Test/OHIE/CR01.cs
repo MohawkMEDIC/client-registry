@@ -3,7 +3,6 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.OHIE;
 using NHapi.Base.Model;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.Util;

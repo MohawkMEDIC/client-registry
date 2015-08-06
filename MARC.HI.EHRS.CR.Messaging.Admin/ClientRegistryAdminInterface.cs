@@ -82,11 +82,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
             {
                 // Result identifiers
                 VersionedDomainIdentifier[] vids = null;
-                var dummyQuery = new RegistrationEvent() { EventClassifier = RegistrationEventType.Register };
+                var dummyQuery = new QueryEvent();
+                var regEvt = new RegistrationEvent() { EventClassifier = RegistrationEventType.Register };
+                dummyQuery.Add(regEvt, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+
                 if (queryPrototype == null)
-                    dummyQuery.Add(new Person(), "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                    regEvt.Add(new Person(), "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 else
-                    dummyQuery.Add(queryPrototype, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                    regEvt.Add(queryPrototype, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 vids = regSvc.QueryRecord(dummyQuery);
 
                 RegistrationEventCollection retVal = new RegistrationEventCollection();
@@ -734,8 +737,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin
             {
                 // Result identifiers
                 VersionedDomainIdentifier[] vids = null;
-                var dummyQuery = new RegistrationEvent() { EventClassifier = RegistrationEventType.Register };
-                dummyQuery.EffectiveTime = timeRange;
+                var dummyQuery = new QueryEvent();
+                dummyQuery.Add(new RegistrationEvent() { EventClassifier = RegistrationEventType.Register, EffectiveTime = timeRange }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                 vids = regSvc.QueryRecord(dummyQuery);
 
                 RegistrationEventCollection retVal = new RegistrationEventCollection();

@@ -108,7 +108,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string idField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public long size {
             get {
                 return this.sizeField;
@@ -120,7 +120,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public System.DateTime lastModified {
             get {
                 return this.lastModifiedField;
@@ -300,7 +300,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private HealthServiceRecord[] matchesField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public HealthServiceRecord source {
             get {
                 return this.sourceField;
@@ -358,7 +358,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string langField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public VersionedIdentifier altId {
             get {
                 return this.altIdField;
@@ -370,7 +370,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue type {
             get {
                 return this.typeField;
@@ -382,7 +382,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -1010,7 +1010,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string capabilityField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampSet usable {
             get {
                 return this.usableField;
@@ -1096,7 +1096,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string precisionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public System.DateTime value {
             get {
                 return this.valueField;
@@ -1172,7 +1172,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string versionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public string originalText {
             get {
                 return this.originalTextField;
@@ -1184,7 +1184,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public string codeSystemName {
             get {
                 return this.codeSystemNameField;
@@ -1367,7 +1367,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private float confidenceField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public MatchAlgorithm MatchingAlgorithm {
             get {
                 return this.matchingAlgorithmField;
@@ -1379,7 +1379,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public MatchStrength MatchStrength {
             get {
                 return this.matchStrengthField;
@@ -1391,7 +1391,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public float Confidence {
             get {
                 return this.confidenceField;
@@ -1476,7 +1476,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private System.DateTime timestampField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public HealthServiceRecordSite hsrSite {
             get {
                 return this.hsrSiteField;
@@ -1748,7 +1748,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string jurisdictionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public DomainIdentifier altId {
             get {
                 return this.altIdField;
@@ -1809,7 +1809,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private bool mostRecentByTypeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampPart amendDate {
             get {
                 return this.amendDateField;
@@ -1844,7 +1844,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private CodeValue codeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue code {
             get {
                 return this.codeField;
@@ -1879,7 +1879,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string classField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -1891,7 +1891,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue code {
             get {
                 return this.codeField;
@@ -2032,7 +2032,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string langField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public string text {
             get {
                 return this.textField;
@@ -2077,7 +2077,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public VersionedIdentifier altId {
             get {
                 return this.altIdField;
@@ -2089,7 +2089,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue changeType {
             get {
                 return this.changeTypeField;
@@ -2101,7 +2101,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampSet effectiveTime {
             get {
                 return this.effectiveTimeField;
@@ -2171,7 +2171,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string genderCodeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -2183,7 +2183,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public NameSet legalName {
             get {
                 return this.legalNameField;
@@ -2219,7 +2219,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=4)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampPart birthTime {
             get {
                 return this.birthTimeField;
@@ -2256,7 +2256,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string kindField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public StatusType Status {
             get {
                 return this.statusField;
@@ -2291,7 +2291,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private DomainIdentifier altIdField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public DomainIdentifier altId {
             get {
                 return this.altIdField;
@@ -2324,7 +2324,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private HealthcareParticipantType classifierField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue type {
             get {
                 return this.typeField;
@@ -2336,7 +2336,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -2348,7 +2348,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public NameSet name {
             get {
                 return this.nameField;
@@ -2545,7 +2545,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=3)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampPart birthTime {
             get {
                 return this.birthTimeField;
@@ -2569,7 +2569,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=5)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampPart deceased {
             get {
                 return this.deceasedField;
@@ -2593,7 +2593,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=7)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue religionCode {
             get {
                 return this.religionCodeField;
@@ -2653,7 +2653,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=12)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue vip {
             get {
                 return this.vipField;
@@ -2665,7 +2665,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=13)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue marital {
             get {
                 return this.maritalField;
@@ -2677,7 +2677,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=14)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public PersonRole roleCode {
             get {
                 return this.roleCodeField;
@@ -2883,7 +2883,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private UpdateModeType updateModeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -2983,7 +2983,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -2995,7 +2995,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public CodeValue occupation {
             get {
                 return this.occupationField;
@@ -3206,7 +3206,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string precisionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute()]
         public System.DateTime value {
             get {
                 return this.valueField;

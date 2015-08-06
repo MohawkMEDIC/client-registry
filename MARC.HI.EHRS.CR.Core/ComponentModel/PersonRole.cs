@@ -20,6 +20,10 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
         /// <summary>
         /// The person is related to a patient
         /// </summary>
-        PRS = 0x02
+        PRS = 0x02,
+        /// <summary>
+        /// The person is a tag (source copy)
+        /// </summary>
+        TAG = 0x04
     }
 }
