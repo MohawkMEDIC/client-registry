@@ -218,7 +218,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string keyField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("attribute", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("attribute")]
         public AttributeData[] attribute {
             get {
                 return this.attributeField;
@@ -312,7 +312,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("matches", Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute("matches")]
         public HealthServiceRecord[] matches {
             get {
                 return this.matchesField;
@@ -646,7 +646,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private AddressSetUse useField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("part")]
         public AddressPart[] part {
             get {
                 return this.partField;
@@ -858,7 +858,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private NameSetUse useField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("part")]
         public NamePart[] part {
             get {
                 return this.partField;
@@ -1069,7 +1069,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private TimestampPart[] partField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("part")]
         public TimestampPart[] part {
             get {
                 return this.partField;
@@ -1335,12 +1335,12 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private HealthServiceRecordComponent[] items1Field;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("crQueryParameters", typeof(QueryParameters), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("extension", typeof(Extension), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("person", typeof(Person), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("personRegRef", typeof(PersonRegistrationRef), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("registration", typeof(HealthServiceRecord), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("repositoryDevice", typeof(RepositoryDevice), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("crQueryParameters", typeof(QueryParameters))]
+        [System.Xml.Serialization.XmlElementAttribute("extension", typeof(Extension))]
+        [System.Xml.Serialization.XmlElementAttribute("person", typeof(Person))]
+        [System.Xml.Serialization.XmlElementAttribute("personRegRef", typeof(PersonRegistrationRef))]
+        [System.Xml.Serialization.XmlElementAttribute("registration", typeof(HealthServiceRecord))]
+        [System.Xml.Serialization.XmlElementAttribute("repositoryDevice", typeof(RepositoryDevice))]
         public HealthServiceRecordComponent[] Items1 {
             get {
                 return this.items1Field;
@@ -1542,7 +1542,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string nameField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("originalIdentifier", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("originalIdentifier")]
         public DomainIdentifier[] originalIdentifier {
             get {
                 return this.originalIdentifierField;
@@ -1903,7 +1903,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId", Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute("altId")]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -1915,7 +1915,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=3)]
+        [System.Xml.Serialization.XmlElementAttribute("telecom")]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -1987,15 +1987,15 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private decimal idField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("annotation", typeof(Annotation), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("changeSummary", typeof(ChangeSummary), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("client", typeof(Client), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("healthServiceRecordComponentRef", typeof(HealthServiceRecordComponentRef), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("healthcareParticipant", typeof(HealthcareParticipant), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("mask", typeof(MaskingIndicator), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("personalRelationship", typeof(PersonalRelationship), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("queryRestriction", typeof(QueryRestriction), Order=0)]
-        [System.Xml.Serialization.XmlElementAttribute("serviceDeliveryLocation", typeof(ServiceDeliveryLocation), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("annotation", typeof(Annotation))]
+        [System.Xml.Serialization.XmlElementAttribute("changeSummary", typeof(ChangeSummary))]
+        [System.Xml.Serialization.XmlElementAttribute("client", typeof(Client))]
+        [System.Xml.Serialization.XmlElementAttribute("healthServiceRecordComponentRef", typeof(HealthServiceRecordComponentRef))]
+        [System.Xml.Serialization.XmlElementAttribute("healthcareParticipant", typeof(HealthcareParticipant))]
+        [System.Xml.Serialization.XmlElementAttribute("mask", typeof(MaskingIndicator))]
+        [System.Xml.Serialization.XmlElementAttribute("personalRelationship", typeof(PersonalRelationship))]
+        [System.Xml.Serialization.XmlElementAttribute("queryRestriction", typeof(QueryRestriction))]
+        [System.Xml.Serialization.XmlElementAttribute("serviceDeliveryLocation", typeof(ServiceDeliveryLocation))]
         public HealthServiceRecordComponent[] Items {
             get {
                 return this.itemsField;
@@ -2195,7 +2195,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId", Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute("altId")]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2207,7 +2207,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=3)]
+        [System.Xml.Serialization.XmlElementAttribute("telecom")]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2360,7 +2360,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId", Order=3)]
+        [System.Xml.Serialization.XmlElementAttribute("altId")]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2372,7 +2372,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=4)]
+        [System.Xml.Serialization.XmlElementAttribute("telecom")]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2424,7 +2424,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string keyField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")]
         public byte[] data {
             get {
                 return this.dataField;
@@ -2509,7 +2509,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("ethnicGroup", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("ethnicGroup")]
         public CodeValue[] ethnicGroup {
             get {
                 return this.ethnicGroupField;
@@ -2521,7 +2521,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId", Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute("altId")]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2533,7 +2533,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("otherId", Order=2)]
+        [System.Xml.Serialization.XmlElementAttribute("otherId")]
         public KeyValuePairOfCodeValueDomainIdentifier[] otherId {
             get {
                 return this.otherIdField;
@@ -2557,7 +2557,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=4)]
+        [System.Xml.Serialization.XmlElementAttribute("telecom")]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2581,7 +2581,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(IsNullable=true, Order=6)]
+        [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)]
         public System.Nullable<int> birthOrder {
             get {
                 return this.birthOrderField;
@@ -2605,7 +2605,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("language", Order=8)]
+        [System.Xml.Serialization.XmlElementAttribute("language")]
         public PersonLanguage[] language {
             get {
                 return this.languageField;
@@ -2617,7 +2617,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("addr", Order=9)]
+        [System.Xml.Serialization.XmlElementAttribute("addr")]
         public AddressSet[] addr {
             get {
                 return this.addrField;
@@ -2629,7 +2629,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("name", Order=10)]
+        [System.Xml.Serialization.XmlElementAttribute("name")]
         public NameSet[] name {
             get {
                 return this.nameField;
@@ -2641,7 +2641,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("race", Order=11)]
+        [System.Xml.Serialization.XmlElementAttribute("race")]
         public CodeValue[] race {
             get {
                 return this.raceField;
@@ -2689,7 +2689,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("citizenship", Order=15)]
+        [System.Xml.Serialization.XmlElementAttribute("citizenship")]
         public Citizenship[] citizenship {
             get {
                 return this.citizenshipField;
@@ -2701,7 +2701,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("employment", Order=16)]
+        [System.Xml.Serialization.XmlElementAttribute("employment")]
         public Employment[] employment {
             get {
                 return this.employmentField;
@@ -3063,7 +3063,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private DomainIdentifier[] altIdField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("altId")]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -3088,7 +3088,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private int countField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("conflict", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("conflict")]
         public ConflictedVersionIdentifier[] conflict {
             get {
                 return this.conflictField;
@@ -3272,7 +3272,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private TimestampPart1[] partField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("part")]
         public TimestampPart1[] part {
             get {
                 return this.partField;
@@ -3297,7 +3297,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private int countField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("registration", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("registration")]
         public HealthServiceRecord[] registration {
             get {
                 return this.registrationField;
