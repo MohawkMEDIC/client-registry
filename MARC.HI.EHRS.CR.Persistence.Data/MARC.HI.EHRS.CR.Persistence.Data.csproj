@@ -166,7 +166,7 @@
     <EmbeddedResource Include="SQL\PSQL9\CR-DDL_CLEAN.SQL">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="SQL\PSQL9\CR-DDL.sql">
+    <Content Include="SQL\PSQL9\CR-DDL.SQL">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SQL\PSQL9\CR-FX.SQL">

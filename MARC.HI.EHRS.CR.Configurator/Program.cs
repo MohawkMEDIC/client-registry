@@ -56,7 +56,8 @@ namespace MARC.HI.EHRS.CR.Configurator
 #if !DEBUG
                 WindowsIdentity identity = WindowsIdentity.GetCurrent();
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
-                if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT && 
+                    !principal.IsInRole(WindowsBuiltInRole.Administrator))
                 {
                     string cmdLine = Environment.CommandLine.Substring(Environment.CommandLine.IndexOf(".exe") + 4);
                     cmdLine = cmdLine.Contains(' ') ? cmdLine.Substring(cmdLine.IndexOf(" ")) : null;
@@ -118,7 +119,7 @@ namespace MARC.HI.EHRS.CR.Configurator
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.ToString());
             }
             finally
             {
@@ -167,7 +168,9 @@ namespace MARC.HI.EHRS.CR.Configurator
                             DatabaseConfiguratorRegistrar.Configurators.Add(ci.Invoke(null) as IDatabaseConfigurator);
                     }
                 }
-                catch { }
+                catch (Exception e) {
+                    Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
+                }
             }
 
             // Load Panels
@@ -183,12 +186,23 @@ namespace MARC.HI.EHRS.CR.Configurator
                         ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
                         if (ci != null)
                         {
-                            var config = ci.Invoke(null);
-                            ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
+                            try
+                            {
+                                var config = ci.Invoke(null);
+                                Console.WriteLine("Adding panel {0}...", config.ToString());
+                                ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
+                            }
                         }
                     }
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
+                }
             }
         }
     }

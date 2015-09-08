@@ -337,6 +337,8 @@ namespace ServiceTools
         /// <param name="ServiceName">The windows service name to uninstall</param>
         public static void Uninstall(string ServiceName)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -375,6 +377,7 @@ namespace ServiceTools
         /// <returns>True if that service exists false otherwise</returns>
         public static bool ServiceIsInstalled(string ServiceName)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return true;
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -392,6 +395,14 @@ namespace ServiceTools
 
         public static ServiceConfigInformation GetServiceConfig(string ServiceName)
         {
+
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                return new ServiceConfigInformation()
+                {
+                    dwStartType = (int)ServiceTools.ServiceBootFlag.Disabled,
+                    lpServiceStartName = "root"
+                };
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -422,6 +433,8 @@ namespace ServiceTools
         public static void Install(string ServiceName, string DisplayName,
         string FileName, string accountName, string accountPassword, ServiceBootFlag bootFlag)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect |
             ServiceManagerRights.CreateService);
             try
@@ -453,6 +466,8 @@ namespace ServiceTools
         /// <param name="Name">The service name</param>
         public static void StartService(string Name)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -483,6 +498,8 @@ namespace ServiceTools
         /// <param name="Name">The service name that will be stopped</param>
         public static void StopService(string Name)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -536,6 +553,8 @@ namespace ServiceTools
         /// <returns>The ServiceState of the service we wanted to check</returns>
         public static ServiceState GetServiceStatus(string ServiceName)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return ServiceState.Unknown;
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
@@ -567,6 +586,9 @@ namespace ServiceTools
         /// <returns>The <code>ServiceState</code> of the service</returns>
         private static ServiceState GetServiceStatus(IntPtr hService)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                return ServiceState.Unknown;
+
             SERVICE_STATUS ssStatus = new SERVICE_STATUS();
             if (QueryServiceStatus(hService, ssStatus) == 0)
             {

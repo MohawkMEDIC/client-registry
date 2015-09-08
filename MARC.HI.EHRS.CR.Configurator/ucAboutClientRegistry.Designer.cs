@@ -1,4 +1,5 @@
-﻿namespace MARC.HI.EHRS.CR.Configurator
+﻿using System;
+namespace MARC.HI.EHRS.CR.Configurator
 {
     partial class ucAboutClientRegistry
     {
@@ -149,7 +150,8 @@
             // 
             // svcController
             // 
-            this.svcController.ServiceName = "Client Registry";
+            if(Environment.OSVersion.Platform == PlatformID.Win32NT)
+                this.svcController.ServiceName = "Client Registry";
             // 
             // tmrService
             // 

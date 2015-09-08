@@ -403,7 +403,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq.Configuration.UI
             if (wcfBindingConfigurationNode == null)
             {
                 XmlDocument defaultBindingInfo = new XmlDocument();
-                defaultBindingInfo.Load(Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Config"), "PIX"), "NotificationBinding.xml"));
+                defaultBindingInfo.Load(Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "config"), "pix"), "NotificationBinding.xml"));
                 wcfBindingConfigurationNode = wcfBindingTypeNode.AppendChild(configurationDom.ImportNode(defaultBindingInfo.DocumentElement, true)) as XmlElement;
             }
 
