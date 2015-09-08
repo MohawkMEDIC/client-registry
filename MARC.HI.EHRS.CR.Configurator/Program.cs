@@ -56,7 +56,8 @@ namespace MARC.HI.EHRS.CR.Configurator
 #if !DEBUG
                 WindowsIdentity identity = WindowsIdentity.GetCurrent();
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
-                if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT && 
+                    !principal.IsInRole(WindowsBuiltInRole.Administrator))
                 {
                     string cmdLine = Environment.CommandLine.Substring(Environment.CommandLine.IndexOf(".exe") + 4);
                     cmdLine = cmdLine.Contains(' ') ? cmdLine.Substring(cmdLine.IndexOf(" ")) : null;
@@ -167,7 +168,9 @@ namespace MARC.HI.EHRS.CR.Configurator
                             DatabaseConfiguratorRegistrar.Configurators.Add(ci.Invoke(null) as IDatabaseConfigurator);
                     }
                 }
-                catch { }
+                catch (Exception e) {
+                    Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
+                }
             }
 
             // Load Panels
@@ -186,15 +189,20 @@ namespace MARC.HI.EHRS.CR.Configurator
                             try
                             {
                                 var config = ci.Invoke(null);
+                                Console.WriteLine("Adding panel {0}...", config.ToString());
                                 ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
                             }
-                            catch
+                            catch (Exception e)
                             {
+                                Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
                             }
                         }
                     }
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ERROR: {0} : {1}", file, e.ToString());
+                }
             }
         }
     }

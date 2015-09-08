@@ -33,7 +33,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.Configuration.UI
         {
             OidRegistrar.ExtendedAttributes.Add("AssigningDevFacility", typeof(String));
             OidRegistrar.ExtendedAttributes.Add("AutoFillCX4", typeof(Boolean));
-            String etplPath = Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Config"), "HAPI");
+            String etplPath = Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "config"), "hapi");
             XmlSerializer xsz = new XmlSerializer(typeof(HandlerConfigTemplate));
             foreach (var etpFileName in Directory.GetFiles(etplPath))
             {
