@@ -118,7 +118,7 @@ namespace MARC.HI.EHRS.CR.Configurator
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.ToString());
             }
             finally
             {
@@ -183,8 +183,14 @@ namespace MARC.HI.EHRS.CR.Configurator
                         ConstructorInfo ci = typ.GetConstructor(Type.EmptyTypes);
                         if (ci != null)
                         {
-                            var config = ci.Invoke(null);
-                            ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
+                            try
+                            {
+                                var config = ci.Invoke(null);
+                                ConfigurationApplicationContext.s_configurationPanels.Add(config as IConfigurationPanel);
+                            }
+                            catch
+                            {
+                            }
                         }
                     }
                 }

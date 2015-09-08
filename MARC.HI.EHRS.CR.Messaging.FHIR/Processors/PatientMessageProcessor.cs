@@ -822,14 +822,14 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 var regEvts = idq.QueryRecord(queryFilter);
                 if (regEvts.Length == 1)
                 {
-                    person = idp.GetContainer(regEvts[0], true) as Person;
-                    //person = regEvt.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    regEvt = idp.GetContainer(regEvts[0], true) as RegistrationEvent;
+                    person = regEvt.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as Person;
                 }
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, "Could not load related registration event. Data may be incomplete", null, null));
             }
 
-            retVal.Id = person.Id.ToString();
+            //retVal.Id = person.Id.ToString();
             retVal.VersionId = person.VersionId.ToString();
             retVal.Active = (person.Status & (StatusType.Active | StatusType.Completed)) != 0;
             retVal.Timestamp = person.Timestamp;

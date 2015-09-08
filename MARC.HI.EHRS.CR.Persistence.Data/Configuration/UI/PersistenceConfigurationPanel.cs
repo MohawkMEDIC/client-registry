@@ -36,6 +36,7 @@ using MARC.HI.EHRS.CR.Core;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using MARC.HI.EHRS.CR.Persistence.Data.Configuration.UI;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
 {
@@ -283,6 +284,16 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 addServiceProvNode = configurationDom.CreateElement("add");
                 addServiceProvNode.Attributes.Append(configurationDom.CreateAttribute("type"));
                 addServiceProvNode.Attributes["type"].Value = typeof(DatabaseMergeService).AssemblyQualifiedName;
+                serviceProviderNode.AppendChild(addServiceProvNode);
+            }
+
+            // Core data service
+            addServiceProvNode = serviceProviderNode.SelectSingleNode(String.Format("./*[local-name() = 'add'][@type = '{0}']", typeof(ClientRegistryDataService).AssemblyQualifiedName)) as XmlElement;
+            if (addServiceProvNode == null)
+            {
+                addServiceProvNode = configurationDom.CreateElement("add");
+                addServiceProvNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                addServiceProvNode.Attributes["type"].Value = typeof(ClientRegistryDataService).AssemblyQualifiedName;
                 serviceProviderNode.AppendChild(addServiceProvNode);
             }
 
