@@ -259,8 +259,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Query Parameter Definition QPD code
             if(qpd == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE05B"), null));
-            else if(qpd.MessageQueryName.Identifier.Value != "IHE PIX Query")
-                dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PIX Query", false, "QPD^1"));
+            //else if(qpd.MessageQueryName.Identifier.Value != "IHE PIX Query")
+            //    dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PIX Query", false, "QPD^1"));
 
             // Return value
             QueryData retVal = new QueryData()
@@ -778,6 +778,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+            if (aaut == null)
+                Trace.TraceWarning("No assigning authority for {0} found", aautString);
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
@@ -828,7 +830,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
                 {
                     var cx = pid.GetPatientIdentifierList(i);
-                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT")
+                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT" || cx.IdentifierTypeCode.Value == "MR")
                     { 
 
                         Trace.TraceInformation("Adding {0}^^^&{1}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.UniversalID.Value);
@@ -1042,7 +1044,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 List<DomainIdentifier> scopedIds = subject.AlternateIdentifiers.FindAll(o => aaut.Oid == o.Domain);
                 if (scopedIds == null || scopedIds.Count == 0)
+                {
+                    Trace.TraceError("No OIDs found matching assigning authority OID {0}", aaut.Oid);
                     dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE078"), null, null));
+                }
                 else
                 {
                     foreach (var scopedId in scopedIds)
@@ -1059,7 +1064,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
             }
             else
+            {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE078"), null));
+            }
 
         }
 
@@ -1200,6 +1207,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var evn = request.EVN;
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+            if (aaut == null)
+                Trace.TraceWarning("No assigning authority for {0} found", aautString);
 
 
             // Can be multiple patients
