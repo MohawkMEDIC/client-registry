@@ -91,7 +91,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
                 case MessageState.New:
 
                     if (messagePersister != null)
-                        messagePersister.PersistMessage(messageId, CreateMessageStream(e.Message));
+                        messagePersister.PersistMessage(messageId, e.SolicitorEndpoint, e.ReceiveEndpoint, CreateMessageStream(e.Message));
                                         
                     if (handler == null && defaultHandler == null)
                         throw new InvalidOperationException(String.Format("Cannot find message handler for '{0}'", messageType));
