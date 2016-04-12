@@ -115,7 +115,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 
                 DateTime lastReceive = DateTime.Now;
 
-                while (DateTime.Now.Subtract(lastReceive) < this.m_timeout)
+                while (this.m_timeout == TimeSpan.Zero || DateTime.Now.Subtract(lastReceive) < this.m_timeout)
                 {
 
                     if (!stream.DataAvailable)
@@ -215,6 +215,9 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                         }
                         lastReceive = DateTime.Now; // Update the last receive time so the timeout function works 
                     }
+
+                    if (this.m_timeout == TimeSpan.Zero)
+                        break;
                 }
             }
             catch (Exception e)
