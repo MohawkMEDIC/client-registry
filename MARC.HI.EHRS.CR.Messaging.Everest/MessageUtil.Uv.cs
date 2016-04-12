@@ -186,7 +186,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a domain identifier list
         /// </summary>
-        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020402.REPC_MT500006CA.RecordId> list)
+        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020403.REPC_MT500006CA.RecordId> list)
         //{
         //    List<DomainIdentifier> retVal = new List<DomainIdentifier>();
         //    foreach (var recId in list)
@@ -235,11 +235,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         //public static Custodian CreateCustodian(ISystemConfigurationService configService)
         //{
             
-        //    var retVal = new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian();
-        //    retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.AssignedDevice(
+        //    var retVal = new MARC.Everest.RMIM.CA.R020403.REPC_MT230003CA.Custodian();
+        //    retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.AssignedDevice(
         //        new II(configService.Custodianship.Id.Domain, configService.Custodianship.Id.Identifier),
-        //        new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.Repository(configService.Custodianship.Name),
-        //        new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.RepositoryJurisdiction(
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.Repository(configService.Custodianship.Name),
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.RepositoryJurisdiction(
         //            configService.JurisdictionData.Name)
         //            );
         //    return retVal;

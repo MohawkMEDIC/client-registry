@@ -24,10 +24,10 @@ using System.Text;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.Everest.Connectors;
-using MARC.Everest.RMIM.CA.R020402.Interactions;
+using MARC.Everest.RMIM.CA.R020403.Interactions;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
-using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.Everest.RMIM.CA.R020403.Vocabulary;
 using MARC.Everest.DataTypes;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.ComponentModel;
@@ -43,7 +43,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create client component
         /// </summary>
-        public Client CreateClientComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT050207CA.Patient patient, List<IResultDetail> dtls)
+        public Client CreateClientComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT050207CA.Patient patient, List<IResultDetail> dtls)
         {
             // Patient is null
             if (patient == null || patient.NullFlavor != null)
@@ -95,7 +95,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a healthcare participant component
         /// </summary>
-        protected HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090508CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
+        protected HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090508CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
         {
             HealthcareParticipant retVal = new HealthcareParticipant();
             retVal.Classifier = HealthcareParticipant.HealthcareParticipantType.Organization;
@@ -154,7 +154,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a personal relationship component
         /// </summary>
-        protected PersonalRelationship CreatePersonalRelationshipComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT910108CA.PersonalRelationship personalRelationship, List<IResultDetail> dtls)
+        protected PersonalRelationship CreatePersonalRelationshipComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT910108CA.PersonalRelationship personalRelationship, List<IResultDetail> dtls)
         {
             PersonalRelationship retVal = new PersonalRelationship();
 
@@ -206,7 +206,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a healthcare participant component
         /// </summary>
-        protected HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090108CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
+        protected HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090108CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
         {
             HealthcareParticipant retVal = new HealthcareParticipant();
             retVal.Classifier = HealthcareParticipant.HealthcareParticipantType.Person;
@@ -237,7 +237,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE031"), null));
                 return null;
             }
-            retVal.Type = CreateCodeValue<HealthCareProviderRoleType>(assignedEntity.Code, dtls);
+            retVal.Type = CreateCodeValue(assignedEntity.Code, dtls);
 
             // Telecom addresses
             if (assignedEntity.Telecom != null && !assignedEntity.Telecom.IsEmpty)
@@ -274,7 +274,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             return retVal;
         }
 
-        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090108CA.Organization organization, List<IResultDetail> dtls)
+        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090108CA.Organization organization, List<IResultDetail> dtls)
         {
             HealthcareParticipant retVal = new HealthcareParticipant();
             retVal.Classifier = HealthcareParticipant.HealthcareParticipantType.Organization;
@@ -329,7 +329,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a healthcare participant component
         /// </summary>
-        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
+        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
         {
             // Create healthcare participant
             HealthcareParticipant retVal = new HealthcareParticipant();
@@ -377,7 +377,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create location component
         /// </summary>
-        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240003CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT240003CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
             Place retVal = new Place();
             retVal.Class = "SDL";
@@ -425,7 +425,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a participant component from an organization
         /// </summary>
-        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.Organization organization, List<IResultDetail> dtls)
+        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.Organization organization, List<IResultDetail> dtls)
         {
             HealthcareParticipant retVal = new HealthcareParticipant();
             retVal.Classifier = HealthcareParticipant.HealthcareParticipantType.Organization;
@@ -465,7 +465,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <param name="p"></param>
         /// <param name="dtls"></param>
         /// <returns></returns>
-        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
+        private HealthcareParticipant CreateParticipantComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity assignedEntity, List<IResultDetail> dtls)
         {
             // Create the healthcare participant
             HealthcareParticipant retVal = new HealthcareParticipant();
@@ -505,7 +505,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create location component
         /// </summary>
-        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240012CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT240012CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
             Place retVal = new Place();
 
@@ -532,7 +532,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a location component
         /// </summary>
-        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT240007CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
+        private Place CreateLocationComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT240007CA.ServiceDeliveryLocation Place, List<IResultDetail> dtls)
         {
             Place retVal = new Place();
 
@@ -579,61 +579,61 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <param name="components"></param>
         /// <param name="dtls"></param>
         /// <returns></returns>
-        private List<IComponent> CreateComponentOfRefs(List<MARC.Everest.RMIM.CA.R020402.REPC_MT410001CA.Component3> components, List<IResultDetail> dtls)
-        {
-            List<IComponent> retVal = new List<IComponent>(components.Count);
-            foreach (var cmpOf in components)
-            {
-                if (cmpOf == null ||
-                    cmpOf.NullFlavor != null ||
-                    cmpOf.PatientCareProvisionEvent == null ||
-                    cmpOf.PatientCareProvisionEvent.NullFlavor != null)
-                    continue;
+        //private List<IComponent> CreateComponentOfRefs(List<MARC.Everest.RMIM.CA.R020403.REPC_MT410001CA.Component3> components, List<IResultDetail> dtls)
+        //{
+        //    List<IComponent> retVal = new List<IComponent>(components.Count);
+        //    foreach (var cmpOf in components)
+        //    {
+        //        if (cmpOf == null ||
+        //            cmpOf.NullFlavor != null ||
+        //            cmpOf.PatientCareProvisionEvent == null ||
+        //            cmpOf.PatientCareProvisionEvent.NullFlavor != null)
+        //            continue;
 
-                if (cmpOf.PatientCareProvisionEvent.Id == null ||
-                    cmpOf.PatientCareProvisionEvent.Id.IsNull)
-                    dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE036"), null));
-                else
-                    retVal.Add(new HealthServiceRecordComponentRef()
-                    {
-                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
-                    });
-            }
-            return retVal;
-        }
+        //        if (cmpOf.PatientCareProvisionEvent.Id == null ||
+        //            cmpOf.PatientCareProvisionEvent.Id.IsNull)
+        //            dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE036"), null));
+        //        else
+        //            retVal.Add(new HealthServiceRecordComponentRef()
+        //            {
+        //                AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
+        //            });
+        //    }
+        //    return retVal;
+        //}
 
 
         /// <summary>
         /// Create the component of references for document based transactions
         /// </summary>
-        private IEnumerable<IComponent> CreateComponentOfRefs(List<MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Component6> components, List<IResultDetail> dtls)
-        {
+        //private IEnumerable<IComponent> CreateComponentOfRefs(List<MARC.Everest.RMIM.CA.R020403.REPC_MT230003CA.Component6> components, List<IResultDetail> dtls)
+        //{
             
-            List<IComponent> retVal = new List<IComponent>(components.Count);
-            foreach (var cmpOf in components)
-            {
-                if (cmpOf == null ||
-                    cmpOf.NullFlavor != null ||
-                    cmpOf.PatientCareProvisionEvent == null ||
-                    cmpOf.PatientCareProvisionEvent.NullFlavor != null)
-                    continue;
+        //    List<IComponent> retVal = new List<IComponent>(components.Count);
+        //    foreach (var cmpOf in components)
+        //    {
+        //        if (cmpOf == null ||
+        //            cmpOf.NullFlavor != null ||
+        //            cmpOf.PatientCareProvisionEvent == null ||
+        //            cmpOf.PatientCareProvisionEvent.NullFlavor != null)
+        //            continue;
 
-                if (cmpOf.PatientCareProvisionEvent.Id == null ||
-                    cmpOf.PatientCareProvisionEvent.Id.IsNull)
-                    dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE036"), null));
-                else
-                    retVal.Add(new HealthServiceRecordComponentRef()
-                    {
-                        AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
-                    });
-            }
-            return retVal;
-        }
+        //        if (cmpOf.PatientCareProvisionEvent.Id == null ||
+        //            cmpOf.PatientCareProvisionEvent.Id.IsNull)
+        //            dtls.Add(new RequiredElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE036"), null));
+        //        else
+        //            retVal.Add(new HealthServiceRecordComponentRef()
+        //            {
+        //                AlternateIdentifier = CreateDomainIdentifier(cmpOf.PatientCareProvisionEvent.Id, dtls)
+        //            });
+        //    }
+        //    return retVal;
+        //}
 
         /// <summary>
         /// Create client component
         /// </summary>
-        public Client CreateClientComponent(MARC.Everest.RMIM.CA.R020402.COCT_MT050202CA.Patient patient, List<IResultDetail> dtls)
+        public Client CreateClientComponent(MARC.Everest.RMIM.CA.R020403.COCT_MT050202CA.Patient patient, List<IResultDetail> dtls)
         {
             // Patient is null
             if (patient == null || patient.NullFlavor != null ||
@@ -720,7 +720,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create Repository Device
         /// </summary>
-        private RepositoryDevice CreateRepositoryDevice(MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.AssignedDevice assignedDevice, List<IResultDetail> dtls)
+        private RepositoryDevice CreateRepositoryDevice(MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.AssignedDevice assignedDevice, List<IResultDetail> dtls)
         {
 
             RepositoryDevice retVal = new RepositoryDevice();

@@ -128,7 +128,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             var retHl7v3 = new List<MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201310UV02.Patient, object>>();
-            //List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>>(results.Results.Count());
+            //List<MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>>(results.Results.Count());
             UvDeComponentUtil dCompUtil = new UvDeComponentUtil();
             dCompUtil.Context = this.Context;
 

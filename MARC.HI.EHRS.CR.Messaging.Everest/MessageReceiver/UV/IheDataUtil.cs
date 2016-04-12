@@ -123,7 +123,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         });
 
 
-                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020402.Interactions.PRPA_IN101103CA;
+                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020403.Interactions.PRPA_IN101103CA;
                         retVal.AuditableObjects.Add(new AuditableObject()
                         {
                             Type = AuditableObjectType.SystemObject,
@@ -163,7 +163,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         });
 
 
-                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020402.Interactions.PRPA_IN101101CA;
+                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020403.Interactions.PRPA_IN101101CA;
                         retVal.AuditableObjects.Add(new AuditableObject()
                         {
                             Type = AuditableObjectType.SystemObject,
@@ -204,7 +204,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                         });
 
 
-                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020402.Interactions.PRPA_IN101105CA;
+                        var request = msgReceiveResult.Structure as MARC.Everest.RMIM.CA.R020403.Interactions.PRPA_IN101105CA;
                         retVal.AuditableObjects.Add(new AuditableObject()
                         {
                             Type = AuditableObjectType.SystemObject,

@@ -47,8 +47,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.ITS1.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.Everest.RMIM.CA.R020402">
+    <Reference Include="MARC.Everest.RMIM.CA.R020402, Version=1.0.4685.37452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.CA.R020403">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020403.dll</HintPath>
     </Reference>
     <Reference Include="MARC.Everest.RMIM.UV.NE2008">
       <HintPath>..\Solution Items\MARC.Everest.RMIM.UV.NE2008.dll</HintPath>
