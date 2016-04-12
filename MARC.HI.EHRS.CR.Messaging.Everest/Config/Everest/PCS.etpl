@@ -8,9 +8,9 @@
     <binding maxReceivedMessageSize="1000000"/>
   </tpl:bindingConfiguration>
     <tpl:revisionConfiguration>
-    <revision messageIdFormat="{0}" validate="true" name="pan-Canadian Client Registry Messages" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.CanadianDatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.CA.R020402, Version=1.0.3977.20430, Culture=neutral, PublicKeyToken=null">
+    <revision messageIdFormat="{0}" validate="true" name="pan-Canadian Client Registry Messages" formatter="MARC.Everest.Formatters.XML.ITS1.Formatter, MARC.Everest.Formatters.XML.ITS1, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a761391c991e4f91" aide="MARC.Everest.Formatters.XML.Datatypes.R1.CanadianDatatypeFormatter, MARC.Everest.Formatters.XML.Datatypes.R1, Version=1.2.0.0, Culture=neutral" assembly="MARC.Everest.RMIM.CA.R020403, Version=1.0.3977.20430, Culture=neutral, PublicKeyToken=null">
       <listen type="MARC.Everest.Connectors.WCF.WcfServerConnector, MARC.Everest.Connectors.WCF, Version=1.1.0.0, Culture=neutral, PublicKeyToken=99dcf2dae6474efd" mode="ListenWaitRespond"/>
-      <cacheTypes namespace="MARC.Everest.RMIM.CA.R020402.Interactions">
+      <cacheTypes namespace="MARC.Everest.RMIM.CA.R020403.Interactions">
         <add name="PRPA_IN101101CA"/>
         <add name="PRPA_IN101102CA"/>
         <add name="PRPA_IN101103CA"/>

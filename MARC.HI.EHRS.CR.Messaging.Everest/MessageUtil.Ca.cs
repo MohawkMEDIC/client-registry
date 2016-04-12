@@ -25,17 +25,17 @@ using MARC.Everest.Connectors;
 using System.Reflection;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.Everest.DataTypes;
-using MARC.Everest.RMIM.CA.R020402.MCCI_MT102001CA;
-using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.Everest.RMIM.CA.R020403.MCCI_MT102001CA;
+using MARC.Everest.RMIM.CA.R020403.Vocabulary;
 using MARC.Everest.Exceptions;
-using MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA;
+using MARC.Everest.RMIM.CA.R020403.MCCI_MT002200CA;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.Interfaces;
-using MARC.Everest.RMIM.CA.R020402.Interactions;
-using MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA;
+using MARC.Everest.RMIM.CA.R020403.Interactions;
+using MARC.Everest.RMIM.CA.R020403.MCCI_MT002200CA;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Issues;
-using MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA;
+using MARC.Everest.RMIM.CA.R020403.QUQI_MT120008CA;
 using MARC.HI.EHRS.SVC.Core;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core.Data;
@@ -143,33 +143,33 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 // Determine the type of acknowledgement
                 if (dtl is InsufficientRepetitionsResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.InsufficientRepetitions;
+                    ackDetail.Code =Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.InsufficientRepetitions);
                 else if (dtl is MandatoryElementMissingResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.MandatoryElementWithNullValue;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.MandatoryElementWithNullValue);
                 else if (dtl is NotImplementedElementResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.SyntaxError;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.SyntaxError);
                 else if (dtl is RequiredElementMissingResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.RequiredElementMissing;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.RequiredElementMissing);
                 else if (dtl is PersistenceResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.NoStorageSpaceForMessage;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.NoStorageSpaceForMessage);
                 else if (dtl is VocabularyIssueResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.TerminologyError;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.TerminologyError);
                 else if (dtl is FixedValueMisMatchedResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.ValueDoesNotMatchFixedValue;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.ValueDoesNotMatchFixedValue);
                 else if (dtl is UnsupportedProcessingModeResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.UnsupportedProcessingMode;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedProcessingMode);
                 else if (dtl is UnsupportedResponseModeResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.UnsupportedProcessingId;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedProcessingId);
                 else if (dtl is UnsupportedVersionResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.UnsupportedVersionId;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedVersionId);
                 else if (dtl.Exception is NotImplementedException)
-                    ackDetail.Code = AcknowledgementDetailCode.UnsupportedInteraction;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedInteraction);
                 else if (dtl is UnrecognizedSenderResultDetail)
-                    ackDetail.Code = AcknowledgementDetailCode.UnknownSender;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnknownSender);
                 else if (dtl is DetectedIssueResultDetail) // Don't handle these
                     continue;
                 else
-                    ackDetail.Code = AcknowledgementDetailCode.InternalSystemError;
+                    ackDetail.Code = Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.InternalSystemError);
                 
                 // Mesage
                 ackDetail.Location = dtl.Location == null ? null : new SET<ST>((ST)dtl.Location, (a,b) => ST.Comparator(a, b));
@@ -199,7 +199,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a domain identifier list
         /// </summary>
-        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020402.REPC_MT500006CA.RecordId> list)
+        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020403.REPC_MT500006CA.RecordId> list)
         //{
         //    List<DomainIdentifier> retVal = new List<DomainIdentifier>();
         //    foreach (var recId in list)
@@ -250,18 +250,18 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a custodianship node
         /// </summary>
-        public static MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian CreateCustodian(ISystemConfigurationService configService)
-        {
+        //public static MARC.Everest.RMIM.CA.R020403.REPC_MT230003CA.Custodian CreateCustodian(ISystemConfigurationService configService)
+        //{
             
-            var retVal = new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian();
-            retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.AssignedDevice(
-                new II(configService.Custodianship.Id.Domain, configService.Custodianship.Id.Identifier),
-                new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.Repository(configService.Custodianship.Name),
-                new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.RepositoryJurisdiction(
-                    configService.JurisdictionData.Name)
-                    );
-            return retVal;
-        }
+        //    var retVal = new MARC.Everest.RMIM.CA.R020403.REPC_MT230003CA.Custodian();
+        //    retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.AssignedDevice(
+        //        new II(configService.Custodianship.Id.Domain, configService.Custodianship.Id.Identifier),
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.Repository(configService.Custodianship.Name),
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.RepositoryJurisdiction(
+        //            configService.JurisdictionData.Name)
+        //            );
+        //    return retVal;
+        //}
 
         /// <summary>
         /// Create query data structure 
@@ -283,23 +283,23 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create detected issue
         /// </summary>
-        public static IEnumerable<MARC.Everest.RMIM.CA.R020402.MCAI_MT700220CA.Subject> CreateDetectedIssueEvents(List<DetectedIssue> issues)
+        public static IEnumerable<MARC.Everest.RMIM.CA.R020403.MCAI_MT700220CA.Subject> CreateDetectedIssueEvents(List<DetectedIssue> issues)
         {
-            List<MARC.Everest.RMIM.CA.R020402.MCAI_MT700220CA.Subject> retVal = new List<MARC.Everest.RMIM.CA.R020402.MCAI_MT700220CA.Subject>(10);
+            List<MARC.Everest.RMIM.CA.R020403.MCAI_MT700220CA.Subject> retVal = new List<MARC.Everest.RMIM.CA.R020403.MCAI_MT700220CA.Subject>(10);
             foreach (var dtl in issues)
             {
 
                 // Item value
-                MARC.Everest.RMIM.CA.R020402.MCAI_MT700220CA.Subject rv = new MARC.Everest.RMIM.CA.R020402.MCAI_MT700220CA.Subject(
-                    new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.DetectedIssueEvent()
+                MARC.Everest.RMIM.CA.R020403.MCAI_MT700220CA.Subject rv = new MARC.Everest.RMIM.CA.R020403.MCAI_MT700220CA.Subject(
+                    new MARC.Everest.RMIM.CA.R020403.COCT_MT260020CA.DetectedIssueEvent()
                 );
 
                 // Determine the code
                 rv.DetectedIssueEvent.Code = TranslateDetectedIssueCode(dtl.Type);
                 
                 // Mitigation
-                rv.DetectedIssueEvent.MitigatedBy.Add(new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.Mitigates(
-                    new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.DetectedIssueManagement(
+                rv.DetectedIssueEvent.MitigatedBy.Add(new MARC.Everest.RMIM.CA.R020403.COCT_MT260020CA.Mitigates(
+                    new MARC.Everest.RMIM.CA.R020403.COCT_MT260020CA.DetectedIssueManagement(
                         TranslateMitigationCode(dtl.MitigatedBy))));
 
                 // Priority code
@@ -310,8 +310,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 rv.DetectedIssueEvent.Text = dtl.Text;
 
-                rv.DetectedIssueEvent.SubjectOf2 = new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.Subject(
-                    new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.SeverityObservation(
+                rv.DetectedIssueEvent.SubjectOf2 = new MARC.Everest.RMIM.CA.R020403.COCT_MT260030CA.Subject(
+                    new MARC.Everest.RMIM.CA.R020403.REPC_MT000005CA.SeverityObservation(
                         TranslateSeverityCode(dtl.Severity)));
 
                 retVal.Add(rv);
@@ -322,50 +322,46 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Translate severity code
         /// </summary>
-        public static CV<SeverityObservationAutoGen> TranslateSeverityCode(IssueSeverityType issueSeverityType)
+        public static CV<SeverityObservation> TranslateSeverityCode(IssueSeverityType issueSeverityType)
         {
             switch (issueSeverityType)
             {
                 case IssueSeverityType.High:
-                    return SeverityObservationAutoGen.High;
-                case IssueSeverityType.Low:
-                    return SeverityObservationAutoGen.LowGrade;
-                case IssueSeverityType.Moderate:
-                    return SeverityObservationAutoGen.Moderate;
+                    return SeverityObservation.High;
                 default:
-                    return new CV<SeverityObservationAutoGen>() { NullFlavor = MARC.Everest.DataTypes.NullFlavor.Other, CodeSystem = "2.16.840.1.113883.5.1063", OriginalText = issueSeverityType.ToString() };
+                    return new CV<SeverityObservation>() { NullFlavor = MARC.Everest.DataTypes.NullFlavor.Other, CodeSystem = "2.16.840.1.113883.5.1063", OriginalText = issueSeverityType.ToString() };
             }
         }
 
         /// <summary>
         /// Translate mitigation
         /// </summary>
-        public static CV<ActDetectedIssueManagementCode> TranslateMitigationCode(ManagementType? mitigation)
+        public static CV<String> TranslateMitigationCode(ManagementType? mitigation)
         {
             if (mitigation == null) return null;
-            return new CV<ActDetectedIssueManagementCode>((ActDetectedIssueManagementCode)Enum.Parse(typeof(ActDetectedIssueManagementCode), mitigation.Value.ToString()));
+            return new CV<String>(Util.ToWireFormat((MARC.Everest.RMIM.CA.R020402.Vocabulary.ActDetectedIssueManagementCode)Enum.Parse(typeof(MARC.Everest.RMIM.CA.R020402.Vocabulary.ActDetectedIssueManagementCode), mitigation.Value.ToString())));
         }
 
         /// <summary>
         /// Translate detected issue
         /// </summary>
-        public static CV<ActDetectedIssueCode> TranslateDetectedIssueCode(IssueType issueType)
+        public static CV<String> TranslateDetectedIssueCode(IssueType issueType)
         {
-            return new CV<ActDetectedIssueCode>((ActDetectedIssueCode)Enum.Parse(typeof(ActDetectedIssueCode), issueType.ToString()));
+            return new CV<String>(Util.ToWireFormat((MARC.Everest.RMIM.CA.R020402.Vocabulary.ActDetectedIssueCode)Enum.Parse(typeof(MARC.Everest.RMIM.CA.R020402.Vocabulary.ActDetectedIssueCode), issueType.ToString())));
         }
 
         /// <summary>
         /// Generate the detected issue for queries
         /// </summary>
-        public static IEnumerable<MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.Subject> CreateDetectedIssueEventsQuery(List<DetectedIssue> issues)
+        public static IEnumerable<MARC.Everest.RMIM.CA.R020403.MCAI_MT700221CA.Subject> CreateDetectedIssueEventsQuery(List<DetectedIssue> issues)
         {
-            List<MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.Subject> retVal = new List<MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.Subject>(10);
+            List<MARC.Everest.RMIM.CA.R020403.MCAI_MT700221CA.Subject> retVal = new List<MARC.Everest.RMIM.CA.R020403.MCAI_MT700221CA.Subject>(10);
             foreach (var dtl in issues)
             {
 
                 // Item value
-                MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.Subject rv = new MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.Subject(
-                    new MARC.Everest.RMIM.CA.R020402.COCT_MT260022CA.DetectedIssueEvent()
+                MARC.Everest.RMIM.CA.R020403.MCAI_MT700221CA.Subject rv = new MARC.Everest.RMIM.CA.R020403.MCAI_MT700221CA.Subject(
+                    new MARC.Everest.RMIM.CA.R020403.COCT_MT260022CA.DetectedIssueEvent()
                 );
 
                 // Determine the code
@@ -373,8 +369,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 // Mitigation
                 if(dtl.MitigatedBy != null)
-                    rv.DetectedIssueEvent.MitigatedBy.Add(new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.Mitigates(
-                        new MARC.Everest.RMIM.CA.R020402.COCT_MT260020CA.DetectedIssueManagement(
+                    rv.DetectedIssueEvent.MitigatedBy.Add(new MARC.Everest.RMIM.CA.R020403.COCT_MT260020CA.Mitigates(
+                        new MARC.Everest.RMIM.CA.R020403.COCT_MT260020CA.DetectedIssueManagement(
                             TranslateMitigationCode(dtl.MitigatedBy))));
 
                 // Priority code

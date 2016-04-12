@@ -465,7 +465,7 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                         updates = updater.GetUpdates(this.ConnectionString, configurationDom).Where(o => o.Id.StartsWith("CR")).ToList();
                        // updates.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-                    }
+            }
                 }
             }
 

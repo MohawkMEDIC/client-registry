@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 

@@ -24,10 +24,10 @@ using System.Text;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.Everest.Connectors;
-using MARC.Everest.RMIM.CA.R020402.Interactions;
+using MARC.Everest.RMIM.CA.R020403.Interactions;
 using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
-using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.Everest.RMIM.CA.R020403.Vocabulary;
 using MARC.Everest.DataTypes;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using System.ComponentModel;
@@ -43,13 +43,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a registration event for a registration event
         /// </summary>
-        internal RegistrationEvent CreateComponents(MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101001CA.IdentifiedEntity> controlActEvent, List<IResultDetail> dtls)
+        internal RegistrationEvent CreateComponents(MARC.Everest.RMIM.CA.R020403.MFMI_MT700711CA.ControlActEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101001CA.IdentifiedEntity> controlActEvent, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Create return value
-            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101001CA.IdentifiedEntity>(controlActEvent, dtls);
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020403.PRPA_MT101001CA.IdentifiedEntity>(controlActEvent, dtls);
             var subject = controlActEvent.Subject.RegistrationRequest;
 
             retVal.EventClassifier = RegistrationEventType.Register;
@@ -305,13 +305,13 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create components for the update event
         /// </summary>
-        internal RegistrationEvent CreateComponents(MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101002CA.IdentifiedEntity> controlActEvent, List<IResultDetail> dtls)
+        internal RegistrationEvent CreateComponents(MARC.Everest.RMIM.CA.R020403.MFMI_MT700711CA.ControlActEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101002CA.IdentifiedEntity> controlActEvent, List<IResultDetail> dtls)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Create return value
-            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101002CA.IdentifiedEntity>(controlActEvent, dtls);
+            RegistrationEvent retVal = CreateComponents<MARC.Everest.RMIM.CA.R020403.PRPA_MT101002CA.IdentifiedEntity>(controlActEvent, dtls);
             var subject = controlActEvent.Subject.RegistrationRequest;
 
             retVal.EventClassifier = RegistrationEventType.Register;
@@ -567,7 +567,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create components generic function to be used on the ControlActEvent of a message
         /// </summary>
-        protected RegistrationEvent CreateComponents<T>(MARC.Everest.RMIM.CA.R020402.MFMI_MT700711CA.ControlActEvent<T> controlActEvent, List<IResultDetail> dtls)
+        protected RegistrationEvent CreateComponents<T>(MARC.Everest.RMIM.CA.R020403.MFMI_MT700711CA.ControlActEvent<T> controlActEvent, List<IResultDetail> dtls)
         {
             // Get services
             ITerminologyService term = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -643,10 +643,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     changeSummary.Timestamp = (DateTime)controlActEvent.Author.Time;
                 }
 
-                if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity)
-                    aut = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity, dtls);
-                else if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity)
-                    aut = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity, dtls);
+                if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity)
+                    aut = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity, dtls);
+                else if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity)
+                    aut = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity, dtls);
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE006"), null, null));
 
@@ -681,10 +681,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (controlActEvent.DataEnterer != null && controlActEvent.DataEnterer.NullFlavor == null)
             {
                 HealthcareParticipant ptcpt = null;
-                if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity, dtls);
-                else if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity, dtls);
+                if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity, dtls);
+                else if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity, dtls);
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW001"), null, null));
 
@@ -747,7 +747,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create components generic function to be used on the ControlActEvent of a message
         /// </summary>
-        protected RegistrationEvent CreateComponents<T>(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<T> controlActEvent, List<IResultDetail> dtls)
+        protected RegistrationEvent CreateComponents<T>(MARC.Everest.RMIM.CA.R020403.MFMI_MT700751CA.ControlActEvent<T> controlActEvent, List<IResultDetail> dtls)
         {
             // Get services
             ITerminologyService term = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
@@ -822,10 +822,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
                 HealthcareParticipant ptcpt = null;
 
-                if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity, dtls);
-                else if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity, dtls);
+                if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity, dtls);
+                else if (controlActEvent.Author.AuthorPerson is MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.Author.AuthorPerson as MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity, dtls);
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE006"), null, null));
 
@@ -839,10 +839,10 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (controlActEvent.DataEnterer != null && controlActEvent.DataEnterer.NullFlavor == null)
             {
                 HealthcareParticipant ptcpt = null;
-                if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020402.COCT_MT090502CA.AssignedEntity, dtls);
-                else if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity)
-                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020402.COCT_MT090102CA.AssignedEntity, dtls);
+                if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020403.COCT_MT090502CA.AssignedEntity, dtls);
+                else if (controlActEvent.DataEnterer.EntererChoice is MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity)
+                    ptcpt = CreateParticipantComponent(controlActEvent.DataEnterer.EntererChoice as MARC.Everest.RMIM.CA.R020403.COCT_MT090102CA.AssignedEntity, dtls);
                 else
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, this.m_localeService.GetString("MSGW001"), null, null));
                 if (ptcpt != null)
@@ -890,7 +890,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match for find candidates
         /// </summary>
-        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
+        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020403.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101103CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -904,7 +904,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // REturn value
             QueryEvent retVal = new QueryEvent() { Timestamp = DateTime.Now };
-            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList>(controlActEvent, dtls);
+            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020403.PRPA_MT101103CA.ParameterList>(controlActEvent, dtls);
             retVal.Add(reasonFor, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
             // Filter
             RegistrationEvent filter = new RegistrationEvent();
@@ -915,7 +915,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if(parameterList == null || parameterList.NullFlavor != null)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error,this.m_localeService.GetString("MSGE04E"), null));
-                parameterList = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101103CA.ParameterList();
+                parameterList = new MARC.Everest.RMIM.CA.R020403.PRPA_MT101103CA.ParameterList();
             }
 
            
@@ -962,7 +962,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             {
                 filterPerson.Add(new PersonalRelationship()
                 {
-                    RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Father),
+                    RelationshipKind = Util.ToWireFormat("FTH"),
                     LegalName = CreateNameSet(parameterList.FathersName.Value, dtls),
                     Status = StatusType.Active
                 }, "FTH", HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
@@ -976,7 +976,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             {
                 var rltn = new PersonalRelationship()
                 {
-                    RelationshipKind = Util.ToWireFormat(PersonalRelationshipRoleType.Mother),
+                    RelationshipKind = Util.ToWireFormat("MTH"),
                     LegalName = CreateNameSet(parameterList.FathersName.Value, dtls),
                     Status = StatusType.Active
                 };
@@ -1098,7 +1098,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a query match parameter for the get message
         /// </summary>
-        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020402.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
+        internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020403.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
 
@@ -1112,7 +1112,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             // REturn value
             QueryEvent retVal = new QueryEvent() { Timestamp = DateTime.Now };
-            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList>(controlActEvent, dtls);
+            RegistrationEvent reasonFor = CreateComponents<MARC.Everest.RMIM.CA.R020403.PRPA_MT101101CA.ParameterList>(controlActEvent, dtls);
             retVal.Add(reasonFor, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
 
             // Filter
@@ -1124,7 +1124,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (parameterList == null || parameterList.NullFlavor != null)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE04E"), null));
-                parameterList = new MARC.Everest.RMIM.CA.R020402.PRPA_MT101101CA.ParameterList();
+                parameterList = new MARC.Everest.RMIM.CA.R020403.PRPA_MT101101CA.ParameterList();
             }
 
             // Discrete record identifiers

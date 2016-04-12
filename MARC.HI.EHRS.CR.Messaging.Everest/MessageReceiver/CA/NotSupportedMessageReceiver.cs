@@ -24,15 +24,15 @@ using System.Text;
 using MARC.HI.EHRS.SVC.Messaging.Everest;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
-using MARC.Everest.RMIM.CA.R020402.Interactions;
-using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.Everest.RMIM.CA.R020403.Interactions;
+using MARC.Everest.RMIM.CA.R020403.Vocabulary;
 using MARC.Everest.Connectors;
 using MARC.Everest.DataTypes;
 using System.Reflection;
 using MARC.Everest.Interfaces;
 using System.Runtime.InteropServices;
-using MARC.Everest.RMIM.CA.R020402.MCCI_MT102001CA;
-using MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA;
+using MARC.Everest.RMIM.CA.R020403.MCCI_MT102001CA;
+using MARC.Everest.RMIM.CA.R020403.MCCI_MT002200CA;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 {
@@ -120,14 +120,14 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 response.Acknowledgement.AcknowledgementDetail.Add(
                     new AcknowledgementDetail(
                         AcknowledgementDetailType.Error,
-                        AcknowledgementDetailCode.ValueDoesNotMatchFixedValue,
+                        Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.ValueDoesNotMatchFixedValue),
                         String.Format("Interaction ID '{0}' not supported for message type '{1}'", solicitation.InteractionId.Extension, receivedMessage.Structure.GetType().Name),
                         null));
             else
                 response.Acknowledgement.AcknowledgementDetail.Add(
                     new AcknowledgementDetail(
                         AcknowledgementDetailType.Error,
-                        AcknowledgementDetailCode.UnsupportedInteraction,
+                        Util.ToWireFormat(MARC.Everest.RMIM.CA.R020402.Vocabulary.AcknowledgementDetailCode.UnsupportedInteraction),
                         "Cannot process this interaction",
                         null)
                 );
