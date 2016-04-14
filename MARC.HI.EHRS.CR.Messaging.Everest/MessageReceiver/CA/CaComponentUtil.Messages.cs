@@ -1138,22 +1138,39 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if (parameterList.ClientIDBus != null &&
                     parameterList.ClientIDBus.NullFlavor == null && parameterList.ClientIDBus.Value != null &&
                     !parameterList.ClientIDBus.Value.IsNull)
-                filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
-                {
-                    Domain = parameterList.ClientIDBus.Value.Root,
-                    Identifier = parameterList.ClientIDBus.Value.Extension
-                });
+			{
+				filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
+				{
+					Domain = parameterList.ClientIDBus.Value.Root,
+					Identifier = parameterList.ClientIDBus.Value.Extension
+				});
+
+				recordIds.Add(new DomainIdentifier
+				{
+					Domain = parameterList.ClientIDPub.Value.Root,
+					Identifier = parameterList.ClientIDBus.Value.Extension
+				});
+			}
 
             // Other identifiers
             filterPerson.OtherIdentifiers = new List<KeyValuePair<CodeValue, DomainIdentifier>>();
             if (parameterList.ClientIDPub != null &&
                     parameterList.ClientIDPub.NullFlavor == null && parameterList.ClientIDPub.Value != null &&
                     !parameterList.ClientIDPub.Value.IsNull)
-                filterPerson.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(new CodeValue(), new DomainIdentifier()
-                {
-                    Domain = parameterList.ClientIDPub.Value.Root,
-                    Identifier = parameterList.ClientIDPub.Value.Extension
-                }));
+			{
+				filterPerson.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(new CodeValue(), new DomainIdentifier()
+				{
+					Domain = parameterList.ClientIDPub.Value.Root,
+					Identifier = parameterList.ClientIDPub.Value.Extension
+				}));
+
+				recordIds.Add(new DomainIdentifier
+				{
+					Domain = parameterList.ClientIDPub.Value.Root,
+					Identifier = parameterList.ClientIDBus.Value.Extension
+				});
+			}
+
 
             // Filter
             filter.Add(filterPerson, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
