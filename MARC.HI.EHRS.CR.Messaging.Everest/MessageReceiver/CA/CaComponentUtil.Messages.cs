@@ -1147,7 +1147,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
 				recordIds.Add(new DomainIdentifier
 				{
-					Domain = parameterList.ClientIDPub.Value.Root,
+					Domain = parameterList.ClientIDBus.Value.Root,
 					Identifier = parameterList.ClientIDBus.Value.Extension
 				});
 			}
@@ -1167,7 +1167,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 				recordIds.Add(new DomainIdentifier
 				{
 					Domain = parameterList.ClientIDPub.Value.Root,
-					Identifier = parameterList.ClientIDBus.Value.Extension
+					Identifier = parameterList.ClientIDPub.Value.Extension
 				});
 			}
 
