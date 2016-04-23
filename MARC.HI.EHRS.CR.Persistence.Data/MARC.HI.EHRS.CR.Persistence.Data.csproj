@@ -113,7 +113,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SQL\PSQL9\Updates\cr-1.2-upgrade.update.xml" />
+    <Content Include="SQL\PSQL9\Updates\cr-1.2-upgrade.update.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="..\MARC.HI.EHRS.CR.licenseheader">
       <Link>MARC.HI.EHRS.CR.licenseheader</Link>
     </None>
@@ -141,7 +143,9 @@
     <Content Include="SQL\PSQL9\Updates\CR-003.update.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="SQL\PSQL9\Updates\CR-1.2-UPGRADE.sql" />
+    <Content Include="SQL\PSQL9\Updates\CR-1.2-UPGRADE.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Configuration\UI\frmDatabaseUpdateConfirmation.resx">

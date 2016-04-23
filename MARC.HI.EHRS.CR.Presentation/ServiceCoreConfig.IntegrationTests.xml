@@ -149,6 +149,8 @@
     <add assembly=".\MARC.HI.EHRS.SVC.Auditing.Atna.dll"/>
     <add assembly=".\MARC.HI.EHRS.SVC.Localization.dll"/>
     <add assembly="MARC.HI.EHRS.CR.Messaging.FHIR.dll"/>
+    <add assembly="MARC.Everest.RMIM.CA.R020403.dll"/>
+
     <!--<add assembly=".\MARC.Everest.dll" />
       <add assembly=".\MARC.Everest.Formatters.XML.ITS1.dll" />
       <add assembly=".\MARC.Everest.Formatters.XML.Datatypes.R1.dll" />

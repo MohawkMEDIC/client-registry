@@ -182,7 +182,36 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 
                         break;
                     }
+                case "PRPA_TE101201CA":
+                    {
+                        retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "HL7 Trigger Events"));
 
+                        // Audit actor for Patient Identity Source
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIsRequestor = true,
+                            UserIdentifier = msgReplyTo,
+                            ActorRoleCode = new List<CodeValue>() {
+                            new  CodeValue("110153", "DCM") { DisplayName = "Source" }
+                        },
+                            NetworkAccessPointId = msgEvent.SolicitorEndpoint.Host,
+                            NetworkAccessPointType = msgEvent.SolicitorEndpoint.HostNameType == UriHostNameType.Dns ? NetworkAccessPointType.MachineName : NetworkAccessPointType.IPAddress,
+                            UserName = userId
+                        });
+                        // Audit actor for PIX manager
+                        retVal.Actors.Add(new AuditActorData()
+                        {
+                            UserIdentifier = msgEvent.ReceiveEndpoint.ToString(),
+                            UserIsRequestor = false,
+                            ActorRoleCode = new List<CodeValue>() { new CodeValue("110152", "DCM") { DisplayName = "Destination" } },
+                            NetworkAccessPointType = NetworkAccessPointType.MachineName,
+                            NetworkAccessPointId = Dns.GetHostName(),
+                            AlternativeUserId = Process.GetCurrentProcess().Id.ToString()
+                        });
+
+
+                        break;
+                    }
                 case "PRPA_TE101105CA":
                     {
                         retVal = new AuditData(DateTime.Now, action, outcome, EventIdentifierType.PatientRecord, new CodeValue(itiName, "HL7 Trigger Events"));

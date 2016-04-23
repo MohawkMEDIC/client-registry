@@ -230,6 +230,7 @@
       <add assembly=".\MARC.Everest.Formatters.XML.Datatypes.R1.dll" />
       <add assembly=".\MARC.Everest.Connectors.WCF.dll" />
       <add assembly=".\MARC.Everest.Connectors.File.dll" />-->
+    <add assembly="MARC.Everest.RMIM.CA.R020403.dll"/>
     <add assembly="MARC.HI.EHRS.QM.Core.dll"/>
     <add assembly="MARC.HI.EHRS.QM.Persistence.Data.dll"/>
     <add assembly=".\AtnaApi.dll"/>
