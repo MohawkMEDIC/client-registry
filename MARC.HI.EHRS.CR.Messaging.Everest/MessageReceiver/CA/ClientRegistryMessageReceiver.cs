@@ -771,7 +771,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 
             // Create the request message
             PRPA_IN101103CA request = receivedMessage.Structure as PRPA_IN101103CA;
-
+            
             if (request == null)
                 return null;
 

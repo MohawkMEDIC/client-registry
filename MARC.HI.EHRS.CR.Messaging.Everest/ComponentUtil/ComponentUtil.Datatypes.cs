@@ -179,7 +179,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             TimestampSet tss = new TimestampSet();
 
             // value
-            if (ivl_ts.Value != null && !ivl_ts.Value.IsNull)
+            if (ivl_ts.Value != null && !ivl_ts.Value.IsNull && !String.IsNullOrEmpty(ivl_ts.Value.Value))
             {
                 if (!HasTimezone(ivl_ts.Value))
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, String.Format(ERR_NOTZ, ivl_ts.Value), null));
