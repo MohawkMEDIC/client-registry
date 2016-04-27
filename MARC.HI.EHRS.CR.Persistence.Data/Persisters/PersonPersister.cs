@@ -1651,6 +1651,28 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             
             // Person filter
             var personFilter = data as Person;
+
+            if (personFilter.Addresses == null &&
+                (personFilter.AlternateIdentifiers == null  || personFilter.AlternateIdentifiers.Count == 0) &&
+                !personFilter.BirthOrder.HasValue &&
+                personFilter.BirthPlace == null &&
+                personFilter.BirthTime == null &&
+                personFilter.Citizenship == null &&
+                personFilter.DeceasedTime == null &&
+                personFilter.Employment == null &&
+                (personFilter.EthnicGroup == null || personFilter.EthnicGroup.Count == 0) &&
+                personFilter.GenderCode == null &&
+                personFilter.Id == default(decimal) &&
+                personFilter.Language == null &&
+                personFilter.MaritalStatus == null &&
+                personFilter.MothersName == null &&
+                personFilter.Names == null &&
+                personFilter.OtherIdentifiers == null &&
+                personFilter.Race == null &&
+                personFilter.ReligionCode == null &&
+                personFilter.TelecomAddresses == null &&
+                personFilter.VipCode == null)
+                throw new ConstraintException(ApplicationContext.LocaleService.GetString("MSGE077"));
             var registrationEvent = DbUtil.GetRegistrationEvent(data);
             var queryEvent = personFilter.Site.Container as HealthServiceRecordContainer;
             while (!(queryEvent is QueryEvent) && queryEvent != null && queryEvent.Site != null)
@@ -1785,6 +1807,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if(data.Site == null)
                 sb.Append(" ORDER BY PSN_VRSN_ID DESC");
 
+
             // Now output the query
             return sb.ToString();
         }
@@ -1854,7 +1877,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     filterString.Remove(filterString.Length - 3, 3);
 
                 // Match strength & algorithms
-                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND {0} AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
+                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND ({0}) AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
                     filterString, addr.Use == AddressSet.AddressSetUse.Search ? null : String.Format("AND ADDR_SET_USE = {0}", (int)addr.Use), 
                     ncf,
                     addrStateCondition);

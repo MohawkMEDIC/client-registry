@@ -225,20 +225,19 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         public PN CreatePN(MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameSet, List<IResultDetail> dtls)
         {
-            EntityNameUse enUse = EntityNameUse.Legal;
+            PN retVal = new PN();
 
             try
             {
-                enUse = (EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString());
+                if (nameSet.Use == NameSet.NameSetUse.OfficialRecordLegal)
+                    retVal.Use = SET<CS<EntityNameUse>>.CreateSET(EntityNameUse.Legal, EntityNameUse.OfficialRecord);
+                else if (nameSet.Use != NameSet.NameSetUse.Search)
+                    retVal.Use = new SET<CS<EntityNameUse>>((EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString()));
             }
             catch
             {
                 throw;
             }
-
-            PN retVal = new PN();
-            if (enUse != EntityNameUse.Search)
-                retVal.Use = new SET<CS<EntityNameUse>>(enUse);
 
             // Parts
             foreach (var part in nameSet.Parts)

@@ -32,6 +32,7 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     [XmlType("LanguageType", Namespace = "urn:marc-hi:svc:componentModel")]
     public enum LanguageType
     {
+        NotAvailable = 0,
         Written = 1,
         Spoken = 2,
         Preferred = 4,

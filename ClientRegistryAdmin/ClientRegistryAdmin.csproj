@@ -26,6 +26,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -293,17 +294,16 @@
     <Content Include="Scripts\npm.js" />
     <Content Include="Scripts\_references.js" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
-    <None Include="Service References\ClientRegistryAdminService\admin.disco" />
     <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.LogInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.OidInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEvent.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Service References\ClientRegistryAdminService\ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection.datasource">

@@ -98,7 +98,7 @@ namespace ClientRegistryAdmin.Models
                 if (originalXml != null)
                     return originalXml;
 
-                XmlSerializer xsz = new XmlSerializer(typeof(ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord));
+                XmlSerializer xsz = new XmlSerializer(typeof(ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecordComponent));
                 using (MemoryStream ms = new MemoryStream())
                 {
                     xsz.Serialize(ms, this.HealthServiceEvent);
@@ -130,7 +130,7 @@ namespace ClientRegistryAdmin.Models
         /// <summary>
         /// Event
         /// </summary>
-        public ClientRegistryAdminService.HealthServiceRecord HealthServiceEvent { get; set; }
+        public ClientRegistryAdminService.HealthServiceRecordContainer HealthServiceEvent { get; set; }
 
         /// <summary>
         /// Status

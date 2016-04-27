@@ -929,12 +929,16 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                 if (recId != null &&
                     recId.NullFlavor == null && recId.Value != null &&
                     !recId.Value.IsNull)
+                {
+                    var oidData = config.OidRegistrar.FindData(recId.Value.Root);
+                    if (oidData?.Attributes.Find(o => o.Key == "NoSearch").Value == "true")
+                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, String.Format(this.m_localeService.GetString("MSGE079"), "clientId"), null, null));
                     filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
                     {
                         Domain = recId.Value.Root,
                         Identifier = recId.Value.Extension
                     });
-
+                }
 
             // Admin gender
             if (parameterList.AdministrativeGender != null &&
@@ -1101,6 +1105,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         internal QueryEvent CreateQueryMatch(MARC.Everest.RMIM.CA.R020403.MFMI_MT700751CA.ControlActEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101101CA.ParameterList> controlActEvent, List<IResultDetail> dtls, ref List<DomainIdentifier> recordIds)
         {
             ITerminologyService termSvc = Context.GetService(typeof(ITerminologyService)) as ITerminologyService;
+            ISystemConfigurationService configSvc = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
             // Details about the query
             if (!controlActEvent.Code.Code.Equals(PRPA_IN101105CA.GetTriggerEvent().Code) && 
@@ -1139,11 +1144,20 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     parameterList.ClientIDBus.NullFlavor == null && parameterList.ClientIDBus.Value != null &&
                     !parameterList.ClientIDBus.Value.IsNull)
 			{
-				filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
-				{
-					Domain = parameterList.ClientIDBus.Value.Root,
-					Identifier = parameterList.ClientIDBus.Value.Extension
-				});
+                Decimal fid = 0;
+                if (parameterList.ClientIDBus.Value.Root == configSvc.OidRegistrar.GetOid("CR_CID").Oid)
+                {
+                    if (!Decimal.TryParse(parameterList.ClientIDBus.Value.Extension, out fid))
+                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, "CR_CID MUST be Decimal", "//*[local-name() = 'parameterList']/*[local-name() = 'clientIDPub']/*[local-name() = 'value']/@extension", null));
+                    else
+                        filterPerson.Id = fid;
+                }
+                else
+				    filterPerson.AlternateIdentifiers.Add(new VersionedDomainIdentifier()
+				    {
+					    Domain = parameterList.ClientIDBus.Value.Root,
+					    Identifier = parameterList.ClientIDBus.Value.Extension
+				    });
 
 				recordIds.Add(new DomainIdentifier
 				{
@@ -1158,11 +1172,20 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
                     parameterList.ClientIDPub.NullFlavor == null && parameterList.ClientIDPub.Value != null &&
                     !parameterList.ClientIDPub.Value.IsNull)
 			{
-				filterPerson.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(new CodeValue(), new DomainIdentifier()
-				{
-					Domain = parameterList.ClientIDPub.Value.Root,
-					Identifier = parameterList.ClientIDPub.Value.Extension
-				}));
+                Decimal fid = 0;
+                if (parameterList.ClientIDPub.Value.Root == configSvc.OidRegistrar.GetOid("CR_CID").Oid)
+                {
+                    if (!Decimal.TryParse(parameterList.ClientIDPub.Value.Extension, out fid))
+                        dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, "CR_CID MUST be Decimal", "//*[local-name() = 'parameterList']/*[local-name() = 'clientIDPub']/*[local-name() = 'value']/@extension", null));
+                    else
+                        filterPerson.Id = fid;
+                }
+                else
+                    filterPerson.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(new CodeValue(), new DomainIdentifier()
+				    {
+					    Domain = parameterList.ClientIDPub.Value.Root,
+					    Identifier = parameterList.ClientIDPub.Value.Extension
+				    }));
 
 				recordIds.Add(new DomainIdentifier
 				{

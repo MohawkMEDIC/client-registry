@@ -231,7 +231,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Admin.Configuration.UI
 
             if (wcfEndpointNode.Attributes["binding"] == null)
                 wcfEndpointNode.Attributes.Append(configurationDom.CreateAttribute("binding"));
-            wcfEndpointNode.Attributes["binding"].Value = "wsHttpBinding";
+            wcfEndpointNode.Attributes["binding"].Value = "basicHttpBinding";
 
             // Binding config?
             XmlAttribute wcfBindingConfigurationNode = wcfEndpointNode.Attributes["bindingConfiguration"];

@@ -398,7 +398,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             NameSet retVal = new NameSet();
             NameSet.NameSetUse internalNameUse = 0;
             var lnu = legalName.Use == null || legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Search : (EntityNameUse)legalName.Use[0];
-            if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
+            if ((lnu == EntityNameUse.Legal || lnu == EntityNameUse.OfficialRecord) &&
+                legalName.Use.Count > 1 &&
+                (legalName.Use[1] == EntityNameUse.OfficialRecord | legalName.Use[1] == EntityNameUse.Legal))
+                internalNameUse = NameSet.NameSetUse.OfficialRecordLegal;
+            else if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
                 return null;
 
             retVal.Use = internalNameUse;

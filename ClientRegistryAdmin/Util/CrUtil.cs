@@ -26,11 +26,11 @@ namespace ClientRegistryAdmin.Util
                 DateTime high = DateTime.Now,
                     low = DateTime.Now.Subtract(since);
 
-                TimestampSet1 sinceRange = new TimestampSet1()
+                TimestampSet sinceRange = new TimestampSet()
                 {
-                    part = new TimestampPart1[] {
-                        new TimestampPart1() { value = low, type = TimestampPartType1.LowBound },
-                        new TimestampPart1() { value = high, type = TimestampPartType1.HighBound }
+                    part = new TimestampPart[] {
+                        new TimestampPart() { value = low, type = TimestampPartType.LowBound },
+                        new TimestampPart() { value = high, type = TimestampPartType.HighBound }
                     }
                 };
 
@@ -104,7 +104,7 @@ namespace ClientRegistryAdmin.Util
             {
                 var registrations = client.GetRegistrations(queryPrototype, offset, count);
                 ClientRegistryAdmin.Models.PatientMatch[] retVal = new PatientMatch[registrations.count];
-                for (int i = 0; i < registrations.registration.Length; i++)
+                for (int i = 0; i < registrations.registration?.Length; i++)
                 {
                     ClientRegistryAdmin.Models.PatientMatch pm = ConvertRegistrationEvent(registrations.registration[i]);
                     // Address?
@@ -113,7 +113,7 @@ namespace ClientRegistryAdmin.Util
 
                 return retVal;
             }
-            catch
+            catch(Exception e)
             {
                 return null;
             }
@@ -122,7 +122,7 @@ namespace ClientRegistryAdmin.Util
         /// <summary>
         /// Convert registration event
         /// </summary>
-        private static Models.PatientMatch ConvertRegistrationEvent(HealthServiceRecord reg)
+        private static Models.PatientMatch ConvertRegistrationEvent(RegistrationEvent reg)
         {
             var psn = reg.Items1.Where(o => o.hsrSite.roleType == HealthServiceRecordSiteRoleType.SubjectOf).First() as Person;
             ClientRegistryAdmin.Models.PatientMatch pm = new Models.PatientMatch();
@@ -294,11 +294,11 @@ namespace ClientRegistryAdmin.Util
                 DateTime high = DateTime.Now,
                     low = DateTime.Now.Subtract(since);
 
-                TimestampSet1 sinceRange = new TimestampSet1()
+                TimestampSet sinceRange = new TimestampSet()
                 {
-                    part = new TimestampPart1[] {
-                        new TimestampPart1() { value = low, type = TimestampPartType1.LowBound },
-                        new TimestampPart1() { value = high, type = TimestampPartType1.HighBound }
+                    part = new TimestampPart[] {
+                        new TimestampPart() { value = low, type = TimestampPartType.LowBound },
+                        new TimestampPart() { value = high, type = TimestampPartType.HighBound }
                     }
                 };
 

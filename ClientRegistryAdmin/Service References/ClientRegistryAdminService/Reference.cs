@@ -17,84 +17,73 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         [System.ServiceModel.OperationContractAttribute(Action="GetLogfiles", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetLogFilesResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.LogInfo[] GetLogFiles();
         
         [System.ServiceModel.OperationContractAttribute(Action="GetLog", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetLogResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         string GetLog(string id);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetServices", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetServicesResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.ServiceStatus[] GetServices();
         
         [System.ServiceModel.OperationContractAttribute(Action="GetRegistrations", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRegistrations(ClientRegistryAdmin.ClientRegistryAdminService.Person queryPrototype, int start, int count);
         
         [System.ServiceModel.OperationContractAttribute(Action="RecentActivity", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRecentActivityResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet1 range, int start, int count, bool identifierOnly);
+        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet range, int start, int count, bool identifierOnly);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetRegistration", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetRegistrationEventResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord GetRegistrationEvent(decimal id);
+        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEvent GetRegistrationEvent(decimal id);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetConflicts", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetConflictsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflicts(int start, int count, bool identifierOnly);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetConflict", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetConflictResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.ConflictCollection GetConflict(decimal id);
         
         [System.ServiceModel.OperationContractAttribute(Action="Merge", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/MergeResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
-        ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord Merge(decimal[] sourceIds, decimal targetId);
+        ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEvent Merge(decimal[] sourceIds, decimal targetId);
         
         [System.ServiceModel.OperationContractAttribute(Action="Resolve", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/ResolveResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         void Resolve(decimal sourceId);
         
         [System.ServiceModel.OperationContractAttribute(Action="GetOids", ReplyAction="http://tempuri.org/IClientRegistryAdminInterface/GetOidsResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype1))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Datatype))]
         [System.ServiceModel.ServiceKnownTypeAttribute(typeof(HealthServiceRecordComponent))]
         ClientRegistryAdmin.ClientRegistryAdminService.OidInfo[] GetOids();
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -108,7 +97,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string idField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public long size {
             get {
                 return this.sizeField;
@@ -120,7 +109,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public System.DateTime lastModified {
             get {
                 return this.lastModifiedField;
@@ -154,7 +143,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -200,7 +189,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -218,7 +207,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string keyField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("attribute")]
+        [System.Xml.Serialization.XmlElementAttribute("attribute", Order=0)]
         public AttributeData[] attribute {
             get {
                 return this.attributeField;
@@ -288,20 +277,20 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public partial class ConflictedVersionIdentifier : object, System.ComponentModel.INotifyPropertyChanged {
         
-        private HealthServiceRecord sourceField;
+        private RegistrationEvent sourceField;
         
-        private HealthServiceRecord[] matchesField;
+        private RegistrationEvent[] matchesField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
-        public HealthServiceRecord source {
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public RegistrationEvent source {
             get {
                 return this.sourceField;
             }
@@ -312,8 +301,8 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("matches")]
-        public HealthServiceRecord[] matches {
+        [System.Xml.Serialization.XmlElementAttribute("matches", Order=1)]
+        public RegistrationEvent[] matches {
             get {
                 return this.matchesField;
             }
@@ -334,12 +323,12 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
-    public partial class HealthServiceRecord : CrHealthServiceRecordContainer {
+    public partial class RegistrationEvent : CrHealthServiceRecordContainer {
         
         private VersionedIdentifier altIdField;
         
@@ -358,7 +347,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string langField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public VersionedIdentifier altId {
             get {
                 return this.altIdField;
@@ -370,7 +359,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public CodeValue type {
             get {
                 return this.typeField;
@@ -382,7 +371,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -455,7 +444,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -479,7 +468,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(VersionedIdentifier))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -566,16 +555,44 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CodeValue))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(DomainIdentifier))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(VersionedIdentifier))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public abstract partial class Datatype : object, System.ComponentModel.INotifyPropertyChanged {
         
+        private System.DateTime effectiveTimeField;
+        
+        private System.Nullable<System.DateTime> obsoleteTimeField;
+        
         private decimal keyField;
         
         private UpdateModeType updateModeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public System.DateTime EffectiveTime {
+            get {
+                return this.effectiveTimeField;
+            }
+            set {
+                this.effectiveTimeField = value;
+                this.RaisePropertyChanged("EffectiveTime");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(IsNullable=true, Order=1)]
+        public System.Nullable<System.DateTime> ObsoleteTime {
+            get {
+                return this.obsoleteTimeField;
+            }
+            set {
+                this.obsoleteTimeField = value;
+                this.RaisePropertyChanged("ObsoleteTime");
+            }
+        }
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -612,7 +629,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum UpdateModeType {
@@ -634,7 +651,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -646,7 +663,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private AddressSetUse useField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part")]
+        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
         public AddressPart[] part {
             get {
                 return this.partField;
@@ -671,7 +688,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -717,7 +734,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum AddressPartType {
@@ -806,7 +823,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.FlagsAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum AddressSetUse {
@@ -846,7 +863,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -858,7 +875,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private NameSetUse useField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part")]
+        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
         public NamePart[] part {
             get {
                 return this.partField;
@@ -883,7 +900,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -929,7 +946,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum NamePartType {
@@ -954,7 +971,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum NameSetUse {
@@ -991,10 +1008,13 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         /// <remarks/>
         MaidenName,
+        
+        /// <remarks/>
+        OfficialRecordLegal,
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1010,7 +1030,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string capabilityField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public TimestampSet usable {
             get {
                 return this.usableField;
@@ -1059,7 +1079,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1069,7 +1089,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private TimestampPart[] partField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part")]
+        [System.Xml.Serialization.XmlElementAttribute("part", Order=0)]
         public TimestampPart[] part {
             get {
                 return this.partField;
@@ -1082,7 +1102,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1096,7 +1116,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string precisionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public System.DateTime value {
             get {
                 return this.valueField;
@@ -1133,7 +1153,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum TimestampPartType {
@@ -1152,7 +1172,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1172,7 +1192,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string versionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public string originalText {
             get {
                 return this.originalTextField;
@@ -1184,7 +1204,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public string codeSystemName {
             get {
                 return this.codeSystemNameField;
@@ -1246,7 +1266,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.FlagsAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum RegistrationEventType {
@@ -1281,7 +1301,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.FlagsAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum StatusType {
@@ -1321,11 +1341,12 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(RegistrationEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1335,12 +1356,13 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private HealthServiceRecordComponent[] items1Field;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("crQueryParameters", typeof(QueryParameters))]
-        [System.Xml.Serialization.XmlElementAttribute("extension", typeof(Extension))]
-        [System.Xml.Serialization.XmlElementAttribute("person", typeof(Person))]
-        [System.Xml.Serialization.XmlElementAttribute("personRegRef", typeof(PersonRegistrationRef))]
-        [System.Xml.Serialization.XmlElementAttribute("registration", typeof(HealthServiceRecord))]
-        [System.Xml.Serialization.XmlElementAttribute("repositoryDevice", typeof(RepositoryDevice))]
+        [System.Xml.Serialization.XmlElementAttribute("crQueryParameters", typeof(QueryParameters), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("extension", typeof(Extension), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("person", typeof(Person), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("personRegRef", typeof(PersonRegistrationRef), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("queryEvent", typeof(QueryEvent), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("registration", typeof(RegistrationEvent), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("repositoryDevice", typeof(RepositoryDevice), Order=0)]
         public HealthServiceRecordComponent[] Items1 {
             get {
                 return this.items1Field;
@@ -1353,7 +1375,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1367,7 +1389,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private float confidenceField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public MatchAlgorithm MatchingAlgorithm {
             get {
                 return this.matchingAlgorithmField;
@@ -1379,7 +1401,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public MatchStrength MatchStrength {
             get {
                 return this.matchStrengthField;
@@ -1391,7 +1413,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
         public float Confidence {
             get {
                 return this.confidenceField;
@@ -1404,7 +1426,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum MatchAlgorithm {
@@ -1426,7 +1448,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum MatchStrength {
@@ -1447,22 +1469,23 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(RepositoryDevice))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryParameters))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ServiceDeliveryLocation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryRestriction))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(MaskingIndicator))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ServiceDeliveryLocation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordContainer))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CrHealthServiceRecordContainer))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(RegistrationEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonalRelationship))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1476,7 +1499,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private System.DateTime timestampField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public HealthServiceRecordSite hsrSite {
             get {
                 return this.hsrSiteField;
@@ -1522,7 +1545,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1542,7 +1565,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string nameField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("originalIdentifier")]
+        [System.Xml.Serialization.XmlElementAttribute("originalIdentifier", Order=0)]
         public DomainIdentifier[] originalIdentifier {
             get {
                 return this.originalIdentifierField;
@@ -1625,7 +1648,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.FlagsAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum HealthServiceRecordSiteRoleType {
@@ -1719,7 +1742,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum UpdateMode {
@@ -1732,7 +1755,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1748,7 +1771,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string jurisdictionField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public DomainIdentifier altId {
             get {
                 return this.altIdField;
@@ -1797,67 +1820,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
-    public partial class QueryRestriction : HealthServiceRecordComponent {
-        
-        private TimestampPart amendDateField;
-        
-        private bool mostRecentByTypeField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
-        public TimestampPart amendDate {
-            get {
-                return this.amendDateField;
-            }
-            set {
-                this.amendDateField = value;
-                this.RaisePropertyChanged("amendDate");
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool mostRecentByType {
-            get {
-                return this.mostRecentByTypeField;
-            }
-            set {
-                this.mostRecentByTypeField = value;
-                this.RaisePropertyChanged("mostRecentByType");
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
-    public partial class MaskingIndicator : HealthServiceRecordComponent {
-        
-        private CodeValue codeField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
-        public CodeValue code {
-            get {
-                return this.codeField;
-            }
-            set {
-                this.codeField = value;
-                this.RaisePropertyChanged("code");
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1879,7 +1842,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string classField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -1891,7 +1854,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public CodeValue code {
             get {
                 return this.codeField;
@@ -1903,7 +1866,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId")]
+        [System.Xml.Serialization.XmlElementAttribute("altId", Order=2)]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -1915,7 +1878,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom")]
+        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=3)]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -1964,18 +1927,79 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class QueryRestriction : HealthServiceRecordComponent {
+        
+        private TimestampPart amendDateField;
+        
+        private bool mostRecentByTypeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public TimestampPart amendDate {
+            get {
+                return this.amendDateField;
+            }
+            set {
+                this.amendDateField = value;
+                this.RaisePropertyChanged("amendDate");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool mostRecentByType {
+            get {
+                return this.mostRecentByTypeField;
+            }
+            set {
+                this.mostRecentByTypeField = value;
+                this.RaisePropertyChanged("mostRecentByType");
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class MaskingIndicator : HealthServiceRecordComponent {
+        
+        private CodeValue codeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public CodeValue code {
+            get {
+                return this.codeField;
+            }
+            set {
+                this.codeField = value;
+                this.RaisePropertyChanged("code");
+            }
+        }
+    }
+    
+    /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(CrHealthServiceRecordContainer))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(QueryEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(RegistrationEvent))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Person))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Extension))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecord))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonRegistrationRef))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthServiceRecordComponentRef))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(HealthcareParticipant))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ChangeSummary))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Client))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonalRelationship))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Annotation))]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -1987,15 +2011,15 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private decimal idField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("annotation", typeof(Annotation))]
-        [System.Xml.Serialization.XmlElementAttribute("changeSummary", typeof(ChangeSummary))]
-        [System.Xml.Serialization.XmlElementAttribute("client", typeof(Client))]
-        [System.Xml.Serialization.XmlElementAttribute("healthServiceRecordComponentRef", typeof(HealthServiceRecordComponentRef))]
-        [System.Xml.Serialization.XmlElementAttribute("healthcareParticipant", typeof(HealthcareParticipant))]
-        [System.Xml.Serialization.XmlElementAttribute("mask", typeof(MaskingIndicator))]
-        [System.Xml.Serialization.XmlElementAttribute("personalRelationship", typeof(PersonalRelationship))]
-        [System.Xml.Serialization.XmlElementAttribute("queryRestriction", typeof(QueryRestriction))]
-        [System.Xml.Serialization.XmlElementAttribute("serviceDeliveryLocation", typeof(ServiceDeliveryLocation))]
+        [System.Xml.Serialization.XmlElementAttribute("annotation", typeof(Annotation), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("changeSummary", typeof(ChangeSummary), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("client", typeof(Client), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("healthServiceRecordComponentRef", typeof(HealthServiceRecordComponentRef), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("healthcareParticipant", typeof(HealthcareParticipant), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("mask", typeof(MaskingIndicator), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("personalRelationship", typeof(PersonalRelationship), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("queryRestriction", typeof(QueryRestriction), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("serviceDeliveryLocation", typeof(ServiceDeliveryLocation), Order=0)]
         public HealthServiceRecordComponent[] Items {
             get {
                 return this.itemsField;
@@ -2020,7 +2044,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2032,7 +2056,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string langField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public string text {
             get {
                 return this.textField;
@@ -2057,7 +2081,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2077,7 +2101,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public VersionedIdentifier altId {
             get {
                 return this.altIdField;
@@ -2089,7 +2113,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public CodeValue changeType {
             get {
                 return this.changeTypeField;
@@ -2101,7 +2125,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
         public TimestampSet effectiveTime {
             get {
                 return this.effectiveTimeField;
@@ -2151,7 +2175,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PersonalRelationship))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2171,7 +2195,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string genderCodeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -2183,7 +2207,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public NameSet legalName {
             get {
                 return this.legalNameField;
@@ -2195,7 +2219,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId")]
+        [System.Xml.Serialization.XmlElementAttribute("altId", Order=2)]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2207,7 +2231,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom")]
+        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=3)]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2219,7 +2243,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=4)]
         public TimestampPart birthTime {
             get {
                 return this.birthTimeField;
@@ -2244,28 +2268,16 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public partial class PersonalRelationship : Client {
         
-        private StatusType statusField;
-        
         private string kindField;
         
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
-        public StatusType Status {
-            get {
-                return this.statusField;
-            }
-            set {
-                this.statusField = value;
-                this.RaisePropertyChanged("Status");
-            }
-        }
+        private StatusType statusField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -2278,10 +2290,22 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
                 this.RaisePropertyChanged("kind");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public StatusType status {
+            get {
+                return this.statusField;
+            }
+            set {
+                this.statusField = value;
+                this.RaisePropertyChanged("status");
+            }
+        }
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2291,7 +2315,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private DomainIdentifier altIdField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public DomainIdentifier altId {
             get {
                 return this.altIdField;
@@ -2304,7 +2328,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2324,7 +2348,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private HealthcareParticipantType classifierField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public CodeValue type {
             get {
                 return this.typeField;
@@ -2336,7 +2360,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public AddressSet addr {
             get {
                 return this.addrField;
@@ -2348,7 +2372,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
         public NameSet name {
             get {
                 return this.nameField;
@@ -2360,7 +2384,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId")]
+        [System.Xml.Serialization.XmlElementAttribute("altId", Order=3)]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2372,7 +2396,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom")]
+        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=4)]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2397,7 +2421,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum HealthcareParticipantType {
@@ -2410,7 +2434,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2424,7 +2448,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private string keyField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")]
+        [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary", Order=0)]
         public byte[] data {
             get {
                 return this.dataField;
@@ -2461,7 +2485,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2509,7 +2533,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("ethnicGroup")]
+        [System.Xml.Serialization.XmlElementAttribute("ethnicGroup", Order=0)]
         public CodeValue[] ethnicGroup {
             get {
                 return this.ethnicGroupField;
@@ -2521,7 +2545,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId")]
+        [System.Xml.Serialization.XmlElementAttribute("altId", Order=1)]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -2533,7 +2557,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("otherId")]
+        [System.Xml.Serialization.XmlElementAttribute("otherId", Order=2)]
         public KeyValuePairOfCodeValueDomainIdentifier[] otherId {
             get {
                 return this.otherIdField;
@@ -2545,7 +2569,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=3)]
         public TimestampPart birthTime {
             get {
                 return this.birthTimeField;
@@ -2557,7 +2581,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("telecom")]
+        [System.Xml.Serialization.XmlElementAttribute("telecom", Order=4)]
         public TelecomAddress[] telecom {
             get {
                 return this.telecomField;
@@ -2569,7 +2593,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=5)]
         public TimestampPart deceased {
             get {
                 return this.deceasedField;
@@ -2581,7 +2605,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)]
+        [System.Xml.Serialization.XmlElementAttribute(IsNullable=true, Order=6)]
         public System.Nullable<int> birthOrder {
             get {
                 return this.birthOrderField;
@@ -2593,7 +2617,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=7)]
         public CodeValue religionCode {
             get {
                 return this.religionCodeField;
@@ -2605,7 +2629,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("language")]
+        [System.Xml.Serialization.XmlElementAttribute("language", Order=8)]
         public PersonLanguage[] language {
             get {
                 return this.languageField;
@@ -2617,7 +2641,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("addr")]
+        [System.Xml.Serialization.XmlElementAttribute("addr", Order=9)]
         public AddressSet[] addr {
             get {
                 return this.addrField;
@@ -2629,7 +2653,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("name")]
+        [System.Xml.Serialization.XmlElementAttribute("name", Order=10)]
         public NameSet[] name {
             get {
                 return this.nameField;
@@ -2641,7 +2665,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("race")]
+        [System.Xml.Serialization.XmlElementAttribute("race", Order=11)]
         public CodeValue[] race {
             get {
                 return this.raceField;
@@ -2653,7 +2677,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=12)]
         public CodeValue vip {
             get {
                 return this.vipField;
@@ -2665,7 +2689,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=13)]
         public CodeValue marital {
             get {
                 return this.maritalField;
@@ -2677,7 +2701,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=14)]
         public PersonRole roleCode {
             get {
                 return this.roleCodeField;
@@ -2689,7 +2713,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("citizenship")]
+        [System.Xml.Serialization.XmlElementAttribute("citizenship", Order=15)]
         public Citizenship[] citizenship {
             get {
                 return this.citizenshipField;
@@ -2701,7 +2725,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("employment")]
+        [System.Xml.Serialization.XmlElementAttribute("employment", Order=16)]
         public Employment[] employment {
             get {
                 return this.employmentField;
@@ -2750,7 +2774,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2768,7 +2792,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2828,10 +2852,13 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum LanguageType {
+        
+        /// <remarks/>
+        NotAvailable,
         
         /// <remarks/>
         Written,
@@ -2850,7 +2877,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public enum PersonRole {
@@ -2860,10 +2887,13 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         
         /// <remarks/>
         PRS,
+        
+        /// <remarks/>
+        TAG,
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2883,7 +2913,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private UpdateModeType updateModeField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -2965,7 +2995,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -2983,7 +3013,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private StatusType statusField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public TimestampSet efft {
             get {
                 return this.efftField;
@@ -2995,7 +3025,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
         public CodeValue occupation {
             get {
                 return this.occupationField;
@@ -3053,7 +3083,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -3063,7 +3093,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private DomainIdentifier[] altIdField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("altId")]
+        [System.Xml.Serialization.XmlElementAttribute("altId", Order=0)]
         public DomainIdentifier[] altId {
             get {
                 return this.altIdField;
@@ -3076,7 +3106,16 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
+    public partial class QueryEvent : CrHealthServiceRecordContainer {
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -3088,7 +3127,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
         private int countField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("conflict")]
+        [System.Xml.Serialization.XmlElementAttribute("conflict", Order=0)]
         public ConflictedVersionIdentifier[] conflict {
             get {
                 return this.conflictField;
@@ -3122,183 +3161,20 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(TimestampPart1))]
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(TimestampSet1))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="Datatype", Namespace="http://tempuri.org/")]
-    public abstract partial class Datatype1 : object, System.ComponentModel.INotifyPropertyChanged {
-        
-        private decimal keyField;
-        
-        private UpdateModeType1 updateModeField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public decimal key {
-            get {
-                return this.keyField;
-            }
-            set {
-                this.keyField = value;
-                this.RaisePropertyChanged("key");
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public UpdateModeType1 updateMode {
-            get {
-                return this.updateModeField;
-            }
-            set {
-                this.updateModeField = value;
-                this.RaisePropertyChanged("updateMode");
-            }
-        }
-        
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        
-        protected void RaisePropertyChanged(string propertyName) {
-            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
-                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="UpdateModeType", Namespace="http://tempuri.org/")]
-    public enum UpdateModeType1 {
-        
-        /// <remarks/>
-        Add,
-        
-        /// <remarks/>
-        AddOrUpdate,
-        
-        /// <remarks/>
-        Update,
-        
-        /// <remarks/>
-        Remove,
-        
-        /// <remarks/>
-        Ignore,
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampPart", Namespace="http://tempuri.org/")]
-    public partial class TimestampPart1 : Datatype1 {
-        
-        private System.DateTime valueField;
-        
-        private TimestampPartType1 typeField;
-        
-        private string precisionField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute()]
-        public System.DateTime value {
-            get {
-                return this.valueField;
-            }
-            set {
-                this.valueField = value;
-                this.RaisePropertyChanged("value");
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public TimestampPartType1 type {
-            get {
-                return this.typeField;
-            }
-            set {
-                this.typeField = value;
-                this.RaisePropertyChanged("type");
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string precision {
-            get {
-                return this.precisionField;
-            }
-            set {
-                this.precisionField = value;
-                this.RaisePropertyChanged("precision");
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampPartType", Namespace="http://tempuri.org/")]
-    public enum TimestampPartType1 {
-        
-        /// <remarks/>
-        LowBound,
-        
-        /// <remarks/>
-        HighBound,
-        
-        /// <remarks/>
-        Width,
-        
-        /// <remarks/>
-        Standlone,
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="TimestampSet", Namespace="http://tempuri.org/")]
-    public partial class TimestampSet1 : Datatype1 {
-        
-        private TimestampPart1[] partField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("part")]
-        public TimestampPart1[] part {
-            get {
-                return this.partField;
-            }
-            set {
-                this.partField = value;
-                this.RaisePropertyChanged("part");
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:marc-hi:svc:componentModel")]
     public partial class RegistrationEventCollection : object, System.ComponentModel.INotifyPropertyChanged {
         
-        private HealthServiceRecord[] registrationField;
+        private RegistrationEvent[] registrationField;
         
         private int countField;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("registration")]
-        public HealthServiceRecord[] registration {
+        [System.Xml.Serialization.XmlElementAttribute("registration", Order=0)]
+        public RegistrationEvent[] registration {
             get {
                 return this.registrationField;
             }
@@ -3331,7 +3207,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.79.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -3433,11 +3309,11 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
             return base.Channel.GetRegistrations(queryPrototype, start, count);
         }
         
-        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet1 range, int start, int count, bool identifierOnly) {
+        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEventCollection GetRecentActivity(ClientRegistryAdmin.ClientRegistryAdminService.TimestampSet range, int start, int count, bool identifierOnly) {
             return base.Channel.GetRecentActivity(range, start, count, identifierOnly);
         }
         
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord GetRegistrationEvent(decimal id) {
+        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEvent GetRegistrationEvent(decimal id) {
             return base.Channel.GetRegistrationEvent(id);
         }
         
@@ -3449,7 +3325,7 @@ namespace ClientRegistryAdmin.ClientRegistryAdminService {
             return base.Channel.GetConflict(id);
         }
         
-        public ClientRegistryAdmin.ClientRegistryAdminService.HealthServiceRecord Merge(decimal[] sourceIds, decimal targetId) {
+        public ClientRegistryAdmin.ClientRegistryAdminService.RegistrationEvent Merge(decimal[] sourceIds, decimal targetId) {
             return base.Channel.Merge(sourceIds, targetId);
         }
         

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="08c4f530-74db-4537-83cd-54e14b670ba7" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="c9dcb386-ed53-4859-9ea7-67d907f34578" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <EnableDataBinding>true</EnableDataBinding>
@@ -18,13 +18,12 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost:8080/admin" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://localhost:9999/admin?wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="ClientRegistryAdminInterface.wsdl" MetadataType="Wsdl" ID="67498ee1-0726-4054-a297-19c0f390c19b" SourceId="1" SourceUrl="http://localhost:8080/admin?wsdl" />
-    <MetadataFile FileName="admin.disco" MetadataType="Disco" ID="97069d4b-e0fc-4697-824d-6c54297cdb4e" SourceId="1" SourceUrl="http://localhost:8080/admin?disco" />
-    <MetadataFile FileName="admin.xsd" MetadataType="Schema" ID="bac92d4b-e4ee-4688-88f9-a153430160b6" SourceId="1" SourceUrl="http://localhost:8080/admin?xsd=xsd0" />
-    <MetadataFile FileName="admin1.xsd" MetadataType="Schema" ID="b27900f6-4a81-465a-b2ff-5f779dba4bf9" SourceId="1" SourceUrl="http://localhost:8080/admin?xsd=xsd1" />
+    <MetadataFile FileName="admin.xsd" MetadataType="Schema" ID="4a13070b-09e5-454f-aa94-9718893be9eb" SourceId="1" SourceUrl="http://localhost:9999/admin?xsd=xsd0" />
+    <MetadataFile FileName="ClientRegistryAdminInterface.wsdl" MetadataType="Wsdl" ID="7f1b8a97-0393-409c-9a93-22d49f71d954" SourceId="1" SourceUrl="http://localhost:9999/admin?wsdl" />
+    <MetadataFile FileName="admin1.xsd" MetadataType="Schema" ID="f70fbef1-50eb-4ba9-9e93-424093f285a4" SourceId="1" SourceUrl="http://localhost:9999/admin?xsd=xsd1" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
