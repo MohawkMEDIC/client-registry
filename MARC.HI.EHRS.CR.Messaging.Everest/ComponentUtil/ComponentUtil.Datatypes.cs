@@ -401,7 +401,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             if ((lnu == EntityNameUse.Legal || lnu == EntityNameUse.OfficialRecord) &&
                 legalName.Use.Count > 1 &&
                 (legalName.Use[1] == EntityNameUse.OfficialRecord | legalName.Use[1] == EntityNameUse.Legal))
-                internalNameUse = NameSet.NameSetUse.OfficialRecordLegal;
+                internalNameUse = NameSet.NameSetUse.Legal;
             else if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
                 return null;
 

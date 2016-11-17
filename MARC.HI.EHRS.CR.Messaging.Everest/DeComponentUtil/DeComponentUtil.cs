@@ -229,7 +229,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
 
             try
             {
-                if (nameSet.Use == NameSet.NameSetUse.OfficialRecordLegal)
+                if (nameSet.Use == NameSet.NameSetUse.Legal)
                     retVal.Use = SET<CS<EntityNameUse>>.CreateSET(EntityNameUse.Legal, EntityNameUse.OfficialRecord);
                 else if (nameSet.Use != NameSet.NameSetUse.Search)
                     retVal.Use = new SET<CS<EntityNameUse>>((EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString()));

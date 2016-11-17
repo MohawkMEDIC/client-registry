@@ -1867,11 +1867,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     if(cmp.PartType == AddressPart.AddressPartType.State || cmp.PartType == AddressPart.AddressPartType.Country)
                     {
-                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
+                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE ILIKE '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
                         continue;
                     }
                     ncf++;
-                    filterString.AppendFormat("(ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1}) {2} ", cmp.AddressValue.Replace("'", "''"), (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : "OR");
+                    filterString.AppendFormat("(ADDR_VALUE ILIKE '{0}' AND ADDR_CMP_CLS = {1}) {2} ", cmp.AddressValue.Replace("'", "''"), (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : "OR");
                 }
                 if (filterString.ToString().EndsWith("OR "))
                     filterString.Remove(filterString.Length - 3, 3);

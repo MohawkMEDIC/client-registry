@@ -847,6 +847,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     // Clean Up
                     if (retVal.ToString().EndsWith("INTERSECT ()"))
                         retVal.Remove(retVal.Length - 12, 12);
+
+                    // Clean Up
+                    retVal.Replace("AND () ", "");
                 }
             }
             retVal.Append(register.BuildControlClauses(queryComponent));
