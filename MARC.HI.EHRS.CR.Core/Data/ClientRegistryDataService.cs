@@ -119,7 +119,7 @@ namespace MARC.HI.EHRS.CR.Core.Data
                 // Remove all but the alternate identifiers specifed in the query
                 if (qd.TargetDomain != null && subject != null)
                 {
-                    subject.AlternateIdentifiers.RemoveAll(o => qd.TargetDomain.Exists(t => t.Domain.Equals(o.Domain)));
+                    subject.AlternateIdentifiers.RemoveAll(o => !qd.TargetDomain.Exists(t => t.Domain.Equals(o.Domain)));
                     if (subject.AlternateIdentifiers.Count == 0)
                         return null;
                 }

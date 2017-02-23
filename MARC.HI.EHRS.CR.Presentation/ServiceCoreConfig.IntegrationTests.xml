@@ -27,7 +27,7 @@
     <add value="NID_AUTH"/>
   </registeredDevices>
   <registeredOids>
-    
+
     <add name="ICD10" ref="http://hl7.org/fhir/sid/icd-10" oid="2.16.840.1.113883.6.3" desc="International Classification of Diseases version 10">
       <attribute name="HL70396Name" value="I10"/>
     </add>
@@ -128,6 +128,15 @@
       <attribute name="AssigningDevFacility" value="NID_AUTH|TEST"/>
       <attribute name="IsUniqueIdentifier" value="true"/>
       <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="CAMLAB" oid="1.2.3.4.5.6.7.10000" ref="urn:oid:1.2.3.4.5.6.7.1000">
+      <attribute name="AutoFillCX4" value="True" />
+      <attribute name="IsUniqueIdentifier" value="False" />
+      <attribute name="GloballyAssignable" value="False" />
+      <attribute name="IsMergeSurvivor" value="False" />
+      <attribute name="AssigningAuthorityName" value="MYAUTHORITY" />
+      <attribute name="AssigningDevFacility" value="NES|FIRSTCAMBODIA"/>
+      <attribute name="OIDType" value="ISO" />
     </add>
   </registeredOids>
   <serviceAssemblies>

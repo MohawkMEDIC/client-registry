@@ -55,7 +55,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.Messaging.FHIR">
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.FHIR, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.FHIR.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

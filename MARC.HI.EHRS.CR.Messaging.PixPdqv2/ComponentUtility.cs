@@ -1191,7 +1191,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                 else
                 {
-                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value == "true"))
+                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value.ToLower() == "true"))
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                     else
                     {
