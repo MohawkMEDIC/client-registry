@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99488588-6EB6-4649-810F-BD85ED9BEFE6}"
 	ProjectSection(SolutionItems) = preProject
@@ -162,6 +162,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientRegistryAdmin", "Clie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test", "MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test\MARC.HI.EHRS.CR.Messaging.PixPdqv2.Test.csproj", "{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{66C493D9-5CCB-40F6-82B5-DD5C9B15A5BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MEDIC.Empi.Client", "MEDIC.Empi.Client\MEDIC.Empi.Client.csproj", "{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -302,6 +306,18 @@ Global
 		{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076}.Release|x86.ActiveCfg = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Debug|x86.Build.0 = Debug|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|x86.ActiveCfg = Release|Any CPU
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -325,6 +341,7 @@ Global
 		{BDC2FCB8-E319-41FC-BA1A-40108E86D550} = {3F8F83E2-E927-4FB2-9047-CBEEA5854E29}
 		{D0E0FFCF-90D0-495A-B8A8-CAF56A192C06} = {535F9ED3-2412-42ED-A6D6-10D9FB9BAEB1}
 		{6E4C1A8F-3CA4-40B1-9CAF-ED7E20BA5076} = {3F8F83E2-E927-4FB2-9047-CBEEA5854E29}
+		{99B6BFF8-21BE-415F-BF8E-3EF2E014A033} = {66C493D9-5CCB-40F6-82B5-DD5C9B15A5BA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .
