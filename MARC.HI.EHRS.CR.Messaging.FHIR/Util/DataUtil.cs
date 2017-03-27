@@ -89,7 +89,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                         Offset = 0, 
                         QueryId = Guid.NewGuid().ToString()
                     }
-                ) as IComponent;
+                ).Results?.FirstOrDefault() as IComponent;
                 
                 //return null;
                 
