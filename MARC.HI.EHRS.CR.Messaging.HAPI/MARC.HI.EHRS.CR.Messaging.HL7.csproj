@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MARC.HI.EHRS.CR.Messaging.HL7</RootNamespace>
     <AssemblyName>MARC.HI.EHRS.CR.Messaging.HL7</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MARC.HI.EHRS.SVC.Auditing">
@@ -94,6 +96,10 @@
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
       <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
       <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Messaging.Authentication\MARC.HI.EHRS.CR.Messaging.Authentication.csproj">
+      <Project>{337BD7BB-1002-43E2-87C8-06A00F6FD1F6}</Project>
+      <Name>MARC.HI.EHRS.CR.Messaging.Authentication</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

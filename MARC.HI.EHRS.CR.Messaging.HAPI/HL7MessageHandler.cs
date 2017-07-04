@@ -89,6 +89,11 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
         // Host context
         private IServiceProvider m_context;
 
+        public event EventHandler Started;
+        public event EventHandler Starting;
+        public event EventHandler Stopped;
+        public event EventHandler Stopping;
+
         /// <summary>
         /// Gets or sets the host context
         /// </summary>
@@ -102,6 +107,14 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7
             {
                 this.m_context = value;
                 ApplicationContext.CurrentContext = this.m_context;
+            }
+        }
+
+        public bool IsRunning
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
         }
 

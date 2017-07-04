@@ -65,11 +65,17 @@ Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Admin.dll; DestDir:{app}; Flags
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Everest.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\ca msg\pixv3
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.HL7.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\HL7.Fhir.Api.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\HL7.Fhir.Model.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\Newtonsoft.Json.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\AtnaApi.dll; DestDir:{app}; Flags:ignoreversion; 
+Source: ..\Solution Items\OpenIZ.Core.dll; DestDir:{app}; Flags:ignoreversion; 
+Source: ..\Solution Items\System.IdentityModel.Tokens.Jwt.dll; DestDir:{app}; Flags:ignoreversion; 
+Source: ..\Solution Items\OpenIZ.Authentication.OAuth2.dll; DestDir:{app}; Flags:ignoreversion; 
+Source: ..\Solution Items\MARC.HI.EHRS.CR.Authentication.OAuth2.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Authentication.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\bin\release\index.htm; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\MARC.HI.EHRS.CR.Notification.PixPdq.dll; DestDir:{app}; Flags:ignoreversion; Components:notif
@@ -115,7 +121,6 @@ Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs igno
 Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin, obj; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
 Source: ..\MARC.HI.EHRS.CR.Presentation\License.rtf; DestDir: {app};
-Source: ..\bin\admin\*.*; DestDir: {app}\admin; Flags: recursesubdirs; Components: opadmin
 [Types]
 Name: full; Description: Complete Installation
 Name: ca; Description: pan-Canadian Client Registry

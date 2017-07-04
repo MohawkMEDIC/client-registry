@@ -150,7 +150,7 @@ namespace MARC.HI.EHRS.CR.Configurator
             // 
             // svcController
             // 
-            if(Environment.OSVersion.Platform == PlatformID.Win32NT)
+            //if(Environment.OSVersion.Platform == PlatformID.Win32NT)
                 this.svcController.ServiceName = "Client Registry";
             // 
             // tmrService
