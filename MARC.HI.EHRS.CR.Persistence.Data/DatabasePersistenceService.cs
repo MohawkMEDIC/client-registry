@@ -643,7 +643,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 {
 
                     var subject = queryEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
-                    string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(subject, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
+                    string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(subject, this.Context, queryFilter.MatchingAlgorithm != MatchAlgorithm.Exact));
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = queryFilterString;
 

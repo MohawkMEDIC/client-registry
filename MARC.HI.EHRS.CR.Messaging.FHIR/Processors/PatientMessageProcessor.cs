@@ -721,8 +721,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                         mother.LegalName = extensionNameValue;
                         mother.LegalName.Use = NameSet.NameSetUse.MaidenName;
                     }
-                    else if (mother.LegalName.SimilarityTo(extensionNameValue) != 1)// Already have a mother, the name match?
-                        dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "When RelatedPerson of type 'mother' is contained in patient resource, the 'mothersMaidenName' value must match the name of the relatedPerson.", null, null));
+                    //else if (mother.LegalName.SimilarityTo(extensionNameValue) != 1)// Already have a mother, the name match?
+                    //    dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "When RelatedPerson of type 'mother' is contained in patient resource, the 'mothersMaidenName' value must match the name of the relatedPerson.", null, null));
                 }
             }
 

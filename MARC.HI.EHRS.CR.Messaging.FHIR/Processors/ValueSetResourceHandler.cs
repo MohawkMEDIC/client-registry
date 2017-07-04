@@ -87,7 +87,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 {
                    if (!String.IsNullOrEmpty(versionId))
                     {
-                        var version = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                        //var version = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                        var version = CustomAttributeExtensions.GetCustomAttribute<AssemblyInformationalVersionAttribute>(asm);
                         if (version != null && version.InformationalVersion != versionId)
                             continue;
                     } 
@@ -186,7 +187,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     retVal.Description = descriptionAtt.Description;
 
                 // Use the company attribute
-                var companyAtt = enumType.Assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+                //var companyAtt = enumType.Assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+                var companyAtt = CustomAttributeExtensions.GetCustomAttribute<AssemblyCompanyAttribute>(enumType);
                 if (companyAtt != null)
                     retVal.Publisher = companyAtt.Company;
 
@@ -210,7 +212,8 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     definition.Code = new SVC.Messaging.FHIR.DataTypes.PrimitiveCode<string>(MARC.Everest.Connectors.Util.ToWireFormat(value.GetValue(null)));
                     definition.Abstract = false;
 
-                    descriptionAtt = value.GetCustomAttribute<DescriptionAttribute>();
+                    //descriptionAtt = value.GetCustomAttribute<DescriptionAttribute>();
+                    descriptionAtt = CustomAttributeExtensions.GetCustomAttribute<DescriptionAttribute>(value);
                     if (descriptionAtt != null)
                         definition.Display = descriptionAtt.Description;
 
@@ -235,10 +238,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             retVal.Identifier = structAtt.CodeSystem;
             retVal.Id = retVal.Identifier;
             // Use the company attribute
-            var companyAtt = enumType.Assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+            //var companyAtt = enumType.Assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+            var companyAtt = CustomAttributeExtensions.GetCustomAttribute<AssemblyCompanyAttribute>(enumType);
             if (companyAtt != null)
                 retVal.Publisher = companyAtt.Company;
-            var versionAtt = enumType.Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            //var versionAtt = enumType.Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            var versionAtt = CustomAttributeExtensions.GetCustomAttribute<AssemblyInformationalVersionAttribute>(enumType);
+
             if (versionAtt != null)
                 retVal.Version = versionAtt.InformationalVersion;
             retVal.VersionId = retVal.Version;
@@ -253,17 +259,23 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             var enumFields = enumType.GetFields();
             bool hasRegisteredCodes = Array.Exists(enumFields, (f) =>
             {
-                var enumAtt = f.GetCustomAttribute<EnumerationAttribute>();
+                //var enumAtt = f.GetCustomAttribute<EnumerationAttribute>();
+                var enumAtt = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(f);
+
                 if (enumAtt != null)
                     return ApplicationContext.ConfigurationService.OidRegistrar.FindData(enumAtt.SupplierDomain) != null;
                 else
                     return false;
             }), hasDifferentSuppliers = Array.Exists(enumFields, (f) => {
-                var enumAtt = f.GetCustomAttribute<EnumerationAttribute>();
+                //var enumAtt = f.GetCustomAttribute<EnumerationAttribute>();
+                var enumAtt = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(f);
+
                 if (enumAtt != null)
                     return Array.Exists(enumFields, (fi) =>
                     {
-                        var ienumAtt = fi.GetCustomAttribute<EnumerationAttribute>();
+                        //var ienumAtt = fi.GetCustomAttribute<EnumerationAttribute>();
+                        var ienumAtt = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(fi);
+
                         if (ienumAtt != null)
                             return ienumAtt.SupplierDomain != enumAtt.SupplierDomain;
                         return false;
@@ -285,8 +297,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Group like items
                 Array.Sort(enumFields, (a, b) =>
                 {
-                    EnumerationAttribute aAtt = a.GetCustomAttribute<EnumerationAttribute>(),
-                        bAtt = b.GetCustomAttribute<EnumerationAttribute>();
+                    //EnumerationAttribute aAtt = a.GetCustomAttribute<EnumerationAttribute>(),
+                    //    bAtt = b.GetCustomAttribute<EnumerationAttribute>();
+
+                    EnumerationAttribute aAtt = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(a),
+                        bAtt = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(b);
+
                     if ((aAtt == null) ^ (bAtt == null))
                         return aAtt == null ? -1 : 1;
                     else if (aAtt == bAtt)
@@ -298,7 +314,9 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 ConceptSet currentSet = null;
                 foreach (var itm in enumFields)
                 {
-                    EnumerationAttribute enumValue = itm.GetCustomAttribute<EnumerationAttribute>();
+                    //EnumerationAttribute enumValue = itm.GetCustomAttribute<EnumerationAttribute>();
+                    EnumerationAttribute enumValue = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(itm);
+
                     if (enumValue == null) continue;
 
                     // Extract code system
@@ -325,9 +343,13 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 retVal.Define.System = new Uri(String.Format("{0}/ValueSet/@v3-{1}", baseUri, structAtt.Name));
                 foreach (var itm in enumFields)
                 {
-                    EnumerationAttribute enumValue = itm.GetCustomAttribute<EnumerationAttribute>();
+                    //EnumerationAttribute enumValue = itm.GetCustomAttribute<EnumerationAttribute>();
+                    EnumerationAttribute enumValue = CustomAttributeExtensions.GetCustomAttribute<EnumerationAttribute>(itm);
+                    
                     if (enumValue == null) continue;
-                    DescriptionAttribute description = itm.GetCustomAttribute<DescriptionAttribute>();
+                    //DescriptionAttribute description = itm.GetCustomAttribute<DescriptionAttribute>();
+                    DescriptionAttribute description = CustomAttributeExtensions.GetCustomAttribute<DescriptionAttribute>(itm);
+
                     retVal.Define.Concept.Add(new ConceptDefinition()
                     {
                         Code = new SVC.Messaging.FHIR.DataTypes.PrimitiveCode<string>(enumValue.Value),
