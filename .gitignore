@@ -31,3 +31,4 @@ obj/*
 /*/obj
 *.zip
 /packages
+.vs/
