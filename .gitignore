@@ -32,3 +32,4 @@ obj/*
 *.zip
 /packages
 .vs/
+/UpgradeLog.htm
