@@ -329,7 +329,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // Subject relative
             Person subjectRelative = new Person()
             {
-                RoleCode = PersonRole.PRS | PersonRole.PAT
+                RoleCode = PersonRole.PRS | PersonRole.PAT,
+                Site = data.Site
             };
 
             if (prs.LegalName != null)

@@ -30,6 +30,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using MARC.HI.EHRS.SVC.Core.ComponentModel;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core;
+using System.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 {
@@ -95,7 +96,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 if (psn.AlternateIdentifiers == null)
                     psn.AlternateIdentifiers = new List<DomainIdentifier>();
                 psn.AlternateIdentifiers.Clear();
-                GetPersonAlternateIdentifiers(conn, tx, psn);
+                GetPersonAlternateIdentifiers(conn, tx, psn, false);
                 
                 // If there is a person ref in this component then we may have to update our version identifier
 
@@ -828,9 +829,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                             place.Site.Name = "BRTH";
                         }
                         // Load other properties
-                        GetPersonNames(conn, tx, retVal);
-                        GetPersonAlternateIdentifiers(conn, tx, retVal);
-                        GetPersonAddresses(conn, tx, retVal);
+                        GetPersonNames(conn, tx, retVal, loadFast);
+                        GetPersonAlternateIdentifiers(conn, tx, retVal, loadFast);
+                        GetPersonAddresses(conn, tx, retVal, loadFast);
                         GetPersonLanguages(conn, tx, retVal);
                         GetPersonRaces(conn, tx, retVal);
                         GetPersonTelecomAddresses(conn, tx, retVal);
@@ -932,7 +933,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get person's alternate identifier
         /// </summary>
-        private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonAlternateIdentifiers(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 
 #if PERFMON
@@ -941,6 +942,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             using (IDbCommand cmd = DbUtil.CreateCommandStoredProc(conn, tx))
             {
                 cmd.CommandText = "get_psn_alt_id";
+                if (!loadFast)
+                    cmd.CommandText += "_efft";
+
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_id_in", DbType.Decimal, person.Id));
                 cmd.Parameters.Add(DbUtil.CreateParameterIn(cmd, "psn_vrsn_id_in", DbType.Decimal, person.VersionId));
 
@@ -960,7 +964,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                 AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                 IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
-                                UpdateMode = UpdateModeType.Ignore
+                                UpdateMode = UpdateModeType.Ignore,
+                                EffectiveTime = !loadFast ? Convert.ToDateTime(rdr["efft_utc"]) : person.Timestamp,
+                                ObsoleteTime = !loadFast && rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                             });
                         else
                             person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
@@ -972,7 +978,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                     Identifier = rdr["id_value"] == DBNull.Value ? null : Convert.ToString(rdr["id_value"]),
                                     AssigningAuthority = rdr["id_auth"] == DBNull.Value ? null : Convert.ToString(rdr["id_auth"]),
                                     IsPrivate = Convert.ToBoolean(rdr["is_prvt"]),
-                                    UpdateMode = UpdateModeType.Ignore
+                                    UpdateMode = UpdateModeType.Ignore,
+                                    EffectiveTime = !loadFast ? Convert.ToDateTime(rdr["efft_utc"]) : person.Timestamp,
+                                    ObsoleteTime = !loadFast && rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                                 })
                             );
                     }
@@ -1067,7 +1075,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get a person's addresses
         /// </summary>
-        private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonAddresses(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 #if PERFMON
             Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_addr_sets");
@@ -1095,8 +1103,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Detail load each address
                 foreach (var addr in person.Addresses)
                 {
-                    var dtl = DbUtil.GetAddress(conn, tx, addr.Key);
+                    var dtl = DbUtil.GetAddress(conn, tx, addr.Key, loadFast);
                     addr.Parts = dtl.Parts;
+                    addr.EffectiveTime = dtl.EffectiveTime;
+                    addr.ObsoleteTime = dtl.ObsoleteTime;
                 }
             }
 #if PERFMON
@@ -1107,7 +1117,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <summary>
         /// Get person names
         /// </summary>
-        private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person)
+        private void GetPersonNames(IDbConnection conn, IDbTransaction tx, Person person, bool loadFast)
         {
 #if PERFMON
             Trace.TraceInformation("{0} : {1}", DateTime.Now.ToString("HH:mm:ss.ffff"), "get_psn_name_sets");
@@ -1134,8 +1144,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // Detail load each address
                 foreach (var name in person.Names)
                 {
-                    var dtl = DbUtil.GetName(conn, tx, name.Key);
+                    var dtl = DbUtil.GetName(conn, tx, name.Key, loadFast);
                     name.Parts = dtl.Parts;
+                    name.EffectiveTime = dtl.EffectiveTime;
+                    name.ObsoleteTime = dtl.ObsoleteTime;
                 }
             }
 #if PERFMON
@@ -1639,8 +1651,34 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             
             // Person filter
             var personFilter = data as Person;
+
+            if (personFilter.Addresses == null &&
+                (personFilter.AlternateIdentifiers == null  || personFilter.AlternateIdentifiers.Count == 0) &&
+                !personFilter.BirthOrder.HasValue &&
+                personFilter.BirthPlace == null &&
+                personFilter.BirthTime == null &&
+                personFilter.Citizenship == null &&
+                personFilter.DeceasedTime == null &&
+                personFilter.Employment == null &&
+                (personFilter.EthnicGroup == null || personFilter.EthnicGroup.Count == 0) &&
+                personFilter.GenderCode == null &&
+                personFilter.Id == default(decimal) &&
+                personFilter.Language == null &&
+                personFilter.MaritalStatus == null &&
+                personFilter.MothersName == null &&
+                personFilter.Names == null &&
+                personFilter.OtherIdentifiers == null &&
+                personFilter.Race == null &&
+                personFilter.ReligionCode == null &&
+                personFilter.TelecomAddresses == null &&
+                personFilter.VipCode == null)
+                throw new ConstraintException(ApplicationContext.LocaleService.GetString("MSGE077"));
             var registrationEvent = DbUtil.GetRegistrationEvent(data);
-            QueryParameters queryFilter = personFilter.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
+            var queryEvent = personFilter.Site.Container as HealthServiceRecordContainer;
+            while (!(queryEvent is QueryEvent) && queryEvent != null && queryEvent.Site != null)
+                queryEvent = queryEvent.Site.Container as HealthServiceRecordContainer;
+
+            QueryParameters queryFilter = queryEvent.FindComponent(HealthServiceRecordSiteRoleType.FilterOf) as QueryParameters;
 
             // Get the registration event's filter parameters (master filter specificity)
             if(registrationEvent != null && queryFilter == null)
@@ -1723,12 +1761,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 // finish join
                 if (hasSubquery)
                     sb.Append(") AS SUBQ ON (SUBQ.PSN_ID = PSN_VRSN_TBL.PSN_ID)  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+                else
+                    sb.Append(" WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
             }
 
             #endregion
 
             #region Filter Parameters
-
 
             if (personFilter.Status == StatusType.Unknown)
                 sb.Append("AND PSN_VRSN_TBL.STATUS_CS_ID NOT IN (16,64) ");
@@ -1767,6 +1806,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             if(data.Site == null)
                 sb.Append(" ORDER BY PSN_VRSN_ID DESC");
+
 
             // Now output the query
             return sb.ToString();
@@ -1837,7 +1877,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     filterString.Remove(filterString.Length - 3, 3);
 
                 // Match strength & algorithms
-                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND {0} AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
+                retVal.AppendFormat("( SELECT PSN_ID FROM PSN_ADDR_SET_TBL WHERE PSN_ADDR_SET_TBL.PSN_ID = PSN_VRSN_TBL.PSN_ID AND ADDR_SET_ID IN (SELECT ADDR_SET_ID FROM ADDR_CMP_TBL INNER JOIN ADDR_CDTBL ON (ADDR_ID = ADDR_CMP_VALUE) WHERE PSN_ADDR_SET_TBL.ADDR_SET_ID = ADDR_CMP_TBL.ADDR_SET_ID AND ({0}) AND OBSLT_VRSN_ID IS NULL {1} GROUP BY ADDR_CMP_TBL.ADDR_SET_ID HAVING COUNT(ADDR_CMP_ID) = {2} {3}))",
                     filterString, addr.Use == AddressSet.AddressSetUse.Search ? null : String.Format("AND ADDR_SET_USE = {0}", (int)addr.Use), 
                     ncf,
                     addrStateCondition);

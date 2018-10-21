@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 4-9-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -28,6 +28,9 @@ using MARC.Everest.Exceptions;
 using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.Connectors;
 using MARC.Everest.DataTypes;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
+using MARC.HI.EHRS.CR.Core.ComponentModel;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -49,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
         /// <summary>
         /// Create filter data
         /// </summary>
-        public DataUtil.QueryData CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
+        public RegistryQueryRequest CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
         {
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
             ISystemConfigurationService config = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
@@ -66,39 +69,38 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             if (ids == null || queryData == null)
                 throw new MessageValidationException(locale.GetString("MSGE00A"), request);
 
-            var filter = new DataUtil.QueryData()
+            var filter = new RegistryQueryRequest()
             {
                 QueryId = String.Format("{1}^^^&{0}&ISO", rqst.controlActProcess.queryByParameter.QueryId.Root, rqst.controlActProcess.queryByParameter.QueryId.Extension),
-                IncludeHistory = false,
-                IncludeNotes = false,
-                Quantity = 100,
-                Originator = String.Format("^^^&{0}&ISO",
-                    rqst.Sender.Device.Id[0].Root),
-                OriginalMessageQuery = request,
+                Limit = 100,
+                Originator = String.Format("{1}^^^&{0}&ISO",
+                    rqst.Sender.Device.Id.First.Root,
+                    rqst.Sender.Device.Id.First.Extension),
                 QueryRequest = queryData,
-                TargetDomains = ids,
-                IsSummary = true
+                TargetDomain = ids,
+                IsSummary = true,
+                ResponseMessageType = this.CreateType.AssemblyQualifiedName
             };
 
             
             // Ensure that the target domains are understood by this service
-            if(filter.TargetDomains != null)
-                foreach(var id in filter.TargetDomains)
+            if(filter.TargetDomain != null)
+                foreach(var id in filter.TargetDomain)
                     if (String.IsNullOrEmpty(id.Domain) || config.OidRegistrar.FindData(id.Domain) == null || !config.OidRegistrar.FindData(id.Domain).Attributes.Exists(p => p.Key.Equals("AssigningAuthorityName")))
-                        dtls.Add(new UnrecognizedTargetDomainResultDetail(locale, id.Domain));
+                        dtls.Add(new UnrecognizedTargetDomainResultDetail(locale, String.Format("//urn:hl7-org:v3#controlActProcess/urn:hl7-org:v3#queryByParameter/urn:hl7-org:v3#parameterList/urn:hl7-org:v3#patientIdentifier/urn:hl7-org:v3#value[@root='{0}']", id.Domain)));
             return filter;
         }
 
         /// <summary>
         /// Create the response message
         /// </summary>
-        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, DataUtil.QueryResultData results, List<MARC.Everest.Connectors.IResultDetail> details, List<SVC.Core.Issues.DetectedIssue> issues)
+        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, RegistryQueryResult results, List<IResultDetail> dtls)
         {
             // GEt the config services
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             ILocalizationService localeService = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
 
-            var retHl7v3 =  new List<MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201304UV02.Patient,object>>(results.Results.Length);
+            var retHl7v3 =  new List<MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201304UV02.Patient,object>>(results.Results.Count);
 
             UvDeComponentUtil dCompUtil = new UvDeComponentUtil();
             dCompUtil.Context = this.Context;
@@ -106,11 +108,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             PRPA_IN201309UV02 rqst = request as PRPA_IN201309UV02;
 
             // Convert results to HL7v3
-            foreach (var res in results.Results)
+            foreach (RegistrationEvent res in results.Results)
             {
                 var retRec = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201304UV02.Patient,object>(
                     false,
-                    dCompUtil.CreateRegistrationEventDetail(res, details)
+                    dCompUtil.CreateRegistrationEventDetail(res, dtls)
                 );
                 if (retRec.RegistrationEvent == null)
                     retRec = new MARC.Everest.RMIM.UV.NE2008.MFMI_MT700711UV01.Subject1<MARC.Everest.RMIM.UV.NE2008.PRPA_MT201304UV02.Patient,object>(
@@ -121,7 +123,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             }
             
             if(retHl7v3.Count > 1)
-                details.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, localeService.GetString("MSGE06E"), null));
+                dtls.Add(new InsufficientRepetitionsResultDetail(ResultDetailType.Warning, localeService.GetString("MSGE06E"), null));
 
             // Create the response
             PRPA_IN201310UV02 response = new PRPA_IN201310UV02
@@ -139,7 +141,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
             {
                 Acknowledgement = new List<MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement>() {
                     new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100300UV01.Acknowledgement(
-                        details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
+                        dtls.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
                         new MARC.Everest.RMIM.UV.NE2008.MCCI_MT100200UV01.TargetMessage(request.Id)
                     )
                 }
@@ -154,8 +156,8 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     "complete",
                     (AcknowledgementType)response.Acknowledgement[0].TypeCode == AcknowledgementType.ApplicationAcknowledgementError ? QueryResponse.ApplicationError : results.TotalResults == 0 ? QueryResponse.NoDataFound : QueryResponse.DataFound,
                     results.TotalResults,
-                    results.Results.Length,
-                    results.TotalResults - results.Results.Length - results.StartRecordNumber
+                    results.Results.Count,
+                    results.TotalResults - results.Results.Count - results.StartRecordNumber
                 ),
                 queryByParameter = rqst.controlActProcess.queryByParameter
             };

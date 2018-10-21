@@ -55,7 +55,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.HI.EHRS.SVC.Messaging.FHIR">
+    <Reference Include="MARC.HI.EHRS.SVC.Messaging.FHIR, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Messaging.FHIR.dll</HintPath>
     </Reference>
     <Reference Include="MARC.HI.EHRS.SVC.PolicyEnforcement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -98,6 +99,11 @@
     <Content Include="index.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MARC.HI.EHRS.CR.licenseheader">
+      <Link>MARC.HI.EHRS.CR.licenseheader</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -229,12 +229,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
             //// do a sanity check, have we already persisted this record?
             if (!ValidationSettings.AllowDuplicateRecords)
             {
-                var duplicateQuery = (storageData as ICloneable).Clone() as HealthServiceRecordContainer;
+                var duplicateQuery = new QueryEvent();
+                duplicateQuery.Add((storageData as ICloneable).Clone() as HealthServiceRecordContainer, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
                 duplicateQuery.Add(new QueryParameters()
                 {
                     MatchStrength = Core.ComponentModel.MatchStrength.Exact,
                     MatchingAlgorithm = MatchAlgorithm.Exact
-                });
+                }, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
                 var storedRecords = QueryRecord(duplicateQuery as IComponent);
                 if (storedRecords.Length != 0)
                     throw new DuplicateNameException(ApplicationContext.LocaleService.GetString("DTPE004"));
@@ -399,8 +400,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                             if (((hsrEvent.XmlComponents[i].Site as HealthServiceRecordSite).SiteRoleType & (HealthServiceRecordSiteRoleType.CommentOn | HealthServiceRecordSiteRoleType.ReasonFor | HealthServiceRecordSiteRoleType.OlderVersionOf | HealthServiceRecordSiteRoleType.TargetOf)) == 0)
                                 hsrEvent.Remove(hsrEvent.XmlComponents[i]);
                     }
-
-
+                    
                     // Copy over any components that aren't already specified or updated in the new record
                     // Merge the old and new. Sets the update mode appropriately
                     cp.MergePersons(newRecordTarget, oldRecordTarget);
@@ -503,9 +503,12 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     AlternateIdentifiers = new List<DomainIdentifier>(subject.AlternateIdentifiers),
                     Status = StatusType.Normal
                 };
-            RegistrationEvent query = new RegistrationEvent();
-            query.Status = StatusType.Active | StatusType.Obsolete;
-            query.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
+            QueryEvent query = new QueryEvent();
+            RegistrationEvent evt = new RegistrationEvent();
+            query.Add(evt, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            evt.Status = StatusType.Active | StatusType.Obsolete;
+            evt.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             query.Add(new QueryParameters()
             {
                 MatchingAlgorithm = MatchAlgorithm.Exact,
@@ -629,6 +632,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     MatchingAlgorithm = DatabasePersistenceService.ValidationSettings.DefaultMatchAlgorithms
                 };
 
+            // Subject of the query
+            QueryEvent queryEvent = queryParameters as QueryEvent;
 
             // Connect to the database
             IDbConnection conn = m_configuration.ReadonlyConnectionManager.GetConnection();
@@ -637,7 +642,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                 using (IDbCommand cmd = conn.CreateCommand())
                 {
 
-                    string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(queryParameters, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
+                    var subject = queryEvent.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf);
+                    string queryFilterString = String.Format("{0}", DbUtil.BuildQueryFilter(subject, this.Context, queryFilter.MatchingAlgorithm == MatchAlgorithm.Exact));
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = queryFilterString;
 
@@ -655,7 +661,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                                 // Id
                                 var id = new VersionedResultIdentifier()
                                 {
-                                    Domain = GetQueryPersister(queryParameters.GetType()).ComponentTypeOid,
+                                    Domain = GetQueryPersister(subject.GetType()).ComponentTypeOid,
                                     Identifier = Convert.ToString(rdr[0]),
                                     Version = Convert.ToString(rdr[1])
                                 };

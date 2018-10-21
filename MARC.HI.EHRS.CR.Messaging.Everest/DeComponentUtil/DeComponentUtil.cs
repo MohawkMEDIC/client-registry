@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 7-11-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -225,20 +225,19 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// </summary>
         public PN CreatePN(MARC.HI.EHRS.SVC.Core.DataTypes.NameSet nameSet, List<IResultDetail> dtls)
         {
-            EntityNameUse enUse = EntityNameUse.Legal;
+            PN retVal = new PN();
 
             try
             {
-                enUse = (EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString());
+                if (nameSet.Use == NameSet.NameSetUse.OfficialRecord)
+                    retVal.Use = SET<CS<EntityNameUse>>.CreateSET(EntityNameUse.Legal, EntityNameUse.OfficialRecord);
+                else if (nameSet.Use != NameSet.NameSetUse.Search)
+                    retVal.Use = new SET<CS<EntityNameUse>>((EntityNameUse)Enum.Parse(typeof(EntityNameUse), nameSet.Use.ToString()));
             }
             catch
             {
                 throw;
             }
-
-            PN retVal = new PN();
-            if (enUse != EntityNameUse.Search)
-                retVal.Use = new SET<CS<EntityNameUse>>(enUse);
 
             // Parts
             foreach (var part in nameSet.Parts)

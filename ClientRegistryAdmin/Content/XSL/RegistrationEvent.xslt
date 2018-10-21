@@ -5,7 +5,7 @@
 >
   <xsl:output method="html" indent="yes"/>
 
-  <xsl:template match="HealthServiceRecord">
+  <xsl:template match="HealthServiceRecordComponent">
     <h4>
       Health Service Record ID#<xsl:value-of select="@id"/> (Version # <xsl:value-of select="@version"/> Created on <xsl:value-of select="@timestamp"/>)
     </h4>

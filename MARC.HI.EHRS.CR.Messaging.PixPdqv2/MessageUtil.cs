@@ -30,6 +30,7 @@ using NHapi.Base.validation.impl;
 using NHapi.Base.Parser;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -39,6 +40,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
     public class MessageUtil
     {
 
+        /// <summary>
+        /// Telecommunications address use map
+        /// </summary>
         private static Dictionary<String, MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse?> s_v2TelUseConvert = new Dictionary<string, MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse?>()
         {
             { "ASN", MARC.Everest.DataTypes.Interfaces.TelecommunicationAddressUse.AnsweringService },

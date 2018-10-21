@@ -22,3 +22,14 @@ Thumbs.db
 *.dll
 *.lib
 *.sbr
+
+bin/*
+obj/*
+*bin/*
+*obj/*
+/*/bin
+/*/obj
+*.zip
+/packages
+.vs/
+/UpgradeLog.htm

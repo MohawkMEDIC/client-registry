@@ -47,8 +47,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.Formatters.XML.ITS1.dll</HintPath>
     </Reference>
-    <Reference Include="MARC.Everest.RMIM.CA.R020402">
+    <Reference Include="MARC.Everest.RMIM.CA.R020402, Version=1.0.4685.37452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020402.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.Everest.RMIM.CA.R020403">
+      <HintPath>..\Solution Items\MARC.Everest.RMIM.CA.R020403.dll</HintPath>
     </Reference>
     <Reference Include="MARC.Everest.RMIM.UV.NE2008">
       <HintPath>..\Solution Items\MARC.Everest.RMIM.UV.NE2008.dll</HintPath>
@@ -100,12 +104,11 @@
     <Compile Include="MessageReceiver\CA\CaComponentUtil.Messages.cs" />
     <Compile Include="MessageReceiver\CA\GetCandidateAlternateIdentifiersQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\UV\GetIdentifiersQueryResponseFactory.cs" />
-    <Compile Include="MessageReceiver\UV\IheDataUtil.cs" />
+    <Compile Include="MessageReceiver\UV\IheAuditUtil.cs" />
     <Compile Include="MessageReceiver\UV\PatientDemographicsQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\UV\UvComponentUtil.cs" />
     <Compile Include="MessageReceiver\UV\UvDeComponentUtil.cs" />
     <Compile Include="MessageUtil.Ca.cs" />
-    <Compile Include="DataUtil.cs" />
     <Compile Include="DeComponentUtil\DeComponentUtil.cs" />
     <Compile Include="IQueryResponseFactory.cs" />
     <Compile Include="MessageReceiver\CA\ClientRegistryMessageReceiver.cs" />
@@ -123,7 +126,6 @@
     <Compile Include="MessageUtil.Uv.cs" />
     <Compile Include="PersistenceResultDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultDetailClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">

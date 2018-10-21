@@ -3,15 +3,15 @@
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
-AppVerName = MEDIC Client Registry 1.1
+AppVerName = MEDIC Client Registry 1.2
 #ifdef BUNDLED
 #ifdef x64
-OutputBaseFilename = cr-setup-bundled-x64-1.1
+OutputBaseFilename = cr-setup-bundled-x64-1.2
 #else
-OutputBaseFilename = cr-setup-bundled-1.1
+OutputBaseFilename = cr-setup-bundled-1.2
 #endif
 #else
-OutputBaseFilename = cr-setup-standalone-1.1
+OutputBaseFilename = cr-setup-standalone-1.2
 #endif
 LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
@@ -26,7 +26,7 @@ Compression = none
 Compression = lzma2 
 #endif
 SolidCompression = false
-AppCopyright = Copyright (C) 2010-2015 Mohawk College of Applied Arts and Technology
+AppCopyright = Copyright (C) 2010-2017 Mohawk College of Applied Arts and Technology
 Uninstallable = true
 #ifdef x64
 ArchitecturesAllowed = x64
@@ -45,7 +45,7 @@ Source: .\installsupp\postgresql-9.2.4-1-windows-x64.exe; DestDir: {tmp}; Flags:
 Source: .\installsupp\postgresql-9.2.4-1-windows.exe; DestDir: {tmp}; Flags:dontcopy
 #endif
 #endif
-Source: .\installsupp\dotNetFx40_Full_setup.exe; DestDir: {tmp} ; Flags: dontcopy
+Source: .\installsupp\dotNetFx45_Full_setup.exe; DestDir: {tmp} ; Flags: dontcopy
 
 ; SetupMARC.Everest.Connectors.WCF.dll
 Source: ..\bin\release\Config\Everest\PDQ.etpl; DestDir: {app}\config\everest; Flags:ignoreversion; Components:msg\pixv3
@@ -232,7 +232,7 @@ var
   txtPostgresSU, txtPostgresSUPass : TEdit;
 
 const
-  dotnetRedistURL = '{tmp}\dotNetFx40_Full_setup.exe';
+  dotnetRedistURL = '{tmp}\dotNetFx45_Full_setup.exe';
   // local system for testing...
   // dotnetRedistURL = 'http://192.168.1.1/dotnetfx.exe';
 
@@ -245,13 +245,13 @@ begin
   dotNetNeeded := false;
 
   
-  if(not DirExists(ExpandConstant('{win}\Microsoft.NET\Framework\v4.0.30319'))) then begin
+  if(not DirExists(ExpandConstant('{dotnet40}'))) then begin
     dotNetNeeded := true;
     if (not IsAdminLoggedOn()) then begin
-      MsgBox('GPMR needs the Microsoft .NET Framework 4 to be installed by an Administrator', mbInformation, MB_OK);
+      MsgBox('Client Registry needs the Microsoft .NET Framework 4.5 to be installed by an Administrator', mbInformation, MB_OK);
       Result := false;
     end else begin
-      memoDependenciesNeeded := memoDependenciesNeeded + '      .NET Framework 4' #13;
+      memoDependenciesNeeded := memoDependenciesNeeded + '      .NET Framework 4.5' #13;
     end;
   end;
 
@@ -286,15 +286,15 @@ begin
       end;
     #endif
     if (Result = '') and (dotNetNeeded = true) then begin
-      ExtractTemporaryFile('dotNetFx40_Full_setup.exe');
+      ExtractTemporaryFile('dotNetFx45_Full_setup.exe');
       if Exec(ExpandConstant(dotnetRedistURL), '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
           // handle success if necessary; ResultCode contains the exit code
           if not (ResultCode = 0) then begin
-            Result := '.NET Framework 4 is Required';
+            Result := '.NET Framework 4.5 is Required';
           end;
         end else begin
           // handle failure if necessary; ResultCode contains the error code
-            Result := '.NET Framework 4 is Required';
+            Result := '.NET Framework 4.5 is Required';
         end;
     end;
 

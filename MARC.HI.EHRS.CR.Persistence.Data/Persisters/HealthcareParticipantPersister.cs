@@ -354,10 +354,10 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Get name set
                 if (nsSetId.HasValue)
-                    retVal.LegalName = DbUtil.GetName(conn, tx, nsSetId);
+                    retVal.LegalName = DbUtil.GetName(conn, tx, nsSetId, false);
                 // Get addr set
                 if (addrSetId.HasValue)
-                    retVal.PrimaryAddress = DbUtil.GetAddress(conn, tx, addrSetId);
+                    retVal.PrimaryAddress = DbUtil.GetAddress(conn, tx, addrSetId, false);
                 // Get type code
                 if (typeCodeId.HasValue)
                     retVal.Type = DbUtil.GetCodedValue(conn, tx, typeCodeId);

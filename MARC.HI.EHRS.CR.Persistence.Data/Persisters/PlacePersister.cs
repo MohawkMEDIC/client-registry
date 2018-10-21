@@ -270,7 +270,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // Get addr set
                 if (addrSetId.HasValue)
-                    retVal.Address = DbUtil.GetAddress(conn, tx, addrSetId);
+                    retVal.Address = DbUtil.GetAddress(conn, tx, addrSetId, false);
                 // Get type code
                 if (codeTypeId.HasValue)
                     retVal.LocationType = DbUtil.GetCodedValue(conn, tx, codeTypeId);

@@ -35,6 +35,8 @@ using MARC.HI.EHRS.CR.Core.Configuration;
 using MARC.HI.EHRS.CR.Core;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using MARC.HI.EHRS.CR.Persistence.Data.Configuration.UI;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
 {
@@ -285,6 +287,16 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                 serviceProviderNode.AppendChild(addServiceProvNode);
             }
 
+            // Core data service
+            addServiceProvNode = serviceProviderNode.SelectSingleNode(String.Format("./*[local-name() = 'add'][@type = '{0}']", typeof(ClientRegistryDataService).AssemblyQualifiedName)) as XmlElement;
+            if (addServiceProvNode == null)
+            {
+                addServiceProvNode = configurationDom.CreateElement("add");
+                addServiceProvNode.Attributes.Append(configurationDom.CreateAttribute("type"));
+                addServiceProvNode.Attributes["type"].Value = typeof(ClientRegistryDataService).AssemblyQualifiedName;
+                serviceProviderNode.AppendChild(addServiceProvNode);
+            }
+
             // Add the core config section
             if (crNode == null)
             {
@@ -432,7 +444,31 @@ namespace MARC.HI.EHRS.CR.Configurator.SharedHealthCore
                     if ((config.Validation.DefaultMatchAlgorithms & (MatchAlgorithm)fi.GetValue(null)) != 0)
                         this.MatchAlgorithms.Add(fi.Name);
 
+                // Updates available?
+                if(this.DatabaseConfigurator is IDatabaseUpdater)
+                {
+                    var updater = this.DatabaseConfigurator as IDatabaseUpdater;
+                    var updates = updater.GetUpdates(this.ConnectionString, configurationDom).Where(o=>o.Id.StartsWith("CR")).ToList();
+                    //updates.Sort((a, b) => a.Id.CompareTo(b.Id));
+                    while(updates.Count > 0)
+                    {
+                        using(frmDatabaseUpdateConfirmation dialog = new frmDatabaseUpdateConfirmation())
+                        {
+                            dialog.Updates = updates;
+                            if(dialog.ShowDialog() == DialogResult.OK)
+                            {
+                                foreach (var upd in updates)
+                                    updater.DeployUpdate(upd, this.ConnectionString, configurationDom);
+                                
+                            }
+                        }
+                        updates = updater.GetUpdates(this.ConnectionString, configurationDom).Where(o => o.Id.StartsWith("CR")).ToList();
+                       // updates.Sort((a, b) => a.Id.CompareTo(b.Id));
+
             }
+                }
+            }
+
             // Get the cr config
             if (crSection != null)
             {

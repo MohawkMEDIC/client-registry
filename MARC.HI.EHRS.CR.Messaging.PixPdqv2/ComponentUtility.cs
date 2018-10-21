@@ -32,6 +32,8 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using System.Text.RegularExpressions;
 using MARC.HI.EHRS.CR.Core;
 using System.Diagnostics;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -243,7 +245,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create query components for the specified request
         /// </summary>
-        internal QueryData CreateQueryComponents(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
+        internal RegistryQueryRequest CreateQueryComponents(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
         {
             // Validate the segments
             var msh = request.MSH;
@@ -259,22 +261,18 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Query Parameter Definition QPD code
             if(qpd == null)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE05B"), null));
-            else if(qpd.MessageQueryName.Identifier.Value != "IHE PIX Query")
-                dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PIX Query", false, "QPD^1"));
+            //else if(qpd.MessageQueryName.Identifier.Value != "IHE PIX Query")
+            //    dtls.Add(new FixedValueMisMatchedResultDetail(qpd.MessageQueryName.Identifier.Value, "IHE PIX Query", false, "QPD^1"));
 
             // Return value
-            QueryData retVal = new QueryData()
+            RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
-                QueryRequest = new RegistrationEvent()
+                QueryRequest = new QueryEvent()
                 {
-                    EventClassifier = RegistrationEventType.Any,
                     Timestamp = DateTime.Now,
-                    AlternateIdentifier = new VersionedDomainIdentifier()
-                    {
-                        Identifier = msh.MessageControlID.Value
-                    }
                 },
-                Quantity = 1,
+                Limit = 1,
+                Offset = 0,
                 ResponseMessageType = "RSP_K23"
             };
 
@@ -296,9 +294,20 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
             });
 
+
+            // Registration event which is the informant to the 
+            retVal.QueryRequest.Add(new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Any,
+                AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Identifier = msh.MessageControlID.Value
+                }
+            }, "RSN", HealthServiceRecordSiteRoleType.ReasonFor, null);
+
             // Filter data
             RegistrationEvent filter = new RegistrationEvent(){ EventClassifier = RegistrationEventType.Query };
-            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.SubjectOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
@@ -331,7 +340,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (retVal.TargetDomain == null) retVal.TargetDomain = new List<DomainIdentifier>();
                     var dmn = CreateDomainIdentifier(rid, dtls);
                     if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p=>p.Key.Equals("AssigningAuthorityName")))
-                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale));
+                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale, "QPD^1^4^"));
                     retVal.TargetDomain.Add(dmn);
                 }
             }
@@ -345,22 +354,20 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 retVal.QueryTag = retVal.QueryId;
 
 
-            retVal.Quantity = 100;
+            retVal.Limit = 100;
             retVal.IsSummary = true;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
             
-
-
-
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return QueryData.Empty;
+                return null;
+
             return retVal;
         }
 
         /// <summary>
         /// Create query components for the PDQ message
         /// </summary>
-        internal QueryData CreateQueryComponentsPdq(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
+        internal RegistryQueryRequest CreateQueryComponentsPdq(NHapi.Model.V25.Message.QBP_Q21 request, List<IResultDetail> dtls)
         {
             // Validate the segments
             var msh = request.MSH;
@@ -382,20 +389,26 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             
             // Return value
-            QueryData retVal = new QueryData()
+            RegistryQueryRequest retVal = new RegistryQueryRequest()
             {
-                QueryRequest = new RegistrationEvent()
+                QueryRequest = new QueryEvent()
                 {
-                    EventClassifier = RegistrationEventType.Any,
                     Timestamp = DateTime.Now,
-                    AlternateIdentifier = new VersionedDomainIdentifier()
-                    {
-                        Identifier = msh.MessageControlID.Value
-                    }
                 },
                 ResponseMessageType = "RSP_K21",
                 Originator = String.Format("{0}|{1}", msh.SendingApplication.NamespaceID.Value, msh.SendingFacility.NamespaceID.Value)
             };
+
+            // Reason for querying
+            retVal.QueryRequest.Add(new RegistrationEvent()
+            {
+                EventClassifier = RegistrationEventType.Any,
+                Timestamp = DateTime.Now,
+                AlternateIdentifier = new VersionedDomainIdentifier()
+                {
+                    Identifier = msh.MessageControlID.Value
+                }
+            }, "RSON", HealthServiceRecordSiteRoleType.ReasonFor, null);
 
             // Add the author (null author role) to the return value (policy enforcement doesn't freak out)
             retVal.QueryRequest.Add(new HealthcareParticipant()
@@ -417,7 +430,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             // Filter data
             RegistrationEvent filter = new RegistrationEvent() { EventClassifier = RegistrationEventType.Query };
-            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            retVal.QueryRequest.Add(filter, "FLT", HealthServiceRecordSiteRoleType.SubjectOf, null);
             Person subjectOf = new Person();
             filter.Add(subjectOf, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
 
@@ -489,7 +502,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                                 if (qip2 != "ISO")
                                                 {
                                                     dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE05B"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
-                                                    return QueryData.Empty;
+                                                    return null;
                                                 }
                                                 break;
                                         }
@@ -517,7 +530,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                                                 if (qip2 != "ISO")
                                                 {
                                                     dtls.Add(new NotSupportedChoiceResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE05B"), String.Format("QPD^3^{0}", Array.IndexOf(qps, qp) + 1), null));
-                                                    return QueryData.Empty;
+                                                    return null;
                                                 }
                                                 break;
                                         }
@@ -704,7 +717,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new ResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE062"), "QPD^4", null));
                 float conf = (float)(Double.Parse(str.Data.ToString()) / 100.0d);
                 // Add QP
-                filter.Add(new QueryParameters()
+                retVal.QueryRequest.Add(new QueryParameters()
                 {
                     MatchingAlgorithm = algorithm,
                     MatchStrength = MatchStrength.Strong,
@@ -723,17 +736,17 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (retVal.TargetDomain == null) retVal.TargetDomain = new List<DomainIdentifier>();
                     var dmn = CreateDomainIdentifier(rid, dtls);
                     if (String.IsNullOrEmpty(dmn.Domain) || m_config.OidRegistrar.FindData(dmn.Domain) == null || !m_config.OidRegistrar.FindData(dmn.Domain).Attributes.Exists(p => p.Key.Equals("AssigningAuthorityName")))
-                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale));
+                        dtls.Add(new UnrecognizedTargetDomainResultDetail(this.m_locale, "QPD^1^4^"));
                     retVal.TargetDomain.Add(dmn);
                 }
             }
 
             // Get RCP which controls the initial quantity
-            retVal.Quantity = 100;
+            retVal.Limit = 100;
             if (rcp != null)
             {
                 if (!String.IsNullOrEmpty(rcp.QuantityLimitedRequest.Quantity.Value))
-                    retVal.Quantity = Int32.Parse(rcp.QuantityLimitedRequest.Quantity.Value);
+                    retVal.Limit = Int32.Parse(rcp.QuantityLimitedRequest.Quantity.Value);
                  
             }
 
@@ -744,6 +757,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 retVal.QueryId = dsc.ContinuationPointer.Value;
                 retVal.IsContinue = true;
+                retVal.Offset = -1;
             }
             else
                 retVal.QueryId = Guid.NewGuid().ToString();
@@ -756,9 +770,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             
             retVal.IsSummary = false;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
-            
+
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
-                return QueryData.Empty;
+            {
+                Trace.TraceError("{0} problems mapping message:", dtls.Count);
+                foreach (var itm in dtls)
+                    Trace.TraceError($"\t{itm.Type} : {itm.Message}");
+                return null;
+            }
+
             return retVal;
         }
 
@@ -778,6 +798,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+            if (aaut == null)
+                Trace.TraceWarning("No assigning authority for {0} found", aautString);
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
@@ -828,7 +850,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 for (int i = 0; i < pid.PatientIdentifierListRepetitionsUsed; i++)
                 {
                     var cx = pid.GetPatientIdentifierList(i);
-                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT")
+                    if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT" || cx.IdentifierTypeCode.Value == "MR")
                     { 
 
                         Trace.TraceInformation("Adding {0}^^^&{1}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.UniversalID.Value);
@@ -1042,7 +1064,10 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 List<DomainIdentifier> scopedIds = subject.AlternateIdentifiers.FindAll(o => aaut.Oid == o.Domain);
                 if (scopedIds == null || scopedIds.Count == 0)
+                {
+                    Trace.TraceError("No OIDs found matching assigning authority OID {0}", aaut.Oid);
                     dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE078"), null, null));
+                }
                 else
                 {
                     foreach (var scopedId in scopedIds)
@@ -1059,7 +1084,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
             }
             else
+            {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE078"), null));
+            }
 
         }
 
@@ -1170,7 +1197,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                 else
                 {
-                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value == "true"))
+                    if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value.ToLower() == "true"))
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
                     else
                     {
@@ -1200,6 +1227,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             var evn = request.EVN;
             var aautString = String.Format("{0}|{1}", request.MSH.SendingApplication.NamespaceID.Value, request.MSH.SendingFacility.NamespaceID.Value); // sending application
             var aaut = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(a => a.Key == "AssigningDevFacility" && a.Value == aautString));
+            if (aaut == null)
+                Trace.TraceWarning("No assigning authority for {0} found", aautString);
 
 
             // Can be multiple patients
@@ -1232,8 +1261,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
                 // Add to subject
                 retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
-            }
 
+                break;
+            }
 
             // Add author information (facility)
             RepositoryDevice dev = new RepositoryDevice();
@@ -1243,7 +1273,6 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (String.IsNullOrEmpty(dev.AlternateIdentifier.Domain))
                 dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
             retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
-
 
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 return null;

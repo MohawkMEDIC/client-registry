@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 17-10-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -36,6 +36,7 @@ using MARC.Everest.RMIM.UV.NE2008.Vocabulary;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.Everest.RMIM.UV.NE2008.QUQI_MT021001UV01;
 using System.Text.RegularExpressions;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -186,7 +187,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create a domain identifier list
         /// </summary>
-        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020402.REPC_MT500006CA.RecordId> list)
+        //internal static List<DomainIdentifier> CreateDomainIdentifierList(List<MARC.Everest.RMIM.CA.R020403.REPC_MT500006CA.RecordId> list)
         //{
         //    List<DomainIdentifier> retVal = new List<DomainIdentifier>();
         //    foreach (var recId in list)
@@ -224,8 +225,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             Sender sndr = interaction.GetType().GetProperty("Sender").GetValue(interaction, null) as Sender;
             if(sndr == null || sndr.NullFlavor != null || sndr.Device == null || sndr.Device.NullFlavor != null || sndr.Device.Id == null || sndr.Device.Id.IsNull)
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Sender information is missing from message", null));
-            else if(sndr.Device.Id.Find(o=>config.IsRegisteredDevice(new DomainIdentifier() { Domain = o.Root, Identifier = o.Extension })) == null)
-                dtls.Add(new UnrecognizedSenderResultDetail(sndr));
+            else {
+                var sndrId = sndr.Device.Id.Find(o => !config.IsRegisteredDevice(new DomainIdentifier() { Domain = o.Root, Identifier = o.Extension }));
+                if (sndrId != null)
+                    dtls.Add(new UnrecognizedSenderResultDetail(new DomainIdentifier() { Domain = sndrId.Root, Identifier = sndrId.Extension }));
+            }
+            
 
         }
 
@@ -235,11 +240,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         //public static Custodian CreateCustodian(ISystemConfigurationService configService)
         //{
             
-        //    var retVal = new MARC.Everest.RMIM.CA.R020402.REPC_MT230003CA.Custodian();
-        //    retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.AssignedDevice(
+        //    var retVal = new MARC.Everest.RMIM.CA.R020403.REPC_MT230003CA.Custodian();
+        //    retVal.AssignedDevice = new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.AssignedDevice(
         //        new II(configService.Custodianship.Id.Domain, configService.Custodianship.Id.Identifier),
-        //        new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.Repository(configService.Custodianship.Name),
-        //        new MARC.Everest.RMIM.CA.R020402.COCT_MT090310CA.RepositoryJurisdiction(
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.Repository(configService.Custodianship.Name),
+        //        new MARC.Everest.RMIM.CA.R020403.COCT_MT090310CA.RepositoryJurisdiction(
         //            configService.JurisdictionData.Name)
         //            );
         //    return retVal;

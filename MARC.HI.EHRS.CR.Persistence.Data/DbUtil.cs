@@ -84,7 +84,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
 
             // Get the HealthServiceRecord that this document belongs to
             IContainer hsrContainer = child.Site.Container;
-            while (!(hsrContainer is RegistrationEvent) && hsrContainer != null)
+            while (!(hsrContainer is RegistrationEvent) && hsrContainer != null && (hsrContainer as IComponent).Site != null)
                 hsrContainer = (hsrContainer as IComponent).Site.Container;
             return hsrContainer as RegistrationEvent;
 
@@ -389,13 +389,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get an address set from the database
         /// </summary>
-        public static AddressSet GetAddress(IDbConnection conn, IDbTransaction tx, decimal? addrSetId)
+        public static AddressSet GetAddress(IDbConnection conn, IDbTransaction tx, decimal? addrSetId, bool loadFast)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
             try
             {
                 cmd.CommandText = "get_addr_set";
+                if (!loadFast)
+                    cmd.CommandText += "_efft";
                 cmd.Parameters.Add(CreateParameterIn(cmd, "addr_set_id_in", DbType.Decimal, addrSetId));
 
                 // Execute a reader
@@ -409,6 +411,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     part.AddressValue = Convert.ToString(reader["addr_cmp_value"]);
                     part.PartType = (AddressPart.AddressPartType)Convert.ToInt32(reader["addr_cmp_cls"]);
                     retVal.Parts.Add(part);
+
+                    // Effective time
+                    if(!loadFast && retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
+                    {
+                        retVal.EffectiveTime = Convert.ToDateTime(reader["efft_utc"]);
+                        if (reader["obslt_utc"] != DBNull.Value)
+                            retVal.EffectiveTime = Convert.ToDateTime(reader["obslt_utc"]);
+                    }
                 }
 
                 return retVal;
@@ -422,13 +432,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Get a name from the database
         /// </summary>
-        public static NameSet GetName(IDbConnection conn, IDbTransaction tx, decimal? nsSetId)
+        public static NameSet GetName(IDbConnection conn, IDbTransaction tx, decimal? nsSetId, bool loadFast)
         {
             IDbCommand cmd = CreateCommandStoredProc(conn, tx);
 
             try
             {
                 cmd.CommandText = "get_name_set";
+                if (!loadFast)
+                    cmd.CommandText += "_efft";
                 cmd.Parameters.Add(CreateParameterIn(cmd, "name_set_id_in", DbType.Decimal, nsSetId));
 
                 // Execute a reader
@@ -442,6 +454,14 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
                     part.Value = Convert.ToString(reader["name_cmp_value"]);
                     part.Type = (NamePart.NamePartType)Convert.ToInt32(reader["name_cmp_cls"]);
                     retVal.Parts.Add(part);
+
+                    // Effective time
+                    if (!loadFast && retVal.EffectiveTime == default(DateTime) && reader["efft_utc"] != DBNull.Value)
+                    {
+                        retVal.EffectiveTime = Convert.ToDateTime(reader["efft_utc"]);
+                        if (!loadFast && reader["obslt_utc"] != DBNull.Value)
+                            retVal.EffectiveTime = Convert.ToDateTime(reader["obslt_utc"]);
+                    }
                 }
 
                 return retVal;

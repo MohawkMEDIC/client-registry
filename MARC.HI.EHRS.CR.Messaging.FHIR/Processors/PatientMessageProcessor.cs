@@ -1,4 +1,22 @@
-﻿using System;
+﻿/**
+ * Copyright 2012-2015 Mohawk College of Applied Arts and Technology
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you 
+ * may not use this file except in compliance with the License. You may 
+ * obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations under 
+ * the License.
+ * 
+ * User: Justin
+ * Date: 12-7-2015
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -95,7 +113,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             Util.DataUtil.ClientRegistryFhirQuery retVal = base.ParseQuery(parameters, dtls);
 
             var subjectFilter = new Person();
-            RegistrationEvent queryFilter = new RegistrationEvent();
+            QueryEvent queryFilter = new QueryEvent();
             QueryParameters queryControl = new QueryParameters()
             {
                 MatchingAlgorithm = MatchAlgorithm.Exact
@@ -487,9 +505,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             if(nameFilter != null)
                 subjectFilter.Names = new List<SVC.Core.DataTypes.NameSet>() { nameFilter };
 
-            queryFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+            RegistrationEvent regFilter = new RegistrationEvent();
+            regFilter.Add(subjectFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             queryFilter.Add(queryControl, "FLT", HealthServiceRecordSiteRoleType.FilterOf, null);
+            queryFilter.Add(regFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
             retVal.Filter = queryFilter;
+    
 
             return retVal;
         }
@@ -793,8 +814,11 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                 // Fetch by the primary id
                 var id = person.Id;
                 
-                var queryFilter = new RegistrationEvent();
-                queryFilter.Add(new Person() { Id = person.Id }, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                var queryFilter = new QueryEvent();
+                var registrationFilter = new RegistrationEvent();
+                registrationFilter.Add(new Person() { Id = person.Id }, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+                queryFilter.Add(registrationFilter, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
+
                 var regEvts = idq.QueryRecord(queryFilter);
                 if (regEvts.Length == 1)
                 {
@@ -805,7 +829,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
                     dtls.Add(new ResultDetail(ResultDetailType.Warning, "Could not load related registration event. Data may be incomplete", null, null));
             }
 
-            retVal.Id = person.Id.ToString();
+            //retVal.Id = person.Id.ToString();
             retVal.VersionId = person.VersionId.ToString();
             retVal.Active = (person.Status & (StatusType.Active | StatusType.Completed)) != 0;
             retVal.Timestamp = person.Timestamp;

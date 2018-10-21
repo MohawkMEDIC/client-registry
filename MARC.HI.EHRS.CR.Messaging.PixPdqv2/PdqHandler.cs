@@ -31,6 +31,7 @@ using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol;
 using System.Diagnostics;
 using NHapi.Base.Util;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -82,6 +83,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             // Get config
             var config = this.Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
             var locale = this.Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
+            var dataService = this.Context.GetService(typeof(IClientRegistryDataService)) as IClientRegistryDataService;
 
             // Create a details array
             List<IResultDetail> dtls = new List<IResultDetail>();
@@ -97,7 +99,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
 
             // Data controller
-            DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            //DataUtil dataUtil = new DataUtil() { Context = this.Context };
+            AuditUtil auditUtil = new AuditUtil() { Context = this.Context };
             // Construct appropriate audit
             AuditData audit = null;
 
@@ -108,13 +111,18 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 ComponentUtility cu = new ComponentUtility() { Context = this.Context };
                 DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
                 var data = cu.CreateQueryComponentsPdq(request, dtls);
-                if (data.Equals(QueryData.Empty))
-                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+                if (data == null)
+                {
+                    Trace.TraceError("{0} problems mapping message:", dtls.Count);
+                    foreach (var itm in dtls)
+                        Trace.TraceError($"\t{itm.Type} : {itm.Message}");
+                    throw new InvalidOperationException();// locale?.GetString("MSGE00A") ?? "Could not process components");
+                }
 
                 // Is this a continue or new query?
-                QueryResultData result = dataUtil.Query(data, dtls);
+                RegistryQueryResult result = dataService.Query(data);
 
-                audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.Success, evt, result);
+                audit = auditUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.Success, evt, result);
 
                 // Now process the result
                 response = dcu.CreateRSP_K21(result, data, dtls);
@@ -148,7 +156,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 errTerser.Set("/QAK-2", "AE");
                 errTerser.Set("/MSA-1", "AE");
                 errTerser.Set("/QAK-1", request.QPD.QueryTag.Value);
-                audit = dataUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.EpicFail, evt, QueryResultData.Empty);
+                audit = auditUtil.CreateAuditData("ITI-21", ActionType.Execute, OutcomeIndicator.EpicFail, evt, new List<VersionedDomainIdentifier>());
             }
             finally
             {

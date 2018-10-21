@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 17-8-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -179,7 +179,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             TimestampSet tss = new TimestampSet();
 
             // value
-            if (ivl_ts.Value != null && !ivl_ts.Value.IsNull)
+            if (ivl_ts.Value != null && !ivl_ts.Value.IsNull && !String.IsNullOrEmpty(ivl_ts.Value.Value))
             {
                 if (!HasTimezone(ivl_ts.Value))
                     dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, String.Format(ERR_NOTZ, ivl_ts.Value), null));
@@ -398,7 +398,11 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
             NameSet retVal = new NameSet();
             NameSet.NameSetUse internalNameUse = 0;
             var lnu = legalName.Use == null || legalName.Use.IsNull || legalName.Use.IsEmpty ? EntityNameUse.Search : (EntityNameUse)legalName.Use[0];
-            if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
+            if ((lnu == EntityNameUse.Legal || lnu == EntityNameUse.OfficialRecord) &&
+                legalName.Use.Count > 1 &&
+                (legalName.Use[1] == EntityNameUse.OfficialRecord | legalName.Use[1] == EntityNameUse.Legal))
+                internalNameUse = NameSet.NameSetUse.OfficialRecord;
+            else if(!m_nameUseMap.TryGetValue(lnu, out internalNameUse))
                 return null;
 
             retVal.Use = internalNameUse;

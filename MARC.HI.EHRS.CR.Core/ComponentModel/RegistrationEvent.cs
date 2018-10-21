@@ -30,8 +30,8 @@ namespace MARC.HI.EHRS.CR.Core.ComponentModel
     /// Represents a specific version of a health services record event
     /// </summary>
     [Serializable]
-    [XmlType("HealthServiceRecord", Namespace = "urn:marc-hi:svc:componentModel")]
-    [XmlRoot("HealthServiceRecord", Namespace="urn:marc-hi:svc:componentModel")]
+    [XmlType("RegistrationEvent", Namespace = "urn:marc-hi:svc:componentModel")]
+    [XmlRoot("RegistrationEvent", Namespace="urn:marc-hi:svc:componentModel")]
     public class RegistrationEvent : CrHealthServiceRecordContainer, IIdentifiable
     {
 

@@ -1,4 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+
+  Copyright 2012-2015 Mohawk College of Applied Arts and Technology
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you 
+  may not use this file except in compliance with the License. You may 
+  obtain a copy of the License at 
+  
+  http://www.apache.org/licenses/LICENSE-2.0 
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+  License for the specific language governing permissions and limitations under 
+  the License.
+  
+  User: Justin
+  Date: 12-7-2015
+
+
+-->
 <binding name="ihe_Binding" closeTimeout="00:01:00" openTimeout="00:01:00" receiveTimeout="00:10:00" sendTimeout="00:01:00" bypassProxyOnLocal="false" transactionFlow="false" hostNameComparisonMode="WeakWildcard" maxBufferPoolSize="2147483647" maxReceivedMessageSize="2147483647" messageEncoding="Text" textEncoding="utf-8" useDefaultWebProxy="true" allowCookies="false">
   <readerQuotas maxDepth="32" maxStringContentLength="2147483647" maxArrayLength="2147483647" maxBytesPerRead="4096" maxNameTableCharCount="2147483647"/>
   <reliableSession ordered="true" inactivityTimeout="00:10:00" enabled="false"/>

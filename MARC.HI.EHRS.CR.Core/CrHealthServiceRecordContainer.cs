@@ -56,6 +56,7 @@ namespace MARC.HI.EHRS.CR.Core
         [XmlElement("crQueryParameters", typeof(QueryParameters))]
         [XmlElement("registration", typeof(RegistrationEvent))]
         [XmlElement("repositoryDevice", typeof(RepositoryDevice))]
+        [XmlElement("queryEvent", typeof(QueryEvent))]
         public List<HealthServiceRecordComponent> CrSpecificComponents
         {
             get

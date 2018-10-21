@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,22 +13,24 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 4-9-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MARC.Everest.RMIM.CA.R020402.Interactions;
+using MARC.Everest.RMIM.CA.R020403.Interactions;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.Exceptions;
 using MARC.HI.EHRS.CR.Core.ComponentModel;
-using MARC.Everest.RMIM.CA.R020402.Vocabulary;
+using MARC.Everest.RMIM.CA.R020403.Vocabulary;
 using MARC.Everest.Connectors;
 using MARC.Everest.DataTypes;
+using MARC.HI.EHRS.CR.Core.Services;
+using MARC.HI.EHRS.CR.Core.Data;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
 {
@@ -50,7 +52,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// <summary>
         /// Creates filter data from the request
         /// </summary>
-        public DataUtil.QueryData CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
+        public RegistryQueryRequest CreateFilterData(MARC.Everest.Interfaces.IInteraction request, List<MARC.Everest.Connectors.IResultDetail> dtls)
         {
             ILocalizationService locale = Context.GetService(typeof(ILocalizationService)) as ILocalizationService;
             
@@ -69,9 +71,9 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                     rqst.Sender.Device.Id.Root,
                     rqst.Sender.Device.Id.Extension)
                 );
-            filter.OriginalMessageQuery = request;
+            filter.OriginalMessageQueryId = String.Format("{1}^^^&{0}&ISO", request.Id.Root, request.Id.Extension);
             filter.QueryRequest = queryData;
-            filter.TargetDomains = ids;
+            filter.TargetDomain = ids;
             filter.IsSummary = true;
 
             return filter;
@@ -80,26 +82,26 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
         /// <summary>
         /// Create the interaction
         /// </summary>
-        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, DataUtil.QueryResultData results, List<MARC.Everest.Connectors.IResultDetail> details, List<SVC.Core.Issues.DetectedIssue> issues)
+        public MARC.Everest.Interfaces.IInteraction Create(MARC.Everest.Interfaces.IInteraction request, RegistryQueryResult results, List<MARC.Everest.Connectors.IResultDetail> details)
         {
             // GEt the config services
             ISystemConfigurationService configService = Context.GetService(typeof(ISystemConfigurationService)) as ISystemConfigurationService;
 
-            List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>>(results.Results.Count());
+            List<MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>> retHl7v3 = new List<MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>>(results.Results.Count());
             CaDeComponentUtil dCompUtil = new CaDeComponentUtil();
             dCompUtil.Context = this.Context;
 
             PRPA_IN101103CA rqst = request as PRPA_IN101103CA;
 
             // Convert results to HL7v3
-            foreach (var res in results.Results)
+            foreach (RegistrationEvent res in results.Results)
             {
-                var retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>(
+                var retRec = new MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>(
                     dCompUtil.CreateRegistrationEvent(res, details)
                 );
                 if (retRec.RegistrationEvent  == null)
-                    retRec = new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>(
-                        new MARC.Everest.RMIM.CA.R020402.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020402.PRPA_MT101104CA.IdentifiedEntity>()
+                    retRec = new MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.Subject2<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>(
+                        new MARC.Everest.RMIM.CA.R020403.MFMI_MT700746CA.RegistrationEvent<MARC.Everest.RMIM.CA.R020403.PRPA_MT101104CA.IdentifiedEntity>()
                         {
                             NullFlavor = NullFlavor.NoInformation
                         }
@@ -122,27 +124,27 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.CA
                 AcknowledgementCondition.Never,
                 MessageUtil.CreateReceiver(rqst.Sender),
                 MessageUtil.CreateSender(rqst.Receiver.Telecom == null ? null : new Uri(rqst.Receiver.Telecom.Value), configService),
-                new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.Acknowledgement(
+                new MARC.Everest.RMIM.CA.R020403.MCCI_MT002200CA.Acknowledgement(
                     details.Count(a => a.Type == ResultDetailType.Error) == 0 ? AcknowledgementType.ApplicationAcknowledgementAccept : AcknowledgementType.ApplicationAcknowledgementError,
-                    new MARC.Everest.RMIM.CA.R020402.MCCI_MT002200CA.TargetMessage(request.Id)
+                    new MARC.Everest.RMIM.CA.R020403.MCCI_MT002200CA.TargetMessage(request.Id)
                 )
             );
             response.Acknowledgement.AcknowledgementDetail = MessageUtil.CreateAckDetails(details.ToArray());
             response.controlActEvent = PRPA_IN101104CA.CreateControlActEvent(
                 new II(configService.Custodianship.Id.Domain, Guid.NewGuid().ToString()),
                 PRPA_IN101104CA.GetTriggerEvent(),
-                new MARC.Everest.RMIM.CA.R020402.QUQI_MT120008CA.QueryAck(
+                new MARC.Everest.RMIM.CA.R020403.QUQI_MT120008CA.QueryAck(
                     rqst.controlActEvent.QueryByParameter.QueryId,
                     results.TotalResults == 0 ? QueryResponse.NoDataFound : (AcknowledgementType)response.Acknowledgement.TypeCode == AcknowledgementType.ApplicationAcknowledgementError ? QueryResponse.ApplicationError : QueryResponse.DataFound,
                     results.TotalResults,
-                    results.Results.Length,
-                    results.TotalResults - results.Results.Length - results.StartRecordNumber
+                    results.Results.Count,
+                    results.TotalResults - results.Results.Count - results.StartRecordNumber
                 ),
                 rqst.controlActEvent.QueryByParameter
             );
             response.controlActEvent.LanguageCode = MessageUtil.GetDefaultLanguageCode(this.Context);
-            if (issues.Count > 0)
-                response.controlActEvent.SubjectOf.AddRange(MessageUtil.CreateDetectedIssueEventsQuery(issues));
+            if (details.Count(o=>o is DetectedIssueResultDetail) > 0)
+                response.controlActEvent.SubjectOf.AddRange(MessageUtil.CreateDetectedIssueEventsQuery(details.OfType<DetectedIssueResultDetail>().Select(o=>o.Issue).ToList()));
             response.controlActEvent.Subject.AddRange(retHl7v3);
 
             return response;

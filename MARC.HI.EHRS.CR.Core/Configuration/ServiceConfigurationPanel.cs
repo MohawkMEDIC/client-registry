@@ -98,11 +98,14 @@ namespace MARC.HI.EHRS.SVC.Presentation.Configuration
             if (isInstalled)
             {
                 var svcInfo = ServiceTools.ServiceInstaller.GetServiceConfig("Client Registry");
-                this.Mode = (ServiceTools.ServiceBootFlag)svcInfo.dwStartType;
-                this.AccountName = svcInfo.lpServiceStartName;
-                this.m_controlPanel.UserAccount = this.AccountName;
-                this.m_controlPanel.ServiceStart = this.Mode;
-                this.EnableConfiguration = isInstalled;
+                if (svcInfo != null)
+                {
+                    this.Mode = (ServiceTools.ServiceBootFlag)svcInfo.dwStartType;
+                    this.AccountName = svcInfo.lpServiceStartName;
+                    this.m_controlPanel.UserAccount = this.AccountName;
+                    this.m_controlPanel.ServiceStart = this.Mode;
+                    this.EnableConfiguration = isInstalled;
+                }
             }
             
            

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012-2013 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,8 +13,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 16-7-2012
+ * User: Justin
+ * Date: 12-7-2015
  */
 
 using System;
@@ -26,6 +26,7 @@ using MARC.HI.EHRS.CR.Core.ComponentModel;
 using MARC.Everest.Connectors;
 using MARC.HI.EHRS.SVC.Core.Services;
 using MARC.HI.EHRS.SVC.Core.Issues;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest
 {
@@ -43,12 +44,12 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest
         /// <summary>
         /// Create the HSR query data
         /// </summary>
-        DataUtil.QueryData CreateFilterData(IInteraction request, List<IResultDetail> dtls);
+        RegistryQueryRequest CreateFilterData(IInteraction request, List<IResultDetail> dtls);
 
         /// <summary>
         /// Create the response for the query
         /// </summary>
-        IInteraction Create(IInteraction request, DataUtil.QueryResultData results, List<IResultDetail> details, List<DetectedIssue> issues);
+        IInteraction Create(IInteraction request, RegistryQueryResult results, List<IResultDetail> dtls);
 
     }
 }

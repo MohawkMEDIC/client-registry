@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2014-2014 Mohawk College of Applied Arts and Technology
+ * Copyright 2012-2015 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 20-2-2014
+ * User: Justin
+ * Date: 12-7-2015
  */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,11 +151,13 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                         MatchingAlgorithm = MatchAlgorithm.Exact,
                         MatchStrength = MatchStrength.Exact
                     };
+                    var queryEvent = new QueryEvent();
                     var patientQuery = new RegistrationEvent();
-                    patientQuery.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
+                    queryEvent.Add(qp, "FLT", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf, null);
                     patientQuery.Add(new Person() { AlternateIdentifiers = rplc.AlternateIdentifiers }, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
+                    queryEvent.Add(patientQuery, "SUBJ", SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf, null);
                     // Perform the query
-                    var patientIdentifiers = registration.QueryRecord(patientQuery);
+                    var patientIdentifiers = registration.QueryRecord(queryEvent);
                     if (patientIdentifiers.Length == 0)
                         throw new InvalidOperationException();
                     var replacedPerson = (persistence.GetContainer(patientIdentifiers[0], true) as RegistrationEvent).FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;

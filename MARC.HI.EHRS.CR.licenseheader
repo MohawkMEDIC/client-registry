@@ -1,7 +1,7 @@
 extensions: designer.cs generated.cs
 extensions: .cs .cpp .h
 /**
- * Copyright %CreationYear%-%CurrentYear% Mohawk College of Applied Arts and Technology
+ * Copyright 2012-%CurrentYear% Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -20,7 +20,7 @@ extensions: .cs .cpp .h
  */
 extensions: .sql
 --
--- Copyright %CreationYear%-%CurrentYear% Mohawk College of Applied Arts and Technology
+-- Copyright 2012-%CurrentYear% Mohawk College of Applied Arts and Technology
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License"); you 
 -- may not use this file except in compliance with the License. You may 
@@ -46,7 +46,7 @@ extensions: .vb
 extensions:  .xml .config .xsd
 <!--
 
-  Copyright %CreationYear%-%CurrentYear% Mohawk College of Applied Arts and Technology
+  Copyright 2012-%CurrentYear% Mohawk College of Applied Arts and Technology
   
   Licensed under the Apache License, Version 2.0 (the "License"); you 
   may not use this file except in compliance with the License. You may 

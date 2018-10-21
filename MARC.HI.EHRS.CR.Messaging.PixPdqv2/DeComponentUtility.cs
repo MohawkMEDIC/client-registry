@@ -29,6 +29,7 @@ using MARC.HI.EHRS.SVC.Core.ComponentModel.Components;
 using NHapi.Base.Model;
 using MARC.Everest.DataTypes;
 using MARC.Everest.DataTypes.Interfaces;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -68,7 +69,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create the RSP_K23 mesasge
         /// </summary>
-        public NHapi.Model.V25.Message.RSP_K23 CreateRSP_K23(QueryResultData result, List<Everest.Connectors.IResultDetail> dtls)
+        public NHapi.Model.V25.Message.RSP_K23 CreateRSP_K23(RegistryQueryResult result, List<Everest.Connectors.IResultDetail> dtls)
         {
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K23();
@@ -91,7 +92,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     MessageUtil.UpdateERR(err, dtl, Context);
                 }
             }
-            else if (result.Results == null || result.Results.Length == 0)
+            else if (result.Results == null || result.Results.Count == 0)
             {
                 qak.QueryResponseStatus.Value = "NF";
             }
@@ -99,7 +100,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 // Create the pid
                 qak.QueryResponseStatus.Value = "OK";
-                UpdatePID(result.Results[0], retVal.QUERY_RESPONSE.PID, true);
+                UpdatePID(result.Results[0] as RegistrationEvent, retVal.QUERY_RESPONSE.PID, true);
             }
 
 
@@ -382,7 +383,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         /// <summary>
         /// Create RSP_K21 message
         /// </summary>
-        internal NHapi.Base.Model.IMessage CreateRSP_K21(QueryResultData result, QueryData filter, List<Everest.Connectors.IResultDetail> dtls)
+        internal NHapi.Base.Model.IMessage CreateRSP_K21(RegistryQueryResult result, RegistryQueryRequest filter, List<Everest.Connectors.IResultDetail> dtls)
         {
             // Return value
             var retVal = new NHapi.Model.V25.Message.RSP_K21();
@@ -406,7 +407,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     MessageUtil.UpdateERR(err, dtl, Context);
                 }
             }
-            else if (result.Results == null || result.Results.Length == 0)
+            else if (result.Results == null || result.Results.Count == 0)
             {
                 qak.QueryResponseStatus.Value = "NF";
             }
@@ -415,9 +416,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 // Create the pid
                 qak.QueryResponseStatus.Value = "OK";
                 qak.HitCount.Value = result.TotalResults.ToString();
-                qak.ThisPayload.Value = result.Results.Length.ToString();
+                qak.ThisPayload.Value = result.Results.Count.ToString();
                 //qak.HitsRemaining.Value = (result.TotalResults - result.StartRecordNumber).ToString();
-                foreach (var res in result.Results)
+                foreach (RegistrationEvent res in result.Results)
                 {
                     var pid = retVal.GetQUERY_RESPONSE(retVal.QUERY_RESPONSERepetitionsUsed);
                     UpdatePID(res, pid.PID, false);
@@ -427,7 +428,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
 
                 // DSC segment?
-                if (result.TotalResults > result.Results.Length)
+                if (result.TotalResults > result.Results.Count)
                 {
                     retVal.DSC.ContinuationPointer.Value = result.ContinuationPtr;
                     retVal.DSC.ContinuationStyle.Value = "I";
@@ -435,7 +436,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             }
 
             // Actual query paramaeters
-            var regFilter = filter.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.FilterOf) as RegistrationEvent;
+            var regFilter = filter.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as RegistrationEvent;
             var personFilter = regFilter.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
 
             qpd.QueryTag.Value = filter.QueryTag;
