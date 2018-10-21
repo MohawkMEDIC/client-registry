@@ -34,6 +34,7 @@ using MARC.HI.EHRS.CR.Core;
 using System.Diagnostics;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core.Data;
+using NHapi.Model.V231.Segment;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -803,13 +804,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 
             var evn = request.EVN;
             var pid = request.PID; // get the pid segment
-            
+            var pd1 = request.PD1; // PD1 segment
+
             if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
             else
                 retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
 
-            Person subject = this.CreatePerson(pid, dtls, aaut);
+            Person subject = this.CreatePerson(pid, pd1, dtls, aaut);
 
             // Add to subject
             retVal.Add(subject, "SUBJ", HealthServiceRecordSiteRoleType.SubjectOf, null);
@@ -823,6 +825,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 dev.AlternateIdentifier.Domain = this.m_config.OidRegistrar.GetOid("V2_SEND_FAC_ID").Oid;
             retVal.Add(dev, "AUT", HealthServiceRecordSiteRoleType.AuthorOf, null);
 
+            // Next of kin segment
+            for(int i = 0; i < request.NK1RepetitionsUsed; i++)
+            {
+                var nk1 = request.GetNK1(i);
+                PersonalRelationship relative = this.CreatePersonalRelationship(nk1, dtls, aaut);
+                subject.Add(relative, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
+            }
+
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
                 return null;
             return retVal;
@@ -830,9 +840,62 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         }
 
         /// <summary>
+        /// Create a personal relationship
+        /// </summary>
+        private PersonalRelationship CreatePersonalRelationship(NK1 nk1, List<IResultDetail> dtls, OidRegistrar.OidData aaut)
+        {
+            var retVal = new PersonalRelationship();
+
+            // Person identifier
+            retVal.AlternateIdentifiers = nk1.GetNextOfKinAssociatedPartySIdentifiers().Select(o => this.CreateDomainIdentifier(o, dtls)).ToList();
+
+            // type of relation
+            if(!String.IsNullOrEmpty(nk1.Relationship.Identifier.Value))
+                retVal.RelationshipKind = Util.ToWireFormat(nk1.Relationship.Identifier.Value);
+
+            retVal.Status = StatusType.Active;
+            
+            // Relationship holder
+            if (nk1.Sex.Value != null)
+                retVal.GenderCode = nk1.Sex.Value;
+            if (!String.IsNullOrEmpty(nk1.DateTimeOfBirth.TimeOfAnEvent.Value))
+                retVal.BirthTime = CreateTimestampPart(nk1.DateTimeOfBirth, dtls);
+
+            if (nk1.NameRepetitionsUsed > 0)
+                retVal.LegalName = CreateNameSet(nk1.GetName().FirstOrDefault(o => o.NameTypeCode.Value == "OR") ?? nk1.GetName().FirstOrDefault(), dtls);
+
+            // Person address
+            if (nk1.AddressRepetitionsUsed > 0)
+                retVal.PerminantAddress = CreateAddressSet(nk1.GetAddress().FirstOrDefault(o => o.AddressType.Value == "H") ?? nk1.GetAddress().FirstOrDefault(), dtls);
+
+            // Telephone
+            if (nk1.PhoneNumberRepetitionsUsed > 0)
+            {
+                retVal.TelecomAddresses = new List<TelecommunicationsAddress>();
+                foreach (var tel in nk1.GetPhoneNumber())
+                    if (String.IsNullOrEmpty(tel.EmailAddress.Value))
+                    {
+                        var tca = MessageUtil.TelFromXTN(tel);
+                        tca.Use = "HP";
+                        retVal.TelecomAddresses.Add(tca);
+                    }
+                    else
+                        retVal.TelecomAddresses.Add(new TelecommunicationsAddress()
+                        {
+                            Capability = "data text",
+                            Use = "HP",
+                            Value = String.Format("mailto:{0}", tel.EmailAddress)
+                        });
+
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
         /// Creat the person
         /// </summary>
-        private Person CreatePerson(NHapi.Model.V231.Segment.PID pid, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData aaut)
+        private Person CreatePerson(NHapi.Model.V231.Segment.PID pid, NHapi.Model.V231.Segment.PD1 pd1, List<IResultDetail> dtls, MARC.HI.EHRS.SVC.Core.DataTypes.OidRegistrar.OidData aaut)
         {
             var subject = new Person() { Status = StatusType.Active, Timestamp = DateTime.Now };
             subject.RoleCode = PersonRole.PAT;
@@ -1050,6 +1113,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }, "BRTH");
 
             this.MarkScopedId(subject, aaut, dtls);
+            
 
             return subject;
         }
@@ -1236,13 +1300,14 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             {
                 var patient = request.GetPATIENT(i);
                 var pid = patient.PID; // get the pid segment
+                var pd1 = patient.PD1;
                 
                 if (!String.IsNullOrEmpty(evn.RecordedDateTime.TimeOfAnEvent.Value))
                     retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { CreateTimestampPart(evn.RecordedDateTime, dtls) } };
                 else
                     retVal.EffectiveTime = new TimestampSet() { Parts = new List<TimestampPart>() { new TimestampPart() { PartType = TimestampPart.TimestampPartType.LowBound, Value = DateTime.Now, Precision = "F" } } };
 
-                Person subject = this.CreatePerson(pid, dtls, aaut);
+                Person subject = this.CreatePerson(pid, pd1, dtls, aaut);
 
                 // Merge
                 if (patient.MRG.GetPriorPatientIdentifierList().Length > 0)

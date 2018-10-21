@@ -30,6 +30,7 @@ using NHapi.Base.Model;
 using MARC.Everest.DataTypes;
 using MARC.Everest.DataTypes.Interfaces;
 using MARC.HI.EHRS.CR.Core.Services;
+using NHapi.Model.V25.Segment;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -422,6 +423,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 {
                     var pid = retVal.GetQUERY_RESPONSE(retVal.QUERY_RESPONSERepetitionsUsed);
                     UpdatePID(res, pid.PID, false);
+
+                    foreach (var rel in res.Components.OfType<PersonalRelationship>())
+                        UpdateNK1(rel, pid.GetNK1(pid.NK1RepetitionsUsed));
                     UpdateQRI(res, pid.QRI);
                     pid.PID.SetIDPID.Value = retVal.QUERY_RESPONSERepetitionsUsed.ToString();
                     
@@ -542,6 +546,58 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 }
             }
             return retVal;
+        }
+
+        /// <summary>
+        /// Update the NK1 segment
+        /// </summary>
+        private void UpdateNK1(PersonalRelationship subject, NK1 nk1)
+        {
+            if (subject.AlternateIdentifiers != null)
+                foreach(var altId in subject.AlternateIdentifiers)
+                    UpdateCX(altId, nk1.GetNextOfKinAssociatedPartySIdentifiers(nk1.NextOfKinAssociatedPartySIdentifiersRepetitionsUsed));
+
+            // Birth time
+            if (subject.BirthTime != null)
+            {
+                MARC.Everest.DataTypes.TS ts = new Everest.DataTypes.TS(subject.BirthTime.Value, ReverseLookup(ComponentUtility.TS_PREC_MAP, subject.BirthTime.Precision));
+                nk1.DateTimeOfBirth.Time.Value = MARC.Everest.Connectors.Util.ToWireFormat(ts);
+            }
+
+            if(subject.GenderCode != null)
+                nk1.AdministrativeSex.Value = subject.GenderCode;
+
+            if (subject.LegalName != null)
+                UpdateXPN(subject.LegalName, nk1.GetName(0));
+
+            if (subject.PerminantAddress != null)
+                UpdateAD(subject.PerminantAddress, nk1.GetAddress(0));
+
+            if (subject.RelationshipKind != null)
+                nk1.Relationship.Identifier.Value = subject.RelationshipKind;
+
+            if(subject.TelecomAddresses != null)
+                foreach(var tel in subject.TelecomAddresses)
+                    if (tel.Use == "HP" && tel.Value.StartsWith("tel"))
+                        MessageUtil.XTNFromTel(new TEL()
+                        {
+                            Value = tel.Value,
+                            Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                            Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                        }, nk1.GetContactPersonSTelephoneNumber(nk1.ContactPersonSTelephoneNumberRepetitionsUsed));
+                    else if (tel.Use == "HP")
+                        nk1.GetPhoneNumber(nk1.ContactPersonSTelephoneNumberRepetitionsUsed).EmailAddress.Value = tel.Value;
+                    else if (tel.Use == "WP" && tel.Value.StartsWith("tel"))
+                        MessageUtil.XTNFromTel(new TEL()
+                        {
+                            Value = tel.Value,
+                            Use = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationAddressUse>>>(tel.Use),
+                            Capabilities = MARC.Everest.Connectors.Util.Convert<SET<CS<TelecommunicationCabability>>>(tel.Capability)
+                        }, nk1.GetContactPersonSTelephoneNumber(nk1.ContactPersonSTelephoneNumberRepetitionsUsed));
+                    else if (tel.Use == "WP")
+                        nk1.GetPhoneNumber(nk1.ContactPersonSTelephoneNumberRepetitionsUsed).EmailAddress.Value = tel.Value;
+
+
         }
 
         /// <summary>
