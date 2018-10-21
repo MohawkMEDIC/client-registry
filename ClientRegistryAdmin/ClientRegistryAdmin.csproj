@@ -93,10 +93,7 @@
     <Reference Include="System.Web.Abstractions">
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Mohawk College\Client Registry\admin\bin\System.Web.Helpers.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Routing">
       <Private>True</Private>
     </Reference>

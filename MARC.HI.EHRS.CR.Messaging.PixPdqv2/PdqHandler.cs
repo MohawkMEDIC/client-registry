@@ -112,7 +112,12 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 DeComponentUtility dcu = new DeComponentUtility() { Context = this.Context };
                 var data = cu.CreateQueryComponentsPdq(request, dtls);
                 if (data == null)
-                    throw new InvalidOperationException(locale.GetString("MSGE00A"));
+                {
+                    Trace.TraceError("{0} problems mapping message:", dtls.Count);
+                    foreach (var itm in dtls)
+                        Trace.TraceError($"\t{itm.Type} : {itm.Message}");
+                    throw new InvalidOperationException();// locale?.GetString("MSGE00A") ?? "Could not process components");
+                }
 
                 // Is this a continue or new query?
                 RegistryQueryResult result = dataService.Query(data);

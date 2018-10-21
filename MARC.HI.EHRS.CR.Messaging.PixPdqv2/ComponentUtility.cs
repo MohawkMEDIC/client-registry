@@ -770,9 +770,15 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             
             retVal.IsSummary = false;
             retVal.OriginalMessageQueryId = msh.MessageControlID.Value;
-            
+
             if (dtls.Exists(o => o.Type == ResultDetailType.Error))
+            {
+                Trace.TraceError("{0} problems mapping message:", dtls.Count);
+                foreach (var itm in dtls)
+                    Trace.TraceError($"\t{itm.Type} : {itm.Message}");
                 return null;
+            }
+
             return retVal;
         }
 

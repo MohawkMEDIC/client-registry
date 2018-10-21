@@ -60,6 +60,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
         /// Create an AD extension
         /// </summary>
         [ExtensionDefinition(Name = "addressPart", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Address", MustSupport = false, IsModifier = false, ShortDescription = "Additional address information not classified by FHIR parts")]
+        [ExtensionDefinition(Name = "addressPart-value", HostType = typeof(Patient), ValueType = typeof(FhirString), Property = "Address.Extension", MustSupport = false, IsModifier = false, ShortDescription = "Additional address information not classified by FHIR parts")]
         [ExtensionDefinition(Name = "v3-addressPartTypes", HostType = typeof(Patient), ValueType = typeof(Coding), Property = "Address.Extension", Binding = typeof(AddressPartType), MustSupport = false, IsModifier = false, ShortDescription = "Qualifies the unclassified address parts")]
         public static Extension CreateADExtension(AddressPart part)
         {
@@ -69,11 +70,15 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
             return new Extension()
             {
                 Url = GetExtensionNameUrl("addressPart"),
-                Value = new FhirString(part.AddressValue),
                 Extension = new List<Extension>() {
                                         new Extension() {
                                             Url =  GetExtensionNameUrl("v3-addressPartTypes"),
                                             Value = new Coding(typeof(AddressPartType).GetValueSetDefinition(), wireCode)
+                                        },
+                                        new Extension()
+                                        {
+                                            Url = GetExtensionNameUrl("addressPart-value"),
+                                            Value = new FhirString(part.AddressValue),
                                         }
                                     }
             };
