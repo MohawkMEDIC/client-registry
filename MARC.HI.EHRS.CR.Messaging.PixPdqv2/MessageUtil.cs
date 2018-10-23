@@ -31,6 +31,8 @@ using NHapi.Base.Parser;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using MARC.HI.EHRS.CR.Core.Data;
+using MARC.HI.EHRS.CR.Security.Services;
+using MARC.HI.EHRS.CR.Security;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -478,6 +480,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     if (!config.IsRegisteredDevice(domainId))
                         dtls.Add(new UnrecognizedSenderResultDetail(domainId));
 
+                    String secret = msh.Security.Value,
+                        deviceId = $"{msh.SendingApplication.NamespaceID}|{msh.SendingFacility.NamespaceID}";
+                    ValidateSession(deviceId, secret, dtls, context);
                 }
                 else
                 {
@@ -489,6 +494,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                         if (!config.IsRegisteredDevice(domainId))
                             dtls.Add(new UnrecognizedSenderResultDetail(domainId));
 
+                        String secret = msh.Security.Value,
+                            deviceId = $"{msh.SendingApplication.NamespaceID}|{msh.SendingFacility.NamespaceID}";
+                        ValidateSession(deviceId, secret, dtls, context);
                     }
                     else
                         dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, "Missing MSH", "MSH"));
@@ -499,6 +507,34 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 dtls.Add(new ResultDetail(ResultDetailType.Error, e.Message, e));
             }
 
+        }
+
+        /// <summary>
+        /// Validate the session
+        /// </summary>
+        private static void ValidateSession(string deviceId, string secret, List<IResultDetail> dtls, IServiceProvider context)
+        {
+            var idp = context.GetService(typeof(IDeviceIdentityProviderService)) as IDeviceIdentityProviderService;
+            var iss = context.GetService(typeof(ISessionManagerService)) as ISessionManagerService;
+            if (idp == null) return;
+
+            // Perform validation
+            if (String.IsNullOrEmpty(secret))
+                dtls.Add(new ValidationResultDetail(ResultDetailType.Error, "Missing MSH-8 security. This server requires MSH-8 security", "MSH^8", null));
+            else
+            {
+                // Attempt to find an existing session for this user
+                var currentSession = iss?.GetActive(deviceId)?.FirstOrDefault();
+                if (currentSession == null)
+                {
+                    var principal = idp.Authenticate(deviceId, secret);
+                    AuthenticationContext.Current = new AuthenticationContext(principal);
+                    var session = iss?.Establish(principal);
+                    Trace.TraceInformation("Established session {0} with {1}", session?.Key ?? Guid.Empty, principal.Identity.Name);
+                }
+                else
+                    Trace.TraceInformation("Using existing session {0} with {1}", currentSession?.Key, deviceId);
+            }
         }
 
         ///// <summary>
@@ -516,7 +552,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
         //    var qPerson = queryParms.QueryRequest.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf);
         //    if (qPerson == null)
         //        return;
-            
+
 
         //    //dest.UserParametersInsuccessivefields.Data = source.UserParametersInsuccessivefields.Data;
         //}
