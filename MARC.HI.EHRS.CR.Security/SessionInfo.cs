@@ -173,8 +173,8 @@ namespace MARC.HI.EHRS.CR.Security
             {
                 var cp = principal as ClaimsPrincipal;
 
-                this.Issued = (cp.FindFirst(ClaimTypes.AuthenticationInstant)?.AsDateTime().ToLocalTime() ?? DateTime.Now);
-                this.Expiry = (cp.FindFirst(ClaimTypes.Expiration)?.AsDateTime().ToLocalTime() ?? DateTime.MaxValue);
+                this.Issued = ((cp.FindFirst(ClaimTypes.AuthenticationInstant) ?? cp.FindFirst("nbf"))?.AsDateTime().ToLocalTime() ?? DateTime.Now);
+                this.Expiry = ((cp.FindFirst(ClaimTypes.Expiration) ?? cp.FindFirst("exp"))?.AsDateTime().ToLocalTime() ?? DateTime.MaxValue);
                 this.Roles = cp.Claims.Where(o => o.Type == ClaimsIdentity.DefaultRoleClaimType)?.Select(o => o.Value)?.ToList();
                 this.AuthenticationType = cp.FindFirst(ClaimTypes.AuthenticationMethod)?.Value;
 

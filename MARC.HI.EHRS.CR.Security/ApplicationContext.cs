@@ -62,7 +62,7 @@ namespace MARC.HI.EHRS.CR.Security
     /// <summary>
     /// Handlers for application context
     /// </summary>
-    static class ApplicationContext
+    public static class ApplicationContext
     {
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// <summary>
         /// Sessions 
         /// </summary>
-        private Dictionary<Guid, SessionInfo> m_session = new Dictionary<Guid, SessionInfo>();
+        protected Dictionary<Guid, SessionInfo> m_session = new Dictionary<Guid, SessionInfo>();
 
         /// <summary>
         /// Deletes the specified session
@@ -34,7 +34,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// <summary>
         /// Establish a session for the principal provided
         /// </summary>
-        public SessionInfo Establish(IPrincipal principal)
+        public virtual SessionInfo Establish(IPrincipal principal)
         {
             lock (this.m_session)
             {
@@ -47,7 +47,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// <summary>
         /// Get the specified session
         /// </summary>
-        public SessionInfo Get(Guid sessionId)
+        public virtual SessionInfo Get(Guid sessionId)
         {
             SessionInfo ses = null;
             if (!this.m_session.TryGetValue(sessionId, out ses))
@@ -60,7 +60,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// </summary>
         /// <param name="sessionToken">The session token</param>
         /// <returns>The session information</returns>
-        public SessionInfo Get(String sessionToken)
+        public virtual SessionInfo Get(String sessionToken)
         {
             return this.m_session.Values.FirstOrDefault(o => o.Token == sessionToken);
         }
@@ -68,7 +68,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// <summary>
         /// Get active session based on the session identity
         /// </summary>
-        public IEnumerable<SessionInfo> GetActive(string userName)
+        public virtual IEnumerable<SessionInfo> GetActive(string userName)
         {
             return this.m_session.Values.Where(o => o.Principal.Identity.Name == userName);
         }
@@ -76,7 +76,7 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
         /// <summary>
         /// Refreshes the specified session
         /// </summary>
-        public SessionInfo Refresh(SessionInfo session, String password)
+        public virtual SessionInfo Refresh(SessionInfo session, String password)
         {
 
             if (session == null) return session;

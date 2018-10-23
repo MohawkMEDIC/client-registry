@@ -262,7 +262,7 @@
     <add type="MARC.HI.EHRS.CR.Core.Data.ClientRegistryDataService, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
 
     <!-- Add Security Services -->
-    <add type="MARC.HI.EHRS.CR.Security.Services.Impl.MemorySessionService, MARC.HI.EHRS.CR.Security, Version=1.0.0.0"/>
+    <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthSessionManager, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthDeviceIdentityProvider, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
   </serviceProviders>
 </marc.hi.ehrs.svc.core>

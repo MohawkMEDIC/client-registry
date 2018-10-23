@@ -31,10 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MARC.HI.EHRS.SVC.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.IdentityModel" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,13 +48,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BearerCredentials.cs" />
     <Compile Include="Configuration\ConfigurationSectionHandler.cs" />
     <Compile Include="Configuration\OAuthSecurityConfigurationSection.cs" />
     <Compile Include="OAuthDeviceIdentityProvider.cs" />
     <Compile Include="OAuthIdentityProvider.cs" />
+    <Compile Include="OAuthSessionManager.cs" />
     <Compile Include="OAuthTokenRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Token\TokenClaimsPrincipal.cs" />
+    <Compile Include="Wcf\TokenAuthorizationPolicy.cs" />
+    <Compile Include="Wcf\TokenServiceAuthorizationManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
