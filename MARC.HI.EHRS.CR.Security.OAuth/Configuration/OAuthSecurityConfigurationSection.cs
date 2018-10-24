@@ -195,6 +195,7 @@ namespace MARC.HI.EHRS.CR.Security.OAuth.Configuration
         /// Gets the issuer
         /// </summary>
         public String Issuer { get; private set; }
+
         /// <summary>
         /// Get the IDP description
         /// </summary>
