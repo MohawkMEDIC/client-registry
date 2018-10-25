@@ -77,7 +77,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
                 if (result == null || result.VersionId == null)
                     throw new Exception(ApplicationContext.LocalizationService.GetString("DTPE001"));
-
+                
                 // Now read and return
                 return dataService.Get(
                     new VersionedDomainIdentifier[] { result.VersionId },
@@ -143,9 +143,17 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
                 var dataResults = dataService.Query(queryRequest);
                 details.AddRange(dataResults.Details);
+
+                result.TotalResults = dataResults.TotalResults;
+
                 // Fetch the results
                 foreach (HealthServiceRecordContainer res in dataResults.Results)
                 {
+                    if (res == null)
+                    {
+                        continue;
+                    }
+
                     var resultSubject = res.FindComponent(HealthServiceRecordSiteRoleType.SubjectOf) as HealthServiceRecordContainer ?? res;
                     var processor = FhirMessageProcessorUtil.GetComponentProcessor(resultSubject.GetType());
                     if (processor == null)
@@ -182,7 +190,6 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
             try
             {
-
                 // Sanity check
                 if (dataService == null)
                     throw new InvalidOperationException("No persistence service has been configured, registrations cannot continue without this service");
@@ -193,7 +200,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
 
                 if (result == null || result.VersionId == null)
                     throw new Exception(ApplicationContext.LocalizationService.GetString("DTPE001"));
-
+                
                 // Now read and return
                 return dataService.Get(
                     new VersionedDomainIdentifier[] { result.VersionId },
@@ -205,7 +212,7 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Util
                         Offset = 0,
                         QueryId = Guid.NewGuid().ToString()
                     }
-                ) as IComponent;
+                ).Results?.FirstOrDefault() as IComponent;
 
                 //return null;
 

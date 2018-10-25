@@ -71,7 +71,7 @@
       <attribute name="OIDType" value="ISO"/>
       <attribute name="CustodialDeviceId" value="1.3.6.1.4.1.33349.3.1.1.2"/>
       <attribute name="CustodialDeviceName" value="MARC-W3-1"/>
-      <attribute name="CustodialOrgName" value="Mohawk College of Applied Arts and Technology"/>
+      <attribute name="CustodialOrgName" value="Myanmar EMPI"/>
       <attribute name="IsUniqueIdentifier" value="true"/>
       <attribute name="IsMergeSurvivor" value="true"/>
     </add>
@@ -96,6 +96,15 @@
     </add>
 
     <!-- External Identifiers -->
+    <add name="DataPopulationTool" desc="DataPopulationTool" oid="1.3.6.1.4.1.33349.3.1.2.99121.283" ref="http://seeder.corp.com/">
+      <attribute name="AssigningDevFacility" value="MyanmarDataPopulationTool|MEMPI" />
+      <attribute name="AutoFillCX4" value="True" />
+      <attribute name="IsUniqueIdentifier" value="True" />
+      <attribute name="GloballyAssignable" value="False" />
+      <attribute name="IsMergeSurvivor" value="True" />
+      <attribute name="AssigningAuthorityName" value="MyanmarDataPopulationTool" />
+      <attribute name="OIDType" value="ISO" />
+    </add>
     <add name="SSN" oid="2.16.840.1.113883.4.1" desc="United States of America Social Security Number">
       <attribute name="AssigningAuthorityName" value="SSN"/>
       <attribute name="OIDType" value="ISO"/>
@@ -129,14 +138,78 @@
       <attribute name="IsUniqueIdentifier" value="true"/>
       <attribute name="IsMergeSurvivor" value="true"/>
     </add>
-    <add name="CAMLAB" oid="1.2.3.4.5.6.7.10000" ref="urn:oid:1.2.3.4.5.6.7.1000">
-      <attribute name="AutoFillCX4" value="True" />
-      <attribute name="IsUniqueIdentifier" value="False" />
-      <attribute name="GloballyAssignable" value="False" />
-      <attribute name="IsMergeSurvivor" value="False" />
-      <attribute name="AssigningAuthorityName" value="MYAUTHORITY" />
-      <attribute name="AssigningDevFacility" value="NES|FIRSTCAMBODIA"/>
-      <attribute name="OIDType" value="ISO" />
+    <add name="PRE_ARTNO" oid="2.16.840.1.113883.3.72.5.9.10" desc="Pre Antiretroviral Treatment Identifier">
+      <attribute name="AssigningAuthorityName" value="PRE_ARTNO"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="PRE_ARTNO|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="ARTNO" oid="2.16.840.1.113883.3.72.5.9.11" desc="Antiretroviral Treatment Identifier">
+      <attribute name="AssigningAuthorityName" value="ARTNO"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="ARTNO|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="NRICNO" oid="2.16.840.1.113883.3.72.5.9.12" desc="National Record Identification Card">
+      <attribute name="AssigningAuthorityName" value="NRICNO"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="NRICNO|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="HID" oid="2.16.840.1.113883.3.72.5.10.1" desc="National Health Identifier">
+      <attribute name="AssigningAuthorityName" value="HID"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="HID|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+      <attribute name="GloballyAssignable" value="true"/>
+    </add>
+
+    <!-- Staging Environment -->
+    <add name="MYANMAR_PORTAL" oid="2.16.840.1.113883.3.72.5.9.1.200.1" desc="Myanmar EMPI Portal">
+      <attribute name="AssigningAuthorityName" value="MYANMAR_PORTAL"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="MYANMAR_PORTAL|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="HIV_FACILITY_A" oid="2.16.840.1.113883.3.72.5.9.1.1000.1" desc="HIV Facility A">
+      <attribute name="AssigningAuthorityName" value="HIV_FACILITY_A"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="HIV_FACILITY_A|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="HIV_FACILITY_B" oid="2.16.840.1.113883.3.72.5.9.1.1000.2" desc="HIV Facility B">
+      <attribute name="AssigningAuthorityName" value="HIV_FACILITY_B"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="HIV_FACILITY_B|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="TB_FACILITY_A" oid="2.16.840.1.113883.3.72.5.9.1.2000.1" desc="TB Facility A">
+      <attribute name="AssigningAuthorityName" value="TB_FACILITY_A"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="TB_FACILITY_A|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="TB_FACILITY_B" oid="2.16.840.1.113883.3.72.5.9.1.2000.2" desc="TB Facility B">
+      <attribute name="AssigningAuthorityName" value="TB_FACILITY_B"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="TB_FACILITY_B|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
+    </add>
+    <add name="MYANMAR_NID" oid="2.16.840.1.113883.3.72.5.9.1.100.1" desc="Myanmar National ID">
+      <attribute name="AssigningAuthorityName" value="MYANMAR_NID"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="MYANMAR_NID|TEST"/>
+      <attribute name="IsUniqueIdentifier" value="true"/>
+      <attribute name="IsMergeSurvivor" value="true"/>
     </add>
   </registeredOids>
   <serviceAssemblies>
@@ -188,6 +261,6 @@
     <add type="MARC.HI.EHRS.CR.Core.ClientRegistryConfigurationProvider, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.SVC.Core.Timer.TimerService, MARC.HI.EHRS.SVC.Core.Timer, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.CR.Core.Data.ClientRegistryDataService, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
-
+    <add type="MARC.HI.EHRS.CR.Messaging.Authentication.Services.OAuthApplicationIdentityProvider, MARC.HI.EHRS.CR.Messaging.Authentication, Version=1.0.0.0"/>
   </serviceProviders>
 </marc.hi.ehrs.svc.core>

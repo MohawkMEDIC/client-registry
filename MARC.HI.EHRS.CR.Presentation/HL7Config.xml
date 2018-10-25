@@ -11,11 +11,12 @@
           <message name="*"/>
         </handler>
       </service>-->
-    <!--<service name="SLLP Listener" timeout="00:00:30" address="sllp://0.0.0.0:2200">
-        <attribute name="x509.cert" value="555A48A9DED421A8E1CF40CEDADD6732782850DF"/>
-        <attribute name="x509.store" value="My"/>
---><!--        <attribute name="client.castore" value="Root"/>
-        <attribute name="client.cacert" value="8fde87cfea569e65a3c44ea2dcc1af3ca5bd12c1"/>--><!--
+     <service name="SLLP Listener" timeout="00:00:30" address="sllp://0.0.0.0:2200">
+		<!-- <attribute name="x509.cert" value="806725fcc85ff75bc2bc275bba214c69427a3d61"/> -->
+      <attribute name="x509.cert" value="086fccc6a49088cd1876e7176c5e44e1829fa79a"/>
+      <attribute name="x509.store" value="My"/>
+        <attribute name="client.castore" value="Root"/>
+        <attribute name="client.cacert" value="2c572dfe1454fb308c51855c0af07c8de5428fea"/>
         <handler type="MARC.HI.EHRS.CR.Messaging.PixPdqv2.PixHandler, MARC.HI.EHRS.CR.Messaging.PixPdqv2, Version=1.0.0.0">
           <message name="QBP^Q23" isQuery="true"/>
           <message name="ADT^A01"/>

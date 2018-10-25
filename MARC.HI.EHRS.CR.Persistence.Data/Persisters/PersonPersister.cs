@@ -243,9 +243,8 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             if (psn.Employment != null)
                 foreach (var emp in psn.Employment)
                     this.PersistPersonEmployment(conn, tx, psn, emp);
-
         }
-
+        
         /// <summary>
         /// Persist person ethnic group
         /// </summary>
@@ -1198,13 +1197,13 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
         /// <param name="newerOnly">When true, do the merge based on newer keys rather than newPerson always overrides oldPerson</param>
         internal void MergePersons(Person newPerson, Person oldPerson, bool newerOnly)
         {
-
             Trace.TraceInformation("Copy person {0}v{1} into {2}", oldPerson.Id, oldPerson.VersionId, newPerson.Id);
             // Start the merging process for addresses
             // For each of the addresses in the new person record, determine if
             // they are additions (new addresses), modifications (old addresses 
             // with the same use) or removals (not in the new but in old)
-            if (newPerson.Addresses != null && oldPerson.Addresses != null) 
+            
+if (newPerson.Addresses != null && oldPerson.Addresses != null) 
             {
                 foreach (var addr in newPerson.Addresses)
                 {
@@ -1596,7 +1595,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             // Copy over extended attributes not mentioned in the new person
             var newPsnRltnshps = newPerson.FindAllComponents(HealthServiceRecordSiteRoleType.RepresentitiveOf).FindAll(o=>o is PersonalRelationship);
-
+            
             foreach (HealthServiceRecordComponent cmp in oldPerson.Components)
                 if (cmp is ExtendedAttribute && newPerson.FindExtension(o => o.PropertyPath == (cmp as ExtendedAttribute).PropertyPath && o.Name == (cmp as ExtendedAttribute).Name) == null)
                 {
@@ -1605,19 +1604,19 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 else if (cmp is PersonalRelationship)
                 {
                     var oldPsnRltnshp = cmp as PersonalRelationship;
-                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o => 
-                        (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && 
-                        (
-                            ((o as PersonalRelationship).AlternateIdentifiers.Exists(p => oldPsnRltnshp.AlternateIdentifiers.Exists(q => q.Domain == p.Domain && q.Identifier == p.Identifier)) || (o as PersonalRelationship).Id == oldPsnRltnshp.Id || (o as PersonalRelationship).LegalName != null && (o as PersonalRelationship).LegalName.SimilarityTo(oldPsnRltnshp.LegalName) == 1) ||
-                            PersonalRelationshipPersister.NON_DUPLICATE_REL.Contains(oldPsnRltnshp.RelationshipKind)
-                        )
+                    
+                    var newPsnRltnshpMatch = newPsnRltnshps.Find(o =>
+                        (o as PersonalRelationship).RelationshipKind == oldPsnRltnshp.RelationshipKind && PersonalRelationshipPersister.NON_DUPLICATE_REL.Contains(oldPsnRltnshp.RelationshipKind) && (o as PersonalRelationship).LegalName?.Parts.FirstOrDefault().Value != oldPsnRltnshp.LegalName?.Parts.FirstOrDefault().Value
+
                     );
+                    
                     if (newPsnRltnshpMatch == null) // Need to copy?
                         newPerson.Add(cmp, cmp.Site.Name ?? Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
-                    else if((newPsnRltnshpMatch as PersonalRelationship).Id == default(Decimal) )// HACK: Massage the IDs
-                        (newPsnRltnshpMatch as PersonalRelationship).Id = oldPsnRltnshp.Id; 
+                    else if ((newPsnRltnshpMatch as PersonalRelationship).Id == default(Decimal))// HACK: Massage the IDs
+                    {
+                        (newPsnRltnshpMatch as PersonalRelationship).Id = oldPsnRltnshp.Id;
+                    }
                 }
-
             // Add a relationship of person reference
             //newPerson.Add(oldPerson, "OBSLT", HealthServiceRecordSiteRoleType.OlderVersionOf, null);
         }
@@ -1732,7 +1731,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             {
                 Trace.TraceWarning("PERFORMANCE: QUERY CONTAINS UNION/INTERSECT (OR/AND SEMANTICS) WHICH FORCES THE QUERY ANALYZER TO USE A SLOWER QUERY MECHANISM");
                 // Fallback to old ways
-                sb.Append("  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+                sb.Append(" WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
                 while (subqueryParms.Count > 0)
                     sb.AppendFormat(" AND PSN_VRSN_TBL.PSN_ID IN ({0}) ", subqueryParms.Pop());
             }
@@ -1742,7 +1741,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 bool hasSubquery = subqueryParms.Count > 0;
                 string closeBrace = "";
                 if (hasSubquery)
-                    sb.Append(" INNER JOIN (");
+                    sb.Append("INNER JOIN (");
 
                 // build the join condition
                 while (subqueryParms.Count > 0)
@@ -1760,7 +1759,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
                 // finish join
                 if (hasSubquery)
-                    sb.Append(") AS SUBQ ON (SUBQ.PSN_ID = PSN_VRSN_TBL.PSN_ID)  WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
+                    sb.Append(") AS SUBQ ON (SUBQ.PSN_ID = PSN_VRSN_TBL.PSN_ID) WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
                 else
                     sb.Append(" WHERE PSN_VRSN_TBL.OBSLT_UTC IS NULL ");
             }
@@ -1867,11 +1866,11 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 {
                     if(cmp.PartType == AddressPart.AddressPartType.State || cmp.PartType == AddressPart.AddressPartType.Country)
                     {
-                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
+                        addrStateCondition.AppendFormat(" AND EXISTS(SELECT ADDR_SET_ID FROM ADDR_CMP_TBL AS B INNER JOIN ADDR_CDTBL C ON (C.ADDR_ID = B.ADDR_CMP_VALUE) WHERE B.ADDR_SET_ID = ADDR_SET_ID AND ADDR_VALUE ILIKE '{0}' AND ADDR_CMP_CLS = {1})", cmp.AddressValue.Replace("'","''"), (int)cmp.PartType);
                         continue;
                     }
                     ncf++;
-                    filterString.AppendFormat("(ADDR_VALUE = '{0}' AND ADDR_CMP_CLS = {1}) {2} ", cmp.AddressValue.Replace("'", "''"), (decimal)cmp.PartType, cmp == addr.Parts.Last() ? "" : "OR");
+                    filterString.AppendFormat("(ADDR_VALUE ILIKE '{0}') {1} ", cmp.AddressValue.Replace("'", "''").Replace("*", "%"), cmp == addr.Parts.Last() ? "" : "OR");
                 }
                 if (filterString.ToString().EndsWith("OR "))
                     filterString.Remove(filterString.Length - 3, 3);

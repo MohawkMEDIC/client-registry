@@ -302,7 +302,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }, true);
 
                 if (clientDataRetVal.Names != null)
-                    retVal.LegalName = clientDataRetVal.Names.Find(o => o.Use == NameSet.NameSetUse.Legal) ?? clientDataRetVal.Names[0];
+                    retVal.LegalName = clientDataRetVal.Names.FindAll(o => o.Use == NameSet.NameSetUse.Legal).LastOrDefault() ?? clientDataRetVal.Names.LastOrDefault();
 
                 if(clientDataRetVal.RoleCode == PersonRole.PAT)
                     retVal.AlternateIdentifiers.AddRange(clientDataRetVal.AlternateIdentifiers.Where(o => o.Domain != sysConfig.OidRegistrar.GetOid(ClientRegistryOids.RELATIONSHIP_OID).Oid));
