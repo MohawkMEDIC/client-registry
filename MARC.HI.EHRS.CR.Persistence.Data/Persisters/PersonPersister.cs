@@ -93,9 +93,9 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                     triggerService.Context = ApplicationContext.CurrentContext;
 
                 // Components
-                triggerService?.Persisting(psn);
+                psn = triggerService?.Persisting(psn);
                 DbUtil.PersistComponents(conn, tx, false, this, psn);
-                triggerService?.Persisted(psn);
+                psn = triggerService?.Persisted(psn);
 
                 // Next we'll load the alternate identifiers from the database into this client person
                 // this is done because higher level functions may need access to the complete list of 
