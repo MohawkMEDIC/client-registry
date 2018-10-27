@@ -87,8 +87,15 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         this.CreatePerson(conn, tx, psn);
                 }
 
+                // Call persistence service
+                var triggerService = ApplicationContext.CurrentContext.GetService(typeof(IDataTriggerService<Person>)) as IDataTriggerService<Person>;
+                if(triggerService != null)
+                    triggerService.Context = ApplicationContext.CurrentContext;
+
                 // Components
+                triggerService?.Persisting(psn);
                 DbUtil.PersistComponents(conn, tx, false, this, psn);
+                triggerService?.Persisted(psn);
 
                 // Next we'll load the alternate identifiers from the database into this client person
                 // this is done because higher level functions may need access to the complete list of 
@@ -1203,7 +1210,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
             // they are additions (new addresses), modifications (old addresses 
             // with the same use) or removals (not in the new but in old)
             
-if (newPerson.Addresses != null && oldPerson.Addresses != null) 
+            if (newPerson.Addresses != null && oldPerson.Addresses != null) 
             {
                 foreach (var addr in newPerson.Addresses)
                 {
