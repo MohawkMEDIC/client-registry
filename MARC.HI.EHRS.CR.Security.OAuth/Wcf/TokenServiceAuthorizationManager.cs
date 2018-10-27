@@ -127,10 +127,15 @@ namespace MARC.HI.EHRS.CR.Security.OAuth.Wcf
         /// <returns>True if authorization is successful</returns>
         private bool CheckBearerAccess(OperationContext operationContext, string authorization)
         {
-            var session = ApplicationContext.Current.GetService<ISessionManagerService>().Get(
+            var session = ApplicationContext.Current.GetService<ISessionManagerService>()?.Get(
                 authorization
             );
 
+            if(session == null)
+            {
+                Trace.TraceWarning("Bearer token sesison could not be found");
+                throw new SecurityTokenExpiredException("Session does not exist or is expired");
+            }
             IPrincipal principal = session.Principal;
 
             operationContext.ServiceSecurityContext.AuthorizationContext.Properties["Identities"] = (principal as ClaimsPrincipal).Identities;

@@ -6,6 +6,7 @@ using MARC.HI.EHRS.SVC.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,10 +48,12 @@ namespace MARC.HI.EHRS.CR.Security.OAuth
                     {
                         oauthClient.Credentials = new BearerCredentials(sessionToken);
                         var response = oauthClient.Get<OAuthTokenResponse>("session");
+                        Trace.TraceInformation("Found session from session server");
                         retVal = base.Establish(new TokenClaimsPrincipal(response.AccessToken, response.IdToken, response.TokenType, null));
                     }
-                    catch
+                    catch(Exception e)
                     {
+                        Trace.TraceError("Could not retrieve session from session server: {0}", e);
                         return null;
                     }
                 }

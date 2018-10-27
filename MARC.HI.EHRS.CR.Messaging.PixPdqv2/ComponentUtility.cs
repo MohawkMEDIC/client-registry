@@ -35,6 +35,7 @@ using System.Diagnostics;
 using MARC.HI.EHRS.CR.Core.Services;
 using MARC.HI.EHRS.CR.Core.Data;
 using NHapi.Model.V231.Segment;
+using NHapi.Base.Parser;
 
 namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
 {
@@ -829,6 +830,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             for(int i = 0; i < request.NK1RepetitionsUsed; i++)
             {
                 var nk1 = request.GetNK1(i);
+                if (PipeParser.Encode(nk1, new EncodingCharacters('|', "^~\\&")) == "NK1") // HACK: Empty segment for some reason on v2.3.1
+                    continue;
                 PersonalRelationship relative = this.CreatePersonalRelationship(nk1, dtls, aaut);
                 subject.Add(relative, Guid.NewGuid().ToString(), HealthServiceRecordSiteRoleType.RepresentitiveOf, null);
             }

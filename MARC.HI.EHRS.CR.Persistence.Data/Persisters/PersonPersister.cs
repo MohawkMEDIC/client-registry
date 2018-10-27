@@ -88,14 +88,24 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                 }
 
                 // Call persistence service
-                var triggerService = ApplicationContext.CurrentContext.GetService(typeof(IDataTriggerService<Person>)) as IDataTriggerService<Person>;
-                if(triggerService != null)
-                    triggerService.Context = ApplicationContext.CurrentContext;
+                IDataTriggerService<Person> triggerService = null;
 
-                // Components
-                psn = triggerService?.Persisting(psn);
+                try
+                {
+                    triggerService = ApplicationContext.CurrentContext.GetService(typeof(IDataTriggerService<Person>)) as IDataTriggerService<Person>;
+                    if (triggerService != null)
+                        triggerService.Context = ApplicationContext.CurrentContext;
+
+                    // Components
+                    psn = triggerService?.Persisting(psn) ?? psn;
+                }
+                catch
+                {
+
+                }
+
                 DbUtil.PersistComponents(conn, tx, false, this, psn);
-                psn = triggerService?.Persisted(psn);
+                psn = triggerService?.Persisted(psn) ?? psn;
 
                 // Next we'll load the alternate identifiers from the database into this client person
                 // this is done because higher level functions may need access to the complete list of 

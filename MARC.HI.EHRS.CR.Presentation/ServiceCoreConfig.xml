@@ -166,6 +166,11 @@
     </add>
     <!--<attribute name="AssigningDevFacility" value="NIST_Pearl_PIX_Source|NIST"/>-->
 
+    <add name="TEST" oid="2.16.840.1.113883.3.72.5.434343343" desc="NIST Tool">
+      <attribute name="AssigningAuthorityName" value="TEST"/>
+      <attribute name="OIDType" value="ISO"/>
+      <attribute name="AssigningDevFacility" value="TEST_HARNESS|TEST"/>
+    </add>
     <!-- Fall 2012 Projects -->
     <add name="NSERC_OSCAR_A" oid="1.3.6.1.4.1.33349.3.1.3.201203.0.0" desc="NSERC - Oscar Instance A">
       <attribute name="AssigningAuthorityName" value="NSERC_OSCAR_A"/>
@@ -262,7 +267,7 @@
     <add type="MARC.HI.EHRS.CR.Core.Data.ClientRegistryDataService, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
 
     <!-- Add Security Services -->
-    <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthSessionManager, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
-    <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthDeviceIdentityProvider, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
+    <!--<add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthSessionManager, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
+    <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthDeviceIdentityProvider, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>-->
   </serviceProviders>
 </marc.hi.ehrs.svc.core>

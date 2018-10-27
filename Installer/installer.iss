@@ -68,7 +68,7 @@ Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.FHIR.dll; DestDir:{app}; Flags:
 Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\HL7.Fhir.Api.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\HL7.Fhir.Model.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
-Source: ..\Solution Items\Newtonsoft.Json.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
+Source: ..\bin\release\Newtonsoft.Json.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\AtnaApi.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\bin\release\System.IdentityModel.Tokens.Jwt.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
 Source: ..\bin\release\SanteDB.Core.Api.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
