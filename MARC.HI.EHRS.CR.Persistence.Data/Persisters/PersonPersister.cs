@@ -59,7 +59,27 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
 
             try
             {
-                
+
+                // Call persistence service
+                IDataTriggerService<Person> triggerService = null;
+
+                try
+                {
+                    triggerService = ApplicationContext.CurrentContext.GetService(typeof(IDataTriggerService<Person>)) as IDataTriggerService<Person>;
+                    if (triggerService != null)
+                    {
+                        Trace.TraceInformation($"Will fire trigger {triggerService.GetType()}");
+                        triggerService.Context = ApplicationContext.CurrentContext;
+                    }
+                    // Components
+                    psn = triggerService?.Persisting(psn) ?? psn;
+                }
+                catch (Exception e)
+                {
+                    Trace.TraceInformation("Skipping pre-persist trigger : {0}", e);
+
+                }
+
                 // Older version of, don't persist just return a record
                 if (psn.Site != null && (psn.Site as HealthServiceRecordSite).SiteRoleType == HealthServiceRecordSiteRoleType.OlderVersionOf)
                 {
@@ -87,22 +107,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                         this.CreatePerson(conn, tx, psn);
                 }
 
-                // Call persistence service
-                IDataTriggerService<Person> triggerService = null;
-
-                try
-                {
-                    triggerService = ApplicationContext.CurrentContext.GetService(typeof(IDataTriggerService<Person>)) as IDataTriggerService<Person>;
-                    if (triggerService != null)
-                        triggerService.Context = ApplicationContext.CurrentContext;
-
-                    // Components
-                    psn = triggerService?.Persisting(psn) ?? psn;
-                }
-                catch
-                {
-
-                }
+                
 
                 DbUtil.PersistComponents(conn, tx, false, this, psn);
                 psn = triggerService?.Persisted(psn) ?? psn;

@@ -245,6 +245,7 @@
     <add assembly="MARC.HI.EHRS.QM.Core.dll"/>
     <add assembly="MARC.HI.EHRS.QM.Persistence.Data.dll"/>
     <add assembly=".\AtnaApi.dll"/>
+    <add assembly="Myanmar.MPI.dll"/>
   </serviceAssemblies>
   <serviceProviders>
     <add type="MARC.HI.EHRS.CR.Notification.PixPdq.PixNotifier, MARC.HI.EHRS.CR.Notification.PixPdq, Version=1.0.0.0"/>
@@ -265,7 +266,8 @@
     <add type="MARC.HI.EHRS.CR.Core.ClientRegistryConfigurationProvider, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.SVC.Core.Timer.TimerService, MARC.HI.EHRS.SVC.Core.Timer, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.CR.Core.Data.ClientRegistryDataService, MARC.HI.EHRS.CR.Core, Version=1.0.0.0"/>
-
+    <!-- Add Myanmar Trigger -->
+    <add type="Myanmar.MPI.PersonDataTrigger, Myanmar.MPI, Version=1.0.0.0"/>
     <!-- Add Security Services -->
     <!--<add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthSessionManager, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>
     <add type="MARC.HI.EHRS.CR.Security.OAuth.OAuthDeviceIdentityProvider, MARC.HI.EHRS.CR.Security.OAuth, Version=1.0.0.0"/>-->
