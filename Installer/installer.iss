@@ -70,16 +70,13 @@ Source: ..\Solution Items\HL7.Fhir.Api.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\Solution Items\HL7.Fhir.Model.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\Newtonsoft.Json.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\Solution Items\AtnaApi.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\System.IdentityModel.Tokens.Jwt.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\SanteDB.Core.Api.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\SanteDB.Core.Model.AMI.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\SanteDB.Core.Model.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\SanteDB.Core.Messaging.AMI.Client.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\SharpCompress.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\MARC.HI.EHRS.CR.Security.OAuth.dll; DestDir:{app}; Flags:ignoreversion; 
-Source: ..\bin\release\MARC.HI.EHRS.CR.Security.dll; DestDir:{app}; Flags:ignoreversion; 
+Source: ..\bin\release\System.IdentityModel.Tokens.Jwt.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
+Source: ..\bin\release\SanteDB.Core.Api.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
+Source: ..\bin\release\SanteDB.Core.Model.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
+Source: ..\bin\release\SharpCompress.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth 
+Source: ..\bin\release\MARC.HI.EHRS.CR.Security.OAuth.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
+Source: ..\bin\release\MARC.HI.EHRS.CR.Security.dll; DestDir:{app}; Flags:ignoreversion; Components: oauth
 Source: ..\bin\release\MARC.HI.EHRS.SVC.Messaging.FHIR.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
-Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.Authentication.dll; DestDir:{app}; Flags:ignoreversion; 
 Source: ..\bin\release\index.htm; DestDir:{app}; Flags:ignoreversion; Components:msg\fhir
 Source: ..\bin\release\MARC.HI.EHRS.CR.Messaging.PixPdqv2.dll; DestDir:{app}; Flags:ignoreversion; Components:msg\hl7
 Source: ..\bin\release\MARC.HI.EHRS.CR.Notification.PixPdq.dll; DestDir:{app}; Flags:ignoreversion; Components:notif
@@ -122,7 +119,7 @@ Source: ..\bin\release\DefaultOids.xml; DestDir: {app}; Flags:ignoreversion; Com
 Source: ..\bin\release\ClientRegistry.en.xml; DestDir: {app}; Flags:ignoreversion; Components:core
 Source: ..\bin\release\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
 Source: ..\Solution Items\SQL\*.*; DestDir: {app}\sql; Flags:recursesubdirs ignoreversion; Components:core;
-Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin, obj; Components: src
+Source: ..\*; DestDir: {app}\src; Flags: ignoreversion recursesubdirs; Excludes: .vs\*, *.vssscc, *.dump, *.xap, ApiExplorer, Samples,*.vspscc, *.cache,*.resources,*.exe,*.exe.config,*.dll.config,*.pdb,MARC.*.xml,*.dll, *.iss, *.chm, *.xsd, *.wsdl, *.*mif, Solution Items, bin, obj; Components: src
 Source: ..\Solution Items\*.dll; DestDir: {app}\src\Solution Items; Flags: ignoreversion recursesubdirs; Components: src
 Source: ..\MARC.HI.EHRS.CR.Presentation\License.rtf; DestDir: {app};
 Source: ..\bin\admin\*.*; DestDir: {app}\admin; Flags: recursesubdirs; Components: opadmin
@@ -147,7 +144,7 @@ Name: msg\fhir; Description: HL7 FHIR DSTU; Types: full pdqm pixall
 Name: notif; Description: PIXv3 Notifications;  Types: full pix pixv3 pixall
 Name: src; Description: Source Code; 
 Name: opadmin; Description: Operations Console; Types: full
-
+Name: oauth; Description: OAuth 2.0 Authentication; Types: full
 [Icons]
 Name: {group}\Client Registry Configuration; FileName: {app}\Configurator.exe; Components:core
 Name: {group}\MARC-HI Wiki; FileName: http://wiki.marc-hi.ca/
