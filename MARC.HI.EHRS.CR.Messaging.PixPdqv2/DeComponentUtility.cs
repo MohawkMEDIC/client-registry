@@ -424,8 +424,11 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     var pid = retVal.GetQUERY_RESPONSE(retVal.QUERY_RESPONSERepetitionsUsed);
                     UpdatePID(res, pid.PID, false);
 
-                    foreach (var rel in res.Components.OfType<PersonalRelationship>())
-                        UpdateNK1(rel, pid.GetNK1(pid.NK1RepetitionsUsed));
+                    var subject = res.FindComponent(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.SubjectOf) as Person;
+                    var relations = subject.FindAllComponents(SVC.Core.ComponentModel.HealthServiceRecordSiteRoleType.RepresentitiveOf);
+                    
+                    foreach (var rel in relations)
+                        UpdateNK1(rel as PersonalRelationship, pid.GetNK1(pid.NK1RepetitionsUsed));
                     UpdateQRI(res, pid.QRI);
                     pid.PID.SetIDPID.Value = retVal.QUERY_RESPONSERepetitionsUsed.ToString();
                     

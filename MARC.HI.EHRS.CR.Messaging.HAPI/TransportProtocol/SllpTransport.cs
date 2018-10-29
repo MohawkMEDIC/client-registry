@@ -125,6 +125,12 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
             /// </summary>
             [Description("When enabled, enforces client certificate negotiation")]
             public bool EnableClientCertNegotiation { get; set; }
+
+            [Description("The subject to use for certificate")]
+            public String TrustedCaCertificateSubject { get; set; }
+
+            [Description("The subject to use for client negotiation")]
+            public String ServerCertificateSubject { get; set; }
         }
 
         // SLLP configuration object
@@ -152,15 +158,17 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 certStore = definition.Attributes.Find(o => o.Key == "x509.store"),
                 certFile = definition.Attributes.Find(o => o.Key == "x509.file"),
                 certPassword = definition.Attributes.Find(o=>o.Key == "x509.password"),
+                certSubject = definition.Attributes.Find(o=>o.Key == "x509.subject"),
                 caCertThumb = definition.Attributes.Find(o => o.Key == "client.cacert"),
                 caCertLocation = definition.Attributes.Find(o => o.Key == "client.calocation"),
                 caCertFile = definition.Attributes.Find(o => o.Key == "client.cacertfile"),
                 caPassword = definition.Attributes.Find(o => o.Key == "client.capassword"),
+                caSubject = definition.Attributes.Find(o => o.Key == "client.subject"),
                 checkCrl = definition.Attributes.Find(o=>o.Key == "client.checkcrl"),
 
                 caCertStore = definition.Attributes.Find(o => o.Key == "client.castore");
 
-            // Now setup the object 
+            // Now setup the object  
             this.m_configuration = new SllpConfigurationObject()
             {
                 EnableClientCertNegotiation = caCertThumb.Value != null,
@@ -171,20 +179,22 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 TrustedCaCertificateFile = caCertFile.Value,
                 ServerCertificateFile = certFile.Value,
                 ServerCertificatePassword = certPassword.Value,
+                ServerCertificateSubject = certSubject.Value,
+                TrustedCaCertificateSubject = caSubject.Value,
                 CheckCrl = checkCrl.Value != null ? Boolean.Parse(checkCrl.Value) : true
             };
 
             // Now get the certificates
             if (!String.IsNullOrEmpty(certFile.Value))
                 this.m_configuration.ServerCertificate = this.GetCertificateFromFile(certFile.Value, certPassword.Value, certThumb.Value);
-            else if (!String.IsNullOrEmpty(certThumb.Value))
-                this.m_configuration.ServerCertificate = this.GetCertificateFromStore(certThumb.Value, this.m_configuration.ServerCertificateLocation, this.m_configuration.ServerCertificateStore);
+            else if (!String.IsNullOrEmpty(certThumb.Value) || !String.IsNullOrEmpty(certSubject.Value))
+                this.m_configuration.ServerCertificate = this.GetCertificateFromStore(certThumb.Value, certSubject.Value, this.m_configuration.ServerCertificateLocation, this.m_configuration.ServerCertificateStore);
             if (this.m_configuration.EnableClientCertNegotiation)
             {
                 if(!String.IsNullOrEmpty(caCertFile.Value))
                     this.m_configuration.ServerCertificate = this.GetCertificateFromFile(caCertFile.Value, caPassword.Value, certThumb.Value);
-                else if (!String.IsNullOrEmpty(caCertThumb.Value))
-                    this.m_configuration.TrustedCaCertificate = this.GetCertificateFromStore(caCertThumb.Value, this.m_configuration.TrustedCaCertificateLocation, this.m_configuration.TrustedCaCertificateStore);
+                else if (!String.IsNullOrEmpty(caCertThumb.Value) || !String.IsNullOrEmpty(caSubject.Value))
+                    this.m_configuration.TrustedCaCertificate = this.GetCertificateFromStore(caCertThumb.Value, caSubject.Value, this.m_configuration.TrustedCaCertificateLocation, this.m_configuration.TrustedCaCertificateStore);
             }
 
             
@@ -225,7 +235,7 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
         /// <summary>
         /// Get certificate from store
         /// </summary>
-        private X509Certificate2 GetCertificateFromStore(string certThumb, StoreLocation storeLocation, StoreName storeName)
+        private X509Certificate2 GetCertificateFromStore(string certThumb, string certSubject, StoreLocation storeLocation, StoreName storeName)
         {
             X509Store store = new X509Store(storeName, storeLocation);
             try
@@ -236,14 +246,19 @@ namespace MARC.HI.EHRS.CR.Messaging.HL7.TransportProtocol
                 foreach (var c in store.Certificates)
                     Trace.TraceInformation("\t{0} : {1}", c.Thumbprint, c.Subject);
 #endif
-                var cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, false);
+                X509Certificate2Collection cert = null;
+                if(!String.IsNullOrEmpty(certThumb))
+                    cert = store.Certificates.Find(X509FindType.FindByThumbprint, certThumb, false);
+                else
+                    cert = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, certSubject, false);
+
                 if (cert.Count == 0)
                     throw new InvalidOperationException("Could not find certificate");
                 return cert[0];
             }
             catch (Exception e)
             {
-                Trace.TraceError("Could get certificate {0} from store {1}. Error was: {2}", certThumb, storeName, e.ToString());
+                Trace.TraceError("Could get certificate {0}/{1} from store {2}. Error was: {3}", certThumb, certSubject, storeName, e.ToString());
                 throw;
             }
 

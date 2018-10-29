@@ -11,7 +11,6 @@ namespace ClientRegistryAdmin.Controllers
 {
 #if !DEBUG
      [Authorize(Roles = "Administrators,CR Administrators")]
-     [RequireHttps]
 #endif
     public class OidController : Controller
     {

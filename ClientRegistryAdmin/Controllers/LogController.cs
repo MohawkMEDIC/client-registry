@@ -9,8 +9,7 @@ using System.Diagnostics;
 namespace ClientRegistryAdmin.Controllers
 {
 #if !DEBUG
-     [Authorize(Roles = "Administrators,CR Administrators")]
-     [RequireHttps]
+    [Authorize(Roles = "Administrators,CR Administrators")]
 #endif
     public class LogController : Controller
     {

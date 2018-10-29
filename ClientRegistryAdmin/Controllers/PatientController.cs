@@ -12,7 +12,6 @@ namespace ClientRegistryAdmin.Controllers
 {
 #if !DEBUG
      [Authorize(Roles = "Administrators,CR Administrators")]
-     [RequireHttps]
 #endif
     public class PatientController : Controller
     {
@@ -69,7 +68,7 @@ namespace ClientRegistryAdmin.Controllers
             catch (Exception e)
             {
                 model.IsError = true;
-                
+                Trace.TraceError(e.ToString());
             }
             return View(model);
         }
