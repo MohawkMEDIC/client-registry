@@ -98,6 +98,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     throw new InvalidOperationException(locale.GetString("NTFE001"));
 
                 // Now determine who will receive updates
+                Trace.TraceInformation("Searching for targets for patient notification...");
                 List<TargetConfiguration> targets = null;
                 lock (s_syncLock)
                 {
@@ -105,11 +106,12 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     targets = s_configuration.Targets.FindAll(o => o.NotificationDomain.Exists(delegate(NotificationDomainConfiguration dc)
                         {
                             bool action = dc.Actions.Exists(act => (act.Action & workItem.Action) == workItem.Action);
-                            bool domain = subject.AlternateIdentifiers.Exists(id => id.Domain == dc.Domain);
+                            bool domain = dc.Domain == "*" || subject.AlternateIdentifiers.Exists(id => id.Domain == dc.Domain);
                             return action && domain;
                         }
                     ));
                 }
+                Trace.TraceInformation("{0} targets for patient notification found...");
 
                 // Notify the targets
                 foreach (var itm in targets)

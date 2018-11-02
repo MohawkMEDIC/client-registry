@@ -69,6 +69,16 @@ namespace ClientRegistryAdmin.Models
         public string City { get; set; }
 
         /// <summary>
+        /// Precinct
+        /// </summary>
+        public string Precinct { get; set; }
+
+        /// <summary>
+        /// Additional locator
+        /// </summary>
+        public String Locator { get; set; }
+
+        /// <summary>
         /// State
         /// </summary>
         public string State { get; set; }

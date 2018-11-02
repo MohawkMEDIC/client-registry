@@ -5,6 +5,7 @@ using System.Web;
 using ClientRegistryAdmin.ClientRegistryAdminService;
 using MARC.Everest.DataTypes;
 using ClientRegistryAdmin.Models;
+using System.Diagnostics;
 
 namespace ClientRegistryAdmin.Util
 {
@@ -162,6 +163,8 @@ namespace ClientRegistryAdmin.Util
                     statePart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.State),
                     postalPart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.PostalCode),
                     censusPart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.CensusTract),
+                    precinctPart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.Precinct),
+                    locatorPart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.AdditionalLocator),
                     streetPart = psn.addr[0].part.FirstOrDefault(o => o.type == ClientRegistryAdminService.AddressPartType.AddressLine ||
                         o.type == ClientRegistryAdminService.AddressPartType.StreetAddressLine);
                 if (cityPart != null)
@@ -178,7 +181,10 @@ namespace ClientRegistryAdmin.Util
                     pm.PostCode = postalPart.value;
                 if (censusPart != null)
                     pm.CensusTract = censusPart.value;
-
+                if (precinctPart != null)
+                    pm.Precinct = precinctPart.value;
+                if (locatorPart != null)
+                    pm.Locator = locatorPart.value;
             }
 
             // Relationships
@@ -219,14 +225,17 @@ namespace ClientRegistryAdmin.Util
                 ClientRegistryAdminInterfaceClient client = new ClientRegistryAdminInterfaceClient();
                 var regEvent = client.GetRegistrationEvent(id);
                 if (regEvent == null)
-                    return null;
+                {
+                    throw new Exception("Patient not found");
+                }
 
                 return ConvertRegistrationEvent(regEvent);
 
             }
             catch (Exception e)
             {
-                return null;
+                Trace.TraceError("Error getting patient: {0}", e);
+                throw;
             }
         }
 

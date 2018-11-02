@@ -200,7 +200,8 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
             // Alternate identifiers
             if (subject.AlternateIdentifiers != null)
             {
-                subject.AlternateIdentifiers.RemoveAll(ii => !this.Target.NotificationDomain.Exists(o => o.Domain.Equals(ii.Domain)));
+                if(!this.Target.NotificationDomain.Any(o=>o.Domain == "*"))
+                    subject.AlternateIdentifiers.RemoveAll(ii => !this.Target.NotificationDomain.Exists(o => o.Domain.Equals(ii.Domain)));
                 List<String> alreadyAdded = new List<string>();
                 foreach (var altId in subject.AlternateIdentifiers)
                 {
@@ -213,6 +214,7 @@ namespace MARC.HI.EHRS.CR.Notification.PixPdq
                     }
                 }
             }
+            
 
             // Populate Names
             if (subject.Names != null)

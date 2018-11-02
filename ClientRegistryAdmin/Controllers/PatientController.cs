@@ -85,7 +85,7 @@ namespace ClientRegistryAdmin.Controllers
             }
             catch (Exception e)
             {
-                
+                throw;
             }
             return View("View", model);
         }
