@@ -37,6 +37,14 @@
     <Reference Include="MARC.HI.EHRS.SVC.Core">
       <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.dll</HintPath>
     </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.Core.ComponentModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.Core.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="MARC.HI.EHRS.SVC.DecisionSupport, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Solution Items\MARC.HI.EHRS.SVC.DecisionSupport.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IdentityModel" />
@@ -50,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="AuthenticationContext.cs" />
+    <Compile Include="Services\Impl\BasicIdentifierMaskingService.cs" />
     <Compile Include="Services\IDeviceIdentityProviderService.cs" />
     <Compile Include="Services\IIdentityProviderService.cs" />
     <Compile Include="Services\Impl\MemorySessionService.cs" />
@@ -62,6 +71,12 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt">
       <Version>5.3.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MARC.HI.EHRS.CR.Core\MARC.HI.EHRS.CR.Core.csproj">
+      <Project>{58EB3E63-0EA1-4A92-8E4C-076744AF417E}</Project>
+      <Name>MARC.HI.EHRS.CR.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

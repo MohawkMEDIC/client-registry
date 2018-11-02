@@ -990,7 +990,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data.ComponentPersister
                                 ObsoleteTime = !loadFast && rdr["obslt_utc"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(rdr["obslt_utc"]) : null
                             });
                         else
-                            person.OtherIdentifiers.Add(new KeyValuePair<CodeValue,DomainIdentifier>(
+                            person.OtherIdentifiers.Add(new KeyValuePair<CodeValue, DomainIdentifier>(
                                 rdr["id_purp_cd_id"] == DBNull.Value ? null : new CodeValue() { Key = Convert.ToDecimal(rdr["id_purp_cd_id"]) },
                                 new DomainIdentifier()
                                 {
