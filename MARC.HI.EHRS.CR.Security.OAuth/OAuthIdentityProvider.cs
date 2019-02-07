@@ -104,7 +104,7 @@ namespace MARC.HI.EHRS.CR.Security.OAuth
                     request.ClientId = this.m_configuration.ClientId;
                     request.ClientSecret = this.m_configuration.ClientSecret;
 
-                    OAuthTokenResponse response = restClient.Post<OAuthTokenRequest, OAuthTokenResponse>("oauth2_token", "application/x-www-urlform-encoded", request);
+                    OAuthTokenResponse response = restClient.Post<OAuthTokenRequest, OAuthTokenResponse>("oauth2_token", "application/x-www-form-urlencoded", request);
                     retVal = new TokenClaimsPrincipal(response.AccessToken, response.IdToken ?? response.AccessToken, response.TokenType, response.RefreshToken);
 
                 }

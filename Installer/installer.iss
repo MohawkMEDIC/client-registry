@@ -3,15 +3,15 @@
 [Setup]
 AppId = {{65CA62B3-DC66-4597-8439-890B008CB5E5}
 AppName = Client Registry
-AppVerName = MEDIC Client Registry 1.3
+AppVerName = MEDIC Client Registry 1.4
 #ifdef BUNDLED
 #ifdef x64
-OutputBaseFilename = cr-setup-bundled-x64-1.3
+OutputBaseFilename = cr-setup-bundled-x64-1.4
 #else
-OutputBaseFilename = cr-setup-bundled-1.3
+OutputBaseFilename = cr-setup-bundled-1.4
 #endif
 #else
-OutputBaseFilename = cr-setup-standalone-1.3
+OutputBaseFilename = cr-setup-standalone-1.4
 #endif
 LicenseFile = ..\MARC.HI.EHRS.CR.Presentation\License.rtf
 AppPublisher = Mohawk College of Applied Arts and Technology
@@ -26,7 +26,7 @@ Compression = none
 Compression = lzma2 
 #endif
 SolidCompression = false
-AppCopyright = Copyright (C) 2010-2018 Mohawk College of Applied Arts and Technology
+AppCopyright = Copyright (C) 2010-2019 Mohawk College of Applied Arts and Technology
 Uninstallable = true
 #ifdef x64
 ArchitecturesAllowed = x64

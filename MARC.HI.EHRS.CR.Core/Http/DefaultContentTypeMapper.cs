@@ -36,7 +36,7 @@ namespace MARC.HI.EHRS.CR.Core.Http
                 case "application/json; charset=UTF-8":
                     return new JsonBodySerializer(typeHint);
 
-                case "application/x-www-urlform-encoded":
+                case "application/x-www-form-urlencoded":
                     return new FormBodySerializer();
 
                 case "application/octet-stream":
