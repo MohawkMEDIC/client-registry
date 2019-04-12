@@ -74,6 +74,8 @@ namespace MARC.HI.EHRS.CR.Security.Services.Impl
                         }
                     }
                 }
+
+            return retVal;
         }
 
         /// <summary>

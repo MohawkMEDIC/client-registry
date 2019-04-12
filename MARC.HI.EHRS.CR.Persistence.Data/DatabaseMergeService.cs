@@ -27,7 +27,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Mark merge conflicts in the database
         /// </summary>
-        public void MarkConflicts(SVC.Core.DataTypes.VersionedDomainIdentifier recordId, IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> matches)
+        public virtual void MarkConflicts(SVC.Core.DataTypes.VersionedDomainIdentifier recordId, IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> matches)
         {
             if (recordId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
                 throw new ArgumentException(String.Format("Must be drawn from the '{0}' domain", ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid), "recordId");
@@ -65,7 +65,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Merge two items together
         /// </summary>
-        public void Resolve(IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> victimIds, SVC.Core.DataTypes.VersionedDomainIdentifier survivorId, SVC.Core.Services.DataPersistenceMode mode)
+        public virtual void Resolve(IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> victimIds, SVC.Core.DataTypes.VersionedDomainIdentifier survivorId, SVC.Core.Services.DataPersistenceMode mode)
         {
             // First, we load the survivor
             if (survivorId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
@@ -169,7 +169,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Mark resolved
         /// </summary>
-        public void MarkResolved(VersionedDomainIdentifier recordId)
+        public virtual void MarkResolved(VersionedDomainIdentifier recordId)
         {
             // First, we load the survivor
             if (recordId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
@@ -197,7 +197,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Find conflicts using identifiers
         /// </summary>
-        public IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> FindIdConflicts(RegistrationEvent registration)
+        public virtual IEnumerable<SVC.Core.DataTypes.VersionedDomainIdentifier> FindIdConflicts(RegistrationEvent registration)
         {
             
             var registrationService = this.Context.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
@@ -241,7 +241,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Find conflicts using fuzzy match
         /// </summary>
-        public IEnumerable<VersionedDomainIdentifier> FindFuzzyConflicts(RegistrationEvent registration)
+        public virtual IEnumerable<VersionedDomainIdentifier> FindFuzzyConflicts(RegistrationEvent registration)
         {
             var registrationService = this.Context.GetService(typeof(IDataRegistrationService)) as IDataRegistrationService;
             var persistenceService = this.Context.GetService(typeof(IDataPersistenceService)) as IDataPersistenceService;
@@ -358,7 +358,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// <summary>
         /// Gets all HSR identifiers where a merge is possible
         /// </summary>
-        public IEnumerable<VersionedDomainIdentifier> GetOutstandingConflicts()
+        public virtual IEnumerable<VersionedDomainIdentifier> GetOutstandingConflicts()
         {
             // Construct connection
             IDbConnection conn = DatabasePersistenceService.ConnectionManager.GetConnection();
@@ -414,7 +414,7 @@ namespace MARC.HI.EHRS.CR.Persistence.Data
         /// </summary>
         /// <param name="oldIdentifier">The old HSR event id</param>
         /// <param name="recordId">The new HSR event id</param>
-        public void ObsoleteConflicts(VersionedDomainIdentifier recordId)
+        public virtual void ObsoleteConflicts(VersionedDomainIdentifier recordId)
         {
             // First, we load the survivor
             if (recordId.Domain != ApplicationContext.ConfigurationService.OidRegistrar.GetOid(ClientRegistryOids.REGISTRATION_EVENT).Oid)
