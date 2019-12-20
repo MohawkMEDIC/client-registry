@@ -35,6 +35,11 @@ namespace MARC.HI.EHRS.CR.Core.Services
         ClientRegistryConfiguration Configuration { get; }
 
         /// <summary>
+        /// True if strict identity rules should be imposed
+        /// </summary>
+        bool HasStrictIdentityRules { get; }
+
+        /// <summary>
         /// Create a merge filter
         /// </summary>
         Person CreateMergeFilter(Person p);

@@ -567,12 +567,12 @@ namespace MARC.HI.EHRS.CR.Messaging.FHIR.Processors
             // HACK:
             // TODO: Make this a configuration option
 #if !DEBUG
-            if (psn.AlternateIdentifiers.Count == 0)
+            if (psn.AlternateIdentifiers.Count == 0 && && (Context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService).HasStrictIdentityRules))
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, ApplicationContext.LocalizationService.GetString("MSGE078"), "Patient"));
 #endif 
 
             // Birth date
-            if(resPatient.BirthDate != null)
+            if (resPatient.BirthDate != null)
                 psn.BirthTime = new TimestampPart(TimestampPart.TimestampPartType.Standlone, resPatient.BirthDate, "D");
 
             // Deceased time

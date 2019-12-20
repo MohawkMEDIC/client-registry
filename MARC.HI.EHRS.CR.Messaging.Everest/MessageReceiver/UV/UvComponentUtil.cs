@@ -32,6 +32,7 @@ using System.ComponentModel;
 using MARC.HI.EHRS.SVC.Core.DataTypes;
 using MARC.Everest.RMIM.UV.NE2008.Interactions;
 using MARC.HI.EHRS.CR.Core;
+using MARC.HI.EHRS.CR.Core.Services;
 
 namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
 {
@@ -833,7 +834,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                     retVal.Employment.Add(employment);
                 }
             }
-
+            
             // Scoping org?
             if (patient.ProviderOrganization != null &&
                 patient.ProviderOrganization.NullFlavor == null)
@@ -842,7 +843,7 @@ namespace MARC.HI.EHRS.CR.Messaging.Everest.MessageReceiver.UV
                 retVal.Add(scoper, "SCP", HealthServiceRecordSiteRoleType.PlaceOfEntry | HealthServiceRecordSiteRoleType.InformantTo, null);
                 // Verify that scoper matches at least one identifier present
                 var scopedIds = retVal.AlternateIdentifiers.FindAll(o => scoper.AlternateIdentifiers != null && scoper.AlternateIdentifiers.Exists(p => p.Domain == o.Domain));
-                if (scopedIds == null || scopedIds.Count == 0)
+                if ((scopedIds == null || scopedIds.Count == 0) && (Context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService).HasStrictIdentityRules)
                     dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_localeService.GetString("MSGE078"), null, null));
                 else
                 {

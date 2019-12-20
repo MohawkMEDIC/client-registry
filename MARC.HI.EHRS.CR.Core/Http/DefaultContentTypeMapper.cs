@@ -37,6 +37,7 @@ namespace MARC.HI.EHRS.CR.Core.Http
                     return new JsonBodySerializer(typeHint);
 
                 case "application/x-www-form-urlencoded":
+
                     return new FormBodySerializer();
 
                 case "application/octet-stream":

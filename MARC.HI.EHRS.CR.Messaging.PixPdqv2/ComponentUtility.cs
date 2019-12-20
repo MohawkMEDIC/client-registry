@@ -231,9 +231,9 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (!String.IsNullOrEmpty(addlData.Identifier))
             {
                 retVal.AssigningAuthority = addlData.Identifier;
-                var oid = this.m_config.OidRegistrar.FindData(o => o.Attributes.Exists(k=>k.Key.Equals("AssigningAuthorityName")) && addlData.Identifier.Equals(o.Attributes.Find(k=>k.Key.Equals("AssigningAuthorityName")).Value));
+                var oid = this.m_config.OidRegistrar.FindData(o => o.Name == addlData.Identifier ||  o.Attributes.Exists(k=>k.Key.Equals("AssigningAuthorityName")) && addlData.Identifier.Equals(o.Attributes.Find(k=>k.Key.Equals("AssigningAuthorityName")).Value));
                 if (oid == null)
-                    ;
+                    retVal.AssigningAuthority = null;
                 else if (String.IsNullOrEmpty(retVal.Domain))
                     retVal.Domain = oid.Oid;
                 else if (retVal.Domain != oid.Oid)
@@ -684,6 +684,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     tcx.AssigningAuthority.UniversalIDType.Value = "ISO";
                     tcx.IDNumber.Value = altId.Identifier;
                     subjectOf.AlternateIdentifiers = new List<DomainIdentifier>() { CreateDomainIdentifier(tcx, dtls) };
+
                 }
                 if (name != null)
                     subjectOf.Names = new List<NameSet>() { name };
@@ -918,8 +919,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     var cx = pid.GetPatientIdentifierList(i);
                     if (cx.IdentifierTypeCode == null || cx.IdentifierTypeCode.Value == null || cx.IdentifierTypeCode.Value == "PI" || cx.IdentifierTypeCode.Value == "PT" || cx.IdentifierTypeCode.Value == "MR")
                     { 
-
-                        Trace.TraceInformation("Adding {0}^^^&{1}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.UniversalID.Value);
+                        Trace.TraceInformation("Adding {0}^^^{1}&{2}&ISO to altIds", cx.ID.Value, cx.AssigningAuthority.NamespaceID.Value, cx.AssigningAuthority.UniversalID.Value);
                         subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetPatientIdentifierList(i), aaut, dtls));
                     }
                     else
@@ -940,6 +940,8 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                 for (int i = 0; i < pid.AlternatePatientIDPIDRepetitionsUsed; i++)
                     subject.AlternateIdentifiers.Add(CreateDomainIdentifier(pid.GetAlternatePatientIDPID(i), dtls));
 
+            if (subject.AlternateIdentifiers.Any(o => String.IsNullOrEmpty(o.AssigningAuthority)))
+                dtls.Add(new UnrecognizedPatientDomainResultDetail(this.m_locale));
             // Patient's name
             if (pid.PatientNameRepetitionsUsed > 0)
             {
@@ -1130,7 +1132,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (aaut != null)
             {
                 List<DomainIdentifier> scopedIds = subject.AlternateIdentifiers.FindAll(o => aaut.Oid == o.Domain);
-                if (scopedIds == null || scopedIds.Count == 0)
+                if (scopedIds == null || scopedIds.Count == 0 && (Context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService).HasStrictIdentityRules)
                 {
                     Trace.TraceError("No OIDs found matching assigning authority OID {0}", aaut.Oid);
                     dtls.Add(new FormalConstraintViolationResultDetail(ResultDetailType.Error, this.m_locale.GetString("MSGE078"), null, null));
@@ -1150,7 +1152,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
                     }
                 }
             }
-            else
+            else if((Context.GetService(typeof(IClientRegistryConfigurationService)) as IClientRegistryConfigurationService).HasStrictIdentityRules)
             {
                 dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE078"), null));
             }
@@ -1261,7 +1263,7 @@ namespace MARC.HI.EHRS.CR.Messaging.PixPdqv2
             if (String.IsNullOrEmpty(retVal.AssigningAuthority) && String.IsNullOrEmpty(retVal.Domain)) // No aaut, so populate from config
             {
                 if (aaut == null)
-                    dtls.Add(new MandatoryElementMissingResultDetail(ResultDetailType.Error, m_locale.GetString("MSGE06F"), null));
+                    dtls.Add(new UnrecognizedPatientDomainResultDetail(m_locale));
                 else
                 {
                     if (!aaut.Attributes.Exists(k => k.Key == "AutoFillCX4" && k.Value.ToLower() == "true"))

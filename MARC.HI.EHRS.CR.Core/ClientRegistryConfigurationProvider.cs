@@ -61,6 +61,12 @@ namespace MARC.HI.EHRS.CR.Core
         }
 
         /// <summary>
+        /// True if must have strict identity provider
+        /// </summary>
+        public bool HasStrictIdentityRules => Configuration.Registration.MustHaveRegisteredIdentifier;
+
+
+        /// <summary>
         /// Create a merge filter
         /// </summary>
         public ComponentModel.Person CreateMergeFilter(ComponentModel.Person p)

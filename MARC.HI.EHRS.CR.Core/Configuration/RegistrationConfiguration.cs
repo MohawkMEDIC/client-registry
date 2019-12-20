@@ -63,5 +63,9 @@ namespace MARC.HI.EHRS.CR.Core.Configuration
         /// </summary>
         public List<MergeCriterion> MergeCriteria { get; private set; }
 
+        /// <summary>
+        /// True if the patients must a registered identiifer
+        /// </summary>
+        public bool MustHaveRegisteredIdentifier { get; internal set; }
     }
 }

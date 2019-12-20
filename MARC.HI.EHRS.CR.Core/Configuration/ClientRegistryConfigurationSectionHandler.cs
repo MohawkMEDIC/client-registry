@@ -47,7 +47,9 @@ namespace MARC.HI.EHRS.CR.Core.Configuration
             {
                 // core attributes
                 retVal.Registration = new RegistrationConfiguration();
-                if (registrationSection.Attributes["autoMerge"] != null)
+                if (registrationSection.Attributes["mustHaveRegisteredId"] != null)
+                    retVal.Registration.MustHaveRegisteredIdentifier = Boolean.Parse(registrationSection.Attributes["mustHaveRegisteredId"].Value);
+                    if (registrationSection.Attributes["autoMerge"] != null)
                     retVal.Registration.AutoMerge = Convert.ToBoolean(registrationSection.Attributes["autoMerge"].Value);
                 if (registrationSection.Attributes["updateIfExists"] != null)
                     retVal.Registration.UpdateIfExists = Convert.ToBoolean(registrationSection.Attributes["updateIfExists"].Value);
